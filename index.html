@@ -560,7 +560,7 @@
                 card.className = 'card card-popular';
                 
                 const catLabel = categoryNames[game.category] || '기타';
-                const fileLink = encodeURIComponent(game.filename);
+                const fileLink = `single_html_games/${encodeURIComponent(game.filename)}`;
                 const rankText = "#" + game.rank;
                 const isHighlight = game.rank <= 3 ? 'rank-badge-highlight' : '';
 
@@ -603,7 +603,7 @@
                 card.className = 'card';
                 
                 const catLabel = categoryNames[game.category] || '기타';
-                const fileLink = encodeURIComponent(game.filename);
+                const fileLink = `single_html_games/${encodeURIComponent(game.filename)}`;
 
                 card.innerHTML = `
                     <div class="card-content">
