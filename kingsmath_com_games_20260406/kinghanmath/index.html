@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5YW0T2C109');
+</script>
+    <meta charset="UTF-8">
+    <meta name="description" content="Master arithmetic with King's Math Battle! Free math training game for smart boards and large screens.">
+    <meta name="keywords" content="Math Game, KingsMath, Mental Math, Educational Game, Free Game, Arithmetic, Multiplication, Brain Training">
+    <link rel="canonical" href="/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="King's Math Battle | KingsMath.com">
+    <meta property="og:description" content="Free arithmetic battle game optimized for smart boards.">
+    <meta property="og:image" content="http://11ukul.com/wp-content/uploads/2026/01/한메-킹수학-교사_킹수학-전자칠판-전용-수학-배틀-게임.png">
+    <meta property="og:url" content="/">
+    <meta property="og:site_name" content="KingsMath">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="King's Math Battle | KingsMath.com">
+    <meta name="twitter:description" content="Free arithmetic battle game optimized for smart boards.">
+    <meta name="twitter:image" content="http://11ukul.com/wp-content/uploads/2026/01/한메-킹수학-교사_킹수학-전자칠판-전용-수학-배틀-게임.png">
+    <meta name="theme-color" content="#0F4C3A">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>King's Math Battle</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        @font-face {
+            font-family: 'DosMyungjo';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_eight@1.0/DOSMyungjo.woff') format('woff');
+            font-weight: normal;
+            font-display: swap;
+        }
+
+        /* 폰트어썸 아이콘 깨짐 방지용 예외 처리 */
+        i[class^="fa-"] {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+
+        :root {
+            --win-bg: #208585;
+            --dos-blue: #0000A8;
+            --dos-gray: #C0C0C0;
+            --key-purple: #d6bcfa;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: #000;
+            font-family: 'DosMyungjo', 'Courier New', Courier, monospace, sans-serif; 
+            overflow: hidden;
+            touch-action: none; 
+        }
+
+        /* 베트남어 등 폰트 깨짐 방지용 공통 클래스 */
+        .font-standard {
+            font-family: 'Noto Sans', Arial, sans-serif !important;
+        }
+
+        #app-container {
+            width: 800px; 
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #000;
+            box-shadow: 0 0 0 2px #333;
+            transform-origin: center center;
+            z-index: 10;
+        }
+
+        /* --- 상단 바 --- */
+        #top-bar {
+            height: 32px;
+            background-color: var(--dos-blue);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            color: white;
+            font-size: 20px;
+            box-sizing: border-box;
+            z-index: 50;
+        }
+
+        .deco-box {
+            width: 16px; 
+            height: 16px; 
+            background-color: #fff;
+            display: inline-block;
+        }
+
+        #title-text {
+            letter-spacing: 2px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: font-size 0.2s;
+        }
+
+        /* --- 게임 영역 --- */
+        #game-viewport {
+            flex: 1;
+            position: relative;
+            background-color: var(--win-bg);
+            overflow: hidden;
+        }
+
+        #info-bar {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 80px;
+            background-color: transparent;
+            color: black;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: center;
+            font-size: 24px;
+            z-index: 60;
+            pointer-events: none;
+            padding-top: 10px;
+        }
+
+        #ui-score-container {
+            font-weight: bold;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+        }
+
+        #item-message {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffe200;
+            font-size: 40px; 
+            font-weight: bold;
+            text-shadow: 3px 3px 0 #000;
+            width: 100%;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 80; 
+            pointer-events: none;
+        }
+
+        #clock-container {
+            position: absolute;
+            right: 0px; top: 0px;
+            width: 100px; height: 100px;
+            background-color: #ffe200;
+            box-sizing: border-box;
+            pointer-events: auto;
+        }
+
+        canvas#analog-clock { width: 100%; height: 100%; display: block; }
+        canvas#gameCanvas { display: block; width: 100%; height: 100%; }
+
+        /* 컨트롤 패널 */
+        #control-panel {
+            position: absolute;
+            bottom: 0px; left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 20;
+        }
+
+        #lcd-screen {
+            width: 197px; height: 73px;
+            background-color: #eee;
+            border: 2px solid #555;
+            margin-bottom: -1px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(0,0,0,0.9);
+            font-size: 32px;
+            letter-spacing: 2px;
+            box-shadow: inset 0 0 10px rgba(0,255,0,0.2);
+        }
+
+        #keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0px;
+            width: 180px;
+        }
+
+        .key {
+            height: 46px;
+            background-color: var(--key-purple);
+            border: 2px solid rgba(107, 70, 193, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            color: #2d1b4d;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 3px 0 #553c9a;
+            transition: transform 0.05s;
+        }
+
+        .key:active { transform: translateY(2px); box-shadow: 0 1px 0 #553c9a; }
+        .key-enter { background-color: #f687b3; box-shadow: 0 3px 0 #b83280; color: white; }
+        .key-clear { background-color: #63b3ed; box-shadow: 0 3px 0 #2b6cb0; color: white; }
+
+        .key.broken {
+            background-color: #2d1b4d !important;
+            color: #7c6ba3 !important;
+            box-shadow: none !important;
+            background-image: repeating-linear-gradient(45deg, #000 0, #000 1px, transparent 1px, transparent 4px);
+            transform: translateY(2px);
+        }
+
+        /* --- 하단 바 --- */
+        #bottom-bar {
+            height: 36px;
+            background-color: var(--dos-gray);
+            border-top: 2px solid #fff;
+            display: flex;
+            align-items: stretch;
+            font-size: 16px;
+            color: #000;
+            box-sizing: border-box;
+            z-index: 50;
+        }
+
+        #bottom-left {
+            flex: 2;
+            display: flex;
+            align-items: center;
+            padding-left: 15px;
+            border-right: 2px solid #888;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        #bottom-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 20px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* 오버레이 */
+        .overlay-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            text-align: center;
+        }
+        
+        .overlay-screen h2 {
+            font-size: 40px; 
+            margin: 0 0 15px 0;
+            text-shadow: 4px 4px 0 #000;
+            color: #ff5555;
+            padding: 0 20px;
+            word-break: keep-all;
+        }
+
+        .overlay-screen p { 
+            font-size: 24px; 
+            margin: 10px 0; 
+            padding: 0 20px;
+            word-break: keep-all;
+        }
+
+        .overlay-btn {
+            padding: 15px 40px;
+            font-family: inherit;
+            font-size: 24px;
+            background-color: #0000A8;
+            color: #fff;
+            border: 4px solid #fff;
+            cursor: pointer;
+            box-shadow: 6px 6px 0 #000;
+        }
+        .overlay-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        .other-game-link {
+            display: block;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #aaa;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .other-game-link:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+        
+        #start-screen { display: flex; }
+        #game-over-screen { display: none; }
+
+        /* 플로팅 버튼 스타일 */
+        .floating-btn {
+            position: fixed; 
+            bottom: 20px;   
+            width: 44px;
+            height: 44px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 2px solid #000;
+            border-radius: 8px;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 9999; 
+            box-shadow: 2px 2px 0 #000;
+        }
+        .floating-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        #btn-home { left: 20px; }  
+        #btn-fs { right: 20px; }   
+
+        /* 랭킹 시스템 스타일 */
+        #ranking-board {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            width: 80%;
+            max-width: 500px;
+            border: 2px solid #fff;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .rank-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dotted #555;
+            padding: 5px 0;
+            font-size: 18px;
+            color: #ffe200;
+        }
+        .rank-row:last-child { border-bottom: none; }
+        .rank-name { text-align: left; }
+        .rank-score { text-align: right; font-weight: bold; }
+
+        #rank-form {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        #player-name-input {
+            font-family: 'DosMyungjo';
+            font-size: 20px;
+            padding: 10px;
+            background: #000;
+            color: #fff;
+            border: 2px solid #fff;
+            text-align: center;
+            width: 200px;
+        }
+
+        /* 커스텀 스크롤바 (모달 내부 스크롤용) */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        /* 모달 등장 애니메이션 */
+        .modal-overlay { opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { transform: scale(0.95) translateY(-10px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+
+        /* 토스트 알림 애니메이션 */
+        .toast { transform: translateY(100%); opacity: 0; transition: all 0.3s ease; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen flex flex-col relative overflow-hidden">
+
+<div id="langTriggerContainer" class="absolute top-4 right-4 sm:top-6 sm:right-6 z-[99999]">
+    <button id="langTriggerBtn" class="flex items-center gap-2 bg-gray-700/80 hover:bg-gray-700 border border-gray-600 rounded-full px-4 py-2 transition-all duration-200 text-sm font-medium shadow-lg">
+        <i class="fa-solid fa-globe text-gray-300"></i>
+        <img id="currentFlag" src="https://flagcdn.com/w40/kr.png" alt="KR" class="w-5 h-auto rounded-[2px] shadow-sm">
+        <span id="currentLangName" class="hidden sm:inline-block font-sans">한국어</span>
+        <i class="fa-solid fa-chevron-down text-gray-400 ml-1 text-xs"></i>
+    </button>
+</div>
+
+<div id="langModal" class="modal-overlay fixed inset-0 z-[99999] flex items-start sm:items-center justify-center bg-black/80 backdrop-blur-sm pt-16 sm:pt-0 px-4">
+    <div class="modal-content bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden font-sans">
+        <div class="flex items-center justify-between p-5 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10">
+            <div>
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-language text-yellow-500"></i>
+                    <span>Language / 언어</span>
+                </h2>
+            </div>
+            <button id="closeModalBtn" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <div class="p-5 pb-2 bg-gray-900">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="searchInput" placeholder="Search / 검색 ..." 
+                    class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 block pl-11 p-3.5 outline-none transition-all placeholder-gray-500">
+            </div>
+        </div>
+        <div class="p-5 overflow-y-auto custom-scrollbar flex-1">
+            <div id="languageGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+            <div id="noResult" class="hidden flex-col items-center justify-center py-12 text-gray-500">
+                <i class="fa-regular fa-face-frown-open text-4xl mb-3"></i>
+                <p>No results / 검색 결과 없음</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toastNotification" class="toast fixed bottom-6 right-6 bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 flex items-center gap-3 z-[99999] font-sans">
+    <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+        <i class="fa-solid fa-check"></i>
+    </div>
+    <div>
+        <p id="ui-toast" class="text-sm font-medium text-white">언어가 변경되었습니다.</p>
+        <p id="toastLangName" class="text-xs text-gray-400">Korean</p>
+    </div>
+</div>
+
+<div id="app-container">
+    <div id="top-bar">
+        <div class="deco-box"></div>
+        <div id="title-text" data-i18n="gameTitle">King's Math Battle</div>
+        <div class="deco-box"></div>
+    </div>
+
+    <div id="game-viewport">
+        <div id="item-message"></div>
+
+        <div id="info-bar">
+            <span id="ui-score-container"><span data-i18n="scorePrefix">Score : </span> <span id="ui-score">0</span></span>
+            
+            <div id="clock-container">
+                <canvas id="analog-clock" width="40" height="40"></canvas>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="control-panel">
+            <div id="lcd-screen"></div>
+            <div id="keypad">
+                <div class="key" onclick="keyInput('1')">1</div>
+                <div class="key" onclick="keyInput('2')">2</div>
+                <div class="key" onclick="keyInput('3')">3</div>
+                <div class="key" onclick="keyInput('4')">4</div>
+                <div class="key" onclick="keyInput('5')">5</div>
+                <div class="key" onclick="keyInput('6')">6</div>
+                <div class="key" onclick="keyInput('7')">7</div>
+                <div class="key" onclick="keyInput('8')">8</div>
+                <div class="key" onclick="keyInput('9')">9</div>
+                <div class="key key-clear" onclick="keyInput('C')">C</div>
+                <div class="key" onclick="keyInput('0')">0</div>
+                <div class="key key-enter" onclick="keyInput('E')">↵</div>
+            </div>
+        </div>
+
+        <div id="start-screen" class="overlay-screen">
+            <h2 data-i18n="startScreenTitle">Arithmetic Venice</h2>
+            
+            <div id="ranking-board">
+                <div style="text-align:center; color:#fff; margin-bottom:5px;">🏆 TOP 10 (24H)</div>
+                <div id="rank-list">Loading...</div>
+            </div>
+
+            <p data-i18n="startScreenDesc">Use keyboard or touch pad to answer!</p>
+            <button class="overlay-btn" onclick="initGame()" data-i18n="startBtn">START GAME</button>
+            <a href="/" target="_self" class="other-game-link" data-i18n="otherGameLink">🎮 More Games</a>
+        </div>
+
+        <div id="game-over-screen" class="overlay-screen">
+            <h2 data-i18n="gameOverTitle">GAME OVER</h2>
+            <p><span data-i18n="finalScorePrefix">Final Score: </span> <span id="final-score">0</span></p>
+            
+            <div id="rank-form">
+                <p style="color:#ffe200; font-size:20px; margin:5px 0;">🎉 NEW RECORD! 🎉</p>
+                <input type="text" id="player-name-input" placeholder="Enter Name (max 10)" maxlength="10">
+                <button class="overlay-btn" onclick="submitScore()" style="font-size:18px; padding:10px 20px; margin-top:5px;">REGISTER RANK</button>
+            </div>
+
+            <button class="overlay-btn" onclick="initGame()" data-i18n="restartBtn" style="margin-top:20px;">RETRY</button>
+            <a href="/" target="_self" class="other-game-link" data-i18n="otherGameLink">🎮 More Games</a>
+        </div>
+    </div>
+
+    <div id="bottom-bar">
+        <div id="bottom-left" data-i18n="footerLeft">Large screen optimized.</div>
+        <div id="bottom-right" data-i18n="footerRight">KingsMath.com</div>
+    </div>
+</div>
+
+<div id="btn-home" class="floating-btn" title="Home">🏠</div>
+<div id="btn-fs" class="floating-btn" onclick="toggleFullScreen()" title="Full Screen">⛶</div>
+
+<script>
+    /* -------------------------------------------------------------------------- */
+    /* 16개국 i18n 번역 및 다국어 로직                                            */
+    /* -------------------------------------------------------------------------- */
+    const translations = {
+        ko: {
+            pageTitle: "한메킹수학교사 | 킹수학.com",
+            metaDesc: "킹수학으로 전자칠판을 최고의 수학 학습 도구로 만드세요! 무료 수학 배틀 게임.",
+            metaKeywords: "수학 게임, 킹수학, 초등 수학, 전자칠판 게임, 무료 게임",
+            gameTitle: "한 메 킹 수 학 교 사",
+            scorePrefix: "점 수 : ",
+            startScreenTitle: "연산 베네치아",
+            startScreenDesc: "키보드나 화면 버튼으로 정답을 입력하세요!",
+            startBtn: "게임 시작",
+            otherGameLink: "🎮 다른 게임 고르기",
+            gameOverTitle: "게임 종료",
+            finalScorePrefix: "최종 점수: ",
+            restartBtn: "다시 시작",
+            footerLeft: "대화면(전자칠판) 전용입니다.",
+            footerRight: "정보화 시대의 동반자 킹수학.com",
+            items: { clearAll: "싹쓸이", virus: "숨바꼭질 바이러스", speedUp: "속도 증가", speedDown: "속도 감소", heal: "체력 회복", freeze: "시간 멈춤" }
+        },
+        en: {
+            pageTitle: "Math King Battle | KingsMath.com",
+            metaDesc: "Master arithmetic with Math King Battle! Free math training game for smart boards.",
+            metaKeywords: "Math Game, Math King, Mental Math, Educational Game",
+            gameTitle: "MATH KING BATTLE",
+            scorePrefix: "Score : ",
+            startScreenTitle: "Math Venice",
+            startScreenDesc: "Enter the answer using the keypad!",
+            startBtn: "START GAME",
+            otherGameLink: "🎮 More Games",
+            gameOverTitle: "GAME OVER",
+            finalScorePrefix: "Final Score: ",
+            restartBtn: "RETRY",
+            footerLeft: "Optimized for large screens.",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "Clear All", virus: "Virus", speedUp: "Speed Up", speedDown: "Speed Down", heal: "Heal", freeze: "Freeze" }
+        },
+        zh: {
+            pageTitle: "数学之王挑战 | KingsMath.com",
+            metaDesc: "通过数学之王挑战掌握算术！电子白板专用的免费数学训练游戏。",
+            metaKeywords: "数学游戏, 数学之王, 免费游戏",
+            gameTitle: "数 学 之 王 挑 战",
+            scorePrefix: "分数 : ",
+            startScreenTitle: "计算威尼斯",
+            startScreenDesc: "请使用键盘输入答案！",
+            startBtn: "开始游戏",
+            otherGameLink: "🎮 更多游戏",
+            gameOverTitle: "游戏结束",
+            finalScorePrefix: "最终分数: ",
+            restartBtn: "重试",
+            footerLeft: "专为大屏幕优化。",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "全屏清除", virus: "病毒", speedUp: "加速", speedDown: "减速", heal: "治疗", freeze: "冻结" }
+        },
+        ja: {
+            pageTitle: "算数キングバトル | KingsMath.com",
+            metaDesc: "算数キングバトルで計算をマスターしよう！電子黒板に最適な無料算数ゲーム。",
+            metaKeywords: "算数ゲーム, 算数キング, 無料ゲーム",
+            gameTitle: "算 数 キ ン グ バ ト ル",
+            scorePrefix: "点数 : ",
+            startScreenTitle: "計算ベネチア",
+            startScreenDesc: "キーパッドで答えを入力してください！",
+            startBtn: "ゲーム開始",
+            otherGameLink: "🎮 他のゲーム",
+            gameOverTitle: "ゲームオーバー",
+            finalScorePrefix: "最終スコア: ",
+            restartBtn: "もう一度",
+            footerLeft: "大画面向けに最適化されています。",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "一掃", virus: "ウイルス", speedUp: "スピードUP", speedDown: "スピードDOWN", heal: "回復", freeze: "フリーズ" }
+        },
+        es: {
+            pageTitle: "Rey de las Matemáticas | KingsMath.com",
+            metaDesc: "¡Domina la aritmética con Rey de las Matemáticas! Juego gratuito.",
+            metaKeywords: "Juego de Matemáticas, Rey de Matemáticas",
+            gameTitle: "REY DE LAS MATEMÁTICAS",
+            scorePrefix: "Puntos : ",
+            startScreenTitle: "Venecia Matemática",
+            startScreenDesc: "¡Introduce la respuesta con el teclado!",
+            startBtn: "JUGAR",
+            otherGameLink: "🎮 Más Juegos",
+            gameOverTitle: "FIN DEL JUEGO",
+            finalScorePrefix: "Puntuación Final: ",
+            restartBtn: "REINTENTAR",
+            footerLeft: "Optimizado para pantallas grandes.",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "Limpiar Todo", virus: "Virus", speedUp: "Acelerar", speedDown: "Frenar", heal: "Curar", freeze: "Congelar" }
+        },
+        fr: {
+            pageTitle: "Le Roi des Maths | KingsMath.com",
+            metaDesc: "Maîtrisez l'arithmétique avec Le Roi des Maths ! Jeu gratuit.",
+            metaKeywords: "Jeu de Maths, Roi des Maths",
+            gameTitle: "LE ROI DES MATHS",
+            scorePrefix: "Score : ",
+            startScreenTitle: "Venise Calcul",
+            startScreenDesc: "Entrez la réponse avec le clavier !",
+            startBtn: "JOUER",
+            otherGameLink: "🎮 Plus de jeux",
+            gameOverTitle: "FIN DE PARTIE",
+            finalScorePrefix: "Score Final: ",
+            restartBtn: "REJOUER",
+            footerLeft: "Optimisé pour les grands écrans.",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "Tout Effacer", virus: "Virus", speedUp: "Accélérer", speedDown: "Ralentir", heal: "Soigner", freeze: "Geler" }
+        },
+        ru: {
+            pageTitle: "Король Математики | KingsMath.com",
+            metaDesc: "Освой арифметику с Королем Математики! Бесплатная игра.",
+            metaKeywords: "Математика, Король Математики",
+            gameTitle: "КОРОЛЬ МАТЕМАТИКИ",
+            scorePrefix: "Счет : ",
+            startScreenTitle: "Венеция Счета",
+            startScreenDesc: "Введите ответ с клавиатуры!",
+            startBtn: "ИГРАТЬ",
+            otherGameLink: "🎮 Другие игры",
+            gameOverTitle: "КОНЕЦ ИГРЫ",
+            finalScorePrefix: "Итоговый счет: ",
+            restartBtn: "ЗАНОВО",
+            footerLeft: "Оптимизировано для больших экранов.",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "Очистить Всё", virus: "Вирус", speedUp: "Ускорение", speedDown: "Замедление", heal: "Лечение", freeze: "Заморозка" }
+        },
+        id: {
+            pageTitle: "Raja Matematika | KingsMath.com",
+            metaDesc: "Kuasai aritmatika dengan Raja Matematika! Game pelatihan gratis.",
+            metaKeywords: "Game Matematika, Raja Matematika",
+            gameTitle: "RAJA MATEMATIKA",
+            scorePrefix: "Skor : ",
+            startScreenTitle: "Venesia Matematika",
+            startScreenDesc: "Masukkan jawaban menggunakan keypad!",
+            startBtn: "MULAI GAME",
+            otherGameLink: "🎮 Game Lainnya",
+            gameOverTitle: "PERMAINAN SELESAI",
+            finalScorePrefix: "Skor Akhir: ",
+            restartBtn: "COBA LAGI",
+            footerLeft: "Dioptimalkan untuk layar besar.",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "Hapus Semua", virus: "Virus", speedUp: "Percepat", speedDown: "Perlambat", heal: "Sembuhkan", freeze: "Bekukan" }
+        },
+        vi: {
+            pageTitle: "Vua Toán Học | KingsMath.com",
+            metaDesc: "Làm chủ số học với Vua Toán Học! Trò chơi miễn phí.",
+            metaKeywords: "Trò chơi toán học, Vua toán học",
+            gameTitle: "VUA TOÁN HỌC",
+            scorePrefix: "Điểm : ",
+            startScreenTitle: "Venice Toán Học",
+            startScreenDesc: "Nhập câu trả lời bằng bàn phím!",
+            startBtn: "BẮT ĐẦU",
+            otherGameLink: "🎮 Trò chơi khác",
+            gameOverTitle: "KẾT THÚC",
+            finalScorePrefix: "Điểm Cuối: ",
+            restartBtn: "THỬ LẠI",
+            footerLeft: "Tối ưu hóa cho màn hình lớn.",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "Xóa hết", virus: "Virus", speedUp: "Tăng tốc", speedDown: "Giảm tốc", heal: "Hồi máu", freeze: "Đóng băng" }
+        },
+        th: {
+            pageTitle: "ราชาคณิตศาสตร์ | KingsMath.com",
+            metaDesc: "ฝึกฝนคณิตศาสตร์กับราชาคณิตศาสตร์! เกมฟรี.",
+            metaKeywords: "เกมคณิตศาสตร์, ราชาคณิตศาสตร์",
+            gameTitle: "ราชาคณิตศาสตร์",
+            scorePrefix: "คะแนน : ",
+            startScreenTitle: "เวนิสคณิตศาสตร์",
+            startScreenDesc: "ใส่คำตอบโดยใช้แป้นพิมพ์!",
+            startBtn: "เริ่มเกม",
+            otherGameLink: "🎮 เกมเพิ่มเติม",
+            gameOverTitle: "จบเกม",
+            finalScorePrefix: "คะแนนรวม: ",
+            restartBtn: "ลองใหม่",
+            footerLeft: "ปรับให้เหมาะกับหน้าจอขนาดใหญ่",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "ล้างทั้งหมด", virus: "ไวรัส", speedUp: "เพิ่มความเร็ว", speedDown: "ลดความเร็ว", heal: "รักษา", freeze: "แช่แข็ง" }
+        },
+        'pt-br': {
+            pageTitle: "Rei da Matemática | KingsMath.com",
+            metaDesc: "Domine a matemática com o Rei da Matemática! Jogo gratuito.",
+            metaKeywords: "Jogo de Matemática, Rei da Matemática",
+            gameTitle: "REI DA MATEMÁTICA",
+            scorePrefix: "Pontos : ",
+            startScreenTitle: "Veneza Matemática",
+            startScreenDesc: "Digite a resposta no teclado!",
+            startBtn: "INICIAR JOGO",
+            otherGameLink: "🎮 Mais Jogos",
+            gameOverTitle: "FIM DE JOGO",
+            finalScorePrefix: "Pontuação Final: ",
+            restartBtn: "TENTAR NOVAMENTE",
+            footerLeft: "Otimizado para telas grandes.",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "Limpar Tudo", virus: "Vírus", speedUp: "Acelerar", speedDown: "Desacelerar", heal: "Curar", freeze: "Congelar" }
+        },
+        hi: {
+            pageTitle: "गणित का राजा | KingsMath.com",
+            metaDesc: "गणित का राजा के साथ गणना में माहिर बनें! मुफ़्त गेम।",
+            metaKeywords: "गणित का खेल, गणित का राजा",
+            gameTitle: "गणित का राजा",
+            scorePrefix: "स्कोर : ",
+            startScreenTitle: "गणित वेनिस",
+            startScreenDesc: "कीपैड का उपयोग करके उत्तर दें!",
+            startBtn: "खेल शुरू करें",
+            otherGameLink: "🎮 अन्य खेल",
+            gameOverTitle: "खेल खत्म",
+            finalScorePrefix: "अंतिम स्कोर: ",
+            restartBtn: "पुनः प्रयास करें",
+            footerLeft: "बड़ी स्क्रीन के लिए अनुकूलित।",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "सब साफ़ करें", virus: "वायरस", speedUp: "गति बढ़ाएं", speedDown: "गति कम करें", heal: "ठीक करें", freeze: "फ्रीज करें" }
+        },
+        bn: {
+            pageTitle: "গণিতের রাজা | KingsMath.com",
+            metaDesc: "গণিতের রাজার সাথে গণিতে দক্ষ হন! বিনামূল্যের গেম।",
+            metaKeywords: "গণিতের খেলা, গণিতের রাজা",
+            gameTitle: "গণিতের রাজা",
+            scorePrefix: "স্কোর : ",
+            startScreenTitle: "গণিত ভেনিস",
+            startScreenDesc: "কিপ্যাড ব্যবহার করে উত্তর লিখুন!",
+            startBtn: "খেলা শুরু",
+            otherGameLink: "🎮 আরো গেম",
+            gameOverTitle: "খেলা শেষ",
+            finalScorePrefix: "চূড়ান্ত স্কোর: ",
+            restartBtn: "আবার চেষ্টা করুন",
+            footerLeft: "বড় পর্দার জন্য অপ্টিমাইজ করা হয়েছে।",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "সব মুছুন", virus: "ভাইরাস", speedUp: "দ্রুত", speedDown: "ধীর", heal: "নিরাময়", freeze: "জমে যাওয়া" }
+        },
+        tr: {
+            pageTitle: "Matematik Kralı | KingsMath.com",
+            metaDesc: "Matematik Kralı ile matematiği ustalaş! Ücretsiz oyun.",
+            metaKeywords: "Matematik Oyunu, Matematik Kralı",
+            gameTitle: "MATEMATİK KRALI",
+            scorePrefix: "Puan : ",
+            startScreenTitle: "Matematik Venedik",
+            startScreenDesc: "Cevabı klavyeyi kullanarak girin!",
+            startBtn: "OYUNA BAŞLA",
+            otherGameLink: "🎮 Diğer Oyunlar",
+            gameOverTitle: "OYUN BİTTİ",
+            finalScorePrefix: "Son Puan: ",
+            restartBtn: "TEKRAR DENE",
+            footerLeft: "Büyük ekranlar için optimize edildi.",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "Hepsini Sil", virus: "Virüs", speedUp: "Hızlandır", speedDown: "Yavaşlat", heal: "İyileştir", freeze: "Dondur" }
+        },
+        de: {
+            pageTitle: "Mathe-König | KingsMath.com",
+            metaDesc: "Meistern Sie die Mathematik mit Mathe-König! Kostenloses Spiel.",
+            metaKeywords: "Mathe-Spiel, Mathe-König",
+            gameTitle: "MATHE-KÖNIG",
+            scorePrefix: "Punkte : ",
+            startScreenTitle: "Mathe Venedig",
+            startScreenDesc: "Geben Sie die Antwort mit der Tastatur ein!",
+            startBtn: "SPIEL STARTEN",
+            otherGameLink: "🎮 Weitere Spiele",
+            gameOverTitle: "SPIEL VORBEI",
+            finalScorePrefix: "Endpunktzahl: ",
+            restartBtn: "NEUSTART",
+            footerLeft: "Optimiert für große Bildschirme.",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "Alles löschen", virus: "Virus", speedUp: "Schneller", speedDown: "Langsamer", heal: "Heilen", freeze: "Einfrieren" }
+        },
+        it: {
+            pageTitle: "Re della Matematica | KingsMath.com",
+            metaDesc: "Padroneggia l'aritmetica con Re della Matematica! Gioco gratuito.",
+            metaKeywords: "Gioco di Matematica, Re della Matematica",
+            gameTitle: "RE DELLA MATEMATICA",
+            scorePrefix: "Punti : ",
+            startScreenTitle: "Venezia Matematica",
+            startScreenDesc: "Inserisci la risposta usando il tastierino!",
+            startBtn: "INIZIA GIOCO",
+            otherGameLink: "🎮 Altri Giochi",
+            gameOverTitle: "FINE GIOCO",
+            finalScorePrefix: "Punteggio Finale: ",
+            restartBtn: "RIPROVA",
+            footerLeft: "Ottimizzato per grandi schermi.",
+            footerRight: "KingsMath.com",
+            items: { clearAll: "Cancella Tutto", virus: "Virus", speedUp: "Accelera", speedDown: "Rallenta", heal: "Cura", freeze: "Congela" }
+        }
+    };
+
+    const languagesList = [
+        { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+        { code: 'en', country: 'us', name: 'English', enName: 'English' },
+        { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese' },
+        { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+        { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+        { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+        { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+        { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+        { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+        { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+        { code: 'pt-br', country: 'br', name: 'Português', enName: 'Portuguese' },
+        { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+        { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+        { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' },
+        { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+        { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' }
+    ];
+
+    const toastTranslations = {
+        'ko': '언어가 변경되었습니다.', 'en': 'Language changed.', 'zh': '语言已更改。', 'ja': '言語が変更されました。',
+        'es': 'Idioma cambiado.', 'fr': 'Langue modifiée.', 'ru': 'Язык изменен.', 'id': 'Bahasa telah diubah.',
+        'vi': 'Ngôn ngữ đã được thay đổi.', 'th': 'เปลี่ยนภาษาเรียบร้อยแล้ว', 'pt-br': 'Idioma alterado.', 'hi': 'भाषा बदल दी गई है。',
+        'bn': 'ভাষা পরিবর্তন করা হয়েছে।', 'tr': 'Dil değiştirildi.', 'de': 'Sprache geändert.', 'it': 'Lingua cambiata.'
+    };
+
+    let currentLang = 'en';
+
+    // 1순위: URL / 2순위: 로컬스토리지 / 3순위: 브라우저 / 4순위: 기본 영어
+    function detectLanguage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('lang')) {
+            const langParam = urlParams.get('lang');
+            if (translations[langParam]) return langParam;
+        }
+        const savedLang = localStorage.getItem('kingsmath_lang');
+        if (savedLang && translations[savedLang]) return savedLang;
+
+        const browserLang = navigator.language.toLowerCase();
+        if (translations[browserLang]) return browserLang;
+        if (translations[browserLang.slice(0, 2)]) return browserLang.slice(0, 2);
+
+        return 'en';
+    }
+
+    function setLanguage(lang) {
+        if (!translations[lang]) return;
+        currentLang = lang;
+        localStorage.setItem('kingsmath_lang', lang);
+
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.set('lang', lang);
+        window.history.pushState({}, '', newUrl);
+
+        applyTranslations();
+    }
+
+    function applyTranslations() {
+        const t = translations[currentLang];
+        
+        // SEO Meta Update
+        document.title = t.pageTitle;
+        document.querySelector('meta[name="description"]').setAttribute("content", t.metaDesc);
+        document.querySelector('meta[name="keywords"]').setAttribute("content", t.metaKeywords);
+        document.querySelector('meta[property="og:title"]').setAttribute("content", t.pageTitle);
+        document.querySelector('meta[property="og:description"]').setAttribute("content", t.metaDesc);
+
+        // UI Text
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (t[key]) el.innerText = t[key];
+        });
+
+        // 폰트 예외 처리 (베트남어, 태국어, 힌디어, 벵골어 등)
+        const titleEl = document.getElementById('title-text');
+        const containerEl = document.getElementById('app-container');
+        if (['vi', 'th', 'hi', 'bn', 'ru'].includes(currentLang)) {
+            titleEl.classList.add('font-standard');
+            containerEl.classList.add('font-standard');
+        } else {
+            titleEl.classList.remove('font-standard');
+            containerEl.classList.remove('font-standard');
+        }
+
+        // 글자 길이에 따른 자동 폰트 크기 감소 대응
+        if (titleEl.innerText.length > 15) {
+            titleEl.style.fontSize = '14px';
+        } else if (titleEl.innerText.length > 10) {
+            titleEl.style.fontSize = '17px';
+        } else {
+            titleEl.style.fontSize = '20px';
+        }
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* UI 모달 로직                                                               */
+    /* -------------------------------------------------------------------------- */
+    const triggerBtn = document.getElementById('langTriggerBtn');
+    const modal = document.getElementById('langModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const searchInput = document.getElementById('searchInput');
+    const grid = document.getElementById('languageGrid');
+    const noResult = document.getElementById('noResult');
+    const currentFlagImg = document.getElementById('currentFlag');
+    const currentLangSpan = document.getElementById('currentLangName');
+    const toast = document.getElementById('toastNotification');
+    const toastLangName = document.getElementById('toastLangName');
+    let toastTimeout;
+
+    function renderLanguages(filterText = '') {
+        grid.innerHTML = '';
+        const lowerFilter = filterText.toLowerCase();
+        
+        const filteredLangs = languagesList.filter(lang => 
+            lang.name.toLowerCase().includes(lowerFilter) || 
+            lang.enName.toLowerCase().includes(lowerFilter) ||
+            lang.code.toLowerCase().includes(lowerFilter)
+        );
+
+        if (filteredLangs.length === 0) {
+            grid.classList.add('hidden');
+            noResult.classList.remove('hidden');
+            noResult.classList.add('flex');
+        } else {
+            grid.classList.remove('hidden');
+            noResult.classList.add('hidden');
+            noResult.classList.remove('flex');
+
+            filteredLangs.forEach(lang => {
+                const isSelected = lang.code === currentLang;
+                const baseClasses = "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 group relative overflow-hidden";
+                const stateClasses = isSelected 
+                    ? "bg-gray-800 border-yellow-500 ring-1 ring-yellow-500/50" 
+                    : "bg-gray-800/40 border-gray-700 hover:bg-gray-700 hover:border-gray-500";
+
+                const flagUrl = `https://flagcdn.com/w40/${lang.country}.png`;
+                const btn = document.createElement('div');
+                btn.className = `${baseClasses} ${stateClasses}`;
+
+                btn.innerHTML = `
+                    <div class="shrink-0 w-8 h-6 rounded overflow-hidden shadow-sm border border-gray-700/50">
+                        <img src="${flagUrl}" alt="${lang.country}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                    </div>
+                    <div class="flex-1 min-w-0 flex flex-col items-start">
+                        <span class="text-sm font-medium text-white truncate w-full ${isSelected ? 'text-yellow-400' : ''}">${lang.name}</span>
+                        <span class="text-xs text-gray-400 truncate w-full">${lang.enName}</span>
+                    </div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check text-yellow-500 text-lg ml-2"></i>' : ''}
+                `;
+
+                btn.addEventListener('click', () => selectLanguage(lang));
+                grid.appendChild(btn);
+            });
+        }
+    }
+
+    function selectLanguage(lang) {
+        setLanguage(lang.code);
+        currentFlagImg.src = `https://flagcdn.com/w40/${lang.country}.png`;
+        currentLangSpan.textContent = lang.name;
+        closeModal();
+        showToast(lang.name, lang.code);
+        renderLanguages(searchInput.value);
+    }
+
+    function openModal() {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => searchInput.focus(), 100);
+    }
+
+    function closeModal() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function showToast(langName, langCode) {
+        const toastMsg = toastTranslations[langCode] || toastTranslations['en'];
+        document.getElementById('ui-toast').textContent = toastMsg;
+        toastLangName.textContent = langName;
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+
+    triggerBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
+    searchInput.addEventListener('input', (e) => { renderLanguages(e.target.value); });
+
+    // 초기 실행
+    currentLang = detectLanguage();
+    const initLangObj = languagesList.find(l => l.code === currentLang) || languagesList[1];
+    currentFlagImg.src = `https://flagcdn.com/w40/${initLangObj.country}.png`;
+    currentLangSpan.textContent = initLangObj.name;
+    applyTranslations();
+    renderLanguages();
+
+
+    /* -------------------------------------------------------------------------- */
+    /* Game Logic                                                                 */
+    /* -------------------------------------------------------------------------- */
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('app-container');
+    const viewport = document.getElementById('game-viewport');
+    const lcd = document.getElementById('lcd-screen');
+    const scoreUI = document.getElementById('ui-score');
+    const startUI = document.getElementById('start-screen');
+    const gameOverUI = document.getElementById('game-over-screen');
+    const finalScoreUI = document.getElementById('final-score');
+    const panel = document.getElementById('control-panel');
+    const itemMsgUI = document.getElementById('item-message');
+    const langTriggerContainer = document.getElementById('langTriggerContainer');
+
+    let gameActive = false;
+    let score = 0;
+    let energy = 12;
+    let inputStr = "";
+    let enemies = [];
+    let sprinkles = [];
+    let gameStartTime = 0;
+    let lastSpawnTime = 0;
+    let waveOffset = 0;
+    let lastTime = 0; 
+    let lastWaveTime = 0;
+    const waveInterval = 500;
+
+    let enemySpawnCount = 0;
+    let nextItemTarget = rand(20, 30);
+    let activeEffects = { hidden: false, speedUp: false, speedDown: false, frozen: false };
+    let effectTimers = {}; 
+    let itemMsgTimer = null;
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = new AudioContext();
+
+    const SoundFX = {
+        playTone: function(freq, type, duration) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        },
+        click: function() { this.playTone(800, 'square', 0.05); },
+        correct: function() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            this.scheduleTone(523.25, 'square', now, 0.1); 
+            this.scheduleTone(659.25, 'square', now + 0.1, 0.1); 
+            this.scheduleTone(783.99, 'square', now + 0.2, 0.2); 
+        },
+        itemGet: function() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            this.scheduleTone(880, 'sine', now, 0.1);
+            this.scheduleTone(1108, 'sine', now+0.1, 0.1);
+            this.scheduleTone(1318, 'sine', now+0.2, 0.1);
+            this.scheduleTone(1760, 'sine', now+0.3, 0.2);
+        },
+        damage: function() { this.playTone(150, 'sawtooth', 0.3); },
+        start: function() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            this.scheduleTone(440, 'square', now, 0.1);
+            this.scheduleTone(554, 'square', now + 0.1, 0.1);
+            this.scheduleTone(659, 'square', now + 0.2, 0.3);
+        },
+        gameOver: function() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            this.scheduleTone(659, 'sawtooth', now, 0.2);
+            this.scheduleTone(554, 'sawtooth', now + 0.2, 0.2);
+            this.scheduleTone(440, 'sawtooth', now + 0.4, 0.4);
+        },
+        scheduleTone: function(freq, type, time, duration) {
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, time);
+            gainNode.gain.setValueAtTime(0.1, time);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, time + duration);
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start(time);
+            osc.stop(time + duration);
+        }
+    };
+
+    function drawAnalogClock() {
+        const clockCanvas = document.getElementById('analog-clock');
+        const cCtx = clockCanvas.getContext('2d');
+        const w = clockCanvas.width;
+        const h = clockCanvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = w / 2 - 2;
+
+        const now = new Date();
+        const min = now.getMinutes();
+        const hour = now.getHours() % 12;
+        const sec = now.getSeconds(); 
+
+        cCtx.clearRect(0, 0, w, h);
+        cCtx.fillStyle = "#ffe200"; 
+        cCtx.fillRect(0, 0, w, h);
+
+        cCtx.fillStyle = "#000";
+        for (let i = 1; i <= 12; i++) {
+            const angle = (i * 30) * Math.PI / 180;
+            const dist = radius * 0.75;
+            const dx = cx + Math.sin(angle) * dist;
+            const dy = cy - Math.cos(angle) * dist;
+            cCtx.beginPath();
+            cCtx.arc(dx, dy, 1.5, 0, Math.PI*2); 
+            cCtx.fill();
+        }
+
+        cCtx.save();
+        cCtx.translate(cx, cy);
+        cCtx.rotate(((hour + min/60) * 30) * Math.PI / 180);
+        cCtx.strokeStyle = "#000"; 
+        cCtx.lineWidth = 1; 
+        cCtx.lineCap = "round";
+        cCtx.beginPath();
+        cCtx.moveTo(0, 0);
+        cCtx.lineTo(0, -radius * 0.6); 
+        cCtx.stroke();
+        cCtx.restore();
+
+        cCtx.save();
+        cCtx.translate(cx, cy);
+        cCtx.rotate(((min + sec/60) * 6) * Math.PI / 180);
+        cCtx.strokeStyle = "#000"; 
+        cCtx.lineWidth = 1;
+        cCtx.lineCap = "round";
+        cCtx.beginPath();
+        cCtx.moveTo(0, 0);
+        cCtx.lineTo(0, -radius * 0.9); 
+        cCtx.stroke();
+        cCtx.restore();
+        
+        cCtx.beginPath();
+        cCtx.arc(cx, cy, 2, 0, Math.PI*2);
+        cCtx.fillStyle = "#000";
+        cCtx.fill();
+    }
+    
+    setInterval(drawAnalogClock, 1000);
+    drawAnalogClock();
+
+    function resize() {
+        const ww = window.innerWidth;
+        const wh = window.innerHeight;
+        const targetRatio = 4/3;
+        
+        let availableWidth = ww;
+        let availableHeight = wh;
+        let rotation = 0;
+
+        if (wh > ww) {
+            availableWidth = wh;
+            availableHeight = ww;
+            rotation = 90;
+        }
+
+        let newW, newH;
+        if (availableWidth / availableHeight > targetRatio) {
+            newH = availableHeight;
+            newW = newH * targetRatio;
+        } else {
+            newW = availableWidth;
+            newH = newW / targetRatio;
+        }
+
+        container.style.width = newW + 'px';
+        container.style.height = newH + 'px';
+
+        if (rotation === 90) {
+            container.style.transform = `translate(-50%, -50%) rotate(90deg)`;
+        } else {
+            container.style.transform = `translate(-50%, -50%)`;
+        }
+
+        canvas.width = viewport.clientWidth;
+        canvas.height = viewport.clientHeight;
+    }
+    window.addEventListener('resize', resize);
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+
+    // 홈 버튼: 제공받은 소스 코드에 맞춰 변수 통합
+    document.getElementById('btn-home').addEventListener('click', () => {
+        if (document.fullscreenElement) {
+            // 새로고침 대신 화면 초기화 로직 실행 (전체 화면 유지)
+            gameActive = false; 
+            startUI.style.display = 'flex';
+            gameOverUI.style.display = 'none';
+            itemMsgUI.style.opacity = '0';
+            langTriggerContainer.style.display = 'block'; // 첫 화면 노출 처리
+            
+            loadRanking();
+            SoundFX.click();
+        } else {
+            // 전체 화면이 아니라면 그냥 새로고침
+            location.reload();
+        }
+    });
+
+    function initGame() {
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        startUI.style.display = 'none';
+        gameOverUI.style.display = 'none';
+        langTriggerContainer.style.display = 'none'; // 게임 플레이 시 숨김
+        SoundFX.start();
+        restartGame();
+    }
+
+    function restartGame() {
+        score = 0;
+        energy = 12;
+        inputStr = "";
+        enemies = [];
+        sprinkles = [];
+        gameStartTime = performance.now();
+        lastTime = gameStartTime;
+        gameActive = true;
+        scoreUI.innerText = score;
+        lcd.innerText = "";
+        itemMsgUI.style.opacity = '0';
+        
+        enemySpawnCount = 0;
+        nextItemTarget = rand(10, 20);
+        
+        activeEffects = { hidden: false, speedUp: false, speedDown: false, frozen: false };
+        for (let key in effectTimers) clearTimeout(effectTimers[key]);
+        effectTimers = {};
+        
+        document.querySelectorAll('.key').forEach(k => k.classList.remove('broken'));
+
+        for(let i=0; i<3; i++) {
+            spawnEnemy(true);
+        }
+        
+        requestAnimationFrame(update);
+    }
+
+    function spawnEnemy(isInitial = false) {
+        let attempts = 0;
+        const maxAttempts = 50;
+        
+        let isItem = false;
+        if (!isInitial) {
+            enemySpawnCount++;
+            if (enemySpawnCount >= nextItemTarget) {
+                isItem = true;
+                enemySpawnCount = 0;
+                nextItemTarget = rand(10, 20);
+            }
+        }
+
+        const centerX = canvas.width / 2;
+        const safeMargin = 110; 
+        const padding = 60; 
+
+        while (attempts < maxAttempts) {
+            let side = Math.random() > 0.5 ? 'left' : 'right';
+            let x;
+
+            if (side === 'left') {
+                const leftWidth = (centerX - safeMargin) - padding;
+                if (leftWidth > 0) {
+                    x = Math.random() * leftWidth + padding;
+                } else {
+                    x = padding; 
+                }
+            } else {
+                const rightStart = centerX + safeMargin;
+                const rightWidth = (canvas.width - padding) - rightStart;
+                if (rightWidth > 0) {
+                    x = Math.random() * rightWidth + rightStart;
+                } else {
+                    x = canvas.width - padding;
+                }
+            }
+
+            let rawY = isInitial ? Math.random() * (canvas.height * 0.3) + 60 : -40;
+            let y = Math.floor(rawY / 40) * 40; 
+            
+            let overlap = false;
+            for (let e of enemies) {
+                if (Math.abs(e.x - x) < 140 && Math.abs(e.y - y) < 40) {
+                    overlap = true;
+                    break;
+                }
+            }
+            if (!overlap) {
+                enemies.push(new Enemy(x, y, isItem));
+                return;
+            }
+            attempts++;
+        }
+    }
+
+    function generateProblem(elapsed) {
+        const lv1 = ['add_s1', 'sub_s1', 'mul_s1']; 
+        const lv2 = ['add_s2', 'sub_s2', 'mul_s2']; 
+        const lv3 = ['add_2_1', 'sub_2_1', 'mul_tens', 'div_basic', 'add_2_2_easy', 'sub_2_2_easy']; 
+
+        let selectedPool = [];
+
+        if (elapsed < 40) {
+            selectedPool = lv1;
+        } else if (elapsed < 80) {
+            if (Math.random() < 0.5) selectedPool = lv1;
+            else selectedPool = lv2;
+        } else {
+            const dice = Math.floor(Math.random() * 3);
+            if (dice === 0) selectedPool = lv1;
+            else if (dice === 1) selectedPool = lv2;
+            else selectedPool = lv3;
+        }
+
+        const type = selectedPool[Math.floor(Math.random() * selectedPool.length)];
+        let a, b, op, ans;
+
+        switch(type) {
+            case 'add_s1': ans=rand(2,9); a=rand(1,ans-1); b=ans-a; op='+'; break;
+            case 'sub_s1': a=rand(2,9); b=rand(1,a-1); op='-'; ans=a-b; break;
+            case 'mul_s1': a=rand(2,5); b=rand(1,9); op='×'; ans=a*b; break;
+            case 'add_s2': a=rand(2,9); b=rand(10-a,9); op='+'; ans=a+b; break;
+            case 'sub_s2': a=rand(11,18); b=rand(a-9,9); op='-'; ans=a-b; break;
+            case 'mul_s2': a=rand(6,9); b=rand(2,9); op='×'; ans=a*b; break;
+            case 'add_2_1': a=rand(10,89); b=rand(1,9); op='+'; ans=a+b; break;
+            case 'sub_2_1': a=rand(11,99); b=rand(1,9); op='-'; ans=a-b; break;
+            case 'mul_tens': a=rand(2,9)*10; b=rand(2,9); op='×'; ans=a*b; break;
+            case 'div_basic': b=rand(2,9); ans=rand(2,9); a=b*ans; op='÷'; break;
+            case 'add_2_2_easy': a=rand(10,40); b=rand(10,40); op='+'; ans=a+b; break;
+            case 'sub_2_2_easy': a=rand(30,80); b=rand(10,a-10); op='-'; ans=a-b; break;
+        }
+
+        return { text: `${a}${op}${b}`, answer: ans };
+    }
+
+    class Enemy {
+        constructor(x, y, isItem = false) {
+            this.x = x;
+            this.y = y;
+            this.stepSize = 40; 
+            this.accumulatedTime = 0; 
+            this.isItem = isItem;
+
+            const elapsed = (performance.now() - gameStartTime) / 1000;
+            const prob = generateProblem(elapsed);
+            this.text = prob.text;
+            this.answer = prob.answer;
+            
+            ctx.font = "normal 28px 'DosMyungjo', 'Noto Sans', sans-serif"; 
+            this.width = ctx.measureText(this.text).width;
+            this.height = 30;
+
+            const speedMultiplier = 1.0 + (elapsed / 120); 
+            const baseInterval = 1000; 
+            this.baseMoveInterval = baseInterval / speedMultiplier; 
+            this.moveInterval = this.baseMoveInterval;
+        }
+
+        update(dt) {
+            if (activeEffects.frozen) return;
+            let currentInterval = this.baseMoveInterval;
+            if (activeEffects.speedUp) currentInterval /= 1.3;
+            if (activeEffects.speedDown) currentInterval /= 0.7;
+            this.moveInterval = currentInterval;
+
+            this.accumulatedTime += dt;
+            if (this.accumulatedTime >= this.moveInterval) {
+                this.y += this.stepSize;
+                this.accumulatedTime = 0; 
+            }
+        }
+
+        draw() {
+            ctx.font = "normal 28px 'DosMyungjo', 'Noto Sans', sans-serif";
+            ctx.textAlign = "center";
+            
+            if (activeEffects.hidden) {
+                ctx.fillStyle = "#808080"; 
+            } else if (this.isItem) {
+                ctx.fillStyle = "#ffe200";
+            } else {
+                ctx.fillStyle = "#fff";
+            }
+            
+            if (this.isItem) {
+                ctx.shadowColor = "#ffa500";
+                ctx.shadowBlur = 5;
+            } else {
+                ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.shadowBlur = 0;
+            }
+
+            ctx.fillText(this.text, this.x, this.y);
+            ctx.shadowBlur = 0;
+        }
+    }
+
+    function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    function keyInput(val) {
+        if (!gameActive) return;
+        SoundFX.click(); 
+        
+        if (val === 'C') {
+            inputStr = "";
+        } else if (val === 'E') {
+            checkAnswer();
+            inputStr = "";
+        } else {
+            if (inputStr.length < 5) inputStr += val;
+        }
+        lcd.innerText = inputStr;
+    }
+
+    function checkAnswer() {
+        const userVal = parseInt(inputStr);
+        let found = false;
+        
+        for (let i = 0; i < enemies.length; i++) {
+            if (enemies[i].answer === userVal) {
+                const target = enemies[i];
+                score += 10;
+                scoreUI.innerText = score;
+                createVintageEffect(target.x, target.y, "success");
+                enemies.splice(i, 1);
+                
+                if (target.isItem) {
+                    SoundFX.itemGet();
+                    applyRandomItem();
+                } else {
+                    SoundFX.correct();
+                }
+                
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found && userVal) {
+            SoundFX.playTone(100, 'sawtooth', 0.1); 
+        }
+    }
+
+    function applyRandomItem() {
+        const t = translations[currentLang].items;
+        const items = [
+            { name: t.clearAll, type: "clearAll" },
+            { name: t.virus, type: "virus" },
+            { name: t.speedUp, type: "speedUp" },
+            { name: t.speedDown, type: "speedDown" },
+            { name: t.heal, type: "heal" },
+            { name: t.freeze, type: "freeze" }
+        ];
+        
+        const item = items[rand(0, items.length - 1)];
+        showItemMessage(item.name);
+        activateItemEffect(item.type);
+    }
+
+    function showItemMessage(name) {
+        itemMsgUI.innerText = name;
+        itemMsgUI.style.opacity = '1';
+        if (itemMsgTimer) clearTimeout(itemMsgTimer);
+        itemMsgTimer = setTimeout(() => { itemMsgUI.style.opacity = '0'; }, 3000); 
+    }
+
+    function activateItemEffect(type) {
+        switch(type) {
+            case "clearAll":
+                enemies.forEach(e => {
+                    score += 10;
+                    createVintageEffect(e.x, e.y, "success");
+                });
+                enemies = [];
+                scoreUI.innerText = score;
+                break;
+            case "virus":
+                if(effectTimers.hidden) clearTimeout(effectTimers.hidden);
+                activeEffects.hidden = true;
+                effectTimers.hidden = setTimeout(() => { activeEffects.hidden = false; }, 10000);
+                break;
+            case "speedUp":
+                if(effectTimers.speedUp) clearTimeout(effectTimers.speedUp);
+                activeEffects.speedUp = true;
+                effectTimers.speedUp = setTimeout(() => { activeEffects.speedUp = false; }, 10000);
+                break;
+            case "speedDown":
+                if(effectTimers.speedDown) clearTimeout(effectTimers.speedDown);
+                activeEffects.speedDown = true;
+                effectTimers.speedDown = setTimeout(() => { activeEffects.speedDown = false; }, 10000);
+                break;
+            case "heal":
+                energy = 12;
+                document.querySelectorAll('.key').forEach(k => k.classList.remove('broken'));
+                break;
+            case "freeze":
+                if(effectTimers.frozen) clearTimeout(effectTimers.frozen);
+                activeEffects.frozen = true;
+                effectTimers.frozen = setTimeout(() => { activeEffects.frozen = false; }, 5000);
+                break;
+        }
+    }
+
+    function takeDamage(x, y) {
+        if (energy > 0) {
+            energy--;
+            SoundFX.damage(); 
+            const keyNodes = document.querySelectorAll('.key');
+            const targetKey = keyNodes[energy];
+            if (targetKey) targetKey.classList.add('broken');
+            
+            createVintageEffect(x, y, "fail");
+            if (energy <= 0) endGame();
+        }
+    }
+
+    function endGame() {
+        gameActive = false;
+        SoundFX.gameOver(); 
+        finalScoreUI.innerText = score;
+        gameOverUI.style.display = 'flex';
+        langTriggerContainer.style.display = 'block'; // 게임 종료 시 다시 노출
+        checkRankEligibility(score); 
+    }
+
+    function createVintageEffect(x, y, type) {
+        if (type === "success") {
+            for(let i=0; i<10; i++) {
+                sprinkles.push({
+                    x, y,
+                    vx: Math.cos(i) * 5,
+                    vy: Math.sin(i) * 5,
+                    life: 15,
+                    color: "#fff",
+                    size: 4
+                });
+            }
+        } else {
+            sprinkles.push({ x, y, vx: 0, vy: 0, life: 8, color: "#f00", size: 50 });
+        }
+    }
+
+    function update(now) {
+        if (!gameActive) return; 
+        requestAnimationFrame(update); 
+
+        const dt = now - lastTime;
+        lastTime = now;
+
+        const spawnDt = now - lastSpawnTime;
+        const elapsed = (now - gameStartTime) / 1000;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawWater(now);
+
+        const spawnMultiplier = 1.0 + (elapsed / 90);
+        let spawnInterval = Math.max(300, 1800 / spawnMultiplier);
+        
+        if (!activeEffects.frozen) {
+            if (spawnDt > spawnInterval) {
+                spawnEnemy();
+                lastSpawnTime = now;
+            }
+        }
+
+        const p = panel.getBoundingClientRect();
+        const vRect = viewport.getBoundingClientRect();
+        const pLeft = p.left - vRect.left;
+        const pRight = p.right - vRect.left;
+        const pTop = p.top - vRect.top;
+        const pBottom = p.bottom - vRect.top;
+
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            const e = enemies[i];
+            e.update(dt); 
+            e.draw();
+
+            const enemyHalfW = e.width / 2;
+            const enemyTop = e.y - 24; 
+            const enemyBottom = e.y;    
+            const enemyLeft = e.x - enemyHalfW;
+            const enemyRight = e.x + enemyHalfW;
+
+            const hitPanel = (
+                enemyRight > pLeft &&
+                enemyLeft < pRight &&
+                enemyBottom > pTop &&
+                enemyTop < pBottom
+            );
+
+            if (e.y > canvas.height - 40 || hitPanel) {
+                takeDamage(e.x, e.y);
+                enemies.splice(i, 1);
+            }
+        }
+
+        for (let i = sprinkles.length - 1; i >= 0; i--) {
+            const s = sprinkles[i];
+            s.x += s.vx; s.y += s.vy; s.life--;
+            ctx.fillStyle = s.color;
+            ctx.fillRect(s.x - s.size/2, s.y - s.size/2, s.size, s.size);
+            if (s.life <= 0) sprinkles.splice(i, 1);
+        }
+    }
+
+    function drawWater(now) {
+        if (now - lastWaveTime > waveInterval) {
+            waveOffset += 0.5; 
+            lastWaveTime = now;
+        }
+        ctx.fillStyle = "rgba(0, 70, 160, 0.6)";
+        ctx.beginPath();
+        const y = canvas.height - 40;
+        ctx.moveTo(0, y);
+        for (let x = 0; x <= canvas.width; x += 5) {
+            ctx.lineTo(x, y + Math.sin(x * 0.1 + waveOffset) * 6);
+        }
+        ctx.lineTo(canvas.width, canvas.height);
+        ctx.lineTo(0, canvas.height);
+        ctx.fill();
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (!gameActive) return;
+        if (e.key >= '0' && e.key <= '9') keyInput(e.key);
+        else if (e.key === 'Enter') keyInput('E');
+        else if (e.key === 'Backspace' || e.key === 'Escape') keyInput('C');
+    });
+
+    setTimeout(() => { resize(); }, 100);
+
+    /* -------------------------------------------------------------------------- */
+    /* Ranking System Logic (PHP)                                                 */
+    /* -------------------------------------------------------------------------- */
+    let currentRankList = [];
+
+    function loadRanking() {
+        const rankListEl = document.getElementById('rank-list');
+        fetch('ranking.php')
+            .then(response => response.json())
+            .then(data => {
+                currentRankList = data;
+                renderRanking(data);
+            })
+            .catch(err => {
+                rankListEl.innerText = "No Ranking Data";
+                console.error(err);
+            });
+    }
+
+    function renderRanking(data) {
+        const rankListEl = document.getElementById('rank-list');
+        rankListEl.innerHTML = "";
+        
+        if (data.length === 0) {
+            rankListEl.innerHTML = "<div style='text-align:center; padding:10px; color:#fff;'>Be the first Ranker!</div>";
+            return;
+        }
+
+        data.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'rank-row';
+            row.innerHTML = `<span class="rank-name">${index + 1}. ${item.name}</span><span class="rank-score">${item.score}</span>`;
+            rankListEl.appendChild(row);
+        });
+    }
+
+    function checkRankEligibility(myScore) {
+        const rankForm = document.getElementById('rank-form');
+        const nameInput = document.getElementById('player-name-input');
+        
+        if (myScore === 0) {
+            rankForm.style.display = 'none';
+            return;
+        }
+
+        let isEligible = false;
+        if (currentRankList.length < 10) {
+            isEligible = true;
+        } else {
+            const lastScore = currentRankList[currentRankList.length - 1].score;
+            if (myScore > lastScore) {
+                isEligible = true;
+            }
+        }
+
+        if (isEligible) {
+            rankForm.style.display = 'flex';
+            nameInput.value = "";
+            nameInput.focus();
+        } else {
+            rankForm.style.display = 'none';
+        }
+    }
+
+    function submitScore() {
+        const nameInput = document.getElementById('player-name-input');
+        const name = nameInput.value.trim();
+        
+        if (!name) {
+            alert("Please enter your name!");
+            return;
+        }
+
+        fetch('ranking.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, score: score })
+        })
+        .then(response => response.json())
+        .then(data => {
+            currentRankList = data;
+            renderRanking(data);
+            document.getElementById('btn-home').click(); // 홈버튼 로직과 연동
+        })
+        .catch(err => console.error(err));
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        loadRanking();
+    });
+
+</script>
+
+</body>
+</html>

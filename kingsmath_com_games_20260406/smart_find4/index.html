@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5YW0T2C109');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>사각형 탐정킹 모바일 🕵️</title>
+    <meta name="description" id="meta-desc" content="넓이와 둘레에 맞는 사각형을 찾아라! 최단 시간 3명의 범인 검거 타임어택!">
+    <meta name="theme-color" content="#1a1a2e">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind = { config: { corePlugins: { preflight: false } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Fredoka+One&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-color: #1a1a2e;
+            --ui-base: #16213e;
+            --primary-color: #FFD93D;
+            --deep-color: #c2a326;
+            --text-color: #f0f0f0;
+            --accent-color: #e94560;
+            --correct-color: #00cec9;
+            --wrong-color: #ff7675;
+        }
+
+        * { box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; }
+        
+        body {
+            margin: 0; padding: 0; background-color: var(--bg-color);
+            font-family: 'Jua', 'Fredoka One', 'Noto Sans KR', sans-serif;
+            height: 100vh; height: 100dvh; display: flex; justify-content: center;
+            overflow: hidden; color: var(--text-color);
+        }
+
+        #game-container {
+            width: 100%; max-width: 600px; height: 100%; background: var(--bg-color);
+            position: relative; display: flex; flex-direction: column; box-shadow: 0 0 25px rgba(0,0,0,0.5);
+        }
+
+        .hidden { display: none !important; }
+        .center { text-align: center; }
+        button { cursor: pointer; border: none; font-family: inherit; transition: transform 0.1s; outline: none; }
+        button:active { transform: scale(0.95); }
+
+        /* --- 1. 시작 화면 --- */
+        #start-screen {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
+            padding-top: 2vh; padding-bottom: 5vh;
+            background: linear-gradient(180deg, #16213e 0%, #1a1a2e 100%);
+            overflow-y: auto; -webkit-overflow-scrolling: touch; z-index: 10; touch-action: pan-y; 
+        }
+        #start-screen::-webkit-scrollbar { width: 8px; }
+        #start-screen::-webkit-scrollbar-track { background: #16213e; border-radius: 4px; }
+        #start-screen::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 4px; }
+        
+        #top-nav { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0 20px; margin-bottom: 1vh; flex-shrink: 0; z-index: 50; }
+        #kingsmath-link-btn, #langTriggerBtn {
+            font-size: 2.2vh; color: var(--primary-color); text-decoration: none; font-weight: bold;
+            background: rgba(0,0,0,0.4); padding: 5px 15px; border: 2px dashed #555;
+            border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 6px;
+        }
+        #langTriggerBtn i { color: var(--primary-color); font-family: "Font Awesome 6 Free" !important; font-weight: 900; }
+
+        .main-title { font-size: 6vh; color: #fff; margin: 1vh 0; text-shadow: 3px 3px 0px #000; line-height: 1.1; text-align: center; flex-shrink: 0; }
+        .title-mobile { font-size: 40%; vertical-align: middle; color: var(--accent-color); text-shadow: 2px 2px 0px #000; }
+        
+        #qr-area { margin: 2vh 0; display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+        #qrcode { padding: 10px; background: white; border: 3px dashed var(--primary-color); cursor: pointer; border-radius: 10px; }
+        #qrcode img, #qrcode canvas { display: block; }
+        .qr-help { font-size: 1.8vh; margin-top: 5px; color: #aaa; }
+
+        #qr-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; display: none; justify-content: center; align-items: center; }
+        #qr-modal img { width: 90vw; height: 90vw; max-width: 500px; max-height: 500px; border: 10px solid #fff; object-fit: contain; background: #fff; border-radius: 10px; }
+
+        .input-guide { font-size: 2vh; color: #ccc; margin-bottom: 1vh; font-weight: bold; animation: bounce 2s infinite; text-align: center; flex-shrink: 0; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-5px);} 60% {transform: translateY(-3px);} }
+
+        input#nickname { width: 85%; padding: 2vh; font-size: 5vh; text-align: center; border: 4px dashed var(--primary-color); border-radius: 30px; font-family: inherit; margin-bottom: 2vh; color: #fff; background-color: rgba(0,0,0,0.3); flex-shrink: 0; }
+        input#nickname:focus { outline: none; border-color: var(--accent-color); border-style: solid; }
+        input#nickname::placeholder { color: #666; }
+
+        .btn-start { width: 85%; padding: 1.5vh; font-size: 4vh; background-color: var(--primary-color); color: #1a1a2e; border: 3px dashed rgba(0,0,0,0.2); border-radius: 30px; box-shadow: 0 0.6vh var(--deep-color); margin-bottom: 1.5vh; flex-shrink: 0; font-weight: 900; }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 0.2vh var(--deep-color); }
+
+        .btn-link { width: 85%; padding: 1.2vh; font-size: 3vh; background-color: #333; color: white; border: 2px dashed rgba(255,255,255,0.3); border-radius: 25px; box-shadow: 0 0.5vh #111; margin-bottom: 2vh; text-decoration: none; display: inline-block; text-align: center; flex-shrink: 0; }
+        .btn-link:active { transform: translateY(4px); box-shadow: 0 0.2vh #111; }
+
+        #ranking-board { margin-top: 1vh; width: 90%; background: #0f172a; border: 3px dashed var(--primary-color); border-radius: 15px; padding: 1vh; max-height: 30vh; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; flex-shrink: 0; margin-bottom: 2vh; color: #ddd; }
+        #ranking-board * { touch-action: pan-y; }
+        .rank-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8vh 0.5vh; border-bottom: 1px dashed #334155; font-size: 2.2vh; }
+
+        /* --- 2. 게임 화면 --- */
+        #game-screen { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-color); position: relative; overflow: hidden; width: 100%; }
+        #game-header { background-color: #0f172a; display: flex; flex-direction: column; padding: 10px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 20; gap: 8px; border-bottom: 2px solid var(--accent-color); }
+        .header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .control-btn { font-size: 3vh; background: none; border: none; cursor: pointer; filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.5)); padding: 5px; }
+        
+        .stat-box { background: #1e293b; padding: 5px 12px; border-radius: 8px; display: flex; align-items: center; border: 2px solid #334155; justify-content: space-between; }
+        .stat-label { font-size: 2vh; color: #aaa; font-weight: bold; margin-right: 5px; }
+        .stat-val { font-size: 3.5vh; color: #FFD93D; font-weight: bold; }
+        #timer-box { min-width: 140px; justify-content: center; }
+
+        /* 미션 (용의자 몽타주) 영역 */
+        #mission-area { flex: 0 0 auto; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 15px; background: linear-gradient(180deg, #16213e, #0f172a); border-bottom: 2px dashed #444; }
+        .stage-badge { background: var(--accent-color); color: white; padding: 3px 15px; border-radius: 15px; font-size: 2vh; font-weight: bold; margin-bottom: 5px; }
+        .mission-text { font-size: 3.5vh; font-weight: bold; color: white; text-align: center; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .hl { color: var(--primary-color); font-size: 4.5vh; text-shadow: 2px 2px 0 #000; }
+        .hl-slash { color: #555; font-size: 3vh; }
+
+        /* 격자 영역 */
+        #play-board { flex: 1; display: flex; justify-content: center; align-items: center; background: #1a1a2e; padding: 15px; overflow: hidden; position: relative; }
+        .grid-container {
+            width: 100%; max-width: 400px; aspect-ratio: 1 / 1;
+            display: grid; grid-template-columns: repeat(12, 1fr); grid-template-rows: repeat(12, 1fr);
+            gap: 0; background: #ddd; border: 4px solid #111; box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+            touch-action: none;
+        }
+        .cell { background-color: #eee; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc; box-sizing: border-box; }
+/* 12x12 굵은 선 (상하좌우 1칸 띄우고, 가운데 5x5 단위 분할) */
+        /* 세로줄: 1열, 6열, 11열 오른쪽 */
+        .cell:nth-child(12n + 1),
+        .cell:nth-child(12n + 6),
+        .cell:nth-child(12n + 11) { border-right: 2px solid #555; }
+        
+        /* 가로줄: 1행, 6행, 11행 아래 */
+        .cell:nth-child(-n+12),
+        .cell:nth-child(n+61):nth-child(-n+72),
+        .cell:nth-child(n+121):nth-child(-n+132) { border-bottom: 2px solid #555; }
+        
+        .cell.selected { background-color: rgba(233, 69, 96, 0.6); }
+        .cell.correct { background-color: rgba(0, 206, 201, 0.8) !important; animation: pop 0.3s; }
+
+        /* 페널티/성공 오버레이 */
+        #status-overlay {
+            position: absolute; inset: 0; background: rgba(233, 69, 96, 0.9);
+            z-index: 10; display: none; flex-direction: column; justify-content: center; align-items: center;
+            font-size: 3vh; color: white; text-align: center; line-height: 1.4; font-weight: bold;
+        }
+        .p-time { font-size: 10vh; font-weight: 900; color: #FFD93D; animation: pulse 0.5s infinite alternate; }
+        
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .shake { animation: shake 0.4s; }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-10px);} 75%{transform:translateX(10px);} }
+
+        #countdown-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 150; display: flex; justify-content: center; align-items: center; }
+        #countdown-text { font-size: 15vh; font-weight: bold; color: var(--primary-color); text-shadow: 0 0 20px #e94560; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        /* --- 3. 결과 화면 --- */
+        #result-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 26, 46, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; padding-bottom: 5vh; backdrop-filter: blur(5px); }
+        .result-score { font-size: 8vh; color: var(--primary-color); margin: 1vh 0; font-weight: bold; text-shadow: 2px 2px 0 #000; }
+        #result-ranking-board { margin-top: 2vh; width: 85%; background: #0f172a; border: 3px dashed var(--primary-color); border-radius: 15px; padding: 1vh; flex-shrink: 0; max-height: 25vh; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; color: #fff; }
+
+        /* --- 다국어 모달 --- */
+        #langModal, #langModal * { box-sizing: border-box !important; font-family: 'Noto Sans KR', sans-serif; }
+        #langModal i, #toastNotification i { font-family: "Font Awesome 6 Free" !important; font-weight: 900; }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        .modal-overlay { opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { transform: scale(0.95) translateY(-10px); opacity: 0; transition: all 0.3s ease; }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+        .toast { transform: translateY(100%); opacity: 0; transition: all 0.3s ease; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+<div id="qr-modal" onclick="this.style.display='none'">
+    <div id="qr-modal-content"></div>
+</div>
+
+<div id="game-container">
+    <div id="start-screen">
+        <div id="top-nav">
+            <a id="kingsmath-link-btn" href="/" target="_self">KingsMath.com</a>
+            <div id="langTriggerContainer" style="z-index: 99999;">
+                <button id="langTriggerBtn">
+                    <i class="fa-solid fa-globe"></i>
+                    <img id="currentFlag" src="https://flagcdn.com/w40/us.png" alt="Flag" style="width:20px; height:auto; border-radius:2px;">
+                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="main-title" id="main-title-el">
+            <span data-i18n="title">Rectangle King</span>
+            <span class="title-mobile" data-i18n="subtitle">Mobile</span>
+        </div>
+
+        <div id="qr-area">
+            <div id="qrcode" onclick="showBigQR()"></div>
+            <div class="qr-help" data-i18n="qrHelp">Click QR to Share!</div>
+        </div>
+        
+        <div class="input-guide" data-i18n="guide">🕵️ Find 3 culprits! Fast!</div>
+
+        <input type="text" id="nickname" maxlength="8" placeholder="Enter Name" onfocus="this.select()" data-i18n-ph="placeholder">
+        
+        <button class="btn-start" onclick="checkNameAndStart()" data-i18n="startBtn">🚀 Start Game</button>
+        <button class="btn-link" onclick="location.href='/'" data-i18n="moreGames">🎮 Other Games</button>
+        
+        <div id="ranking-board">
+            <div class="center" data-i18n="rankingLoading">Loading... 🏃‍♂️</div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div id="game-header">
+            <div class="header-row">
+                <button class="control-btn" onclick="goHome()">🏠</button>
+                <div class="stat-box" id="timer-box">
+                    <span class="stat-label"><i class="fa-solid fa-stopwatch"></i></span>
+                    <span class="stat-val" id="timer-val">0.00s</span>
+                </div>
+                <button class="control-btn" onclick="restartGame()">🔄</button>
+            </div>
+        </div>
+
+        <div id="mission-area">
+            <div class="stage-badge" id="stage-badge">Culprit 1 / 3</div>
+            <div class="mission-text">
+                <span data-i18n="area">Area</span> <span class="hl" id="ui-area">?</span>
+                <span class="hl-slash">/</span>
+                <span data-i18n="peri">Peri</span> <span class="hl" id="ui-peri">?</span>
+            </div>
+        </div>
+
+        <div id="play-board">
+            <div class="grid-container" id="grid-container"></div>
+            <div id="status-overlay"></div>
+        </div>
+
+        <div id="countdown-screen" class="hidden">
+            <div id="countdown-text">3</div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <h2 style="font-size: 5vh; margin:0; color:#FFD93D; text-shadow: 2px 2px 0px #000;" data-i18n="gameOver">Case Closed! 🚓</h2>
+        <h3 id="res-nickname" style="font-size: 4vh; margin: 10px 0; color:#fff;">Player</h3>
+        <div style="font-size:2vh; color:#aaa;" data-i18n="finalTime">FINAL TIME</div>
+        <div class="result-score"><span id="res-score">0.00s</span></div>
+        <div id="res-rank" style="font-size: 3vh; margin-bottom:20px; color:#00cec9;" data-i18n="rankQuery">Checking Rank... 🤔</div>
+        
+        <button class="btn-start" onclick="restartGame()" data-i18n="restartBtn">🔄 Retry</button>
+        <button class="btn-start" onclick="goHome()" style="background:#333; color:#fff; box-shadow: 0 0.6vh #111;" data-i18n="homeBtn">🏠 Home</button>
+        
+        <div id="result-ranking-board"></div>
+    </div>
+</div>
+
+<div id="langModal" class="modal-overlay fixed inset-0 z-[99999] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm pt-16 sm:pt-0 px-4" style="z-index: 99999 !important;">
+    <div class="modal-content bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between p-5 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10">
+            <div>
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-language text-yellow-500"></i>
+                    <span>Language / 언어</span>
+                </h2>
+            </div>
+            <button id="closeModalBtn" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <div class="p-5 pb-2 bg-gray-900">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="searchInput" placeholder="Search / 검색 ..." 
+                    class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 block pl-11 p-3.5 outline-none transition-all placeholder-gray-500">
+            </div>
+        </div>
+        <div class="p-5 overflow-y-auto custom-scrollbar flex-1">
+            <div id="languageGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+            <div id="noResult" class="hidden flex-col items-center justify-center py-12 text-gray-500">
+                <i class="fa-regular fa-face-frown-open text-4xl mb-3"></i>
+                <p>No results / 검색 결과 없음</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toastNotification" class="toast fixed bottom-6 right-6 bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 flex items-center gap-3 z-[99999]" style="z-index: 99999 !important;">
+    <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+        <i class="fa-solid fa-check"></i>
+    </div>
+    <div>
+        <p id="ui-toast" class="text-sm font-medium text-white">Language changed.</p>
+        <p id="toastLangName" class="text-xs text-gray-400">English</p>
+    </div>
+</div>
+
+<script>
+    // --- Configuration ---
+    const GRID_SIZE = 12; // 12x12 for mobile
+    const TOTAL_STAGES = 3;
+    const PENALTY_TIME = 3; // 3 seconds penalty
+    const API_URL = "./ranking.php"; 
+
+    // --- Localization UI DB ---
+    const i18n = {
+        ko: { title: "사각형 탐정킹", subtitle: "모바일", qrHelp: "QR을 눌러서 공유하세요!", guide: "🕵️ 3명의 범인을 빨리 찾으세요!", placeholder: "닉네임 입력", startBtn: "🚀 게임 시작", moreGames: "🎮 다른 게임 고르기", rankingLoading: "랭킹 로딩중... 🏃‍♂️", rankingEmpty: "아직 1등이 없어요. 도전! 👑", rankingError: "랭킹 오류 😭", gameOver: "수사 종료! 🚓", rankQuery: "순위 확인 중... 🤔", rankResult: "현재 {rank}등 입니다!", restartBtn: "🔄 다시 하기", homeBtn: "🏠 처음으로", alertName: "닉네임을 입력해주세요!", alertBad: "바른 말을 사용해주세요!", metaTitle: "사각형 탐정킹 모바일 🕵️ - 킹수학", metaDesc: "넓이와 둘레에 맞는 사각형을 찾아라! 최단 시간 타임어택!", toast: "언어가 변경되었습니다.", area: "넓이", peri: "둘레", stage: "범인 {n} / 3", msgFail: "오답!", msgWait: "초 대기", finalTime: "최종 기록" },
+        en: { title: "Rectangle King", subtitle: "Mobile", qrHelp: "Click QR to Share!", guide: "🕵️ Find 3 culprits fast!", placeholder: "Enter Name", startBtn: "🚀 Start Game", moreGames: "🎮 Other Games", rankingLoading: "Loading... 🏃‍♂️", rankingEmpty: "No Ranker yet. Be the first! 👑", rankingError: "Error 😭", gameOver: "Case Closed! 🚓", rankQuery: "Checking Rank... 🤔", rankResult: "You are Rank {rank}!", restartBtn: "🔄 Retry", homeBtn: "🏠 Home", alertName: "Please enter your name!", alertBad: "Nice words only!", metaTitle: "Rectangle King Mobile 🕵️ - KingsMath", metaDesc: "Find the rectangle by Area & Perimeter! Time Attack!", toast: "Language changed.", area: "Area", peri: "Peri", stage: "Culprit {n} / 3", msgFail: "Wrong!", msgWait: "s Wait", finalTime: "FINAL TIME" },
+        zh: { title: "矩形侦探王", subtitle: "手游", qrHelp: "点击二维码分享！", guide: "🕵️ 快速找出3个犯人！", placeholder: "输入名字", startBtn: "🚀 开始游戏", moreGames: "🎮 更多游戏", rankingLoading: "加载中... 🏃‍♂️", rankingEmpty: "还没有第一名，挑战一下！ 👑", rankingError: "错误 😭", gameOver: "结案！ 🚓", rankQuery: "查询排名中... 🤔", rankResult: "你是第 {rank} 名！", restartBtn: "🔄 再玩一次", homeBtn: "🏠 主页", alertName: "请输入你的名字！", alertBad: "请使用文明用语！", metaTitle: "矩形侦探王 手游 🕵️ - KingsMath", metaDesc: "通过面积和周长找出矩形！计时挑战！", toast: "语言已更改。", area: "面积", peri: "周长", stage: "犯人 {n} / 3", msgFail: "错误！", msgWait: "秒等待", finalTime: "最终用时" },
+        ja: { title: "四角形探偵キング", subtitle: "スマホ", qrHelp: "QRを押して共有!", guide: "🕵️ 3人の犯人を早く見つけろ!", placeholder: "名前を入力", startBtn: "🚀 スタート", moreGames: "🎮 他のゲーム", rankingLoading: "読み込み中... 🏃‍♂️", rankingEmpty: "まだ記録がありません 👑", rankingError: "エラー 😭", gameOver: "捜査終了! 🚓", rankQuery: "順位を確認中... 🤔", rankResult: "{rank}位です!", restartBtn: "🔄 もう一度", homeBtn: "🏠 ホーム", alertName: "名前を入力してください", alertBad: "きれいな言葉を使ってね", metaTitle: "四角形探偵キング スマホ 🕵️ - KingsMath", metaDesc: "面積とまわりから四角形を見つけ出せ！タイムアタック！", toast: "言語が変更されました。", area: "面積", peri: "まわり", stage: "犯人 {n} / 3", msgFail: "不正解!", msgWait: "秒待機", finalTime: "最終タイム" },
+        es: { title: "Rey Rectángulo", subtitle: "Móvil", qrHelp: "¡Toca el QR para compartir!", guide: "🕵️ ¡Halla a 3 culpables rápido!", placeholder: "Tu Nombre", startBtn: "🚀 ¡Empezar!", moreGames: "🎮 Otros Juegos", rankingLoading: "Cargando... 🏃‍♂️", rankingEmpty: "¡Sé el primero! 👑", rankingError: "Error 😭", gameOver: "¡Caso Cerrado! 🚓", rankQuery: "Revisando Ranking... 🤔", rankResult: "¡Eres el puesto {rank}!", restartBtn: "🔄 Reintentar", homeBtn: "🏠 Inicio", alertName: "¡Introduce tu nombre!", alertBad: "¡Solo palabras amables!", metaTitle: "Rey Detective Móvil 🕵️ - KingsMath", metaDesc: "¡Encuentra el rectángulo por Área y Perímetro! Contrarreloj.", toast: "Idioma cambiado.", area: "Área", peri: "Perím.", stage: "Culpable {n} / 3", msgFail: "¡Error!", msgWait: "s Espera", finalTime: "TIEMPO FINAL" },
+        fr: { title: "Roi Rectangle", subtitle: "Mobile", qrHelp: "Cliquez le QR pour partager !", guide: "🕵️ Trouvez 3 coupables vite !", placeholder: "Ton Nom", startBtn: "🚀 Démarrer", moreGames: "🎮 Autres Jeux", rankingLoading: "Chargement... 🏃‍♂️", rankingEmpty: "Sois le premier ! 👑", rankingError: "Erreur 😭", gameOver: "Affaire Classée ! 🚓", rankQuery: "Vérification... 🤔", rankResult: "Tu es rang {rank} !", restartBtn: "🔄 Rejouer", homeBtn: "🏠 Accueil", alertName: "Entrez votre nom !", alertBad: "Mots gentils seulement !", metaTitle: "Roi Détective Mobile 🕵️ - KingsMath", metaDesc: "Trouvez le rectangle par Aire et Périmètre ! Contre la montre.", toast: "Langue modifiée.", area: "Aire", peri: "Périm.", stage: "Coupable {n} / 3", msgFail: "Faux !", msgWait: "s Attente", finalTime: "TEMPS FINAL" },
+        de: { title: "Rechteck König", subtitle: "Mobil", qrHelp: "Klick auf QR zum Teilen!", guide: "🕵️ Finde 3 Schuldige schnell!", placeholder: "Dein Name", startBtn: "🚀 Start", moreGames: "🎮 Andere Spiele", rankingLoading: "Lädt... 🏃‍♂️", rankingEmpty: "Sei der Erste! 👑", rankingError: "Fehler 😭", gameOver: "Fall gelöst! 🚓", rankQuery: "Rang wird geprüft... 🤔", rankResult: "Du bist Rang {rank}!", restartBtn: "🔄 Nochmal", homeBtn: "🏠 Startseite", alertName: "Bitte gib deinen Namen ein!", alertBad: "Nur nette Worte!", metaTitle: "Rechteck Detektiv Mobil 🕵️ - KingsMath", metaDesc: "Finde das Rechteck durch Fläche und Umfang! Zeitangriff.", toast: "Sprache geändert.", area: "Fläche", peri: "Umfang", stage: "Schuldige {n} / 3", msgFail: "Falsch!", msgWait: "s Warten", finalTime: "ENDZEIT" },
+        ru: { title: "Король Прямоуг.", subtitle: "Мобайл", qrHelp: "Нажми QR, чтобы поделиться!", guide: "🕵️ Найди 3 преступников быстро!", placeholder: "Ваше Имя", startBtn: "🚀 Начать", moreGames: "🎮 Другие Игры", rankingLoading: "Загрузка... 🏃‍♂️", rankingEmpty: "Будь первым! 👑", rankingError: "Ошибка 😭", gameOver: "Дело Закрыто! 🚓", rankQuery: "Проверка места... 🤔", rankResult: "Ты на {rank} месте!", restartBtn: "🔄 Еще раз", homeBtn: "🏠 Домой", alertName: "Введите ваше имя!", alertBad: "Только хорошие слова!", metaTitle: "Король-детектив Мобайл 🕵️ - KingsMath", metaDesc: "Найди прямоугольник по Площади и Периметру! На время.", toast: "Язык изменен.", area: "Площ.", peri: "Перим.", stage: "Преступник {n} / 3", msgFail: "Ошибка!", msgWait: "с ждите", finalTime: "ИТОГ. ВРЕМЯ" },
+        id: { title: "Raja Persegi", subtitle: "Seluler", qrHelp: "Klik QR untuk Bagikan!", guide: "🕵️ Temukan 3 pelaku cepat!", placeholder: "Masukan Nama", startBtn: "🚀 Mulai", moreGames: "🎮 Game Lainnya", rankingLoading: "Memuat... 🏃‍♂️", rankingEmpty: "Jadilah yang pertama! 👑", rankingError: "Kesalahan 😭", gameOver: "Kasus Ditutup! 🚓", rankQuery: "Cek Peringkat... 🤔", rankResult: "Peringkat {rank}!", restartBtn: "🔄 Ulangi", homeBtn: "🏠 Beranda", alertName: "Masukkan nama!", alertBad: "Gunakan kata baik!", metaTitle: "Raja Detektif Seluler 🕵️ - KingsMath", metaDesc: "Temukan persegi panjang dari Luas & Keliling! Time Attack!", toast: "Bahasa diubah.", area: "Luas", peri: "Keli.", stage: "Pelaku {n} / 3", msgFail: "Salah!", msgWait: "d Tunggu", finalTime: "WAKTU AKHIR" },
+        vi: { title: "Vua Hình Chữ Nhật", subtitle: "Di động", qrHelp: "Bấm QR để Chia sẻ!", guide: "🕵️ Tìm nhanh 3 thủ phạm!", placeholder: "Nhập Tên", startBtn: "🚀 Bắt đầu", moreGames: "🎮 Trò chơi khác", rankingLoading: "Đang tải... 🏃‍♂️", rankingEmpty: "Trở thành người đầu! 👑", rankingError: "Lỗi 😭", gameOver: "Phá án xong! 🚓", rankQuery: "Đang kiểm tra... 🤔", rankResult: "Xếp hạng {rank}!", restartBtn: "🔄 Thử lại", homeBtn: "🏠 Trang chủ", alertName: "Vui lòng nhập tên!", alertBad: "Chỉ dùng từ đẹp!", metaTitle: "Vua Thám Tử Di động 🕵️ - KingsMath", metaDesc: "Tìm hình chữ nhật qua Diện tích & Chu vi! Thử thách Thời gian!", toast: "Đã đổi ngôn ngữ.", area: "D.tích", peri: "Chu vi", stage: "Thủ phạm {n} / 3", msgFail: "Sai!", msgWait: "s chờ", finalTime: "THỜI GIAN" },
+        th: { title: "ราชาสี่เหลี่ยม", subtitle: "มือถือ", qrHelp: "กด QR เพื่อแชร์!", guide: "🕵️ หา 3 ผู้ต้องสงสัยให้ไว!", placeholder: "ใส่ชื่อ", startBtn: "🚀 เริ่มเกม", moreGames: "🎮 เกมอื่นๆ", rankingLoading: "กำลังโหลด... 🏃‍♂️", rankingEmpty: "ยังไม่มีอันดับ! 👑", rankingError: "ข้อผิดพลาด 😭", gameOver: "ปิดคดี! 🚓", rankQuery: "เช็คอันดับ... 🤔", rankResult: "คุณได้อันดับ {rank}!", restartBtn: "🔄 เล่นอีกครั้ง", homeBtn: "🏠 หน้าแรก", alertName: "กรุณาใส่ชื่อ!", alertBad: "ใช้คำสุภาพนะ!", metaTitle: "นักสืบสี่เหลี่ยม มือถือ 🕵️ - KingsMath", metaDesc: "หาสี่เหลี่ยมจากพื้นที่และเส้นรอบรูป! แข่งจับเวลา!", toast: "เปลี่ยนภาษาแล้ว", area: "พื้นที่", peri: "รอบรูป", stage: "ผู้ต้องสงสัย {n} / 3", msgFail: "ผิด!", msgWait: "วิ รอ", finalTime: "เวลาสุดท้าย" },
+        'pt-br': { title: "Rei Retângulo", subtitle: "Celular", qrHelp: "Clique no QR para Compartilhar!", guide: "🕵️ Encontre 3 culpados rápido!", placeholder: "Seu Nome", startBtn: "🚀 Iniciar", moreGames: "🎮 Outros Jogos", rankingLoading: "Carregando... 🏃‍♂️", rankingEmpty: "Seja o primeiro! 👑", rankingError: "Erro 😭", gameOver: "Caso Encerrado! 🚓", rankQuery: "Checando Rank... 🤔", rankResult: "Você é o rank {rank}!", restartBtn: "🔄 Tentar de novo", homeBtn: "🏠 Início", alertName: "Digite seu nome!", alertBad: "Apenas palavras boas!", metaTitle: "Rei Detetive Celular 🕵️ - KingsMath", metaDesc: "Encontre o retângulo por Área e Perímetro! Contrarrelógio.", toast: "Idioma alterado.", area: "Área", peri: "Perím.", stage: "Culpado {n} / 3", msgFail: "Erro!", msgWait: "s Espera", finalTime: "TEMPO FINAL" },
+        hi: { title: "आयत राजा", subtitle: "मोबाइल", qrHelp: "शेयर के लिए QR दबाएं!", guide: "🕵️ 3 अपराधियों को जल्दी खोजें!", placeholder: "नाम दर्ज करें", startBtn: "🚀 शुरू करें", moreGames: "🎮 अन्य खेल", rankingLoading: "लोड हो रहा है... 🏃‍♂️", rankingEmpty: "पहले खिलाड़ी बनें! 👑", rankingError: "त्रुटि 😭", gameOver: "केस बंद! 🚓", rankQuery: "रैंक जांच रहे हैं... 🤔", rankResult: "आपका रैंक {rank} है!", restartBtn: "🔄 फिर से खेलें", homeBtn: "🏠 होम", alertName: "अपना नाम दर्ज करें!", alertBad: "केवल अच्छे शब्दों का प्रयोग करें!", metaTitle: "आयत जासूस मोबाइल 🕵️ - KingsMath", metaDesc: "क्षेत्रफल और परिमाप से आयत खोजें! टाइम अटैक!", toast: "भाषा बदल दी गई।", area: "क्षेत्रफल", peri: "परिमाप", stage: "अपराधी {n} / 3", msgFail: "गलत!", msgWait: "s रुकें", finalTime: "अंतिम समय" },
+        bn: { title: "আয়তক্ষেত্র রাজা", subtitle: "মোবাইল", qrHelp: "শেয়ার করতে QR চাপুন!", guide: "🕵️ ৩ অপরাধী দ্রুত খুঁজুন!", placeholder: "নাম লিখুন", startBtn: "🚀 শুরু করুন", moreGames: "🎮 অন্যান্য খেলা", rankingLoading: "লোড হচ্ছে... 🏃‍♂️", rankingEmpty: "প্রথম হন! 👑", rankingError: "ত্রুটি 😭", gameOver: "সমাপ্ত! 🚓", rankQuery: "র‍্যাঙ্ক চেক হচ্ছে... 🤔", rankResult: "আপনার র‍্যাঙ্ক {rank}!", restartBtn: "🔄 আবার চেষ্টা করুন", homeBtn: "🏠 হোম", alertName: "আপনার নাম লিখুন!", alertBad: "শুধুমাত্র ভালো শব্দ ব্যবহার করুন!", metaTitle: "আয়তক্ষেত্র গোয়েন্দা মোবাইল 🕵️ - KingsMath", metaDesc: "ক্ষেত্রফল এবং পরিসীমা মিলিয়ে আয়তক্ষেত্র খুঁজুন! টাইম অ্যাটাক!", toast: "ভাষা পরিবর্তিত।", area: "ক্ষেত্রফল", peri: "পরিসীমা", stage: "অপরাধী {n} / 3", msgFail: "ভুল!", msgWait: "s অপেক্ষা", finalTime: "চূড়ান্ত সময়" },
+        tr: { title: "Dikdörtgen Kralı", subtitle: "Mobil", qrHelp: "Paylaşmak için QR'a tıkla!", guide: "🕵️ 3 suçluyu hızlıca bul!", placeholder: "Adını Gir", startBtn: "🚀 Oyuna Başla", moreGames: "🎮 Diğer Oyunlar", rankingLoading: "Yükleniyor... 🏃‍♂️", rankingEmpty: "Henüz kimse yok! 👑", rankingError: "Hata 😭", gameOver: "Dava Kapandı! 🚓", rankQuery: "Sıralama Kontrolü... 🤔", rankResult: "Sıran {rank}!", restartBtn: "🔄 Tekrar Dene", homeBtn: "🏠 Ana Sayfa", alertName: "Lütfen adını gir!", alertBad: "Sadece güzel kelimeler!", metaTitle: "Dedektif Kralı Mobil 🕵️ - KingsMath", metaDesc: "Alan ve Çevre ile dikdörtgeni bul! Zamana Karşı!", toast: "Dil değiştirildi.", area: "Alan", peri: "Çevre", stage: "Suçlu {n} / 3", msgFail: "Yanlış!", msgWait: "sn Bekle", finalTime: "SON SÜRE" },
+        it: { title: "Re Rettangolo", subtitle: "Mobile", qrHelp: "Clicca il QR per Condividere!", guide: "🕵️ Trova 3 colpevoli veloce!", placeholder: "Il tuo Nome", startBtn: "🚀 Inizia", moreGames: "🎮 Altri Giochi", rankingLoading: "Caricamento... 🏃‍♂️", rankingEmpty: "Sii il primo! 👑", rankingError: "Errore 😭", gameOver: "Caso Chiuso! 🚓", rankQuery: "Controllo Classifica... 🤔", rankResult: "Sei al posto {rank}!", restartBtn: "🔄 Riprova", homeBtn: "🏠 Home", alertName: "Inserisci il tuo nome!", alertBad: "Solo belle parole!", metaTitle: "Re Detective Mobile 🕵️ - KingsMath", metaDesc: "Trova il rettangolo per Area e Perimetro! Time Attack!", toast: "Lingua cambiata.", area: "Area", peri: "Perim.", stage: "Colpevole {n} / 3", msgFail: "Errore!", msgWait: "s Attesa", finalTime: "TEMPO FINALE" }
+    };
+
+    const languagesList = [
+        { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+        { code: 'en', country: 'us', name: 'English', enName: 'English' },
+        { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)' },
+        { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+        { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+        { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+        { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+        { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' },
+        { code: 'pt-br', country: 'br', name: 'Português', enName: 'Portuguese (Brazil)' },
+        { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+        { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+        { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+        { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+        { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+        { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+        { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' }
+    ];
+
+    let currentLang = 'en';
+    let myNickname = "";
+    
+    // --- Game Variables ---
+    let startTime = 0;
+    let timerInterval = null;
+    let isPlaying = false;
+    let finalTimeMs = 0;
+
+    let currentStage = 1;
+    let targetW = 0;
+    let targetH = 0;
+    let targetArea = 0;
+    let targetPeri = 0;
+
+    let isDrawing = false;
+    let activePointerId = null;
+    let startR = -1, startC = -1, endR = -1, endC = -1;
+    let cells = [];
+    let isPenalty = false;
+
+    // --- Audio System ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, type, dur, slide=false, drop=false) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        if(slide) osc.frequency.linearRampToValueAtTime(freq + 200, audioCtx.currentTime + dur);
+        if(drop) osc.frequency.linearRampToValueAtTime(freq - 100, audioCtx.currentTime + dur);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + dur);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + dur);
+    }
+    const sounds = {
+        click: () => playTone(600, 'square', 0.1),
+        success: () => {
+            const now = audioCtx.currentTime;
+            [523, 659, 783, 1046].forEach((f,i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.frequency.value = f; gain.gain.value = 0.1;
+                gain.gain.linearRampToValueAtTime(0, now + i*0.1 + 0.2);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(now + i*0.1); osc.stop(now + i*0.1 + 0.2);
+            });
+        },
+        fail: () => playTone(150, 'sawtooth', 0.4, false, true),
+        beep: () => playTone(440, 'square', 0.3),
+        go: () => playTone(880, 'square', 0.4, true)
+    };
+
+    function shootFireworks() {
+        var duration = 3 * 1000; var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
+        function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+        var interval = setInterval(function() {
+            var timeLeft = animationEnd - Date.now();
+            if (timeLeft <= 0) { return clearInterval(interval); }
+            var particleCount = 50 * (timeLeft / duration);
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+        }, 250);
+    }
+
+    // --- Modal & i18n Logic ---
+    const triggerBtn = document.getElementById('langTriggerBtn');
+    const modal = document.getElementById('langModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const searchInput = document.getElementById('searchInput');
+    const gridEl = document.getElementById('languageGrid');
+    const noResult = document.getElementById('noResult');
+    const currentFlagImg = document.getElementById('currentFlag');
+    
+    const toast = document.getElementById('toastNotification');
+    const toastLangName = document.getElementById('toastLangName');
+    let toastTimeout;
+
+    function getInitialLang() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const langParam = urlParams.get('lang');
+        if(langParam && i18n[langParam]) return langParam;
+        const savedLang = localStorage.getItem('kingsmath_lang');
+        if(savedLang && i18n[savedLang]) return savedLang;
+        const browserLang = navigator.language.slice(0, 2);
+        if(i18n[browserLang]) return browserLang;
+        return 'en';
+    }
+
+    function renderLanguages(filterText = '') {
+        gridEl.innerHTML = '';
+        const lowerFilter = filterText.toLowerCase();
+        const filteredLangs = languagesList.filter(lang => 
+            lang.name.toLowerCase().includes(lowerFilter) || 
+            lang.enName.toLowerCase().includes(lowerFilter) ||
+            lang.code.toLowerCase().includes(lowerFilter)
+        );
+
+        if (filteredLangs.length === 0) {
+            gridEl.classList.add('hidden');
+            noResult.classList.remove('hidden');
+            noResult.classList.add('flex');
+        } else {
+            gridEl.classList.remove('hidden');
+            noResult.classList.add('hidden');
+            noResult.classList.remove('flex');
+
+            filteredLangs.forEach(lang => {
+                const isSelected = lang.code === currentLang;
+                const baseClasses = "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 group relative overflow-hidden";
+                const stateClasses = isSelected ? "bg-gray-800 border-yellow-500 ring-1 ring-yellow-500/50" : "bg-gray-800/40 border-gray-700 hover:bg-gray-700 hover:border-gray-500";
+                const flagUrl = `https://flagcdn.com/w40/${lang.country}.png`;
+                const btn = document.createElement('div');
+                btn.className = `${baseClasses} ${stateClasses}`;
+
+                btn.innerHTML = `
+                    <div class="shrink-0 w-8 h-6 rounded overflow-hidden shadow-sm border border-gray-700/50">
+                        <img src="${flagUrl}" alt="${lang.country}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                    </div>
+                    <div class="flex-1 min-w-0 flex flex-col items-start">
+                        <span class="text-sm font-medium text-white truncate w-full ${isSelected ? 'text-yellow-400' : ''}">${lang.name}</span>
+                        <span class="text-xs text-gray-400 truncate w-full">${lang.enName}</span>
+                    </div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check text-yellow-500 text-lg ml-2"></i>' : ''}
+                `;
+                btn.addEventListener('click', () => changeLang(lang.code, lang));
+                gridEl.appendChild(btn);
+            });
+        }
+    }
+
+    function openModal() {
+        modal.classList.add('active');
+        renderLanguages(searchInput.value);
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => searchInput.focus(), 100);
+    }
+    function closeModal() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function showToast(langName, langCode) {
+        const toastMsg = i18n[langCode].toast || "Language changed.";
+        document.getElementById('ui-toast').textContent = toastMsg;
+        toastLangName.textContent = langName;
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+
+function changeLang(langCode, langObj = null, isInitialLoad = false) {
+        if(!i18n[langCode]) return;
+        currentLang = langCode;
+        const t = i18n[langCode];
+        if (!langObj) langObj = languagesList.find(l => l.code === langCode);
+
+        document.querySelectorAll('[data-i18n]').forEach(el => { 
+            const key = el.getAttribute('data-i18n');
+            let str = t[key];
+            if(str) el.innerHTML = str;
+        });
+        
+        document.getElementById("nickname").placeholder = t.placeholder;
+        document.getElementById("nickname").setAttribute('data-i18n-ph', 'placeholder');
+        currentFlagImg.src = `https://flagcdn.com/w40/${langObj.country}.png`;
+
+        const linkBtn = document.getElementById("kingsmath-link-btn");
+        if(langCode === 'ko') linkBtn.innerText = "킹수학.com";
+        else linkBtn.innerText = "KingsMath.com";
+
+        const mainTitle = document.getElementById('main-title-el');
+        if(['ru', 'es', 'fr', 'pt-br', 'de', 'it', 'id', 'vi'].includes(langCode)) {
+            mainTitle.style.fontSize = "4.5vh";
+        } else if(['th'].includes(langCode)) {
+            mainTitle.style.fontSize = "5.5vh";
+        } else {
+            mainTitle.style.fontSize = "6vh"; 
+        }
+
+        document.title = t.metaTitle;
+        document.getElementById("meta-desc").setAttribute("content", t.metaDesc);
+
+        if(isPlaying || currentStage > 1) updateStageUI(); // 게임 중이면 텍스트 갱신
+
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?lang=' + langCode;
+        window.history.pushState({path:newUrl}, '', newUrl);
+        localStorage.setItem("kingsmath_lang", langCode);
+
+        initQR(); 
+        loadRanking(); 
+
+        closeModal();
+        // 초기 로딩(새로고침 등)이 아닐 때만 토스트 알림 표시
+        if (langObj && !isInitialLoad) showToast(langObj.name, langCode); 
+    }
+    triggerBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
+    searchInput.addEventListener('input', (e) => { renderLanguages(e.target.value); });
+
+
+    // --- QR Code ---
+    function initQR() {
+        const qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = ""; 
+        try {
+            new QRCode(qrContainer, {
+                text: window.location.href, width: 128, height: 128, colorDark : "#1a1a2e", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    function showBigQR() {
+        const modal = document.getElementById("qr-modal");
+        const modalContent = document.getElementById("qr-modal-content");
+        modalContent.innerHTML = "";
+        const qrCanvas = document.querySelector("#qrcode canvas");
+        const qrImg = document.querySelector("#qrcode img");
+        let src = "";
+        if (qrCanvas) src = qrCanvas.toDataURL("image/png");
+        else if (qrImg) src = qrImg.src;
+
+        if (src) {
+            const newImg = new Image();
+            newImg.src = src;
+            modalContent.appendChild(newImg);
+            modal.style.display = "flex";
+        }
+    }
+
+
+    // --- Game Logic ---
+    function buildGrid() {
+        const gridContainer = document.getElementById('grid-container');
+        gridContainer.innerHTML = '';
+        cells = [];
+        
+        for(let r=0; r<GRID_SIZE; r++) {
+            let rowArr = [];
+            for(let c=0; c<GRID_SIZE; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                // 12x12이므로 4칸마다 굵은 선 (위 CSS에서 이미 :nth-child로 처리됨)
+                gridContainer.appendChild(cell);
+                rowArr.push(cell);
+            }
+            cells.push(rowArr);
+        }
+
+        // 터치 이벤트 바인딩
+        gridContainer.addEventListener('pointerdown', onPointerDown);
+        gridContainer.addEventListener('pointermove', onPointerMove);
+        gridContainer.addEventListener('pointerup', onPointerUp);
+        gridContainer.addEventListener('pointercancel', onPointerUp);
+        gridContainer.addEventListener('pointerleave', onPointerUp);
+    }
+
+    function getCellPos(e) {
+        const grid = document.getElementById('grid-container');
+        const rect = grid.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        if(x < 0 || y < 0 || x >= rect.width || y >= rect.height) return null;
+        const c = Math.floor(x / (rect.width / GRID_SIZE));
+        const r = Math.floor(y / (rect.height / GRID_SIZE));
+        return { r: Math.min(GRID_SIZE-1, Math.max(0, r)), c: Math.min(GRID_SIZE-1, Math.max(0, c)) };
+    }
+
+    function onPointerDown(e) {
+        if(!isPlaying || isPenalty) return;
+        const pos = getCellPos(e);
+        if(!pos) return;
+
+        if(e.cancelable) e.preventDefault();
+        const grid = document.getElementById('grid-container');
+        activePointerId = e.pointerId;
+        grid.setPointerCapture(e.pointerId);
+
+        isDrawing = true;
+        startR = pos.r; startC = pos.c;
+        endR = pos.r; endC = pos.c;
+        drawSelection();
+    }
+
+    function onPointerMove(e) {
+        if(!isDrawing || e.pointerId !== activePointerId) return;
+        if(e.cancelable) e.preventDefault();
+        const pos = getCellPos(e);
+        if(!pos) return;
+        endR = pos.r; endC = pos.c;
+        drawSelection();
+    }
+
+    function onPointerUp(e) {
+        if(!isDrawing || e.pointerId !== activePointerId) return;
+        if(e.cancelable) e.preventDefault();
+        isDrawing = false;
+        document.getElementById('grid-container').releasePointerCapture(e.pointerId);
+        checkAnswer();
+    }
+
+    function drawSelection() {
+        clearSelection(false); 
+        const minR = Math.min(startR, endR);
+        const maxR = Math.max(startR, endR);
+        const minC = Math.min(startC, endC);
+        const maxC = Math.max(startC, endC);
+
+        for(let r=minR; r<=maxR; r++) {
+            for(let c=minC; c<=maxC; c++) {
+                cells[r][c].classList.add('selected');
+            }
+        }
+    }
+
+    function clearSelection(resetCoords = true) {
+        for(let r=0; r<GRID_SIZE; r++) {
+            for(let c=0; c<GRID_SIZE; c++) {
+                cells[r][c].classList.remove('selected', 'correct');
+            }
+        }
+        if(resetCoords) {
+            startR = -1; startC = -1; endR = -1; endC = -1;
+        }
+    }
+
+    function checkAnswer() {
+        const drawnW = Math.abs(endC - startC) + 1;
+        const drawnH = Math.abs(endR - startR) + 1;
+        const area = drawnW * drawnH;
+        const peri = (drawnW + drawnH) * 2;
+
+        if(area === targetArea && peri === targetPeri) {
+            // 정답
+            sounds.success();
+            
+            // 정답 셀 초록색 반짝
+            const minR = Math.min(startR, endR);
+            const maxR = Math.max(startR, endR);
+            const minC = Math.min(startC, endC);
+            const maxC = Math.max(startC, endC);
+            for(let r=minR; r<=maxR; r++) {
+                for(let c=minC; c<=maxC; c++) {
+                    cells[r][c].classList.add('correct');
+                }
+            }
+
+            setTimeout(() => {
+                clearSelection(true);
+                currentStage++;
+                if (currentStage > TOTAL_STAGES) {
+                    endGame();
+                } else {
+                    generateProblem();
+                }
+            }, 300);
+
+        } else {
+            // 오답 페널티
+            applyPenalty();
+            clearSelection(true);
+        }
+    }
+
+    function applyPenalty() {
+        isPenalty = true;
+        document.getElementById('play-board').classList.add('shake');
+        setTimeout(() => document.getElementById('play-board').classList.remove('shake'), 400);
+        sounds.fail();
+
+        let pTimeLeft = PENALTY_TIME;
+        const overlay = document.getElementById('status-overlay');
+        overlay.innerHTML = `
+            <span style="font-size:5vh">🚨</span>
+            <span>${i18n[currentLang].msgFail}</span>
+            <span><span class="p-time">${pTimeLeft}</span>${i18n[currentLang].msgWait}</span>
+        `;
+        overlay.style.display = 'flex';
+
+        const ptimeEl = overlay.querySelector('.p-time');
+        const iv = setInterval(() => {
+            if(!isPlaying) { clearInterval(iv); return; }
+            pTimeLeft--;
+            ptimeEl.innerText = pTimeLeft;
+            if(pTimeLeft <= 0) {
+                clearInterval(iv);
+                isPenalty = false;
+                overlay.style.display = 'none';
+            }
+        }, 1000);
+    }
+
+
+    // --- Core UI Flow ---
+    function checkNameAndStart() {
+        const input = document.getElementById('nickname');
+        const val = input.value.trim();
+        const t = i18n[currentLang];
+
+        if(val.length < 1) { alert(t.alertName); return; }
+        const badWords = ["시발", "씨발", "개새끼", "fuck", "shit"];
+        if(badWords.some(w => val.includes(w))) { alert(t.alertBad); return; }
+
+        myNickname = val;
+        localStorage.setItem("kingsmaze_name", val);
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('langTriggerContainer').style.display = 'none'; 
+        
+        buildGrid();
+        startCountdown();
+    }
+
+    function startCountdown() {
+        const screen = document.getElementById('countdown-screen');
+        const text = document.getElementById('countdown-text');
+        screen.classList.remove('hidden');
+        
+        let cnt = 3;
+        text.innerText = cnt;
+        sounds.beep();
+        
+        const intv = setInterval(() => {
+            cnt--;
+            if(cnt > 0) {
+                text.innerText = cnt;
+                text.style.animation = 'none';
+                text.offsetHeight; 
+                text.style.animation = 'pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                sounds.beep();
+            } else {
+                clearInterval(intv);
+                text.innerText = "GO!";
+                sounds.go();
+                setTimeout(() => {
+                    screen.classList.add('hidden');
+                    startGame();
+                }, 500);
+            }
+        }, 1000);
+    }
+
+    function startGame() {
+        currentStage = 1;
+        isPlaying = true;
+        isPenalty = false;
+        document.getElementById('status-overlay').style.display = 'none';
+        
+        generateProblem();
+        
+        startTime = Date.now();
+        if(timerInterval) clearInterval(timerInterval);
+        
+        timerInterval = setInterval(() => {
+            if(!isPlaying) return;
+            const elapsed = Date.now() - startTime;
+            const sec = (elapsed / 1000).toFixed(2);
+            document.getElementById('timer-val').innerText = sec + "s";
+        }, 10); // 10ms update for smooth stopwatch
+    }
+
+    function updateStageUI() {
+        const t = i18n[currentLang];
+        document.getElementById('stage-badge').innerText = t.stage.replace('{n}', Math.min(currentStage, TOTAL_STAGES));
+    }
+
+    function generateProblem() {
+        updateStageUI();
+        
+        // 가로 세로 2~10 사이 랜덤 생성
+        targetW = Math.floor(Math.random() * 9) + 2; 
+        targetH = Math.floor(Math.random() * 9) + 2;
+        targetArea = targetW * targetH;
+        targetPeri = (targetW + targetH) * 2;
+
+        document.getElementById('ui-area').innerText = targetArea;
+        document.getElementById('ui-peri').innerText = targetPeri;
+        
+        clearSelection(true);
+    }
+
+    function endGame() {
+        isPlaying = false;
+        clearInterval(timerInterval);
+        
+        // 최종 시간 계산
+        finalTimeMs = Date.now() - startTime;
+        const finalSec = (finalTimeMs / 1000).toFixed(2);
+        document.getElementById('timer-val').innerText = finalSec + "s";
+        
+        sounds.success();
+        showResult();
+    }
+
+    function restartGame() {
+        isPlaying = false;
+        clearInterval(timerInterval);
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('langTriggerContainer').style.display = 'none'; 
+        startCountdown();
+    }
+
+    function goHome() {
+        if (document.fullscreenElement) {
+            isPlaying = false;
+            clearInterval(timerInterval);
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('langTriggerContainer').style.display = 'block'; 
+            if(window.playSound) sounds.click();
+            loadRanking();
+        } else {
+            location.reload();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('game-screen').classList.add('hidden');
+        const resScreen = document.getElementById('result-screen');
+        resScreen.classList.remove('hidden');
+        
+        const finalSec = (finalTimeMs / 1000).toFixed(2);
+
+        document.getElementById('res-nickname').innerText = myNickname;
+        document.getElementById('res-score').innerText = finalSec + "s";
+        document.getElementById('result-ranking-board').innerHTML = "";
+        
+        shootFireworks(); 
+        
+        submitScoreAPI(myNickname, finalTimeMs); // ms 단위로 서버 전송
+    }
+
+    // --- Ranking System API ---
+    function submitScoreAPI(name, timeMs) {
+        const t = i18n[currentLang];
+        const formData = new FormData();
+        formData.append('nickname', name);
+        formData.append('score', timeMs);
+
+        fetch(API_URL + '?action=submit', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                document.getElementById("res-rank").innerText = t.rankResult.replace('{rank}', data.rank);
+                loadResultRanking();
+            } else {
+                document.getElementById("res-rank").innerText = "Ranking Error";
+            }
+        })
+        .catch(e => console.error(e));
+    }
+
+    function loadRanking() {
+        const list = document.getElementById("ranking-board");
+        const t = i18n[currentLang];
+        list.innerHTML = `<div class="center">${t.rankingLoading}</div>`;
+
+        fetch(API_URL + '?action=list')
+        .then(res => res.json())
+        .then(data => {
+            if(data.length === 0) {
+                list.innerHTML = `<div class="center" style="margin-top:20px;">${t.rankingEmpty}</div>`;
+                return;
+            }
+            let html = "";
+            data.forEach((item, idx) => {
+                let rankDisplay = (idx < 3) ? ["🥇","🥈","🥉"][idx] : (idx+1);
+                let style = (idx < 3) ? "font-size:1.5em;" : "color:var(--primary-color); font-weight:bold;";
+                let secStr = (item.score / 1000).toFixed(2) + "s";
+                
+                html += `<div class="rank-item">
+                    <span style="width:15%; text-align:center; ${style}">${rankDisplay}</span>
+                    <span style="width:50%; padding-left:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.nickname}</span>
+                    <span style="width:35%; text-align:right; color:#ccc; font-weight:bold;">${secStr}</span>
+                </div>`;
+            });
+            list.innerHTML = html;
+        })
+        .catch(e => {
+            list.innerHTML = `<div class="center" style="color:#ff5252;">${t.rankingError}</div>`;
+        });
+    }
+
+    function loadResultRanking() {
+        const list = document.getElementById("result-ranking-board");
+        const t = i18n[currentLang];
+        list.innerHTML = `<div class="center" style="font-size:1.8vh; color:#888;">TOP 3 Loading...</div>`;
+
+        fetch(API_URL + '?action=list')
+        .then(res => res.json())
+        .then(data => {
+            if(data.length === 0) {
+                list.innerHTML = `<div class="center" style="font-size:1.8vh;">${t.rankingEmpty}</div>`;
+                return;
+            }
+            let html = "";
+            const limit = Math.min(data.length, 3);
+            for(let i=0; i<limit; i++) {
+                let item = data[i];
+                let rankIcon = ["🥇","🥈","🥉"][i];
+                let secStr = (item.score / 1000).toFixed(2) + "s";
+
+                html += `<div class="rank-item" style="font-size:2vh; padding:0.5vh;">
+                    <span style="width:15%; text-align:center;">${rankIcon}</span>
+                    <span style="width:50%; padding-left:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.nickname}</span>
+                    <span style="width:35%; text-align:right; font-weight:bold; color:#00cec9;">${secStr}</span>
+                </div>`;
+            }
+            list.innerHTML = html;
+        })
+        .catch(e => { list.style.display = 'none'; });
+    }
+
+// --- Init ---
+    window.onload = function() {
+        const savedName = localStorage.getItem("kingsmaze_name"); 
+        if(savedName) document.getElementById("nickname").value = savedName;
+        
+        const initLang = getInitialLang();
+        // 세 번째 파라미터에 true를 전달하여 초기 로딩 시 팝업을 막습니다.
+        changeLang(initLang, null, true);
+        renderLanguages(); 
+    };
+
+</script>
+</body>
+</html>

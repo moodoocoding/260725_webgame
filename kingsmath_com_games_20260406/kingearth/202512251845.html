@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>킹지구를 지켜라 (다이내믹 난이도)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --p1-color: #00f3ff; /* Cyan */
+            --p2-color: #ff007f; /* Magenta */
+            --ui-font: 'Jua', sans-serif;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; 
+            background-color: #050505;
+            font-family: var(--ui-font);
+            overflow: hidden;
+            
+            /* [전자칠판/터치 설정 적용] */
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none; /* 터치 액션 전면 차단 (확대/스크롤 방지) */
+            -webkit-text-size-adjust: none; /* 화면 회전 시 텍스트 크기 변함 방지 */
+            
+            /* 아이패드/모바일 전용 높이 설정 */
+            height: 100vh;
+            height: -webkit-fill-available;
+            height: 100dvh;
+            
+            /* 하단 홈 바 여백 대응 */
+            padding-bottom: env(safe-area-inset-bottom);
+            box-sizing: border-box;
+            
+            display: flex;
+            flex-direction: column;
+        }
+
+        #game-container {
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at bottom, #1b2735 0%, #090a0f 100%);
+            flex: 1; /* 남은 공간 모두 차지 */
+        }
+
+        /* 상단 정보창 */
+        #top-bar {
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.6);
+            border-bottom: 2px solid #444;
+            z-index: 20;
+            color: white;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        #life-display {
+            font-size: 28px;
+            background: #222;
+            padding: 5px 25px;
+            border-radius: 12px;
+            border: 2px solid #ff3333;
+            margin-left: 15px;
+            color: #ff3333;
+            box-shadow: 0 0 10px rgba(255, 51, 51, 0.3);
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        /* 메인 스테이지 */
+        #main-stage {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* 하단 컨트롤러 */
+        #bottom-controls {
+            height: auto;
+            min-height: 220px;
+            display: flex;
+            border-top: 4px solid #555;
+            background: rgba(15, 15, 20, 0.95);
+            padding-bottom: 10px;
+        }
+
+        .player-ctrl {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 10px 5px;
+            position: relative;
+        }
+
+        .player-ctrl:first-child { border-right: 2px solid #444; }
+
+        /* 테마 적용 */
+        #p1-ctrl { border-top: 4px solid var(--p1-color); margin-top: -4px; }
+        #p1-ctrl .score-box { color: var(--p1-color); }
+        #p1-ctrl .input-display { border-color: var(--p1-color); color: var(--p1-color); box-shadow: 0 0 10px rgba(0, 243, 255, 0.1); }
+        #p1-ctrl .key:active { background: var(--p1-color); color: #000; border-color: var(--p1-color); }
+        #p1-ctrl .key.key-enter { background: rgba(0, 243, 255, 0.2); border-color: var(--p1-color); color: var(--p1-color); }
+        #p1-ctrl .key.key-enter:active { background: var(--p1-color); color: black; }
+
+        #p2-ctrl { border-top: 4px solid var(--p2-color); margin-top: -4px; }
+        #p2-ctrl .score-box { color: var(--p2-color); }
+        #p2-ctrl .input-display { border-color: var(--p2-color); color: var(--p2-color); box-shadow: 0 0 10px rgba(255, 0, 127, 0.1); }
+        #p2-ctrl .key:active { background: var(--p2-color); color: #000; border-color: var(--p2-color); }
+        #p2-ctrl .key.key-enter { background: rgba(255, 0, 127, 0.2); border-color: var(--p2-color); color: var(--p2-color); }
+        #p2-ctrl .key.key-enter:active { background: var(--p2-color); color: black; }
+
+        /* 상태 패널 */
+        .status-panel {
+            width: 100%;
+            max-width: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 2px;
+        }
+
+        .info-row {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5px;
+            box-sizing: border-box;
+            font-size: 18px;
+        }
+
+        .player-label { font-weight: bold; }
+        .score-box { font-weight: bold; }
+        
+        .input-display {
+            width: 90%;
+            max-width: 120px;
+            height: 35px;
+            background: #000;
+            border-radius: 8px;
+            border: 2px solid #555;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+            margin-top: 2px;
+        }
+
+        /* 미니 키패드 */
+        .keypad {
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 3px; 
+            width: 100% !important;
+            max-width: 120px !important;
+            min-width: 80px !important;
+            margin: 0 auto; 
+        }
+
+        .key {
+            height: auto;
+            min-height: 35px;
+            max-height: 40px;
+            background: #2a2a2a; 
+            border: 1px solid #444;
+            border-radius: 6px; 
+            color: #ddd;
+            font-size: 16px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.5); 
+            transition: transform 0.1s;
+            touch-action: manipulation; 
+        }
+
+        .key:active { 
+            transform: translateY(2px); 
+            box-shadow: 0 0px 0 rgba(0,0,0,0.5); 
+        }
+
+        .key.key-clear { font-size: 13px; font-weight: bold; }
+        .key.key-enter { font-size: 13px; font-weight: bold; }
+
+        /* 오버레이 */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .title {
+            font-size: 50px;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, var(--p1-color), var(--p2-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        .btn-start {
+            padding: 15px 50px;
+            font-size: 30px;
+            background: white;
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            font-family: var(--ui-font);
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255,255,255,0.4);
+            margin-top: 20px;
+        }
+        .btn-start:active { transform: scale(0.95); }
+
+        .hidden { display: none !important; }
+        
+        /* 플로팅 버튼 스타일 */
+        .floating-btn {
+            position: fixed;
+            bottom: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+            backdrop-filter: blur(5px);
+        }
+        .floating-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        .floating-btn:active {
+            transform: scale(0.9);
+        }
+        
+        #btn-home { left: 20px; }
+        #btn-fs { right: 20px; }
+
+        /* 위급 상황 애니메이션 */
+        @keyframes pulse-red {
+            0% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+            50% { transform: scale(1.1); box-shadow: 0 0 30px rgba(255, 0, 0, 0.8); }
+            100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+        }
+        
+        .critical {
+            animation: pulse-red 0.5s infinite;
+            background-color: #ffcccc !important;
+            color: #ff0000 !important;
+            border-color: #ff0000 !important;
+        }
+
+        /* 결과 화면 테이블 스타일 */
+        .result-title {
+            font-size: 50px;
+            color: #fff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #aaa;
+        }
+
+        .result-table {
+            width: 90%;
+            max-width: 700px;
+            margin-bottom: 30px;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 24px;
+            color: white;
+        }
+        .result-table th, .result-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .result-table th {
+            font-size: 20px;
+            color: #aaa;
+        }
+        .result-total {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffe200;
+        }
+        /* 중앙 정렬 항목 배치 스타일 */
+        .col-p1 { color: var(--p1-color); width: 35%; }
+        .col-category { color: #ccc; width: 30%; font-size: 20px; }
+        .col-p2 { color: var(--p2-color); width: 35%; }
+        
+        /* 승패 표시 영역 */
+        .result-status-container {
+            position: absolute;
+            bottom: 60px; /* 키패드 위치와 비슷하게 */
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none; /* 버튼 클릭 방해 방지 */
+        }
+        
+        .res-text-box {
+            width: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .res-text {
+            font-size: 70px;
+            font-weight: bold;
+            text-shadow: 4px 4px 0 #000, 0 0 20px rgba(0,0,0,0.5);
+            white-space: nowrap;
+        }
+        
+        .win-text { color: #ffe200; animation: bounce 1s infinite alternate; }
+        .lose-text { color: #888; }
+        .draw-text { color: #ccc; }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+
+        /* 상단 승리 메시지 스타일 추가 */
+        .winner-announcement {
+            font-size: 45px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px rgba(0,0,0,0.8);
+            min-height: 50px;
+            animation: pulse-winner 2s infinite;
+        }
+
+        @keyframes pulse-winner {
+            0% { transform: scale(1); filter: brightness(100%); }
+            50% { transform: scale(1.05); filter: brightness(120%); }
+            100% { transform: scale(1); filter: brightness(100%); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="top-bar">
+        <span>킹지구를 지켜라</span>
+        <div id="life-display">0 / 10</div>
+    </div>
+
+    <div id="main-stage">
+        <canvas id="world"></canvas>
+    </div>
+
+    <div id="bottom-controls">
+        <!-- Player 1 -->
+        <div id="p1-ctrl" class="player-ctrl">
+            <div class="status-panel">
+                <div class="info-row">
+                    <div class="player-label" style="color:var(--p1-color);">PLAYER 1</div>
+                    <div class="score-box"><span id="p1-score">0</span></div>
+                </div>
+                <div class="input-display" id="p1-input"></div>
+            </div>
+            <div class="keypad" id="p1-keypad"></div>
+        </div>
+
+        <!-- Player 2 -->
+        <div id="p2-ctrl" class="player-ctrl">
+            <div class="status-panel">
+                <div class="info-row">
+                    <div class="player-label" style="color:var(--p2-color);">PLAYER 2</div>
+                    <div class="score-box"><span id="p2-score">0</span></div>
+                </div>
+                <div class="input-display" id="p2-input"></div>
+            </div>
+            <div class="keypad" id="p2-keypad"></div>
+        </div>
+    </div>
+
+    <!-- 플로팅 버튼 -->
+    <button id="btn-home" class="floating-btn" title="처음으로">🏠</button>
+    <button id="btn-fs" class="floating-btn" title="전체화면">⛶</button>
+
+    <!-- 시작 화면 -->
+    <div id="start-screen" class="overlay">
+        <div class="title">킹지구를 지켜라<br><span style="font-size:24px; color:#aaa;">무한 배틀 모드</span></div>
+        <p style="font-size: 20px; color: #ccc; margin-bottom: 5px;">우주선이 10개 떨어지면 패배합니다!</p>
+        <p style="font-size: 18px; color: #888; margin-bottom: 20px;"><center>신중하세요! 콤보 점수가 큽니다!<br>사이렌이 울리면 위기 점수가 더해집니다!</center></p>
+        <button id="btn-start-main" class="btn-start">전투 개시</button>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div id="result-screen" class="overlay hidden">
+                <!-- 여기에 승리 메시지가 표시됩니다 -->
+        <div id="winner-announcement" class="winner-announcement"></div>
+        <div class="result-title">전투 기록</div>
+
+        
+        <table class="result-table">
+            <thead>
+                <tr>
+                    <th class="col-p1">PLAYER 1</th>
+                    <th class="col-category">항목</th>
+                    <th class="col-p2">PLAYER 2</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-p1" id="res-p1-destroy">0</td>
+                    <td class="col-category">🚀 격추 점수</td>
+                    <td class="col-p2" id="res-p2-destroy">0</td>
+                </tr>
+                <tr>
+                    <td class="col-p1" id="res-p1-combo">0</td>
+                    <td class="col-category">🔥 콤보 점수</td>
+                    <td class="col-p2" id="res-p2-combo">0</td>
+                </tr>
+                <tr>
+                    <td class="col-p1" id="res-p1-crisis">0</td>
+                    <td class="col-category">🚨 위기 점수</td>
+                    <td class="col-p2" id="res-p2-crisis">0</td>
+                </tr>
+                <tr>
+                    <td class="col-p1 result-total" id="res-p1-total">0</td>
+                    <td class="col-category result-total">🏆 총점</td>
+                    <td class="col-p2 result-total" id="res-p2-total">0</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- 하단 승패 표시 영역 -->
+        <div class="result-status-container">
+            <div class="res-text-box"><div id="p1-status-text" class="res-text"></div></div>
+            <div class="res-text-box"><div id="p2-status-text" class="res-text"></div></div>
+        </div>
+
+        <button id="btn-start-retry" class="btn-start">재대결</button>
+    </div>
+</div>
+
+<script>
+    // === [전자칠판/터치 설정 적용] 킹수학 배틀 세팅 ===
+    
+    // 1. 터치 이벤트 방지 로직 강화 (확대, 스크롤 방지)
+    // 스크롤 방지 (passive: false 필수)
+    document.addEventListener('touchmove', function(e) {
+        if (e.scale !== 1) { e.preventDefault(); }
+    }, { passive: false });
+
+    // 핀치 줌 방지
+    document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+    });
+
+    // 더블 탭 확대 방지
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+        var now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault(); 
+        }
+        lastTouchEnd = now;
+    }, false);
+
+    // 우클릭 방지 (전자칠판 롱터치 대응)
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    
+    // === [설정 끝] ===
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const Sound = {
+        play: (freq, type, dur, vol=0.1) => {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + dur);
+        },
+        shootP1: () => { Sound.play(800, 'square', 0.1, 0.1); },
+        shootP2: () => { Sound.play(600, 'square', 0.1, 0.1); },
+        boom: () => { Sound.play(100, 'sawtooth', 0.2, 0.2); Sound.play(50, 'square', 0.2, 0.2); },
+        combo: () => { Sound.play(1200, 'sine', 0.3, 0.2); },
+        win: () => { 
+            Sound.play(523, 'sine', 0.2); 
+            setTimeout(()=>Sound.play(659, 'sine', 0.4), 200); 
+            setTimeout(()=>Sound.play(784, 'sine', 0.6), 400); 
+        },
+        
+        sirenNodes: null, 
+        startSiren: () => {
+            if (Sound.sirenNodes) return; 
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const lfo = audioCtx.createOscillator();
+            const lfoGain = audioCtx.createGain();
+            const masterGain = audioCtx.createGain();
+
+            lfo.type = 'sine';
+            lfo.frequency.value = 0.5; 
+            lfoGain.gain.value = 300; 
+            osc.type = 'triangle';
+            osc.frequency.value = 750; 
+            masterGain.gain.value = 0.2;
+
+            lfo.connect(lfoGain);
+            lfoGain.connect(osc.frequency);
+            osc.connect(masterGain);
+            masterGain.connect(audioCtx.destination);
+
+            osc.start();
+            lfo.start();
+
+            Sound.sirenNodes = { osc, lfo, lfoGain, masterGain };
+        },
+        stopSiren: () => {
+            if (Sound.sirenNodes) {
+                const { osc, lfo, lfoGain, masterGain } = Sound.sirenNodes;
+                try {
+                    osc.stop();
+                    lfo.stop();
+                    osc.disconnect();
+                    lfo.disconnect();
+                    lfoGain.disconnect();
+                    masterGain.disconnect();
+                } catch(e) {}
+                Sound.sirenNodes = null;
+            }
+        }
+    };
+
+    function generateProblem() {
+        const elapsedSec = (Date.now() - game.startTime) / 1000;
+        let types = [];
+        let op = '';
+        let a, b, ans;
+
+        if (elapsedSec < 30) {
+            // 1단계 (0~30초)
+            types = ['+', '-', '*'];
+            op = types[Math.floor(Math.random() * types.length)];
+
+            if (op === '+') {
+                a = Math.floor(Math.random() * 9) + 1; // 1~9
+                b = Math.floor(Math.random() * 9) + 1; // 1~9
+                ans = a + b;
+            } else if (op === '-') {
+                a = Math.floor(Math.random() * 10) + 1; // 1~10
+                b = Math.floor(Math.random() * a); 
+                if (b === 0) b = 1;
+                a = Math.floor(Math.random() * 9) + 2; 
+                b = Math.floor(Math.random() * (a - 1)) + 1;
+                ans = a - b;
+            } else if (op === '*') {
+                a = Math.floor(Math.random() * 3) + 2; // 2~4
+                b = Math.floor(Math.random() * 9) + 1; // 1~9
+                ans = a * b;
+            }
+        } else if (elapsedSec < 60) {
+            // 2단계 (30~60초)
+            types = ['+', '-', '*', '/'];
+            op = types[Math.floor(Math.random() * types.length)];
+
+            if (op === '+') {
+                a = Math.floor(Math.random() * 20) + 1;
+                b = Math.floor(Math.random() * 20) + 1;
+                ans = a + b;
+            } else if (op === '-') {
+                a = Math.floor(Math.random() * 20) + 5; 
+                b = Math.floor(Math.random() * (a - 1)) + 1;
+                ans = a - b;
+            } else if (op === '*') {
+                a = Math.floor(Math.random() * 8) + 2; 
+                b = Math.floor(Math.random() * 9) + 1; 
+                ans = a * b;
+            } else if (op === '/') {
+                b = Math.floor(Math.random() * 8) + 2; 
+                ans = Math.floor(Math.random() * 9) + 1; 
+                a = b * ans;
+            }
+        } else if (elapsedSec < 90) {
+            // 3단계 (60~90초)
+            types = ['+', '-', '*', '/'];
+            op = types[Math.floor(Math.random() * types.length)];
+
+            if (op === '+') {
+                a = Math.floor(Math.random() * 50) + 1;
+                b = Math.floor(Math.random() * 50) + 1;
+                ans = a + b;
+            } else if (op === '-') {
+                a = Math.floor(Math.random() * 48) + 3; 
+                b = Math.floor(Math.random() * (a - 1)) + 1;
+                ans = a - b;
+            } else if (op === '*') {
+                a = Math.floor(Math.random() * 8) + 2;
+                b = Math.floor(Math.random() * 9) + 1;
+                ans = a * b;
+            } else if (op === '/') {
+                b = Math.floor(Math.random() * 8) + 2;
+                ans = Math.floor(Math.random() * 9) + 1;
+                a = b * ans;
+            }
+        } else {
+            // 4단계 (90초 이후)
+            types = ['+', '-', '*', '/'];
+            op = types[Math.floor(Math.random() * types.length)];
+            
+            const isHard = Math.random() > 0.4; 
+
+            if (op === '+') {
+                if (isHard) {
+                    a = Math.floor(Math.random() * 900) + 100; 
+                    b = Math.floor(Math.random() * 90) + 10;   
+                } else {
+                    a = Math.floor(Math.random() * 50) + 1;
+                    b = Math.floor(Math.random() * 50) + 1;
+                }
+                ans = a + b;
+            } else if (op === '-') {
+                if (isHard) {
+                    a = Math.floor(Math.random() * 900) + 100; 
+                    b = Math.floor(Math.random() * 90) + 10;   
+                } else {
+                    a = Math.floor(Math.random() * 50) + 10;
+                    b = Math.floor(Math.random() * (a - 1)) + 1;
+                }
+                ans = a - b;
+            } else if (op === '*') {
+                if (isHard) {
+                    a = Math.floor(Math.random() * 90) + 10; 
+                    b = Math.floor(Math.random() * 8) + 2;   
+                } else {
+                    a = Math.floor(Math.random() * 8) + 2;
+                    b = Math.floor(Math.random() * 9) + 1;
+                }
+                ans = a * b;
+            } else if (op === '/') {
+                if (isHard) {
+                    b = Math.floor(Math.random() * 8) + 2; 
+                    ans = Math.floor(Math.random() * 11) + 10; 
+                    a = b * ans;
+                } else {
+                    b = Math.floor(Math.random() * 8) + 2;
+                    ans = Math.floor(Math.random() * 9) + 1;
+                    a = b * ans;
+                }
+            }
+        }
+
+        const symbol = op === '*' ? '×' : (op === '/' ? '÷' : op);
+        return { text: `${a} ${symbol} ${b}`, ans: ans };
+    }
+
+    class Player {
+        constructor(id, color) {
+            this.id = id;
+            this.color = color;
+            this.reset();
+            
+            this.elInput = document.getElementById(`p${id}-input`);
+            this.elScore = document.getElementById(`p${id}-score`);
+        }
+        
+        reset() {
+            this.score = 0;
+            this.destroyScore = 0;
+            this.comboScore = 0;
+            this.crisisScore = 0;
+            this.combo = 0;
+            this.inputBuffer = "";
+            if(this.elInput) this.updateUI();
+        }
+
+        updateUI() {
+            if(this.elInput) this.elInput.innerText = this.inputBuffer;
+            if(this.elScore) this.elScore.innerText = `${this.score}`;
+        }
+    }
+
+    class FloatingText {
+        constructor(x, y, text, color, size = 30) {
+            this.x = x;
+            this.y = y;
+            this.text = text;
+            this.color = color;
+            this.size = size;
+            this.life = 1.0;
+            this.vy = 0.5;
+        }
+        update() {
+            this.y -= this.vy;
+            this.life -= 0.008;
+        }
+        draw(ctx) {
+            ctx.globalAlpha = Math.max(0, this.life);
+            ctx.fillStyle = this.color;
+            ctx.font = `bold ${this.size}px Jua`;
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 3;
+            ctx.textAlign = 'center';
+            ctx.strokeText(this.text, this.x, this.y);
+            ctx.fillText(this.text, this.x, this.y);
+            ctx.globalAlpha = 1.0;
+        }
+    }
+
+    const game = {
+        active: false,
+        missedCount: 0,
+        maxMissed: 10,
+        loopId: null,
+        lastTime: 0,
+        startTime: 0,
+        canvas: null,
+        ctx: null,
+        p1: null, p2: null,
+        enemies: [],
+        particles: [],
+        lasers: [],
+        floatingTexts: [], 
+        spawnTimer: 0,
+
+        init: function() {
+            this.canvas = document.getElementById('world');
+            this.ctx = this.canvas.getContext('2d');
+            this.p1 = new Player(1, '#00f3ff');
+            this.p2 = new Player(2, '#ff007f');
+            
+            this.createKeypad(1);
+            this.createKeypad(2);
+
+            document.getElementById('btn-start-main').addEventListener('click', () => this.start());
+            document.getElementById('btn-start-retry').addEventListener('click', () => this.start());
+
+            document.getElementById('btn-home').addEventListener('click', () => this.goHome());
+            document.getElementById('btn-fs').addEventListener('click', () => this.toggleFullScreen());
+
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+        },
+
+        createKeypad: function(playerId) {
+            const container = document.getElementById(`p${playerId}-keypad`);
+            const keys = ['1','2','3','4','5','6','7','8','9','C','0','E'];
+            
+            keys.forEach(k => {
+                const btn = document.createElement('div');
+                btn.className = 'key';
+                if(k === 'C') { btn.innerText = '지움'; btn.classList.add('key-clear'); }
+                else if(k === 'E') { btn.innerText = '발사'; btn.classList.add('key-enter'); }
+                else { btn.innerText = k; }
+
+                const handleInput = (e) => {
+                    e.preventDefault();
+                    this.input(playerId, k);
+                };
+                
+                btn.addEventListener('touchstart', handleInput, {passive: false});
+                btn.addEventListener('mousedown', handleInput);
+                
+                container.appendChild(btn);
+            });
+        },
+
+        resize: function() {
+            const container = document.getElementById('main-stage');
+            this.canvas.width = container.clientWidth;
+            this.canvas.height = container.clientHeight;
+        },
+
+        start: function() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            
+            Sound.stopSiren();
+
+            this.p1.reset();
+            this.p2.reset();
+            
+            this.enemies = [];
+            this.particles = [];
+            this.lasers = [];
+            this.floatingTexts = [];
+            this.active = true;
+            this.missedCount = 0;
+            this.spawnTimer = 2000;
+            this.startTime = Date.now();
+            
+            this.updateLifeUI();
+            
+            this.lastTime = performance.now();
+            if(this.loopId) cancelAnimationFrame(this.loopId);
+            this.loop(this.lastTime);
+            
+            Sound.win();
+        },
+
+        goHome: function() {
+            this.active = false;
+            Sound.stopSiren();
+            if(this.loopId) cancelAnimationFrame(this.loopId);
+            
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            
+            const el = document.getElementById('life-display');
+            el.classList.remove('critical');
+            el.style.backgroundColor = '#222';
+            el.style.color = '#ff3333';
+        },
+
+        toggleFullScreen: function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        },
+
+        loop: function(now) {
+            if(!this.active) return;
+            const dt = now - this.lastTime;
+            this.lastTime = now;
+
+            this.update(dt);
+            this.draw();
+
+            this.loopId = requestAnimationFrame((t) => this.loop(t));
+        },
+
+        update: function(dt) {
+            const elapsedSec = (Date.now() - this.startTime) / 1000;
+            const difficultyFactor = 1 + (elapsedSec / 45); 
+
+            this.spawnTimer += dt;
+            const spawnRate = Math.max(500, 2500 / difficultyFactor);
+            
+            if(this.spawnTimer > spawnRate) {
+                this.spawnEnemy(difficultyFactor);
+                this.spawnTimer = 0;
+            }
+
+            for(let i = this.enemies.length - 1; i >= 0; i--) {
+                const e = this.enemies[i];
+                e.y += e.speed;
+                
+                if(e.y > this.canvas.height) {
+                    this.enemies.splice(i, 1);
+                    this.missedCount++;
+                    this.updateLifeUI();
+                    
+                    Sound.play(150, 'sawtooth', 0.2); 
+                    if (this.missedCount >= 7) Sound.startSiren();
+                    if (this.missedCount >= this.maxMissed) this.endGame();
+                }
+            }
+
+            this.lasers = this.lasers.filter(l => l.active);
+            this.lasers.forEach(l => {
+                l.x += (l.tx - l.x) * 0.2;
+                l.y += (l.ty - l.y) * 0.2;
+                if(Math.abs(l.ty - l.y) < 5) l.active = false;
+            });
+
+            this.particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy; p.life -= 0.03;
+            });
+            this.particles = this.particles.filter(p => p.life > 0);
+
+            this.floatingTexts.forEach(t => t.update());
+            this.floatingTexts = this.floatingTexts.filter(t => t.life > 0);
+        },
+
+        draw: function() {
+            const ctx = this.ctx;
+            const w = this.canvas.width;
+            const h = this.canvas.height;
+            
+            ctx.clearRect(0, 0, w, h);
+
+            ctx.lineWidth = 4;
+            this.lasers.forEach(l => {
+                ctx.strokeStyle = l.color;
+                ctx.shadowColor = l.color;
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                const startX = l.owner === 1 ? w * 0.25 : w * 0.75;
+                ctx.moveTo(startX, h);
+                ctx.lineTo(l.x, l.y);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            });
+
+            this.enemies.forEach(e => {
+                ctx.fillStyle = '#ddd';
+                ctx.beginPath();
+                ctx.ellipse(e.x, e.y, 35, 12, 0, 0, Math.PI*2);
+                ctx.fill();
+                
+                ctx.fillStyle = e.color; 
+                ctx.beginPath();
+                ctx.arc(e.x, e.y-5, 15, Math.PI, 0);
+                ctx.fill();
+
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.beginPath();
+                ctx.roundRect(e.x - 40, e.y - 45, 80, 28, 5);
+                ctx.fill();
+
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 20px Jua';
+                ctx.textAlign = 'center';
+                ctx.fillText(e.prob.text, e.x, e.y - 24);
+            });
+
+            this.particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+
+            this.floatingTexts.forEach(t => t.draw(ctx));
+        },
+
+        spawnEnemy: function(difficulty) {
+            const prob = generateProblem();
+            const margin = 60;
+            const w = this.canvas.width;
+            let x;
+            let attempts = 0;
+            let overlap = false;
+
+            do {
+                overlap = false;
+                x = Math.random() * (w - margin * 2) + margin;
+                
+                for(let e of this.enemies) {
+                    if (e.y < 100 && Math.abs(e.x - x) < 90) {
+                        overlap = true;
+                        break;
+                    }
+                }
+                attempts++;
+            } while(overlap && attempts < 10);
+
+            const baseSpeed = (Math.random() * 0.2 + 0.3);
+            const speed = baseSpeed * difficulty;
+
+            this.enemies.push({
+                x: x,
+                y: -50,
+                prob: prob,
+                speed: speed,
+                color: `hsl(${Math.random()*360}, 70%, 60%)`
+            });
+        },
+
+        input: function(playerId, key) {
+            if(!this.active) return;
+            const player = playerId === 1 ? this.p1 : this.p2;
+
+            if(key === 'C') {
+                player.inputBuffer = "";
+            } else if(key === 'E') {
+                if(player.inputBuffer !== "") this.checkAnswer(player);
+            } else {
+                if(player.inputBuffer.length < 3) player.inputBuffer += key;
+            }
+            player.updateUI();
+        },
+
+        checkAnswer: function(player) {
+            const val = parseInt(player.inputBuffer);
+            let hit = false;
+            
+            this.enemies.sort((a, b) => b.y - a.y);
+            
+            for(let i=0; i<this.enemies.length; i++) {
+                const e = this.enemies[i];
+                if(e.prob.ans === val) {
+                    hit = true;
+                    this.enemies.splice(i, 1);
+                    
+                    const isCritical = game.missedCount >= 7;
+                    const multiplier = isCritical ? 2 : 1;
+
+                    // 기본 랜덤 점수 (10~40)
+                    const baseRandomScore = [10, 20, 30, 40][Math.floor(Math.random() * 4)];
+                    
+                    player.combo++;
+                    let baseBonusScore = 0;
+                    if (player.combo > 0) { 
+                        baseBonusScore = player.combo * 10;
+                        if (baseBonusScore > 100) baseBonusScore = 100;
+                    }
+
+                    // 1. 기본 점수 누적
+                    player.destroyScore += baseRandomScore * multiplier; 
+                    
+                    // 2. 콤보 점수 누적
+                    player.comboScore += baseBonusScore * multiplier; 
+                    
+                    // 3. 위기 점수 (별도 집계)
+                    if (isCritical) {
+                        player.crisisScore += (baseRandomScore + baseBonusScore);
+                        // 보너스 중복 제거
+                        player.destroyScore -= baseRandomScore; 
+                        player.comboScore -= baseBonusScore; 
+                    }
+
+                    // 총점 갱신
+                    player.score = player.destroyScore + player.comboScore + player.crisisScore;
+                    
+                    const totalGained = (baseRandomScore + baseBonusScore) * multiplier;
+                    
+                    // 1. 전체 점수
+                    let totalText = `+${totalGained}`;
+                    if(isCritical) totalText += " (X2!!)";
+                    this.floatingTexts.push(new FloatingText(e.x, e.y - 20, totalText, player.color, 45)); 
+
+                    // 2. 격추 점수
+                    const destroyVal = baseRandomScore * multiplier;
+                    this.floatingTexts.push(new FloatingText(e.x, e.y + 25, `격추 +${destroyVal}`, '#ccc', 20));
+
+                    // 3. 콤보 점수
+                    if (player.combo > 0) {
+                        const comboVal = baseBonusScore * multiplier;
+                        this.floatingTexts.push(new FloatingText(e.x, e.y + 50, `${player.combo}콤보 +${comboVal}`, '#fff', 20));
+                        Sound.combo();
+                    }
+
+                    this.createExplosion(e.x, e.y, player.color);
+                    this.lasers.push({
+                        owner: player.id,
+                        x: e.x, y: e.y, 
+                        tx: e.x, ty: e.y,
+                        color: player.color,
+                        active: true
+                    });
+                    
+                    if(player.id === 1) Sound.shootP1();
+                    else Sound.shootP2();
+                    Sound.boom();
+                    break; 
+                }
+            }
+
+            if(!hit) {
+                Sound.play(150, 'sawtooth', 0.1);
+                player.combo = 0; // 오답 시 콤보 초기화
+            }
+
+            player.inputBuffer = "";
+            player.updateUI();
+        },
+
+        createExplosion: function(x, y, color) {
+            for(let i=0; i<15; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const spd = Math.random() * 5 + 2;
+                this.particles.push({
+                    x: x, y: y,
+                    vx: Math.cos(angle)*spd, vy: Math.sin(angle)*spd,
+                    color: color,
+                    life: 1.0
+                });
+            }
+        },
+
+        updateLifeUI: function() {
+            const el = document.getElementById('life-display');
+            el.innerText = `${this.missedCount} / ${this.maxMissed}`;
+            
+            if(this.missedCount >= 7) {
+                el.classList.add('critical');
+            } else {
+                el.classList.remove('critical');
+            }
+        },
+
+        endGame: function() {
+            this.active = false;
+            Sound.stopSiren();
+            if(this.loopId) cancelAnimationFrame(this.loopId);
+            Sound.win();
+
+            const p1 = this.p1;
+            const p2 = this.p2;
+            
+            let p1Text = "🤝 무승부";
+            let p2Text = "🤝 무승부";
+            let p1Class = "draw-text";
+            let p2Class = "draw-text";
+
+            // 상단 승자 표시 로직 추가
+            let winnerMsg = "";
+            let winnerColor = "";
+
+            if(p1.score > p2.score) { 
+                p1Text = "🏆 승리"; p1Class = "win-text";
+                p2Text = "☠️ 패배"; p2Class = "lose-text";
+                winnerMsg = "PLAYER 1 승리!";
+                winnerColor = "var(--p1-color)";
+            } else if(p2.score > p1.score) { 
+                p2Text = "🏆 승리"; p2Class = "win-text";
+                p1Text = "☠️ 패배"; p1Class = "lose-text";
+                winnerMsg = "PLAYER 2 승리!";
+                winnerColor = "var(--p2-color)";
+            } else {
+                winnerMsg = "무승부!";
+                winnerColor = "#ccc";
+            }
+
+            // 상단 승자 텍스트 업데이트
+            const waEl = document.getElementById('winner-announcement');
+            waEl.innerText = winnerMsg;
+            waEl.style.color = winnerColor;
+
+            // 하단 승패 텍스트 업데이트
+            const elP1 = document.getElementById('p1-status-text');
+            const elP2 = document.getElementById('p2-status-text');
+            
+            elP1.innerText = p1Text;
+            elP1.className = `res-text ${p1Class}`;
+            
+            elP2.innerText = p2Text;
+            elP2.className = `res-text ${p2Class}`;
+            
+            // 상세 점수판 업데이트
+            document.getElementById('res-p1-destroy').innerText = p1.destroyScore;
+            document.getElementById('res-p1-combo').innerText = p1.comboScore;
+            document.getElementById('res-p1-crisis').innerText = p1.crisisScore;
+            document.getElementById('res-p1-total').innerText = p1.score;
+
+            document.getElementById('res-p2-destroy').innerText = p2.destroyScore;
+            document.getElementById('res-p2-combo').innerText = p2.comboScore;
+            document.getElementById('res-p2-crisis').innerText = p2.crisisScore;
+            document.getElementById('res-p2-total').innerText = p2.score;
+
+            document.getElementById('result-screen').classList.remove('hidden');
+        }
+    };
+
+    game.init();
+
+</script>
+</body>
+</html>

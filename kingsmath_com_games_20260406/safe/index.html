@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안전한줄 알림판</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Jua', sans-serif;
+            transition: background-color 0.5s ease;
+            overflow: hidden;
+        }
+        
+        .card-container {
+            border-radius: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            transition: all 0.5s ease;
+            border: 8px solid transparent;
+        }
+
+        .text-soft-shadow {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-press:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .floating-group {
+            animation: float 3s ease-in-out infinite;
+            z-index: 9999;
+        }
+        
+        .floating-group:hover {
+            animation-play-state: paused;
+        }
+
+        /* 모달 스크롤바 커스텀 */
+        #picker-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        #picker-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        #picker-list::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        #picker-list::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* 언어 선택 드롭다운 화살표 숨기기 */
+        select#lang-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex items-center justify-center bg-gray-50" id="main-body">
+
+    <div id="main-card" class="card-container w-[95vw] h-[95vh] relative flex flex-col justify-between p-6 md:p-10 mx-auto my-auto">
+        
+        <div class="flex justify-between items-center w-full shrink-0">
+            <div class="cursor-pointer group" onclick="handleChange()">
+                <div id="logo-bg" class="bg-gray-800 text-white px-8 py-3 rounded-full shadow-lg transform transition-transform group-hover:scale-105 btn-press flex items-center justify-center min-w-[280px]">
+                    <span id="domain-text" class="text-2xl md:text-4xl whitespace-nowrap">🌱 안전한줄.com</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="relative flex items-center">
+                    <select id="lang-select" onchange="changeLanguage()" class="text-gray-800 text-xl font-sans pl-5 pr-10 py-3 rounded-full shadow-lg outline-none cursor-pointer border border-gray-200 bg-white hover:bg-gray-50 transition-colors">
+                        <option value="ko">🇰🇷 한국어</option>
+                        <option value="en">🇺🇸 English</option>
+                        <option value="zh">🇨🇳 简体中文</option>
+                        <option value="ja">🇯🇵 日本語</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="ru">🇷🇺 Русский</option>
+                        <option value="id">🇮🇩 Bahasa Indonesia</option>
+                        <option value="vi">🇻🇳 Tiếng Việt</option>
+                        <option value="th">🇹🇭 ไทย</option>
+                        <option value="pt-br">🇧🇷 Português (BR)</option>
+                        <option value="hi">🇮🇳 हिन्दी</option>
+                        <option value="bn">🇧🇩 বাংলা</option>
+                        <option value="tr">🇹🇷 Türkçe</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                        <option value="it">🇮🇹 Italiano</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-4 text-gray-500 pointer-events-none"></i>
+                </div>
+
+                <button id="pick-btn" onclick="openPicker()" class="text-white px-6 py-3 rounded-full shadow-lg transform transition-transform hover:scale-105 btn-press cursor-pointer">
+                    <span class="text-2xl md:text-4xl whitespace-nowrap"><i class="fa-solid fa-list-check mr-2"></i><span id="pick-text">고르기</span></span>
+                </button>
+                <button id="change-btn" onclick="handleChange()" class="text-white px-6 py-3 rounded-full shadow-lg transform transition-transform hover:scale-105 btn-press cursor-pointer">
+                    <span class="text-2xl md:text-4xl whitespace-nowrap"><i class="fa-solid fa-arrows-rotate mr-2"></i><span id="change-text">바꾸기</span></span>
+                </button>
+                <input type="file" id="csv-upload" accept=".csv" style="display: none;" onchange="handleFileUpload(this)">
+            </div>
+        </div>
+
+        <div class="flex-grow flex flex-col items-center justify-center text-center z-10 w-full py-4 overflow-hidden">
+            
+            <div class="w-full shrink-0 mb-4 md:mb-8 mt-4">
+                <h2 id="date-display" class="text-5xl md:text-7xl lg:text-8xl text-gray-700 tracking-wide opacity-80 font-normal">
+                </h2>
+            </div>
+
+            <div id="content-wrapper" class="w-full flex-grow flex items-center justify-center relative overflow-hidden px-4 max-h-[55vh]">
+                <h1 id="activity-content" class="text-black font-normal text-soft-shadow w-full transition-all duration-300">
+                </h1>
+            </div>
+
+        </div>
+
+        <div id="video-btn-container" class="shrink-0 flex justify-center w-full pb-2 mt-4">
+            <button id="video-btn" onclick="openVideoLink()" class="group relative bg-gray-800 text-white px-10 py-5 rounded-full shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-4 max-w-4xl">
+                <span class="bg-white/20 rounded-full w-14 h-14 flex-shrink-0 flex items-center justify-center text-3xl">
+                    <i class="fa-solid fa-play ml-1 text-white"></i>
+                </span>
+                <span id="video-btn-text" class="text-3xl md:text-5xl truncate font-normal">영상보기 (아이쿠, 7분)</span>
+            </button>
+        </div>
+
+    </div>
+
+    <div class="floating-group fixed bottom-6 right-6 flex flex-col gap-3 z-[9999]">
+        <button onclick="changeFontSize(0.5)" class="bg-white/80 hover:bg-white text-2xl w-14 h-14 rounded-full shadow-lg cursor-pointer transition-transform hover:scale-110 border border-gray-200 outline-none flex items-center justify-center text-gray-700 font-bold" title="글자 크게">
+            <i class="fa-solid fa-plus"></i>
+        </button>
+        <button onclick="changeFontSize(-0.5)" class="bg-white/80 hover:bg-white text-2xl w-14 h-14 rounded-full shadow-lg cursor-pointer transition-transform hover:scale-110 border border-gray-200 outline-none flex items-center justify-center text-gray-700 font-bold" title="글자 작게">
+            <i class="fa-solid fa-minus"></i>
+        </button>
+        <button onclick="toggleFullScreen()" class="bg-white/80 hover:bg-white text-3xl w-14 h-14 rounded-full shadow-lg cursor-pointer transition-transform hover:scale-110 border border-gray-200 outline-none flex items-center justify-center" title="전체화면 켜기/끄기">
+            ↕️
+        </button>
+    </div>
+
+    <div id="picker-modal" class="fixed inset-0 bg-black/60 z-[10000] hidden flex-col items-center justify-center backdrop-blur-sm">
+        <div class="bg-white w-[90vw] h-[85vh] md:h-[80vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+            <div class="bg-gray-100 p-4 md:p-6 border-b flex flex-col md:flex-row gap-4 items-center justify-between shrink-0">
+                <div class="flex flex-wrap gap-4 items-center w-full md:w-auto">
+                    <div class="relative flex items-center mr-2 w-full md:w-auto">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 text-gray-400 text-xl"></i>
+                        <input type="text" id="search-input" oninput="renderPickerItems()" placeholder="검색..." class="text-2xl pl-10 pr-4 py-2 rounded-xl border border-gray-300 outline-none focus:border-blue-400 bg-white shadow-sm transition-colors w-full md:w-64">
+                    </div>
+                    <select id="filter-category" onchange="renderPickerItems()" class="text-xl p-2 rounded-xl border border-gray-300 outline-none bg-white shadow-sm cursor-pointer font-sans">
+                        <option value="">모든 카테고리</option>
+                    </select>
+                    <select id="filter-channel" onchange="renderPickerItems()" class="text-xl p-2 rounded-xl border border-gray-300 outline-none bg-white shadow-sm cursor-pointer font-sans">
+                        <option value="">모든 유튜브 채널</option>
+                    </select>
+                </div>
+                <button onclick="closePicker()" class="text-5xl text-gray-400 hover:text-red-500 transition-colors w-12 h-12 flex items-center justify-center leading-none">&times;</button>
+            </div>
+            <div id="picker-list" class="flex-grow p-4 md:p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 bg-gray-50 content-start font-sans">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch((err) => {
+                    console.log(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        const THEMES = [
+            { name: "Mint", bg: "#E0F7FA", border: "#4DD0E1", btn: "#00BCD4", sub: "#B2EBF2" },
+            { name: "Peach", bg: "#FFF3E0", border: "#FFB74D", btn: "#FF9800", sub: "#FFE0B2" },
+            { name: "Lavender", bg: "#F3E5F5", border: "#BA68C8", btn: "#9C27B0", sub: "#E1BEE7" },
+            { name: "Sky", bg: "#E3F2FD", border: "#64B5F6", btn: "#2196F3", sub: "#BBDEFB" },
+            { name: "Lemon", bg: "#FFFDE7", border: "#DCE775", btn: "#CDDC39", sub: "#F0F4C3" },
+            { name: "Pink", bg: "#FCE4EC", border: "#F06292", btn: "#E91E63", sub: "#F8BBD0" }
+        ];
+
+        const DEFAULT_DATA = [
+            ["가전제품", "사용 후 전기코드 뽑고 정리하기", "https://www.youtube.com/watch?v=mR5Es0KbMKE", "아이쿠", "7"],
+            ["가정폭력", "위험한 상황이면 112에 도움 요청하기", "https://youtu.be/Xi3D47nF67g", "우당탕탕은하안전단", "11"],
+            ["가정환경", "낯선 사람이 초인종 눌러도 문 열어주지 않기", "https://www.youtube.com/watch?v=nFKp8ZI4oXY", "아이쿠", "7"],
+            ["감염병", "기침할 땐 팔꿈치로 입 가리기", "https://youtu.be/jIk6x-sm8rE", "우당탕탕은하안전단", "11"],
+            ["물놀이", "수영장은 수심을 확인하고 조심하기", "https://www.youtube.com/watch?v=NHDJYTdp_iA", "우당탕탕은하안전단", "11"]
+        ];
+
+        const TRANSLATIONS = {
+            "ko": { domain: "🌱 안전한줄.com", pick: "고르기", change: "바꾸기", search: "검색...", allCat: "모든 카테고리" },
+            "en": { domain: "🌱 kingsmath.com/safe", pick: "Select", change: "Change", search: "Search...", allCat: "All Categories" },
+            "zh": { domain: "🌱 kingsmath.com/safe", pick: "挑选", change: "换一个", search: "搜索...", allCat: "所有分类" },
+            "ja": { domain: "🌱 kingsmath.com/safe", pick: "選ぶ", change: "変更", search: "検索...", allCat: "すべてのカテゴリ" },
+            "es": { domain: "🌱 kingsmath.com/safe", pick: "Seleccionar", change: "Cambiar", search: "Buscar...", allCat: "Todas las categorías" },
+            "fr": { domain: "🌱 kingsmath.com/safe", pick: "Choisir", change: "Changer", search: "Rechercher...", allCat: "Toutes les catégories" },
+            "ru": { domain: "🌱 kingsmath.com/safe", pick: "Выбрать", change: "Изменить", search: "Поиск...", allCat: "Все категории" },
+            "id": { domain: "🌱 kingsmath.com/safe", pick: "Pilih", change: "Ganti", search: "Cari...", allCat: "Semua Kategori" },
+            "vi": { domain: "🌱 kingsmath.com/safe", pick: "Chọn", change: "Đổi", search: "Tìm kiếm...", allCat: "Tất cả danh mục" },
+            "th": { domain: "🌱 kingsmath.com/safe", pick: "เลือก", change: "เปลี่ยน", search: "ค้นหา...", allCat: "ทุกหมวดหมู่" },
+            "pt-br": { domain: "🌱 kingsmath.com/safe", pick: "Escolher", change: "Mudar", search: "Pesquisar...", allCat: "Todas as categorias" },
+            "hi": { domain: "🌱 kingsmath.com/safe", pick: "चुनें", change: "बदलें", search: "खोजें...", allCat: "सभी श्रेणियां" },
+            "bn": { domain: "🌱 kingsmath.com/safe", pick: "বেছে নিন", change: "পরিবর্তন করুন", search: "অনুসন্ধান...", allCat: "সব বিভাগ" },
+            "tr": { domain: "🌱 kingsmath.com/safe", pick: "Seç", change: "Değiştir", search: "Ara...", allCat: "Tüm Kategoriler" },
+            "de": { domain: "🌱 kingsmath.com/safe", pick: "Auswählen", change: "Ändern", search: "Suchen...", allCat: "Alle Kategorien" },
+            "it": { domain: "🌱 kingsmath.com/safe", pick: "Scegli", change: "Cambia", search: "Cerca...", allCat: "Tutte le categorie" }
+        };
+
+        let globalDataRows = [...DEFAULT_DATA]; 
+        let currentVideoUrl = ""; 
+        let lastThemeIndex = -1; 
+        let currentLang = 'ko';
+
+        function updateDateDisplay() {
+            const now = new Date();
+            if (currentLang === 'ko') {
+                const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+                const dateString = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 ${days[now.getDay()]}`;
+                document.getElementById('date-display').innerText = dateString;
+            } else {
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const formatLang = currentLang === 'pt-br' ? 'pt-BR' : currentLang;
+                document.getElementById('date-display').innerText = new Intl.DateTimeFormat(formatLang, options).format(now);
+            }
+        }
+
+        function applyRandomTheme() {
+            let newIndex;
+            
+            do {
+                newIndex = Math.floor(Math.random() * THEMES.length);
+            } while (newIndex === lastThemeIndex && THEMES.length > 1);
+            
+            lastThemeIndex = newIndex; 
+            const theme = THEMES[newIndex];
+            
+            document.body.style.backgroundColor = theme.bg;
+            document.getElementById('main-body').style.backgroundImage = `radial-gradient(${theme.sub} 2px, transparent 2px)`;
+            document.getElementById('main-body').style.backgroundSize = "30px 30px";
+            
+            document.getElementById('main-card').style.borderColor = theme.sub;
+
+            document.getElementById('logo-bg').className = `bg-[${theme.btn}] text-white px-8 py-3 rounded-full shadow-lg transform transition-transform group-hover:scale-105 btn-press flex items-center justify-center min-w-[280px]`;
+            document.getElementById('logo-bg').style.backgroundColor = theme.btn;
+
+            document.getElementById('change-btn').style.backgroundColor = theme.btn;
+            document.getElementById('pick-btn').style.backgroundColor = theme.btn; 
+            
+            if(document.getElementById('video-btn')) {
+                document.getElementById('video-btn').style.backgroundColor = theme.border;
+            }
+        }
+
+        // 최적화 2: DOMContentLoaded 이벤트를 사용하여 화면 렌더링 즉시 실행
+        document.addEventListener("DOMContentLoaded", function() {
+            pickRandomItem(); // 지연 없이 기본 데이터로 먼저 화면 그리기
+            initLanguage();   // 그 다음 백그라운드에서 로딩 처리
+        });
+
+        window.onresize = function() {
+            adjustFontSize();
+        }
+
+        async function initLanguage() {
+            const browserLang = (navigator.language || navigator.userLanguage).toLowerCase();
+            const select = document.getElementById('lang-select');
+            
+            let langMatched = false;
+            for (let i = 0; i < select.options.length; i++) {
+                const optionVal = select.options[i].value;
+                if (browserLang === optionVal || browserLang.startsWith(optionVal)) {
+                    select.value = optionVal;
+                    langMatched = true;
+                    break;
+                }
+            }
+            if (!langMatched) {
+                if(browserLang.startsWith('pt')) select.value = 'pt-br';
+                else select.value = 'ko';
+            }
+            
+            await changeLanguage();
+        }
+
+        async function changeLanguage() {
+            currentLang = document.getElementById('lang-select').value;
+            
+            const t = TRANSLATIONS[currentLang];
+            document.getElementById('domain-text').innerText = t.domain;
+            document.getElementById('pick-text').innerText = t.pick;
+            document.getElementById('change-text').innerText = t.change;
+            document.getElementById('search-input').placeholder = t.search;
+
+            if (currentLang === 'ko') {
+                document.body.style.fontFamily = "'Jua', sans-serif";
+            } else {
+                document.body.style.fontFamily = "sans-serif";
+            }
+            
+            const videoContainer = document.getElementById('video-btn-container');
+            const channelFilter = document.getElementById('filter-channel');
+            
+            if (currentLang === 'ko') {
+                videoContainer.style.display = 'flex';
+                channelFilter.style.display = 'inline-block';
+            } else {
+                videoContainer.style.display = 'none';
+                channelFilter.style.display = 'none';
+            }
+
+            updateDateDisplay();
+            populateFilters(); 
+
+            await loadDataFromUrl();
+        }
+
+        async function loadDataFromUrl() {
+            const dataUrl = currentLang === 'ko' ? './data.csv' : `./${currentLang}.csv`;
+            try {
+                const response = await fetch(dataUrl);
+                if (!response.ok) throw new Error('파일 로드 실패');
+                const blob = await response.blob();
+                const reader = new FileReader();
+                reader.readAsText(blob, 'UTF-8');
+                reader.onload = function(e) { processCSV(e.target.result); };
+            } catch (error) {
+                console.log("파일 로딩 실패, 기본 데이터 사용 중");
+                if (currentLang === 'ko') {
+                    globalDataRows = [...DEFAULT_DATA];
+                } else {
+                    globalDataRows = [["Error", "Data could not be loaded."]];
+                }
+                pickRandomItem();
+            }
+        }
+
+        function handleChange() {
+            pickRandomItem();
+        }
+
+        function openVideoLink() {
+            if(currentVideoUrl && currentLang === 'ko') window.open(currentVideoUrl, '_blank');
+        }
+
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.readAsText(file, 'UTF-8');
+            reader.onload = function(e) { processCSV(e.target.result); };
+        }
+
+        function processCSV(csvText) {
+            const lines = csvText.split(/\r?\n/);
+            let startRow = 0;
+            if (lines[0].includes('키워드') || lines[0].toLowerCase().includes('keyword')) startRow = 1;
+
+            const parsedRows = [];
+            for (let i = startRow; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line) {
+                    const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(p => p.replace(/^"|"$/g, '').trim());
+                    if (parts.length >= 2) {
+                        parsedRows.push(parts);
+                    }
+                }
+            }
+
+            if (parsedRows.length > 0) {
+                globalDataRows = parsedRows;
+                pickRandomItem();
+            }
+        }
+
+        function adjustFontSize() {
+            const wrapper = document.getElementById('content-wrapper');
+            const element = document.getElementById('activity-content');
+            
+            if (currentLang === 'ko') {
+                element.style.wordBreak = 'keep-all';
+                element.style.overflowWrap = 'normal';
+            } else {
+                element.style.wordBreak = 'normal';
+                element.style.overflowWrap = 'break-word';
+            }
+
+            const steps = [
+                { size: 7.5, line: 1.4 },  
+                { size: 6.0, line: 1.35 }, 
+                { size: 5.0, line: 1.3 },  
+                { size: 4.0, line: 1.25 }, 
+                { size: 3.2, line: 1.2 }   
+            ];
+
+            const maxHeight = wrapper.clientHeight || (window.innerHeight * 0.55);
+
+            for (let i = 0; i < steps.length; i++) {
+                element.style.fontSize = `${steps[i].size}vw`;
+                element.style.lineHeight = `${steps[i].line}`;
+                
+                if (element.scrollHeight <= maxHeight || i === steps.length - 1) {
+                    break;
+                }
+            }
+        }
+
+        function changeFontSize(delta) {
+            const element = document.getElementById('activity-content');
+            let currentSize = parseFloat(element.style.fontSize);
+            
+            if (isNaN(currentSize)) {
+                currentSize = 5.0; 
+            }
+
+            let newSize = currentSize + delta;
+            
+            if (newSize > 12) newSize = 12;
+            if (newSize < 2) newSize = 2;
+            
+            element.style.fontSize = `${newSize}vw`;
+            
+            if (newSize <= 3.5) element.style.lineHeight = '1.2';
+            else if (newSize <= 5) element.style.lineHeight = '1.3';
+            else element.style.lineHeight = '1.4';
+        }
+
+        function displayItem(index) {
+            applyRandomTheme();
+            const selectedData = globalDataRows[index];
+
+            const keyword = selectedData[0] ? selectedData[0].trim() : "";
+            const content = selectedData[1] ? selectedData[1].trim() : "내용 없음"; 
+            const linkRaw = selectedData[2] ? selectedData[2].trim() : "";
+            const channel = selectedData[3] ? selectedData[3].trim() : "교육영상";
+            const duration = selectedData[4] ? selectedData[4].trim() : "";
+
+            const contentElement = document.getElementById('activity-content');
+            contentElement.innerHTML = content.replace(/\\n/g, '<br>');
+            
+            adjustFontSize();
+
+            if (currentLang === 'ko') {
+                currentVideoUrl = linkRaw;
+                const durationText = duration ? `, ${duration}분` : "";
+                document.getElementById('video-btn-text').innerText = `${channel}${durationText}`;
+            }
+        }
+
+        function pickRandomItem() {
+            if (globalDataRows.length === 0) return;
+            const randomIndex = Math.floor(Math.random() * globalDataRows.length);
+            displayItem(randomIndex);
+        }
+
+        function openPicker() {
+            populateFilters();
+            if (document.getElementById('search-input')) {
+                document.getElementById('search-input').value = "";
+            }
+            renderPickerItems();
+            const modal = document.getElementById('picker-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closePicker() {
+            const modal = document.getElementById('picker-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function populateFilters() {
+            const categorySet = new Set();
+            const channelSet = new Set();
+            
+            globalDataRows.forEach(row => {
+                if(row[0]) categorySet.add(row[0].trim());
+                if(row[3] && currentLang === 'ko') channelSet.add(row[3].trim());
+            });
+
+            const catSelect = document.getElementById('filter-category');
+            const chanSelect = document.getElementById('filter-channel');
+            
+            const t = TRANSLATIONS[currentLang] || TRANSLATIONS['ko'];
+            
+            catSelect.innerHTML = `<option value="">${t.allCat}</option>`;
+            chanSelect.innerHTML = '<option value="">모든 유튜브 채널</option>';
+
+            [...categorySet].sort().forEach(cat => {
+                catSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+
+            if (currentLang === 'ko') {
+                [...channelSet].sort().forEach(chan => {
+                    chanSelect.innerHTML += `<option value="${chan}">${chan}</option>`;
+                });
+            }
+        }
+
+        function renderPickerItems() {
+            const listContainer = document.getElementById('picker-list');
+            listContainer.innerHTML = '';
+            
+            const selectedCat = document.getElementById('filter-category').value;
+            const selectedChan = document.getElementById('filter-channel').value;
+            const searchQuery = document.getElementById('search-input') ? document.getElementById('search-input').value.trim().toLowerCase() : "";
+
+            globalDataRows.forEach((row, index) => {
+                const keyword = row[0] ? row[0].trim() : "";
+                const content = row[1] ? row[1].trim() : "내용 없음";
+                const channel = row[3] ? row[3].trim() : "교육영상";
+                const duration = row[4] ? row[4].trim() : "";
+                
+                if(selectedCat && keyword !== selectedCat) return;
+                if(currentLang === 'ko' && selectedChan && channel !== selectedChan) return;
+
+                if(searchQuery) {
+                    const fullText = `${keyword} ${content} ${currentLang === 'ko' ? channel : ''}`.toLowerCase();
+                    if(!fullText.includes(searchQuery)) return;
+                }
+
+                let badgesHtml = `<span class="inline-block bg-blue-100 text-blue-800 text-sm md:text-base px-3 py-1 rounded-full">${keyword}</span>`;
+                
+                if (currentLang === 'ko') {
+                    badgesHtml += `<span class="inline-block bg-green-100 text-green-800 text-sm md:text-base px-3 py-1 rounded-full">${channel}</span>`;
+                    if(duration) {
+                        badgesHtml += `<span class="inline-block bg-gray-100 text-gray-600 text-sm md:text-base px-3 py-1 rounded-full"><i class="fa-regular fa-clock mr-1"></i>${duration}분</span>`;
+                    }
+                }
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl shadow-sm hover:shadow-lg transition-all cursor-pointer border-2 border-transparent hover:border-blue-400 flex flex-col justify-between active:scale-95";
+                card.onclick = () => {
+                    closePicker();
+                    displayItem(index);
+                };
+                
+                card.innerHTML = `
+                    <div class="mb-3 flex flex-wrap gap-2">
+                        ${badgesHtml}
+                    </div>
+                    <div class="text-xl md:text-2xl text-gray-800 break-keep leading-snug">
+                        ${content.replace(/\\n/g, '<br>')}
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+    </script>
+
+<script type="text/javascript" src="//wcs.pstatic.net/wcslog.js" defer></script>
+<script type="text/javascript">
+if(!wcs_add) var wcs_add = {};
+wcs_add["wa"] = "b7c3d76d0cb5b0";
+if(window.wcs) {
+  wcs_do();
+}
+</script>
+</body>
+</html>

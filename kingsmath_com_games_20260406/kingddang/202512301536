@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>킹수학: 땅따먹기 대작전</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+:root {
+    /* 파스텔톤 배경 */
+    --bg-gradient: linear-gradient(180deg, #e3f2fd 0%, #f3e5f5 100%);
+    --primary: #339af0;
+    --dark: #495057;
+    
+    /* 동물 친구들 색상 (파스텔) */
+    --dog-color: #ffcc80;   /* 살구색 */
+    --cat-color: #90caf9;   /* 하늘색 */
+    --rab-color: #f48fb1;   /* 분홍색 */
+    --ham-color: #a5d6a7;   /* 연두색 */
+
+    /* 텍스트 색상 */
+    --dog-text: #e65100;
+    --cat-text: #1565c0;
+    --rab-text: #ad1457;
+    --ham-text: #2e7d32;
+    
+    /* 도형 스타일 */
+    --shape-stroke: #546e7a;
+    --shape-fill: #ffffff;
+    --dim-color: #ff5252; /* 치수선 색상 */
+}
+
+/* 터치 최적화 및 우클릭 방지용 스타일 */
+* { 
+    box-sizing: border-box; 
+    touch-action: manipulation; 
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none; /* iOS 길게 누르기 메뉴 방지 */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body {
+    margin: 0;
+    background: var(--bg-gradient);
+    font-family: 'Jua', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* === 시작 화면 (Intro) === */
+#introScreen {
+    position: fixed; inset: 0; z-index: 100;
+    background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+}
+
+/* 상단 링크 스타일 */
+.top-link-area {
+    color: rgba(255,255,255,0.9);
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    font-weight: normal;
+}
+.top-link-area a {
+    color: #fff;
+    text-decoration: underline;
+    font-weight: bold;
+    text-underline-offset: 5px;
+}
+
+.intro-title {
+    font-size: 5rem; color: white; margin: 0;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    animation: bounce 2s infinite;
+    font-weight: normal;
+}
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+    40% {transform: translateY(-20px);}
+    60% {transform: translateY(-10px);}
+}
+
+.intro-box {
+    background: rgba(255,255,255,0.95);
+    padding: 30px 50px; border-radius: 40px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    margin-top: 30px; width: 90%; max-width: 650px;
+    border: 5px solid white;
+}
+
+.setting-row { margin-bottom: 25px; text-align: center; }
+.setting-label { font-size: 1.6rem; color: var(--dark); display: block; margin-bottom: 12px; font-weight: normal; }
+
+.mode-select {
+    display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;
+}
+.mode-btn {
+    flex: 1; padding: 15px 10px; border: 3px solid #dee2e6; border-radius: 20px;
+    background: white; cursor: pointer; font-size: 1.4rem; font-family: 'Jua';
+    transition: all 0.2s; min-width: 90px; color: #868e96;
+    font-weight: normal;
+}
+.mode-btn.selected {
+    border-color: var(--primary); background: #e7f5ff; color: var(--primary); 
+    font-weight: normal; transform: scale(1.05); box-shadow: 0 5px 15px rgba(51, 154, 240, 0.2);
+}
+
+.shape-select {
+    /* 5개 버튼 배치를 위해 flex-wrap 사용 */
+    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+}
+.shape-select .mode-btn {
+    min-width: 100px; /* 버튼 최소 너비 확보 */
+    flex-grow: 1; /* 남은 공간 채우기 */
+}
+
+#startBtn {
+    width: 100%; padding: 18px; font-size: 2.2rem; border-radius: 50px;
+    border: none; background: #ff7675; color: white; cursor: pointer;
+    box-shadow: 0 6px 0 #d63031; font-family: 'Jua'; margin-top: 15px;
+    transition: transform 0.1s;
+    font-weight: normal;
+}
+#startBtn:active { transform: translateY(6px); box-shadow: 0 0 0; }
+
+/* === 게임 화면 === */
+#gameScreen {
+    display: none; flex: 1; position: relative;
+    flex-direction: column;
+}
+
+/* 상단 정보바 (레이아웃 수정) */
+#header {
+    height: auto; /* 내용에 맞게 늘어남 */
+    min-height: 90px;
+    display: flex; 
+    flex-direction: column; /* 세로 배치 */
+    align-items: center; 
+    justify-content: center;
+    padding: 10px 20px; 
+    background: rgba(255,255,255,0.9); /* 가독성 위해 더 불투명하게 */
+    backdrop-filter: blur(5px);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+    z-index: 20;
+    gap: 5px;
+}
+
+/* 공식 텍스트 바 스타일 */
+.formula-bar {
+    width: 100%;
+    text-align: center;
+    font-size: 1.1rem;
+    color: #444;
+    word-break: keep-all; /* 단어 중간에 끊기지 않도록 */
+    line-height: 1.4;
+    font-weight: normal;
+}
+/* 모바일 대응 */
+@media (max-width: 600px) {
+    .formula-bar { font-size: 0.85rem; }
+}
+
+/* 홈 버튼 (좌측 하단 이동) */
+#homeBtnFixed {
+    position: fixed; bottom: 20px; left: 20px;
+    width: 50px; height: 50px; background: rgba(0,0,0,0.1);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem; cursor: pointer; z-index: 1000;
+    transition: background 0.3s;
+}
+#homeBtnFixed:hover { background: rgba(0,0,0,0.2); }
+#homeBtnFixed:active { transform: scale(0.9); }
+
+.timer-box { font-size: 3.5rem; font-weight: normal; color: #ff8a65; text-shadow: 2px 2px 0 white; margin-bottom: -5px; }
+.timer-urgent { color: #ff5252; animation: blink 0.5s infinite; transform-origin: center; }
+@keyframes blink { 50% { transform: scale(1.1); opacity: 0.8; } }
+
+/* 중앙 아레나 (도형 뜨는 곳) */
+#arena {
+    flex: 1; 
+    margin: 10px 20px; /* 상하 여백 줄임 */
+    background: rgba(255,255,255,0.5); 
+    border-radius: 30px;
+    border: 4px dashed #cfd8dc;
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 10px; position: relative;
+}
+
+.shape-slot {
+    width: 18%; height: 90%; background: white;
+    border-radius: 25px; border: 3px solid #eceff1;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; 
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+.shape-slot.empty { opacity: 0; transform: scale(0); }
+.shape-slot.matched { transform: scale(1.1) rotate(5deg); border-color: #69db7c; box-shadow: 0 0 20px #69db7c; z-index: 10; }
+
+/* 도형 내부 SVG */
+svg { width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+text { font-family: 'Jua'; font-weight: normal; pointer-events: none; }
+.dim-text { 
+    fill: var(--dim-color); 
+    font-size: 22px; /* 폰트 사이즈 80% 축소 (28 -> 22) */
+    font-weight: normal;
+    /* 텍스트 배경(할로) 효과: 점선 위에 글자가 있을 때 점선을 가려줌 */
+    stroke: rgba(255,255,255,0.9);
+    stroke-width: 6px;
+    paint-order: stroke;
+}
+.pi-text { fill: #8e44ad; font-size: 20px; font-weight: normal; }
+
+/* 하단 플레이어 영역 (키패드) */
+#playerZone {
+    height: 340px; /* 키패드 높이 확보 */
+    background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); /* 타이틀 화면 배경 적용 */
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-evenly;
+    align-items: flex-end;
+    padding-bottom: 10px;
+    z-index: 30;
+}
+
+.player-ctrl {
+    width: 22%; /* 폭 조정 (80% 느낌) */
+    max-width: 250px;
+    height: 98%;
+    border-radius: 25px 25px 0 0;
+    padding: 8px;
+    display: flex; flex-direction: column; gap: 5px;
+    background: #f8f9fa;
+    border-top: 5px solid transparent;
+    transition: all 0.3s;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* 플레이어별 테마 */
+.p1-theme { background: #fff3e0; border-color: var(--dog-color); color: var(--dog-text); }
+.p2-theme { background: #e3f2fd; border-color: var(--cat-color); color: var(--cat-text); }
+.p3-theme { background: #fce4ec; border-color: var(--rab-color); color: var(--rab-text); }
+.p4-theme { background: #e8f5e9; border-color: var(--ham-color); color: var(--ham-text); }
+
+.info-row {
+    display: flex; justify-content: center; align-items: center; gap: 5px;
+    padding: 2px 0;
+    white-space: nowrap;
+}
+.p-name { font-size: 1.6rem; font-weight: normal; } /* 이름 크게 */
+.p-score-box { 
+    background: rgba(255,255,255,0.6); padding: 2px 8px; 
+    border-radius: 10px; font-size: 1.3rem; font-weight: normal; 
+    display: flex; align-items: center;
+}
+
+/* 땅부자 뱃지 */
+.rich-badge {
+    position: absolute;
+    top: -45px;
+    left: -14%;
+    transform: rotate(-15deg);
+    background: linear-gradient(45deg, #ffd700, #ffec99);
+    color: #e65100;
+    border: 3px solid white;
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 1.6em;
+    font-weight: normal;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    animation: floatBadge 1.5s infinite ease-in-out;
+    display: none;
+    z-index: 50;
+    white-space: nowrap;
+}
+@keyframes floatBadge { 
+    0%,100% {transform: rotate(-15deg) translateY(0) scale(1);} 
+    50% {transform: rotate(-15deg) translateY(-8px) scale(1.05);} 
+}
+
+.input-container {
+    position: relative;
+    width: 90%; margin: 0 auto;
+}
+.input-display {
+    background: white; border-radius: 12px;
+    height: 45px; line-height: 45px;
+    font-size: 1.6rem; /* 입력 숫자 크기 줄임 */
+    text-align: center;
+    border: 3px solid rgba(0,0,0,0.05);
+    color: inherit;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+    padding-right: 30px;
+    font-weight: normal;
+}
+.unit-mark {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    font-size: 1.2rem; color: #aaa; font-weight: normal; pointer-events: none;
+}
+
+/* 키패드 그리드 */
+.keypad { 
+    width: 90%; margin: 0 auto; /* 키패드 가로폭 줄임 */
+    flex: 1;
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    grid-template-rows: repeat(4, 1fr);
+    gap: 4px; 
+}
+
+.key {
+    background: white; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+    color: var(--dark);
+    font-weight: normal;
+    transition: transform 0.05s;
+    height: 100%; /* 높이 꽉 채우기 */
+}
+.key:active { transform: translateY(4px); box-shadow: none; background: #f1f3f5; }
+.key-del { background: #ffccbc; color: #bf360c; font-size: 1.2rem; }
+.key-ok { background: #c8e6c9; color: #2e7d32; font-size: 1.2rem; }
+
+/* 전체화면 버튼 */
+#fsBtn {
+    position: fixed; bottom: 20px; right: 20px;
+    width: 50px; height: 50px; background: rgba(0,0,0,0.1);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; cursor: pointer; z-index: 1000;
+    transition: background 0.3s;
+}
+#fsBtn:hover { background: rgba(0,0,0,0.2); }
+
+/* 피드백 효과 */
+@keyframes shake { 0%, 100% {transform:translateX(0);} 25% {transform:translateX(-5px);} 75% {transform:translateX(5px);} }
+.shake { animation: shake 0.3s; background: #ffebee !important; }
+
+/* 팝인 효과 */
+.pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+@keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* 결과 화면 */
+#resultModal {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);
+    align-items: center; justify-content: center;
+    flex-direction: column;
+}
+.result-card {
+    background: white; padding: 40px; border-radius: 40px; text-align: center;
+    width: 80%; max-width: 800px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    border: 5px solid #eee;
+    animation: popIn 0.5s;
+}
+
+.graph-container {
+    display: flex; align-items: flex-end; justify-content: space-around;
+    height: 300px; margin: 30px 0;
+    border-bottom: 3px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.bar-group {
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    height: 100%; width: 15%;
+}
+
+.bar-val { font-size: 1.5rem; font-weight: normal; margin-bottom: 5px; opacity: 0; animation: fadeUp 1s forwards 0.5s; }
+.bar {
+    width: 100%; background: #ddd; border-radius: 15px 15px 0 0;
+    transition: height 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    height: 0; /* JS로 설정 */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    position: relative;
+}
+.bar-icon { font-size: 3rem; margin-top: 10px; }
+.bar-name { font-size: 1.2rem; margin-top: 5px; color: #888; }
+.winner-crown { 
+    position: absolute; top: -40px; left: 50%; transform: translateX(-50%); 
+    font-size: 3rem; animation: bounce 1s infinite; display: none;
+}
+
+@keyframes fadeUp { from {opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);} }
+
+</style>
+</head>
+<body oncontextmenu="return false">
+
+<div id="fsBtn" onclick="toggleFullScreen()">⛶</div>
+
+<div id="homeBtnFixed" onclick="location.reload()">🏠</div>
+
+<div id="introScreen">
+    <div class="top-link-area">
+        게임으로 수학의 킹이 되어라. <a href="https://킹수학.com" target="_blank">킹수학.com</a>
+    </div>
+    <h1 class="intro-title">📐 킹수학<br>땅따먹기 대작전</h1>
+    
+    <div class="intro-box">
+        <div class="setting-row">
+            <span class="setting-label">👥 우리 반 친구들 몇 명?</span>
+            <div class="mode-select" id="playerSelect">
+                <div class="mode-btn" onclick="setPlayers(1)">1명 혼자</div>
+                <div class="mode-btn selected" onclick="setPlayers(2)">2명 대결</div>
+                <div class="mode-btn" onclick="setPlayers(3)">3명 대결</div>
+                <div class="mode-btn" onclick="setPlayers(4)">4명 대결</div>
+            </div>
+        </div>
+
+        <div class="setting-row">
+            <span class="setting-label">🎨 어떤 도형으로 할까요?</span>
+            <div class="shape-select" id="shapeSelect">
+                <div class="mode-btn selected" onclick="setShape('tri')">삼각형<br>🚩</div>
+                <div class="mode-btn" onclick="setShape('rect')">사각형<br>🖼️</div>
+                <div class="mode-btn" onclick="setShape('circle')">원<br>⚽</div>
+                <div class="mode-btn" onclick="setShape('comp')">복합도형<br>🏠</div>
+                <div class="mode-btn" onclick="setShape('all')">랜덤<br>🎲</div>
+            </div>
+        </div>
+
+        <button id="startBtn" onclick="gameStart()">게임 시작!</button>
+    </div>
+</div>
+
+<div id="gameScreen">
+    <header id="header">
+        <div style="text-align:center;">
+             <span class="timer-box" id="timer">60</span>
+        </div>
+        
+        <div class="formula-bar">
+            삼각형·마름모(가로×세로÷2) | 원(반지름×반지름×3) | 직사각형·평행사변형(가로×세로) | 사다리꼴((윗변+아랫변)×높이÷2)
+        </div>
+    </header>
+
+    <div id="arena">
+        </div>
+
+    <div id="playerZone">
+        </div>
+</div>
+
+<div id="resultModal">
+    <div class="result-card">
+        <h1 style="font-size:3rem; margin:0; color:#333; font-weight: normal;">👑 땅따먹기 결과 👑</h1>
+        <div style="font-size:1.5rem; color:#888; margin-bottom:20px; font-weight: normal;">가장 넓은 땅을 가진 친구는 누구일까요?</div>
+        
+        <div class="graph-container" id="resultGraph">
+            </div>
+        
+        <button id="startBtn" style="background:#ff7675; width:200px; margin-top:20px;" onclick="softReset()">다시 하기</button>
+    </div>
+</div>
+
+<script>
+// --- 설정 및 상태 ---
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+// 더블클릭 줌 방지
+document.addEventListener('dblclick', function(event) {
+  event.preventDefault();
+}, { passive: false });
+
+let config = {
+    players: 2,
+    shapeType: 'tri',
+    time: 60
+};
+
+let gameState = {
+    active: false,
+    timer: 60,
+    interval: null,
+    slots: [null, null, null, null, null], 
+    players: [] 
+};
+
+// 동물 친구들 설정
+const CHARACTERS = [
+    { name: "강아지땅", emoji: "🐶", theme: "p1-theme", color: "#ffcc80" },
+    { name: "고양이땅", emoji: "🐱", theme: "p2-theme", color: "#90caf9" },
+    { name: "토끼땅", emoji: "🐰", theme: "p3-theme", color: "#f48fb1" },
+    { name: "햄스터땅", emoji: "🐹", theme: "p4-theme", color: "#a5d6a7" }
+];
+
+// --- 사운드 효과 ---
+function playSound(type) {
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+
+    const now = audioCtx.currentTime;
+    
+    if (type === 'pop') { // 정답
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.exponentialRampToValueAtTime(1046.5, now + 0.1);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now); osc.stop(now + 0.1);
+    } else if (type === 'wrong') { // 오답
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+        osc.start(now); osc.stop(now + 0.2);
+    } else if (type === 'score') { // 점수 올라갈 때 (띠리링)
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(800, now);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        osc.start(now); osc.stop(now + 0.05);
+    } else if (type === 'beep') { // 타이머
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(880, now);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now); osc.stop(now + 0.1);
+    } else if (type === 'end') { // 종료 띠~
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.linearRampToValueAtTime(440, now + 0.5);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+        osc.start(now); osc.stop(now + 0.5);
+    } else if (type === 'spawn') { // 카드 뽁!
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now); osc.stop(now + 0.1);
+    }
+}
+
+// --- 전체화면 ---
+function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {});
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    }
+}
+
+// --- UI 설정 ---
+function setPlayers(n) {
+    config.players = n;
+    document.querySelectorAll('#playerSelect .mode-btn').forEach((btn, i) => {
+        btn.classList.toggle('selected', (i + 1) === n);
+    });
+}
+function setShape(type) {
+    config.shapeType = type;
+    document.querySelectorAll('#shapeSelect .mode-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.getAttribute('onclick').includes(`'${type}'`));
+    });
+}
+
+// --- 게임 시작 ---
+function gameStart() {
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    document.getElementById('introScreen').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'flex';
+    document.getElementById('homeBtnFixed').style.display = 'flex'; // 홈버튼 보이기
+    
+    initArena();
+    initPlayers();
+    
+    gameState.active = true;
+    gameState.timer = config.time;
+    updateTimer();
+    
+    if(gameState.interval) clearInterval(gameState.interval);
+    gameState.interval = setInterval(() => {
+        gameState.timer--;
+        updateTimer();
+        if(gameState.timer <= 5 && gameState.timer > 0) playSound('beep');
+        if(gameState.timer <= 0) {
+            playSound('end');
+            endGame();
+        }
+    }, 1000);
+}
+
+// --- 부드러운 리셋 (전체화면 유지) ---
+function softReset() {
+    document.getElementById('resultModal').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'none';
+    document.getElementById('introScreen').style.display = 'flex';
+    document.getElementById('homeBtnFixed').style.display = 'none';
+    // 나머지는 gameStart()에서 초기화됨
+}
+
+function updateTimer() {
+    const el = document.getElementById('timer');
+    el.textContent = gameState.timer;
+    if(gameState.timer <= 5) el.classList.add('timer-urgent');
+    else el.classList.remove('timer-urgent');
+}
+
+// --- 아레나 초기화 ---
+function initArena() {
+    const arena = document.getElementById('arena');
+    arena.innerHTML = '';
+    
+    gameState.slots = [null, null, null, null, null];
+    
+    for(let i=0; i<5; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'shape-slot empty';
+        slot.id = `slot-${i}`;
+        slot.onpointerdown = (e) => { // 반응속도 향상
+            e.preventDefault();
+            if(gameState.slots[i]) {
+                slot.style.transform = "scale(0.95)";
+                setTimeout(()=> slot.style.transform = "scale(1)", 100);
+            }
+        }; 
+        arena.appendChild(slot);
+        setTimeout(() => spawnShape(i), i * 150 + 300);
+    }
+}
+
+// --- 플레이어 컨트롤러 생성 (하단 배치) ---
+function initPlayers() {
+    gameState.players = [];
+    const zone = document.getElementById('playerZone');
+    zone.innerHTML = '';
+    
+    // 플레이어 수만큼 생성
+    for(let i=0; i<config.players; i++) {
+        const char = CHARACTERS[i];
+        
+        gameState.players.push({
+            id: i,
+            score: 0, // 실제 점수
+            displayScore: 0, // 표시용 점수 (애니메이션)
+            input: ''
+        });
+
+        const ctrl = document.createElement('div');
+        ctrl.className = `player-ctrl ${char.theme}`;
+        
+        // 키패드 HTML 생성
+        let keysHtml = '';
+        [1,2,3,4,5,6,7,8,9].forEach(n => {
+            keysHtml += `<div class="key" onpointerdown="handleInput(${i}, ${n}); event.preventDefault();">${n}</div>`;
+        });
+        // 마지막 줄: 지움, 0, 입력
+        keysHtml += `
+            <div class="key key-del" onpointerdown="handleInput(${i}, 'del'); event.preventDefault();">지움</div>
+            <div class="key" onpointerdown="handleInput(${i}, 0); event.preventDefault();">0</div>
+            <div class="key key-ok" onpointerdown="submitAnswer(${i}); event.preventDefault();">입력</div>
+        `;
+
+        ctrl.innerHTML = `
+            <div class="rich-badge" id="badge-${i}">👑땅부자!</div>
+            <div class="info-row">
+                <span class="p-name">${char.emoji} ${char.name}</span>
+                <div class="p-score-box"><span id="score-${i}">0</span>㎠</div>
+            </div>
+            <div class="input-container">
+                <div class="input-display" id="input-${i}"></div>
+                <div class="unit-mark">㎠</div>
+            </div>
+            <div class="keypad">
+                ${keysHtml}
+            </div>
+        `;
+        zone.appendChild(ctrl);
+    }
+}
+
+// --- 도형 생성 엔진 ---
+function spawnShape(slotIndex) {
+    if(!gameState.active && gameState.timer <= 0) return;
+
+    const slot = document.getElementById(`slot-${slotIndex}`);
+    slot.classList.remove('empty', 'matched');
+    slot.style.opacity = '1';
+    slot.style.transform = 'scale(1)';
+    slot.classList.add('pop-in');
+    
+    playSound('spawn'); // 뽁 소리
+
+    let currentType = config.shapeType;
+    if (currentType === 'all') {
+        const types = ['rect', 'tri', 'circle', 'comp'];
+        currentType = types[rand(0, 3)];
+    }
+
+    const problem = generateProblem(currentType);
+    gameState.slots[slotIndex] = problem;
+    
+    slot.innerHTML = `<svg viewBox="0 0 200 200">${problem.svg}</svg>`;
+}
+
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function generateProblem(type) {
+    let svg = '';
+    let area = 0;
+    
+    const drawDim = (x, y, text) => `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" class="dim-text">${text}cm</text>`;
+    
+    // 전체 도형 스케일 조절 (기존 160 -> 125, 약 80% 수준으로 축소)
+    const MAX_SIZE = 125; 
+
+    if (type === 'rect') {
+        const subType = ['rect', 'para', 'trap', 'rhom'][rand(0, 3)];
+        if(subType === 'rect') {
+            const w = rand(3, 9); const h = rand(2, 6);
+            area = w * h;
+            const sw = w * 20; const sh = h * 20;
+            const scale = Math.min(MAX_SIZE/sw, MAX_SIZE/sh, 1);
+            const rw = sw * scale; const rh = sh * scale;
+            svg = `<rect x="${100-rw/2}" y="${100-rh/2}" width="${rw}" height="${rh}" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   ${drawDim(100, 100-rh/2-15, w)} ${drawDim(100+rw/2+25, 100, h)}`;
+        } else if (subType === 'para') {
+            const b = rand(3, 9); const h = rand(2, 6);
+            area = b * h;
+            const sb = b * 20; const sh = h * 20; const off = 30;
+            const scale = Math.min(MAX_SIZE/(sb+off), MAX_SIZE/sh, 1);
+            const rb = sb * scale; const rh = sh * scale; const roff = off * scale;
+            svg = `<polygon points="${100-rb/2+roff},${100-rh/2} ${100+rb/2+roff},${100-rh/2} ${100+rb/2-roff},${100+rh/2} ${100-rb/2-roff},${100+rh/2}" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="100" y1="${100-rh/2}" x2="100" y2="${100+rh/2}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   ${drawDim(100, 100+rh/2+15, b)} ${drawDim(100, 100, h)}`;
+        } else if (subType === 'trap') {
+            const u = rand(2, 6); const d = rand(u+1, 10); const h = rand(2, 6);
+            let finalH = h;
+            if((u+d)*finalH % 2 !== 0) finalH = (finalH % 2 === 0) ? finalH : finalH + 1;
+            area = (u+d)*finalH / 2;
+            
+            // 0: Iso(기존), 1: Left-Right(왼쪽직각), 2: Right-Right(오른쪽직각)
+            const trapType = rand(0, 2); 
+            
+            const su = u*20; const sd = d*20; const sh = finalH*20;
+            const scale = Math.min(MAX_SIZE/sd, MAX_SIZE/sh, 1);
+            const ru = su * scale; const rd = sd * scale; const rh = sh * scale;
+            
+            if (trapType === 0) { // 기존 등변 사다리꼴
+                svg = `<polygon points="${100-ru/2},${100-rh/2} ${100+ru/2},${100-rh/2} ${100+rd/2},${100+rh/2} ${100-rd/2},${100+rh/2}" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                       <line x1="${100-ru/2}" y1="${100-rh/2}" x2="${100-ru/2}" y2="${100+rh/2}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                       ${drawDim(100, 100-rh/2-15, u)} ${drawDim(100, 100+rh/2+15, d)} ${drawDim(100-ru/2, 100, finalH)}`;
+            } else if (trapType === 1) { // 왼쪽이 직각
+                const maxW = Math.max(ru, rd);
+                const leftX = 100 - maxW/2;
+                svg = `<polygon points="${leftX},${100-rh/2} ${leftX+ru},${100-rh/2} ${leftX+rd},${100+rh/2} ${leftX},${100+rh/2}" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                       ${drawDim(leftX+ru/2, 100-rh/2-15, u)} ${drawDim(leftX+rd/2, 100+rh/2+15, d)} ${drawDim(leftX-15, 100, finalH)}`;
+            } else { // 오른쪽이 직각
+                const maxW = Math.max(ru, rd);
+                const rightX = 100 + maxW/2;
+                svg = `<polygon points="${rightX-ru},${100-rh/2} ${rightX},${100-rh/2} ${rightX},${100+rh/2} ${rightX-rd},${100+rh/2}" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                       ${drawDim(rightX-ru/2, 100-rh/2-15, u)} ${drawDim(rightX-rd/2, 100+rh/2+15, d)} ${drawDim(rightX+15, 100, finalH)}`;
+            }
+        } else { 
+            // 마름모
+            const d1 = rand(4, 10); const d2 = rand(4, 10);
+            let finalD2 = d2;
+            if((d1*finalD2)%2 !== 0) finalD2++;
+            area = d1 * finalD2 / 2;
+            const sd1 = d1 * 20; const sd2 = finalD2 * 20;
+            const scale = Math.min(MAX_SIZE/sd1, MAX_SIZE/sd2, 1);
+            const rd1 = sd1 * scale; const rd2 = sd2 * scale;
+            svg = `<polygon points="100,${100-rd2/2} ${100+rd1/2},100 100,${100+rd2/2} ${100-rd1/2},100" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="100" y1="${100-rd2/2+2}" x2="100" y2="${100+rd2/2-2}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   <line x1="${100-rd1/2+2}" y1="100" x2="${100+rd1/2-2}" y2="100" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   ${drawDim(100, 100-rd2/2-15, finalD2)} ${drawDim(100+rd1/2+25, 100, d1)}`;
+        }
+    } else if (type === 'tri') {
+        const b = rand(4, 12); const h = rand(3, 9);
+        let finalH = h;
+        if((b*finalH)%2 !== 0) finalH++;
+        area = b * finalH / 2;
+        
+        const sb = b * 20; const sh = finalH * 20;
+        const scale = Math.min(MAX_SIZE/sb, MAX_SIZE/sh, 1);
+        const rb = sb * scale; const rh = sh * scale;
+        
+        // 0: Normal, 1: Right-Left, 2: Right-Right, 3: Inverted, 4: Inv-Right-Left, 5: Inv-Right-Right
+        const triType = rand(0, 5);
+        
+        if(triType === 0) { // 기존 이등변
+            svg = `<polygon points="100,${100-rh/2} ${100-rb/2},${100+rh/2} ${100+rb/2},${100+rh/2}" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="100" y1="${100-rh/2}" x2="100" y2="${100+rh/2}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   ${drawDim(100, 100+rh/2+15, b)} ${drawDim(100, 100, finalH)}`;
+        } else if (triType === 1) { // 직각(왼쪽 90도)
+            svg = `<polygon points="${100-rb/2},${100-rh/2} ${100-rb/2},${100+rh/2} ${100+rb/2},${100+rh/2}" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="${100-rb/2+2}" y1="${100-rh/2}" x2="${100-rb/2+2}" y2="${100+rh/2}" stroke="var(--dim-color)" stroke-dasharray="4" stroke-opacity="0.5"/>
+                   ${drawDim(100, 100+rh/2+15, b)} ${drawDim(100-rb/2-15, 100, finalH)}`;
+        } else if (triType === 2) { // 직각(오른쪽 90도)
+            svg = `<polygon points="${100+rb/2},${100-rh/2} ${100+rb/2},${100+rh/2} ${100-rb/2},${100+rh/2}" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="${100+rb/2-2}" y1="${100-rh/2}" x2="${100+rb/2-2}" y2="${100+rh/2}" stroke="var(--dim-color)" stroke-dasharray="4" stroke-opacity="0.5"/>
+                   ${drawDim(100, 100+rh/2+15, b)} ${drawDim(100+rb/2+15, 100, finalH)}`;
+        } else if (triType === 3) { // 역삼각형(이등변)
+            svg = `<polygon points="${100-rb/2},${100-rh/2} ${100+rb/2},${100-rh/2} 100,${100+rh/2}" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="100" y1="${100-rh/2}" x2="100" y2="${100+rh/2}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   ${drawDim(100, 100-rh/2-15, b)} ${drawDim(100, 100, finalH)}`;
+        } else if (triType === 4) { // 역직각(왼쪽 위 90도)
+            svg = `<polygon points="${100-rb/2},${100-rh/2} ${100+rb/2},${100-rh/2} ${100-rb/2},${100+rh/2}" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="${100-rb/2+2}" y1="${100-rh/2}" x2="${100-rb/2+2}" y2="${100+rh/2}" stroke="var(--dim-color)" stroke-dasharray="4" stroke-opacity="0.5"/>
+                   ${drawDim(100, 100-rh/2-15, b)} ${drawDim(100-rb/2-15, 100, finalH)}`;
+        } else if (triType === 5) { // 역직각(오른쪽 위 90도)
+            svg = `<polygon points="${100-rb/2},${100-rh/2} ${100+rb/2},${100-rh/2} ${100+rb/2},${100+rh/2}" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="${100+rb/2-2}" y1="${100-rh/2}" x2="${100+rb/2-2}" y2="${100+rh/2}" stroke="var(--dim-color)" stroke-dasharray="4" stroke-opacity="0.5"/>
+                   ${drawDim(100, 100-rh/2-15, b)} ${drawDim(100+rb/2+15, 100, finalH)}`;
+        }
+
+    } else if (type === 'circle') {
+        const subType = rand(0, 3); // 0:완전, 1:반원, 2:1/4, 3:3/4
+        
+        let r;
+        if (subType === 0) {
+            // 완전한 원: 반지름 2, 3, 4, 5, 6 가능 (3, 5는 원주율 3일때 정수 넓이 가능)
+            r = rand(2, 6);
+        } else {
+            // 부분 원: 짝수여야 정수 넓이 가능
+            r = rand(1, 3) * 2; // 2, 4, 6
+        }
+
+        // 스케일 축소: 기존 *20 -> *15
+        const sr = r * 15; 
+
+        if (subType === 0) { // 완전한 원
+            area = r * r * 3;
+            svg = `<circle cx="100" cy="100" r="${sr}" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="100" y1="100" x2="${100+sr}" y2="100" stroke="var(--dim-color)" stroke-dasharray="4" stroke-width="2"/>
+                   ${drawDim(100+sr/2, 90, r)}`;
+
+        } else if (subType === 1) { // 반원 (180도)
+            area = (r * r * 3) / 2;
+            const cy = 100 + sr/2;
+            svg = `<path d="M 100 ${cy} L ${100+sr} ${cy} A ${sr} ${sr} 0 0 0 ${100-sr} ${cy} Z" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="100" y1="${cy}" x2="${100}" y2="${cy-sr}" stroke="var(--dim-color)" stroke-dasharray="4" stroke-width="2"/>
+                   ${drawDim(100+15, cy-sr/2, r)}`;
+
+        } else if (subType === 2) { // 1/4 원 (90도)
+            area = (r * r * 3) / 4;
+            const cx = 100 - sr/2;
+            const cy = 100 + sr/2;
+            svg = `<path d="M ${cx} ${cy} L ${cx+sr} ${cy} A ${sr} ${sr} 0 0 0 ${cx} ${cy-sr} Z" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy-sr}" stroke="var(--dim-color)" stroke-dasharray="4" stroke-width="2"/>
+                   ${drawDim(cx-15, cy-sr/2, r)}`;
+
+        } else { // 3/4 원 (270도)
+            area = (r * r * 3) * 3 / 4;
+            svg = `<path d="M 100 100 L 100 ${100-sr} A ${sr} ${sr} 0 1 0 ${100+sr} 100 Z" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="100" y1="100" x2="${100+sr}" y2="100" stroke="var(--dim-color)" stroke-dasharray="4" stroke-width="2"/>
+                   ${drawDim(100+sr/2, 115, r)}`;
+        }
+        // 원주율 위치 하단으로 조정 (y=185 -> 195)
+        svg += `<text x="100" y="195" text-anchor="middle" class="pi-text">원주율: 3</text>`;
+    } else if (type === 'comp') {
+        // 0: Rect+TopTri, 1: Rect+BotTri, 2: Hex(Tri+Rect+Tri), 3: Rect+TopRect, 4: Rect+BotRect
+        const compType = rand(0, 4);
+        
+        const w = rand(4, 8); 
+        const h_rect = rand(2, 4); 
+        
+        // 부속 도형 높이/너비 계산
+        let subH = rand(2, 6);
+        let finalSubH = subH;
+        if(compType < 3) { // 삼각형인 경우, 넓이 정수화
+            if((w*finalSubH)%2 !== 0) finalSubH++; 
+        }
+
+        // Rect+Rect용 작은 사각형 너비
+        let subW = 0;
+        if(compType >= 3) {
+            subW = rand(2, w-1); // 본체보다는 작게
+        }
+        
+        const sw = w * 20; 
+        const sh_rect = h_rect * 20; 
+        const sh_sub = finalSubH * 20; 
+        const sw_sub = subW * 20;
+
+        // 면적 계산
+        if(compType < 2) { // Tri + Rect
+            area = (w * h_rect) + (w * finalSubH / 2);
+        } else if (compType === 2) { // Hexagon (Tri + Rect + Tri)
+            // 아래 삼각형 추가
+            let subH2 = rand(2, 6);
+            let finalSubH2 = subH2;
+            if((w*finalSubH2)%2 !== 0) finalSubH2++;
+            area = (w * h_rect) + (w * finalSubH / 2) + (w * finalSubH2 / 2);
+            // Hexagon 로직은 복잡하여 별도 처리 없이 아래에서 바로 그림
+        } else { // Rect + Rect
+            area = (w * h_rect) + (subW * finalSubH);
+        }
+
+        // 스케일 계산 (MAX_SIZE 적용)
+        let totalH = sh_rect + sh_sub;
+        if(compType === 2) totalH += 100; // 대충 넉넉히 잡음 (Hexagon scale은 아래서 다시)
+        
+        const scale = Math.min(MAX_SIZE/sw, MAX_SIZE/totalH, 1);
+        const rw = sw * scale; const rh_rect = sh_rect * scale; const rh_sub = sh_sub * scale;
+        const rw_sub = sw_sub * scale;
+
+        // 삼각형 타입 수정: 항상 이등변 삼각형(0)만 나오도록 고정 (직각 삼각형 제거)
+        const triStyle = 0; 
+        const getTriPeakX = (cx, halfW, style) => {
+             return cx; // Always Iso
+        };
+
+        if (compType === 0) { // Rect + Top Tri
+            const startY = 100 + (rh_rect+rh_sub)/2 - rh_rect;
+            const peakX = getTriPeakX(100, rw/2, triStyle);
+            
+            svg = `<path d="M${100-rw/2},${startY} v${rh_rect} h${rw} v-${rh_rect} L${peakX},${startY-rh_sub} Z" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="${100-rw/2}" y1="${startY}" x2="${100+rw/2}" y2="${startY}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   <line x1="100" y1="${startY}" x2="100" y2="${startY-rh_sub}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   ${drawDim(100, startY+rh_rect+15, w)} ${drawDim(100-rw/2-15, startY+rh_rect/2, h_rect)} ${drawDim(100+5, startY-rh_sub/2, finalSubH)}`;
+
+        } else if (compType === 1) { // Rect + Bottom Tri
+            const startY = 100 - (rh_rect+rh_sub)/2; 
+            const peakX = getTriPeakX(100, rw/2, triStyle);
+
+            svg = `<path d="M${100-rw/2},${startY} h${rw} v${rh_rect} L${peakX},${startY+rh_rect+rh_sub} L${100-rw/2},${startY+rh_rect} Z" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="${100-rw/2}" y1="${startY+rh_rect}" x2="${100+rw/2}" y2="${startY+rh_rect}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   <line x1="100" y1="${startY+rh_rect}" x2="100" y2="${startY+rh_rect+rh_sub}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   ${drawDim(100, startY-15, w)} ${drawDim(100-rw/2-15, startY+rh_rect/2, h_rect)} ${drawDim(100+5, startY+rh_rect+rh_sub/2, finalSubH)}`;
+
+        } else if (compType === 2) { // Hexagon (기존 유지)
+            // 아래 삼각형 추가 높이 다시 계산
+            let subH2 = rand(2, 6);
+            let finalSubH2 = subH2;
+            if((w*finalSubH2)%2 !== 0) finalSubH2++;
+            
+            // 면적 재계산 (변수 범위 문제 해결)
+            area = (w * h_rect) + (w * finalSubH / 2) + (w * finalSubH2 / 2);
+
+            const sh_sub2 = finalSubH2 * 20;
+            const totalH_hex = sh_rect + sh_sub + sh_sub2;
+            const scaleHex = Math.min(MAX_SIZE/sw, MAX_SIZE/totalH_hex, 0.9);
+
+            const rw_hex = sw * scaleHex; 
+            const rh_r = sh_rect * scaleHex; 
+            const rh_t1 = sh_sub * scaleHex; 
+            const rh_t2 = sh_sub2 * scaleHex;
+            
+            const rectTopY = 100 - (totalH_hex*scaleHex)/2 + rh_t1;
+            
+            // 위아래 삼각형 랜덤 피크 적용
+            const peakX1 = getTriPeakX(100, rw_hex/2, triStyle);
+            const peakX2 = getTriPeakX(100, rw_hex/2, rand(0, 2));
+
+            svg = `<path d="M${100-rw_hex/2},${rectTopY} L${peakX1},${rectTopY-rh_t1} L${100+rw_hex/2},${rectTopY} v${rh_r} L${peakX2},${rectTopY+rh_r+rh_t2} L${100-rw_hex/2},${rectTopY+rh_r} Z" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="${100-rw_hex/2}" y1="${rectTopY}" x2="${100+rw_hex/2}" y2="${rectTopY}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   <line x1="100" y1="${rectTopY}" x2="100" y2="${rectTopY-rh_t1}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   <line x1="${100-rw_hex/2}" y1="${rectTopY+rh_r}" x2="${100+rw_hex/2}" y2="${rectTopY+rh_r}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   <line x1="100" y1="${rectTopY+rh_r}" x2="100" y2="${rectTopY+rh_r+rh_t2}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+
+                   ${drawDim(100-rw_hex/2-25, rectTopY+rh_r/2, h_rect)} 
+                   ${drawDim(100+15, rectTopY-rh_t1/2, finalSubH)}
+                   ${drawDim(100+15, rectTopY+rh_r+rh_t2/2, finalSubH2)}
+                   ${drawDim(100, rectTopY+rh_r/2, w)} `;
+
+        } else if (compType === 3) { // Rect + Top Rect
+            const startY = 100 + (rh_rect+rh_sub)/2 - rh_rect;
+            // 작은 사각형 중앙 정렬
+            const subX = 100 - rw_sub/2;
+            
+            svg = `<path d="M${100-rw/2},${startY} v${rh_rect} h${rw} v-${rh_rect} h-${(rw-rw_sub)/2} v-${rh_sub} h-${rw_sub} v${rh_sub} Z" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="${subX}" y1="${startY}" x2="${subX+rw_sub}" y2="${startY}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   ${drawDim(100, startY+rh_rect+15, w)} ${drawDim(100-rw/2-15, startY+rh_rect/2, h_rect)}
+                   ${drawDim(subX+rw_sub+15, startY-rh_sub/2, finalSubH)} ${drawDim(100, startY-rh_sub-10, subW)}`;
+
+        } else if (compType === 4) { // Rect + Bottom Rect
+            const startY = 100 - (rh_rect+rh_sub)/2;
+            const subX = 100 - rw_sub/2;
+
+            svg = `<path d="M${100-rw/2},${startY} h${rw} v${rh_rect} h-${(rw-rw_sub)/2} v${rh_sub} h-${rw_sub} v-${rh_sub} h-${(rw-rw_sub)/2} Z" fill="var(--shape-fill)" stroke="var(--shape-stroke)" stroke-width="3"/>
+                   <line x1="${subX}" y1="${startY+rh_rect}" x2="${subX+rw_sub}" y2="${startY+rh_rect}" stroke="var(--dim-color)" stroke-dasharray="4"/>
+                   ${drawDim(100, startY-15, w)} ${drawDim(100-rw/2-15, startY+rh_rect/2, h_rect)}
+                   ${drawDim(subX+rw_sub+15, startY+rh_rect+rh_sub/2, finalSubH)} ${drawDim(100, startY+rh_rect+rh_sub+15, subW)}`;
+        }
+    }
+    return { svg, area };
+}
+
+// --- 입력 및 점수 처리 ---
+function handleInput(pid, val) {
+    if(!gameState.active) return;
+    const p = gameState.players[pid];
+    const display = document.getElementById(`input-${pid}`);
+    
+    if(val === 'del') {
+        p.input = p.input.slice(0, -1);
+    } else {
+        if(p.input.length < 4) p.input += val;
+    }
+    display.textContent = p.input;
+}
+
+function submitAnswer(pid) {
+    if(!gameState.active) return;
+    const p = gameState.players[pid];
+    if(!p.input) return;
+    
+    const val = parseFloat(p.input);
+    let matchedSlotIndex = -1;
+    
+    // 정답 확인
+    for(let i=0; i<5; i++) {
+        if(gameState.slots[i] && gameState.slots[i].area === val) {
+            matchedSlotIndex = i;
+            break;
+        }
+    }
+    
+    const inputEl = document.getElementById(`input-${pid}`);
+    
+    if(matchedSlotIndex !== -1) {
+        // 정답!
+        playSound('pop');
+        p.score += val;
+        
+        // 점수 롤링 애니메이션
+        animateScore(pid, p.score);
+        updateRichBadge();
+        
+        // 피드백
+        inputEl.style.backgroundColor = '#b2f2bb';
+        p.input = '';
+        setTimeout(() => { 
+            inputEl.textContent = '성공!'; 
+            inputEl.style.backgroundColor = 'white';
+        }, 200);
+        
+        // 도형 처리
+        const slot = document.getElementById(`slot-${matchedSlotIndex}`);
+        slot.classList.add('matched');
+        gameState.slots[matchedSlotIndex] = null; 
+        
+        setTimeout(() => {
+            slot.classList.remove('matched');
+            slot.style.opacity = '0';
+            slot.innerHTML = '';
+        }, 300);
+        
+        // 리스폰
+        setTimeout(() => spawnShape(matchedSlotIndex), 3000);
+        
+    } else {
+        // 오답
+        playSound('wrong');
+        inputEl.classList.add('shake');
+        setTimeout(() => inputEl.classList.remove('shake'), 300);
+        p.input = '';
+        inputEl.textContent = '';
+    }
+}
+
+// 점수 좌라락 올라가는 효과
+function animateScore(pid, targetScore) {
+    const p = gameState.players[pid];
+    const el = document.getElementById(`score-${pid}`);
+    
+    const duration = 500; // 0.5초 동안
+    const startScore = p.displayScore;
+    const startTime = performance.now();
+    
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function (easeOutQuad)
+        const ease = 1 - (1 - progress) * (1 - progress);
+        
+        const currentVal = Math.floor(startScore + (targetScore - startScore) * ease);
+        el.textContent = currentVal;
+        
+        // 효과음 (일정 간격으로)
+        if(currentVal > p.displayScore && currentVal % 3 === 0) playSound('score');
+        
+        p.displayScore = currentVal;
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        } else {
+            p.displayScore = targetScore;
+            el.textContent = targetScore;
+        }
+    }
+    requestAnimationFrame(update);
+}
+
+// 땅부자 뱃지 업데이트
+function updateRichBadge() {
+    const players = gameState.players;
+    let maxScore = -1;
+    let leaderId = -1;
+
+    // 0점이면 뱃지 안줌
+    players.forEach(p => {
+        if(p.score > 0 && p.score > maxScore) {
+            maxScore = p.score;
+            leaderId = p.id;
+        }
+    });
+
+    // 동점자 처리 (먼저 도달한 사람 유지하거나, 모두 주거나. 여기선 단독 1등만)
+    // 뱃지 초기화
+    document.querySelectorAll('.rich-badge').forEach(el => el.style.display = 'none');
+    
+    if(leaderId !== -1) {
+        document.getElementById(`badge-${leaderId}`).style.display = 'block';
+    }
+}
+
+// --- 게임 종료 ---
+function endGame() {
+    gameState.active = false;
+    clearInterval(gameState.interval);
+    
+    const modal = document.getElementById('resultModal');
+    const graphContainer = document.getElementById('resultGraph');
+    graphContainer.innerHTML = '';
+    
+    // 점수 확인 및 최대 점수 계산 (그래프 비율용)
+    const scores = gameState.players.map(p => p.score);
+    const maxScore = Math.max(...scores, 100); // 최소 100기준
+    
+    // 그래프 생성
+    gameState.players.forEach(p => {
+        const char = CHARACTERS[p.id];
+        const heightPercent = (p.score / maxScore) * 80 + 5; // 최소 5%
+        
+        // 1등 확인
+        const isWinner = p.score === Math.max(...scores) && p.score > 0;
+        
+        const barGroup = document.createElement('div');
+        barGroup.className = 'bar-group';
+        barGroup.innerHTML = `
+            <div class="bar-val">${p.score}㎠</div>
+            <div class="bar" style="background:${char.color};">
+                ${isWinner ? '<div class="winner-crown">👑</div>' : ''}
+            </div>
+            <div class="bar-icon">${char.emoji}</div>
+            <div class="bar-name">${char.name}</div>
+        `;
+        
+        graphContainer.appendChild(barGroup);
+        
+        // 애니메이션: 높이 설정
+        setTimeout(() => {
+            barGroup.querySelector('.bar').style.height = heightPercent + '%';
+        }, 100);
+    });
+    
+    modal.style.display = 'flex';
+}
+
+</script>
+</body>
+</html>

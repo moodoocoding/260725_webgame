@@ -1,0 +1,1 @@
+window.KING_LATEST_VERSION = "v2026-03-19";

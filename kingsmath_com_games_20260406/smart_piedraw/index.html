@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5YW0T2C109');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>원그래프 그려킹 모바일</title>
+    <meta name="description" content="원그래프를 정확히 그리고 시간을 획득하세요! 타임어택 수학 킹!">
+    <meta name="keywords" content="원그래프, 수학게임, 킹수학, 초등수학">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <script>
+      tailwind = {
+        corePlugins: {
+          preflight: false,
+        }
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --game-bg-color: #0b0e27; 
+        }
+
+        * { 
+            box-sizing: border-box; 
+            touch-action: manipulation; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--game-bg-color);
+            font-family: 'Jua', sans-serif;
+            height: 100vh; 
+            height: 100dvh; 
+            display: flex; justify-content: center;
+            overflow: hidden; user-select: none;
+            -webkit-user-select: none; touch-action: none; 
+        }
+
+        #game-container {
+            width: 100%; max-width: 500px; height: 100%;
+            background: var(--game-bg-color); position: relative;
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .hidden { display: none !important; }
+        .center { text-align: center; }
+        button { 
+            cursor: pointer; border: none; font-family: inherit; transition: transform 0.05s; outline: none; 
+        }
+
+        /* --- 1. 시작 화면 --- */
+        #start-screen {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            justify-content: flex-start; padding-top: 2.5vh; padding-bottom: 5vh; 
+            background-color: var(--game-bg-color); 
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
+        }
+        
+        #top-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; padding: 0 20px; margin-bottom: 1vh; flex-shrink: 0;
+            position: relative;
+        }
+        
+        #kingsmath-link-btn {
+            font-size: 2.5vh; color: #fff; text-decoration: none; font-weight: bold;
+            background: rgba(255,255,255,0.1); padding: 5px 15px; border: 2px dashed rgba(255,255,255,0.5);
+            border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        /* 다국어 선택기 스타일 (왼쪽 링크 버튼과 동일한 디자인 적용) */
+        #langTriggerContainer {
+            position: absolute; right: 20px; top: 0;
+            z-index: 99999;
+        }
+        
+        #langTriggerBtn {
+            font-family: sans-serif;
+            font-size: 2.2vh; color: #fff; background: rgba(255,255,255,0.1); 
+            padding: 5px 15px; height: 100%; border: 2px dashed rgba(255,255,255,0.5); 
+            border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .main-title { 
+            font-size: 6.5vh; color: #fff; margin: 1vh 0; 
+            text-shadow: 3px 3px 0px #e74c3c; line-height: 1.2; text-align: center;
+            display: flex; align-items: baseline; justify-content: center; gap: 10px; flex-wrap: wrap;
+            white-space: nowrap; /* 폰트 자동 조절용 */
+        }
+        .title-sub { font-size: 3vh; color: #FFD700; text-shadow: 2px 2px 0px #d35400; }
+        
+        #qrcode-area {
+            margin: 1.5vh 0; padding: 10px; background: white;
+            border: 3px dashed #3498db; border-radius: 15px; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .qr-invite-text {
+            font-size: 1.8vh; color: #3498db; text-align: center;
+            margin-top: -1vh; margin-bottom: 1.5vh; cursor: pointer; font-weight: bold;
+        }
+ 
+        .desc { font-size: 2.5vh; color: #2ecc71; margin: 1.5vh 0; font-weight: bold; text-align: center; padding: 0 10px; word-break: keep-all;}
+
+        input#nickname {
+            width: 85%; padding: 1.5vh; font-size: 4vh; text-align: center;
+            border: 3px dashed #f1c40f; border-radius: 30px; 
+            font-family: inherit; margin-bottom: 2vh;
+            color: #fff; background-color: rgba(0,0,0,0.4);
+        }
+        input#nickname:focus { outline: none; border-color: #2ecc71; border-style: solid; }
+
+      .btn-start {
+    width: 85%; padding: 1.5vh; font-size: 4.5vh; 
+    background: linear-gradient(to bottom, #e74c3c, #c0392b); color: white;
+    border: 3px dashed rgba(255,255,255,0.5); border-radius: 30px;
+    box-shadow: 0 0.6vh #922b21; margin-bottom: 2vh;
+    word-break: keep-all; /* ✅ 추가/변경 */
+}
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 0.2vh #922b21; }
+
+        #ranking-board {
+            margin-top: 2vh; width: 90%; background: rgba(0,0,0,0.5);
+            border: 3px dashed #9b59b6; border-radius: 15px; color: #fff;
+            padding: 1vh; height: 35vh; overflow-y: auto; flex-shrink: 0; 
+        }
+        .rank-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0.8vh 0.5vh; border-bottom: 1px dashed rgba(255,255,255,0.2); font-size: 2.2vh; 
+        }
+
+        /* --- 2. 게임 화면 --- */
+        #game-screen {
+            flex: 1; display: flex; flex-direction: column;
+            background-color: var(--game-bg-color);
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            position: relative; overflow: hidden; width: 100%;
+        }
+
+        .game-header-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px; width: 100%; flex-shrink: 0;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .icon-btn {
+            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+            color: white; border-radius: 10px; font-size: 3vh; padding: 5px 15px;
+            cursor: pointer; transition: transform 0.1s;
+        }
+        .icon-btn:active { transform: scale(0.9); }
+
+        .status-box {
+            background: rgba(255,255,255,0.95); border: 2px solid #333;
+            border-radius: 10px; padding: 2px 15px; text-align: center;
+            box-shadow: 0 4px 0px rgba(0,0,0,0.5); position: relative;
+        }
+        .status-label { font-size: 1.5vh; color: #555; margin-bottom: -5px; }
+        .status-val { font-size: 3.5vh; color: #000; font-weight: bold; }
+        
+        #bonus-anim {
+            position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+            color: #2ecc71; font-size: 3vh; font-weight: bold;
+            text-shadow: 0 0 5px #000; opacity: 0; pointer-events: none;
+        }
+        .bonus-anim-run { animation: floatUp 1s ease-out; }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translate(-50%, 0); }
+            100% { opacity: 0; transform: translate(-50%, -30px); }
+        }
+
+        /* --- 3. 데이터 및 원그래프 뷰 --- */
+        #game-area-wrapper {
+            flex: 1; display: flex; flex-direction: column; width: 100%; padding: 10px;
+        }
+
+        .data-table-container {
+            background: rgba(255, 255, 255, 0.95); border: 3px solid #333; border-radius: 10px;
+            padding: 5px 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            width: 100%; text-align: center; margin-bottom: 10px; flex-shrink: 0;
+        }
+        .table-title { color: #000; font-size: 2.2vh; margin-bottom: 4px; font-weight: normal; }
+        .custom-table { width: 100%; border-collapse: collapse; color: #000; font-size: 2vh; }
+        .custom-table th, .custom-table td { border: 2px solid #555; padding: 3px 2px; background: #fff; text-align: center; }
+        .custom-table thead th { background-color: #f0f0f0; font-weight: normal; }
+        .table-header-col { background-color: #e0e0e0 !important; width: 15%; font-size: 1.8vh; }
+        
+        .t-strawberry { color: #d63031; } .t-watermelon { color: #009432; }
+        .t-mango { color: #e1b12c; } .t-apple { color: #c0392b; }
+        .t-grape { color: #8e44ad; } .t-sum { color: #000; font-weight: normal; background-color: #fffbd7 !important; }
+
+        .player-zone {
+            flex: 1; position: relative; display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-end; width: 100%;
+        }
+        
+        .canvas-container { flex: 1; width: 100%; position: relative; cursor: pointer; }
+        #game-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+        .error-display {
+            position: absolute; top: 20%; width: 100%; text-align: center;
+            font-size: 5vh; color: #ff4757; text-shadow: 0 0 10px #000;
+            opacity: 0; transition: opacity 0.5s; z-index: 500; pointer-events: none;
+        }
+
+        /* 컨트롤 버튼 (수정/제출) */
+        .action-buttons {
+            display: flex; gap: 15px; width: 100%; justify-content: center;
+            padding: 10px 0; z-index: 400; position: absolute; bottom: 5px;
+        }
+        .submit-btn, .undo-btn {
+            padding: 10px 30px; font-size: 2.5vh;
+            color: white; border: none; border-radius: 50px;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .submit-btn {
+            background: linear-gradient(to bottom, #2ecc71, #27ae60);
+            box-shadow: 0 5px 0 #1e8449, 0 10px 10px rgba(0,0,0,0.3);
+        }
+        .submit-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #1e8449, 0 5px 5px rgba(0,0,0,0.3); }
+        .undo-btn {
+            background: linear-gradient(to bottom, #e67e22, #d35400);
+            box-shadow: 0 5px 0 #a84300, 0 10px 10px rgba(0,0,0,0.3);
+        }
+        .undo-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #a84300, 0 5px 5px rgba(0,0,0,0.3); }
+
+        /* --- 4. 기타 모달 및 결과 화면 --- */
+        #result-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(11, 14, 39, 0.95);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 1000; padding-bottom: 5vh; 
+        }
+        .result-score { font-size: 9vh; color: #FFD700; margin: 1vh 0; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+
+        #qr-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 2000;
+        }
+        #qrcode-large { background: white; padding: 20px; border-radius: 20px; display: flex; justify-content: center; align-items: center; }
+        
+        #qrcode-large canvas, #qrcode-large img { width: 55vmin !important; height: 55vmin !important; max-width: 280px !important; max-height: 280px !important; }
+
+        #countdown-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 14, 39, 0.9); z-index: 2000;
+            display: flex; justify-content: center; align-items: center;
+        }
+        #countdown-text {
+            font-size: 20vh; font-weight: bold; color: #FFD700; text-shadow: 0 0 20px #ff0000;
+            animation: pulse 0.5s infinite alternate;
+        }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+        ::-webkit-scrollbar { width: 14px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.3); border-radius: 10px; border: 4px solid #0b0e27; background-clip: content-box; }
+
+        /* --- 다국어 모달 UI 독립 스타일 세팅 --- */
+        #langModal, #langModal * { box-sizing: border-box !important; }
+        #langModal { font-family: sans-serif; }
+        /* Font Awesome 아이콘 깨짐 방지 완벽 처리 */
+        #langModal i, #langTriggerBtn i { font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important; font-weight: 900; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        .modal-overlay { opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { transform: scale(0.95) translateY(-10px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+        .toast { transform: translateY(100%); opacity: 0; transition: all 0.3s ease; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body oncontextmenu="return false" ondragstart="return false" onselectstart="return false">
+
+<div id="game-container">
+    <div id="start-screen">
+        <div id="top-nav">
+            <a id="kingsmath-link-btn" href="/" target="_self">킹수학.com</a>
+            
+            <div id="langTriggerContainer">
+                <button id="langTriggerBtn" onclick="openModal()">
+                    <i class="fa-solid fa-globe" style="color:#d1d5db;"></i>
+                    <img id="currentFlag" src="https://flagcdn.com/w40/kr.png" alt="KR" style="width:20px; border-radius:2px;">
+                    <span id="currentLangName" class="hidden sm:inline-block">한국어</span>
+                    <i class="fa-solid fa-chevron-down" style="color:#d1d5db; font-size: 10px; margin-left: 2px;"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="main-title dyn-font">
+            <span data-i18n="mainTitle">원그래프</span>
+            <span class="title-sub" data-i18n="subTitle">그려킹 모바일</span>
+        </div>
+        
+        <div id="qrcode-area" onclick="toggleQR(true)"></div>
+        <div class="qr-invite-text" data-i18n="qrInvite" onclick="toggleQR(true)">QR 코드로 초대하기</div>
+
+        <div class="desc dyn-font" data-i18n="desc">정확히 그리고 시간을 획득하세요!</div>
+        
+        <input type="text" id="nickname" maxlength="8" placeholder="닉네임 입력" onfocus="this.select()" data-i18n-ph="placeholder">
+        
+        <button class="btn-start dyn-font" onclick="startGame()" data-i18n="startBtn">🚀 게임 시작!</button>
+        
+        <a href="/" target="_self" class="link-btn dyn-font" style="color:#fff; text-decoration:none; background:rgba(52, 152, 219, 0.8); padding:10px 20px; border-radius:20px; border:2px dashed #fff;" data-i18n="otherGamesBtn">🎲 다른 게임 고르기</a>
+        
+        <div id="ranking-board">
+            <div class="center" data-i18n="rankingLoading">랭킹을 불러오고 있어요... 🏃‍♂️</div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div class="game-header-row" style="position: relative;">
+            <button class="icon-btn" id="btn-home">🏠</button>
+            
+            <div class="status-box" style="position: absolute; left: 50%; transform: translateX(-50%); width: 140px;">
+                <div class="status-label" data-i18n="scoreLabel">SCORE</div>
+                <div class="status-val" id="score-display">0</div>
+            </div>
+
+            <div class="icon-btn" style="margin-left: auto; display: flex; align-items: center; justify-content: center; cursor: default; position: relative; min-width: 75px;">
+                ⏳ <span id="timer-display" style="margin-left: 5px; font-weight: bold; color: #fff;">60</span>
+                <div id="bonus-anim">+5</div>
+            </div>
+        </div>
+
+        <div id="game-area-wrapper">
+            <div class="data-table-container">
+                <div class="table-title dyn-font" id="t-chart-title">🏫 우리 학교 학생들이 좋아하는 과일</div>
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th class="table-header-col" id="t-th-fruit">과일</th> 
+                            <th class="t-strawberry" id="t-fruit-0">딸기</th>
+                            <th class="t-watermelon" id="t-fruit-1">수박</th>
+                            <th class="t-mango" id="t-fruit-2">망고</th>
+                            <th class="t-apple" id="t-fruit-3">사과</th>
+                            <th class="t-grape" id="t-fruit-4">포도</th>
+                            <th class="t-sum" id="t-th-total">합계</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="data-row"></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="player-zone">
+                <div class="error-display dyn-font" id="error-msg">다시 확인하세요!</div>
+                <div class="canvas-container" id="canvas-wrapper">
+                    <canvas id="game-canvas"></canvas>
+                </div>
+                <div class="action-buttons">
+                    <button class="undo-btn dyn-font" onclick="undoDraw()" id="btn-undo">되돌리기</button>
+                    <button class="submit-btn dyn-font" onclick="checkAnswer()" id="btn-submit">제출하기</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="countdown-screen" class="hidden">
+            <div id="countdown-text">3</div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <h2 class="dyn-font" style="font-size: 5vh; margin:0; color:#ff4757; text-shadow: 2px 2px 0 #000;" data-i18n="gameOver">Game Over! 🏁</h2>
+        <h3 id="res-nickname" style="font-size: 4vh; margin: 10px 0; color:#fff;">Player</h3>
+        <div class="result-score"><span id="res-score">0</span></div>
+        <div id="res-rank" class="dyn-font" style="font-size: 3vh; margin-bottom:30px; color:#2ecc71;" data-i18n="rankQuery">몇 등일까요? 🤔</div>
+        
+        <button class="btn-start dyn-font" onclick="restartGame()" style="background: linear-gradient(to bottom, #2ecc71, #27ae60); box-shadow: 0 0.6vh #1e8449;" data-i18n="restartBtn">🔄 다시 하기</button>
+        <button class="btn-start dyn-font" onclick="goHome()" style="background: linear-gradient(to bottom, #3498db, #2980b9); color:#fff; box-shadow: 0 0.6vh #1c5986;" data-i18n="homeBtn">🏠 처음으로</button>
+
+        <div id="top3-board" style="margin-top:2vh; width:85%; background:rgba(0,0,0,0.5); border:2px dashed #f1c40f; border-radius:15px; padding:10px; color:#fff;">
+            <div style="text-align:center; color:#FFD700; font-weight:bold; font-size:2.5vh; margin-bottom:1vh;">🏆 TOP 3 🏆</div>
+            <div id="top3-list"></div>
+        </div>
+    </div>
+</div>
+
+<div id="qr-modal" class="hidden" onclick="toggleQR(false)">
+    <div style="background:white; padding:30px; border-radius:20px; text-align:center; max-width: 90%; box-sizing: border-box;">
+        <div id="qrcode-large"></div>
+        <div class="center" style="margin-top:15px; font-size:20px; color:#8d6e63; font-weight:bold;">Close 👋</div>
+    </div>
+</div>
+
+<div id="langModal" class="modal-overlay fixed inset-0 z-[99999] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm pt-16 sm:pt-0 px-4">
+    <div class="modal-content bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
+        
+        <div class="flex items-center justify-between p-5 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10">
+            <div>
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-language text-yellow-500"></i>
+                    <span>Language / 언어</span>
+                </h2>
+            </div>
+            <button id="closeModalBtn" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <div class="p-5 pb-2 bg-gray-900">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="searchInput" placeholder="Search / 검색 ..." 
+                    class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 block pl-11 p-3.5 outline-none transition-all placeholder-gray-500">
+            </div>
+        </div>
+
+        <div class="p-5 overflow-y-auto custom-scrollbar flex-1">
+            <div id="languageGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                </div>
+            <div id="noResult" class="hidden flex-col items-center justify-center py-12 text-gray-500">
+                <i class="fa-regular fa-face-frown-open text-4xl mb-3"></i>
+                <p>No results / 검색 결과 없음</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toastNotification" class="toast fixed bottom-6 right-6 bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 flex items-center gap-3 z-[99999]">
+    <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+        <i class="fa-solid fa-check"></i>
+    </div>
+    <div>
+        <p id="ui-toast" class="text-sm font-medium text-white">언어가 변경되었습니다.</p>
+        <p id="toastLangName" class="text-xs text-gray-400">Korean</p>
+    </div>
+</div>
+
+<script>
+    // --- 1. 언어 16개국 데이터베이스 및 번역 ---
+    const i18nData = {
+        ko: { flag: "🇰🇷", pageTitle: "원그래프 그려킹 모바일", mainTitle: "원그래프", subTitle: "그려킹 모바일", desc: "정확히 그리고 시간을 획득하세요!", placeholder: "닉네임 입력", startBtn: "🚀 게임 시작!", otherGamesBtn: "🎲 다른 게임 고르기", rankingLoading: "랭킹 로딩중... 🏃‍♂️", rankingEmpty: "아직 1등이 없어요. 도전! 👑", rankingError: "랭킹 오류 😭", homeBtn: "🏠 처음으로", restartBtn: "🔄 다시하기", gameOver: "게임 오버! 🏁", rankQuery: "몇 등일까요? 🤔", rankResult: "현재 {rank}등 이에요!", rankSaved: "점수 저장 완료!", alertName: "📛 닉네임을 꼭 써주세요!", alertBadWord: "🚫 예쁜 말을 써주세요!", qrInvite: "QR 코드로 초대하기", scoreLabel: "SCORE", metaDesc: "원그래프를 빨리 그리고 시간을 늘려보세요!", chartTitle: "🏫 우리 학교 학생들이 좋아하는 과일", fruits: ["딸기", "수박", "망고", "사과", "포도"], thFruit: "과일", thTotal: "합계", thCount: "비율(%)", unit: "%", submit: "제출하기", undo: "되돌리기", error: "다시 확인하세요!" },
+        en: { flag: "🇺🇸", pageTitle: "Pie Chart King", mainTitle: "Pie Chart", subTitle: "Math King", desc: "Draw correctly and earn time!", placeholder: "Enter Name", startBtn: "🚀 Start Game", otherGamesBtn: "🎲 Other Games", rankingLoading: "Loading... 🏃‍♂️", rankingEmpty: "No King yet. Be the first! 👑", rankingError: "Error 😭", homeBtn: "🏠 Home", restartBtn: "🔄 Retry", gameOver: "Game Over! 🏁", rankQuery: "Rank Checking... 🤔", rankResult: "You are Rank {rank}!", rankSaved: "Score Saved!", alertName: "📛 Enter Name!", alertBadWord: "🚫 Nice words only!", qrInvite: "Invite via QR Code", scoreLabel: "SCORE", metaDesc: "Draw pie charts fast and earn time bonus!", chartTitle: "🏫 Fruits Our Students Like", fruits: ["Berry", "Melon", "Mango", "Apple", "Grape"], thFruit: "Fruit", thTotal: "Total", thCount: "Ratio(%)", unit: "%", submit: "Submit", undo: "Undo", error: "Check Again!" },
+        zh: { flag: "🇨🇳", pageTitle: "饼图之王", mainTitle: "饼图", subTitle: "数学王", desc: "准确绘制并获得时间！", placeholder: "输入昵称", startBtn: "🚀 开始游戏！", otherGamesBtn: "🎲 其他游戏", rankingLoading: "加载中... 🏃‍♂️", rankingEmpty: "快来拿第一！ 👑", rankingError: "错误 😭", homeBtn: "🏠 首页", restartBtn: "🔄 重玩", gameOver: "游戏结束！ 🏁", rankQuery: "第几名？ 🤔", rankResult: "第 {rank} 名！", rankSaved: "分数保存！", alertName: "📛 输入昵称！", alertBadWord: "🚫 请文明用语！", qrInvite: "二维码邀请", scoreLabel: "SCORE", metaDesc: "快速绘制饼图并增加时间！", chartTitle: "🏫 学生喜欢的水果", fruits: ["草莓", "西瓜", "芒果", "苹果", "葡萄"], thFruit: "水果", thTotal: "合计", thCount: "比例(%)", unit: "%", submit: "提交", undo: "撤销", error: "再确认一下！" },
+        ja: { flag: "🇯🇵", pageTitle: "円グラフの王様", mainTitle: "円グラフ", subTitle: "数学王", desc: "正確に描いて時間をゲット！", placeholder: "ニックネーム", startBtn: "🚀 スタート！", otherGamesBtn: "🎲 他のゲーム", rankingLoading: "読み込み中... 🏃‍♂️", rankingEmpty: "1位になろう！ 👑", rankingError: "エラー 😭", homeBtn: "🏠 トップ", restartBtn: "🔄 もう一度", gameOver: "ゲームオーバー！ 🏁", rankQuery: "何位かな？ 🤔", rankResult: "{rank} 位です！", rankSaved: "保存完了！", alertName: "📛 名前を入力！", alertBadWord: "🚫 綺麗な言葉で！", qrInvite: "QRで招待", scoreLabel: "SCORE", metaDesc: "円グラフを早く描いて時間を増やそう！", chartTitle: "🏫 生徒が好きな果物", fruits: ["イチゴ", "スイカ", "マンゴー", "リンゴ", "ブドウ"], thFruit: "果物", thTotal: "合計", thCount: "比率(%)", unit: "%", submit: "提出", undo: "戻す", error: "再確認して！" },
+        es: { flag: "🇪🇸", pageTitle: "Rey del Gráfico Circular", mainTitle: "Gráfico Circular", subTitle: "Rey Matemático", desc: "¡Dibuja bien y gana tiempo!", placeholder: "Apodo", startBtn: "🚀 ¡Empezar!", otherGamesBtn: "🎲 Otros Juegos", rankingLoading: "Cargando... 🏃‍♂️", rankingEmpty: "¡Sé el primero! 👑", rankingError: "Error 😭", homeBtn: "🏠 Inicio", restartBtn: "🔄 Reintentar", gameOver: "¡Fin del Juego! 🏁", rankQuery: "¿Qué puesto soy? 🤔", rankResult: "¡Eres el {rank}!", rankSaved: "¡Guardado!", alertName: "📛 ¡Ingresa apodo!", alertBadWord: "🚫 ¡Sin insultos!", qrInvite: "Invitar por QR", scoreLabel: "SCORE", metaDesc: "¡Dibuja rápido y gana tiempo!", chartTitle: "🏫 Frutas favoritas de alumnos", fruits: ["Fresa", "Sandía", "Mango", "Manzana", "Uva"], thFruit: "Fruta", thTotal: "Total", thCount: "Porcentaje", unit: "%", submit: "Enviar", undo: "Deshacer", error: "¡Revisa de nuevo!" },
+        fr: { flag: "🇫🇷", pageTitle: "Roi du Camembert", mainTitle: "Camembert", subTitle: "Roi des Maths", desc: "Dessinez bien, gagnez du temps!", placeholder: "Pseudo", startBtn: "🚀 Commencer!", otherGamesBtn: "🎲 Autres Jeux", rankingLoading: "Chargement... 🏃‍♂️", rankingEmpty: "À vous de jouer! 👑", rankingError: "Erreur 😭", homeBtn: "🏠 Accueil", restartBtn: "🔄 Réessayer", gameOver: "Terminé! 🏁", rankQuery: "Mon rang? 🤔", rankResult: "{rank}e !", rankSaved: "Enregistré!", alertName: "📛 Pseudo requis!", alertBadWord: "🚫 Restons polis!", qrInvite: "Inviter via QR", scoreLabel: "SCORE", metaDesc: "Dessinez vite et gagnez du temps !", chartTitle: "🏫 Fruits préférés des élèves", fruits: ["Fraise", "Pastèque", "Mangue", "Pomme", "Raisin"], thFruit: "Fruit", thTotal: "Total", thCount: "Ratio(%)", unit: "%", submit: "Valider", undo: "Annuler", error: "Vérifiez encore!" },
+        ru: { flag: "🇷🇺", pageTitle: "Король Диаграмм", mainTitle: "Диаграмма", subTitle: "Математик", desc: "Рисуй точно и получай время!", placeholder: "Никнейм", startBtn: "🚀 Старт!", otherGamesBtn: "🎲 Другие игры", rankingLoading: "Загрузка... 🏃‍♂️", rankingEmpty: "Стань первым! 👑", rankingError: "Ошибка 😭", homeBtn: "🏠 Главная", restartBtn: "🔄 Заново", gameOver: "Конец! 🏁", rankQuery: "Какое место? 🤔", rankResult: "Место: {rank}!", rankSaved: "Сохранено!", alertName: "📛 Введи ник!", alertBadWord: "🚫 Без плохих слов!", qrInvite: "QR приглашение", scoreLabel: "SCORE", metaDesc: "Рисуй быстро и получай бонус!", chartTitle: "🏫 Любимые фрукты учеников", fruits: ["Клубника", "Арбуз", "Манго", "Яблоко", "Виноград"], thFruit: "Фрукт", thTotal: "Всего", thCount: "Доля(%)", unit: "%", submit: "Готово", undo: "Отмена", error: "Проверь еще!" },
+        id: { flag: "🇮🇩", pageTitle: "Raja Diagram Kue", mainTitle: "Diagram Kue", subTitle: "Raja Matematika", desc: "Gambar dengan benar dan dapatkan waktu!", placeholder: "Nama Panggilan", startBtn: "🚀 Mulai Game", otherGamesBtn: "🎲 Game Lainnya", rankingLoading: "Memuat... 🏃‍♂️", rankingEmpty: "Belum ada Raja. Ayo mulai! 👑", rankingError: "Kesalahan 😭", homeBtn: "🏠 Beranda", restartBtn: "🔄 Ulangi", gameOver: "Permainan Berakhir! 🏁", rankQuery: "Peringkat Berapa? 🤔", rankResult: "Peringkat {rank}!", rankSaved: "Skor Disimpan!", alertName: "📛 Masukkan Nama!", alertBadWord: "🚫 Gunakan kata sopan!", qrInvite: "Undang via QR", scoreLabel: "SCORE", metaDesc: "Gambar diagram kue cepat dan tambah waktu!", chartTitle: "🏫 Buah Kesukaan Siswa", fruits: ["Stroberi", "Semangka", "Mangga", "Apel", "Anggur"], thFruit: "Buah", thTotal: "Total", thCount: "Rasio(%)", unit: "%", submit: "Kirim", undo: "Batal", error: "Periksa Lagi!" },
+        vi: { flag: "🇻🇳", pageTitle: "Vua Biểu Đồ Tròn", mainTitle: "Biểu Đồ Tròn", subTitle: "Vua Toán", desc: "Vẽ đúng để thêm thời gian!", placeholder: "Nhập Tên", startBtn: "🚀 Bắt Đầu", otherGamesBtn: "🎲 Trò Chơi Khác", rankingLoading: "Đang tải... 🏃‍♂️", rankingEmpty: "Trở thành người đầu tiên! 👑", rankingError: "Lỗi 😭", homeBtn: "🏠 Trang chủ", restartBtn: "🔄 Chơi lại", gameOver: "Kết Thúc! 🏁", rankQuery: "Hạng mấy? 🤔", rankResult: "Bạn xếp hạng {rank}!", rankSaved: "Đã Lưu!", alertName: "📛 Nhập tên!", alertBadWord: "🚫 Dùng từ ngữ đẹp!", qrInvite: "Mời qua QR", scoreLabel: "SCORE", metaDesc: "Vẽ biểu đồ tròn thật nhanh!", chartTitle: "🏫 Trái cây học sinh thích", fruits: ["Dâu tây", "Dưa hấu", "Xoài", "Táo", "Nho"], thFruit: "Trái cây", thTotal: "Tổng", thCount: "Tỷ lệ(%)", unit: "%", submit: "Nộp", undo: "Hoàn tác", error: "Kiểm tra lại!" },
+        th: { flag: "🇹🇭", pageTitle: "ราชาแผนภูมิวงกลม", mainTitle: "แผนภูมิวงกลม", subTitle: "ราชาคณิต", desc: "วาดให้ถูกเพื่อเพิ่มเวลา!", placeholder: "ใส่ชื่อ", startBtn: "🚀 เริ่มเกม", otherGamesBtn: "🎲 เกมอื่นๆ", rankingLoading: "กำลังโหลด... 🏃‍♂️", rankingEmpty: "มาเป็นที่ 1 สิ! 👑", rankingError: "ข้อผิดพลาด 😭", homeBtn: "🏠 หน้าหลัก", restartBtn: "🔄 เล่นใหม่", gameOver: "จบเกม! 🏁", rankQuery: "ได้ที่เท่าไหร่? 🤔", rankResult: "อันดับ {rank}!", rankSaved: "บันทึกแล้ว!", alertName: "📛 ใส่ชื่อด้วย!", alertBadWord: "🚫 ห้ามใช้คำหยาบ!", qrInvite: "ชวนผ่าน QR", scoreLabel: "SCORE", metaDesc: "วาดแผนภูมิวงกลมเร็วๆ เพิ่มเวลา!", chartTitle: "🏫 ผลไม้ที่นักเรียนชอบ", fruits: ["สตรอว์.", "แตงโม", "มะม่วง", "แอปเปิ้ล", "องุ่น"], thFruit: "ผลไม้", thTotal: "รวม", thCount: "อัตราส่วน(%)", unit: "%", submit: "ส่ง", undo: "เลิกทำ", error: "ตรวจสอบอีกครั้ง!" },
+        'pt-br': { flag: "🇧🇷", pageTitle: "Rei do Gráfico de Pizza", mainTitle: "Gráfico de Pizza", subTitle: "Rei da Matemática", desc: "Desenhe certo e ganhe tempo!", placeholder: "Apelido", startBtn: "🚀 Começar", otherGamesBtn: "🎲 Outros Jogos", rankingLoading: "Carregando... 🏃‍♂️", rankingEmpty: "Seja o primeiro! 👑", rankingError: "Erro 😭", homeBtn: "🏠 Início", restartBtn: "🔄 Tentar Novamente", gameOver: "Fim de Jogo! 🏁", rankQuery: "Qual meu rank? 🤔", rankResult: "Você é o {rank}º!", rankSaved: "Salvo!", alertName: "📛 Digite um apelido!", alertBadWord: "🚫 Apenas palavras boas!", qrInvite: "Convite QR", scoreLabel: "SCORE", metaDesc: "Desenhe gráficos rápido!", chartTitle: "🏫 Frutas favoritas dos alunos", fruits: ["Morango", "Melancia", "Manga", "Maçã", "Uva"], thFruit: "Fruta", thTotal: "Total", thCount: "Porcentagem", unit: "%", submit: "Enviar", undo: "Desfazer", error: "Revise de novo!" },
+        hi: { flag: "🇮🇳", pageTitle: "पाई चार्ट किंग", mainTitle: "पाई चार्ट", subTitle: "मैथ किंग", desc: "सही ड्रा करें और समय कमाएं!", placeholder: "नाम दर्ज करें", startBtn: "🚀 शुरू करें", otherGamesBtn: "🎲 अन्य गेम", rankingLoading: "लोड हो रहा है... 🏃‍♂️", rankingEmpty: "पहले बनें! 👑", rankingError: "त्रुटि 😭", homeBtn: "🏠 होम", restartBtn: "🔄 फिर से खेलें", gameOver: "गेम ओवर! 🏁", rankQuery: "मेरा रैंक? 🤔", rankResult: "रैंक {rank}!", rankSaved: "सहेजा गया!", alertName: "📛 नाम लिखें!", alertBadWord: "🚫 अच्छे शब्दों का प्रयोग करें!", qrInvite: "QR से बुलाएं", scoreLabel: "SCORE", metaDesc: "जल्दी पाई चार्ट बनाएं!", chartTitle: "🏫 छात्रों के पसंदीदा फल", fruits: ["स्ट्रॉबेरी", "तरबूज", "आम", "सेब", "अंगूर"], thFruit: "फल", thTotal: "कुल", thCount: "अनुपात(%)", unit: "%", submit: "जमा करें", undo: "पूर्ववत करें", error: "फिर जांचें!" },
+        bn: { flag: "🇧🇩", pageTitle: "পাই চার্ট রাজা", mainTitle: "পাই চার্ট", subTitle: "গণিত রাজা", desc: "সঠিকভাবে আঁকুন এবং সময় জিতুন!", placeholder: "নাম লিখুন", startBtn: "🚀 শুরু করুন", otherGamesBtn: "🎲 অন্যান্য গেম", rankingLoading: "লোড হচ্ছে... 🏃‍♂️", rankingEmpty: "প্রথম হোন! 👑", rankingError: "ত্রুটি 😭", homeBtn: "🏠 হোম", restartBtn: "🔄 আবার খেলুন", gameOver: "খেলা শেষ! 🏁", rankQuery: "র‍্যাংক কত? 🤔", rankResult: "র‍্যাংক {rank}!", rankSaved: "সংরক্ষিত!", alertName: "📛 নাম দিন!", alertBadWord: "🚫 গালি নিষেধ!", qrInvite: "QR আমন্ত্রণ", scoreLabel: "SCORE", metaDesc: "দ্রুত পাই চার্ট আঁকুন!", chartTitle: "🏫 ছাত্রদের প্রিয় ফল", fruits: ["স্ট্রবেরি", "তরমুজ", "আম", "আপেল", "আঙ্গুর"], thFruit: "ফল", thTotal: "মোট", thCount: "অনুপাত(%)", unit: "%", submit: "জমা দিন", undo: "বাতিল", error: "আবার দেখুন!" },
+        tr: { flag: "🇹🇷", pageTitle: "Pasta Grafik Kralı", mainTitle: "Pasta Grafik", subTitle: "Matematik Kralı", desc: "Doğru çiz ve zaman kazan!", placeholder: "Takma Ad", startBtn: "🚀 Oyuna Başla", otherGamesBtn: "🎲 Diğer Oyunlar", rankingLoading: "Yükleniyor... 🏃‍♂️", rankingEmpty: "İlk sen ol! 👑", rankingError: "Hata 😭", homeBtn: "🏠 Ana Sayfa", restartBtn: "🔄 Tekrar", gameOver: "Oyun Bitti! 🏁", rankQuery: "Sıralamam ne? 🤔", rankResult: "{rank}. sıradasın!", rankSaved: "Kaydedildi!", alertName: "📛 İsim gir!", alertBadWord: "🚫 Kötü kelime yok!", qrInvite: "QR Daveti", scoreLabel: "SCORE", metaDesc: "Hızlı çiz zaman kazan!", chartTitle: "🏫 Öğrencilerin Sevdiği Meyveler", fruits: ["Çilek", "Karpuz", "Mango", "Elma", "Üzüm"], thFruit: "Meyve", thTotal: "Toplam", thCount: "Oran(%)", unit: "%", submit: "Gönder", undo: "Geri", error: "Tekrar kontrol et!" },
+        de: { flag: "🇩🇪", pageTitle: "Tortendiagramm König", mainTitle: "Tortendiagramm", subTitle: "Mathe König", desc: "Zeichne richtig für mehr Zeit!", placeholder: "Spitzname", startBtn: "🚀 Starten", otherGamesBtn: "🎲 Andere Spiele", rankingLoading: "Lädt... 🏃‍♂️", rankingEmpty: "Sei der Erste! 👑", rankingError: "Fehler 😭", homeBtn: "🏠 Startseite", restartBtn: "🔄 Noch mal", gameOver: "Spiel beendet! 🏁", rankQuery: "Mein Rang? 🤔", rankResult: "Du bist {rank}!", rankSaved: "Gespeichert!", alertName: "📛 Name eingeben!", alertBadWord: "🚫 Keine Schimpfwörter!", qrInvite: "QR-Einladung", scoreLabel: "SCORE", metaDesc: "Schnell zeichnen!", chartTitle: "🏫 Lieblingsfrüchte der Schüler", fruits: ["Erdbeere", "Melone", "Mango", "Apfel", "Traube"], thFruit: "Frucht", thTotal: "Gesamt", thCount: "Anteil(%)", unit: "%", submit: "Senden", undo: "Zurück", error: "Prüfe nochmal!" },
+        it: { flag: "🇮🇹", pageTitle: "Re del Grafico a Torta", mainTitle: "Grafico a Torta", subTitle: "Re della Matematica", desc: "Disegna bene e guadagna tempo!", placeholder: "Nickname", startBtn: "🚀 Inizia", otherGamesBtn: "🎲 Altri Giochi", rankingLoading: "Caricamento... 🏃‍♂️", rankingEmpty: "Sii il primo! 👑", rankingError: "Errore 😭", homeBtn: "🏠 Home", restartBtn: "🔄 Riprova", gameOver: "Fine Gioco! 🏁", rankQuery: "Il mio grado? 🤔", rankResult: "Sei {rank}°!", rankSaved: "Salvato!", alertName: "📛 Inserisci nome!", alertBadWord: "🚫 Niente parolacce!", qrInvite: "Invito QR", scoreLabel: "SCORE", metaDesc: "Disegna in fretta!", chartTitle: "🏫 Frutti preferiti dagli alunni", fruits: ["Fragola", "Anguria", "Mango", "Mela", "Uva"], thFruit: "Frutto", thTotal: "Totale", thCount: "Tasso(%)", unit: "%", submit: "Invia", undo: "Annulla", error: "Controlla di nuovo!" }
+    };
+
+    const toastTranslations = {
+        ko: '언어가 변경되었습니다.', en: 'Language changed.', zh: '语言已更改。', ja: '言語が変更されました。', es: 'Idioma cambiado.', fr: 'Langue modifiée.', ru: 'Язык изменен.', id: 'Bahasa telah diubah.', vi: 'Ngôn ngữ đã được thay đổi.', th: 'เปลี่ยนภาษาเรียบร้อยแล้ว', 'pt-br': 'Idioma alterado.', hi: 'भाषा बदल दी गई है।', bn: 'ভাষা পরিবর্তন করা হয়েছে।', tr: 'Dil değiştirildi.', de: 'Sprache geändert.', it: 'Lingua cambiata.'
+    };
+
+    const languages = [
+        { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+        { code: 'en', country: 'us', name: 'English', enName: 'English' },
+        { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese' },
+        { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+        { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+        { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+        { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+        { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+        { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+        { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+        { code: 'pt-br', country: 'br', name: 'Português', enName: 'Portuguese (Brazil)' },
+        { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+        { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+        { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' },
+        { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+        { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' }
+    ];
+
+    let currentLang = 'en';
+    const langModal = document.getElementById('langModal');
+    const searchInput = document.getElementById('searchInput');
+    const grid = document.getElementById('languageGrid');
+    const noResult = document.getElementById('noResult');
+    const toast = document.getElementById('toastNotification');
+    let toastTimeout;
+
+    // --- 2. 언어 변경 및 UI 관련 핵심 시스템 ---
+    function initLanguage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let targetLang = urlParams.get('lang') || localStorage.getItem('kingsmath_lang') || navigator.language.substr(0, 2);
+        if(!i18nData[targetLang]) targetLang = 'en';
+        changeLang(targetLang, false, false);
+        renderLanguages();
+    }
+
+    function renderLanguages(filterText = '') {
+        grid.innerHTML = '';
+        const lowerFilter = filterText.toLowerCase();
+        const filteredLangs = languages.filter(lang => 
+            lang.name.toLowerCase().includes(lowerFilter) || 
+            lang.enName.toLowerCase().includes(lowerFilter) ||
+            lang.code.toLowerCase().includes(lowerFilter)
+        );
+
+        if (filteredLangs.length === 0) {
+            grid.classList.add('hidden');
+            noResult.classList.remove('hidden'); noResult.classList.add('flex');
+        } else {
+            grid.classList.remove('hidden');
+            noResult.classList.add('hidden'); noResult.classList.remove('flex');
+
+            filteredLangs.forEach(lang => {
+                const isSelected = lang.code === currentLang;
+                const baseClasses = "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 group relative overflow-hidden";
+                const stateClasses = isSelected 
+                    ? "bg-gray-800 border-yellow-500 ring-1 ring-yellow-500/50" 
+                    : "bg-gray-800/40 border-gray-700 hover:bg-gray-700 hover:border-gray-500";
+                const flagUrl = `https://flagcdn.com/w40/${lang.country}.png`;
+
+                const btn = document.createElement('div');
+                btn.className = `${baseClasses} ${stateClasses}`;
+                btn.innerHTML = `
+                    <div class="shrink-0 w-8 h-6 rounded overflow-hidden shadow-sm border border-gray-700/50">
+                        <img src="${flagUrl}" alt="${lang.country}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                    </div>
+                    <div class="flex-1 min-w-0 flex flex-col items-start">
+                        <span class="text-sm font-medium text-white truncate w-full ${isSelected ? 'text-yellow-400' : ''}">${lang.name}</span>
+                        <span class="text-xs text-gray-400 truncate w-full">${lang.enName}</span>
+                    </div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check text-yellow-500 text-lg ml-2"></i>' : ''}
+                `;
+                btn.addEventListener('click', () => {
+                    changeLang(lang.code, true, true);
+                    closeModal();
+                    showToast(lang.name, lang.code);
+                    renderLanguages(searchInput.value);
+                });
+                grid.appendChild(btn);
+            });
+        }
+    }
+
+    function openModal() {
+        langModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => searchInput.focus(), 100);
+    }
+
+    function closeModal() {
+        langModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function showToast(langName, langCode) {
+        document.getElementById('ui-toast').textContent = toastTranslations[langCode] || toastTranslations['en'];
+        document.getElementById('toastLangName').textContent = langName;
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function changeLang(langCode, updateHistory = true, callAdjust = false) {
+        if (!i18nData[langCode]) langCode = 'en';
+        currentLang = langCode;
+        localStorage.setItem('kingsmath_lang', langCode);
+        
+        const t = i18nData[langCode];
+        document.documentElement.lang = langCode;
+        document.title = t.pageTitle;
+        document.querySelector('meta[name="description"]').setAttribute("content", t.metaDesc);
+
+        // 링크 및 도메인 교체 (한국어면 킹수학.com, 아니면 KingsMath.com)
+        document.getElementById("kingsmath-link-btn").innerText = (langCode === 'ko') ? "킹수학.com" : "KingsMath.com";
+
+        // 모달 헤더 교체
+        const lInfo = languages.find(l => l.code === langCode);
+        if(lInfo) {
+            document.getElementById("currentFlag").src = `https://flagcdn.com/w40/${lInfo.country}.png`;
+            document.getElementById("currentLangName").textContent = lInfo.name;
+        }
+
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if(t[key]) el.innerHTML = t[key];
+        });
+        document.getElementById("nickname").placeholder = t.placeholder;
+
+        document.getElementById('t-chart-title').innerText = t.chartTitle;
+        document.getElementById('t-th-fruit').innerText = t.thFruit;
+        document.getElementById('t-th-total').innerText = t.thTotal;
+        document.getElementById('btn-submit').innerText = t.submit;
+        document.getElementById('btn-undo').innerText = t.undo;
+        document.getElementById('error-msg').innerText = t.error;
+
+        for(let i=0; i<5; i++) {
+            document.getElementById(`t-fruit-${i}`).innerText = t.fruits[i];
+            FRUITS_COLORS[i].name = t.fruits[i];
+        }
+
+        if (updateHistory) {
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?lang=' + langCode;
+            window.history.pushState({path: newUrl}, '', newUrl);
+            updateQRCode();
+        }
+
+        if(callAdjust) setTimeout(adjustDynamicFonts, 50);
+    }
+
+    function adjustDynamicFonts() {
+        // 동적 폰트 조절
+        document.querySelectorAll('.dyn-font').forEach(el => {
+            el.style.fontSize = ''; 
+            if (el.scrollWidth > el.clientWidth) {
+                let currentSize = parseFloat(window.getComputedStyle(el).fontSize);
+                while (el.scrollWidth > el.clientWidth && currentSize > 10) {
+                    currentSize -= 1;
+                    el.style.fontSize = currentSize + 'px';
+                }
+            }
+        });
+    }
+
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    langModal.addEventListener('click', (e) => { if (e.target === langModal) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && langModal.classList.contains('active')) closeModal(); });
+    searchInput.addEventListener('input', (e) => renderLanguages(e.target.value));
+
+    // --- 3. 게임 시스템 ---
+    const FRUITS_COLORS = [
+        { color: '#ff4757', icon: '🍓' }, { color: '#2ecc71', icon: '🍉' },
+        { color: '#f1c40f', icon: '🥭' }, { color: '#e74c3c', icon: '🍎' }, { color: '#9b59b6', icon: '🍇' }
+    ];
+
+    let isGameRunning = false;
+    let myNickname = "";
+    let score = 0, timer = 60, timerInterval = null, countdownTimer = null, animId = null;
+    let gameData = { targets: [], total: 100 };
+    let player = { drawnSlices: [], draggingVal: 0, isDragging: false };
+    const API_URL = "./ranking.php";
+
+    window.onload = function() {
+        initLanguage();
+        updateQRCode();
+        const savedName = localStorage.getItem("kingsgraph_nickname");
+        if(savedName) document.getElementById("nickname").value = savedName;
+        loadRanking(); 
+
+        window.addEventListener('resize', () => { resizeCanvas(); adjustDynamicFonts(); });
+        addCanvasListeners();
+
+        // 🏠 홈 이모지 전체 화면 지체 없이 첫 화면 가는 소스 적용
+        document.getElementById('btn-home').addEventListener('click', () => {
+            if (document.fullscreenElement) {
+                isGameRunning = false;
+                clearInterval(timerInterval);
+                cancelAnimationFrame(animId);
+                
+                document.getElementById('langTriggerContainer').style.display = 'block';
+                document.getElementById('game-screen').classList.add("hidden");
+                document.getElementById('result-screen').classList.add("hidden");
+                document.getElementById('start-screen').classList.remove("hidden");
+                
+                if(window.playSound) window.playSound('cancel');
+            } else {
+                location.reload();
+            }
+        });
+    };
+
+    function updateQRCode() {
+        const currentUrl = window.location.href;
+        document.getElementById("qrcode-area").innerHTML = ""; document.getElementById("qrcode-large").innerHTML = "";
+        new QRCode(document.getElementById("qrcode-area"), { text: currentUrl, width: 70, height: 70 });
+        new QRCode(document.getElementById("qrcode-large"), { text: currentUrl, width: 500, height: 500 });
+    }
+
+    function toggleQR(show) { document.getElementById('qr-modal').classList.toggle('hidden', !show); }
+
+    let audioCtx = null;
+    function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    function playTone(freq, type, duration) {
+        initAudio(); if(audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+    window.playSound = function(type) {
+        try {
+            if(type === 'tick') { playTone(400, 'sine', 0.1); } 
+            else if(type === 'start') { playTone(800, 'triangle', 0.3); } 
+            else if(type === 'drag') { playTone(1200, 'sine', 0.03); }
+            else if(type === 'drop') {
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            }
+            else if(type === 'cancel') { playTone(300, 'square', 0.05); }
+            else if(type === 'error') { playTone(150, 'sawtooth', 0.1); setTimeout(() => playTone(100, 'sawtooth', 0.3), 100); }
+            else if(type === 'win') { setTimeout(() => playTone(523, 'triangle', 0.1), 0); setTimeout(() => playTone(659, 'triangle', 0.1), 100); setTimeout(() => playTone(784, 'triangle', 0.2), 200); }
+            else if(type === 'gameover') { playTone(523, 'triangle', 0.2); setTimeout(() => playTone(493, 'triangle', 0.2), 200); setTimeout(() => playTone(440, 'triangle', 0.4), 400); }
+        } catch(e) {}
+    }
+
+    function startGame() {
+        const nameInput = document.getElementById("nickname").value.trim();
+        const txt = i18nData[currentLang];
+        if(nameInput.length < 1) { alert(txt.alertName); return; }
+        const badWords = ["시발","씨발","개새끼","shibal","ssibal","fuck","bitch","shit"]; 
+        for(let bad of badWords) { if(nameInput.toLowerCase().includes(bad)) { alert(txt.alertBadWord); return; } }
+
+        localStorage.setItem("kingsgraph_nickname", nameInput); myNickname = nameInput;
+
+        document.getElementById("start-screen").classList.add("hidden");
+        document.getElementById("result-screen").classList.add("hidden");
+        document.getElementById("game-screen").classList.remove("hidden");
+        document.getElementById('langTriggerContainer').style.display = 'none'; // 몰입을 위해 숨김
+
+        resizeCanvas(); runCountdown(initGame);
+    }
+
+    function runCountdown(callback) {
+        initAudio(); const cdScreen = document.getElementById("countdown-screen"); const cdText = document.getElementById("countdown-text");
+        cdScreen.classList.remove("hidden"); isGameRunning = false; 
+        cdText.style.fontSize = "20vh"; let count = 3; cdText.innerText = count; playSound('tick');
+
+        function tick() {
+            count--;
+            if(count > 0) { cdText.innerText = count; playSound('tick'); countdownTimer = setTimeout(tick, 1000); } 
+            else {
+                cdText.style.fontSize = "12vh"; cdText.innerText = "Start!"; playSound('start');
+                countdownTimer = setTimeout(() => { cdScreen.classList.add("hidden"); if(callback) callback(); }, 500);
+            }
+        }
+        countdownTimer = setTimeout(tick, 1000);
+    }
+
+    function initGame() {
+        score = 0; timer = 60; isGameRunning = true;
+        updateScoreUI(); updateTimerUI(); generateData(); resetPlayer();
+        if(animId) cancelAnimationFrame(animId); animId = requestAnimationFrame(loop);
+        if(timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if(!isGameRunning) return;
+            timer--; updateTimerUI();
+            if(timer <= 0) endGame();
+        }, 1000);
+    }
+
+    function resetPlayer() { player.drawnSlices = []; player.draggingVal = 0; player.isDragging = false; }
+    function generateData() {
+        let nums = [10, 10, 10, 10, 10]; let remaining = 50;
+        while(remaining > 0) { nums[Math.floor(Math.random() * 5)] += 5; remaining -= 5; }
+        gameData.targets = nums; gameData.total = 100;
+
+        const row = document.getElementById('data-row');
+        let html = `<td class="table-header-col">${i18nData[currentLang].thCount}</td>`;
+        nums.forEach(n => html += `<td>${n}${i18nData[currentLang].unit}</td>`);
+        html += `<td class="t-sum">100${i18nData[currentLang].unit}</td>`;
+        row.innerHTML = html;
+    }
+
+    function undoDraw() {
+        if(!isGameRunning) return;
+        if (player.drawnSlices.length > 0) { player.drawnSlices.pop(); playSound('cancel'); }
+    }
+
+    function checkAnswer() {
+        if(!isGameRunning) return;
+        let baseTotal = player.drawnSlices.reduce((a,b)=>a+b, 0);
+        if(player.drawnSlices.length !== 5 || baseTotal !== 100) { triggerError(); return; }
+
+        let isWrong = false;
+        for(let i=0; i<5; i++) { if(player.drawnSlices[i] !== gameData.targets[i]) isWrong = true; }
+
+        if(!isWrong) {
+            score += 10; timer += 5; playSound('win');
+            updateScoreUI(); updateTimerUI(); showBonusAnim(); generateData(); resetPlayer();
+        } else {
+            score = Math.max(0, score - 5); updateScoreUI(); triggerError();
+        }
+    }
+
+    function triggerError() {
+        playSound('error');
+        const errEl = document.getElementById('error-msg');
+        errEl.style.opacity = 1; setTimeout(() => errEl.style.opacity = 0, 1000);
+    }
+
+    function showBonusAnim() {
+        const anim = document.getElementById('bonus-anim');
+        anim.classList.remove('bonus-anim-run'); void anim.offsetWidth; anim.classList.add('bonus-anim-run');
+    }
+
+    function updateScoreUI() { document.getElementById("score-display").innerText = score; }
+    function updateTimerUI() { const tDiv = document.getElementById("timer-display"); tDiv.innerText = timer; tDiv.style.color = timer <= 10 ? '#ff4757' : '#fff'; }
+
+    function endGame() {
+        isGameRunning = false; clearInterval(timerInterval); cancelAnimationFrame(animId); playSound('gameover');
+        document.getElementById("game-screen").classList.add("hidden"); document.getElementById("result-screen").classList.remove("hidden");
+        document.getElementById("res-nickname").innerText = myNickname; document.getElementById("res-score").innerText = score;
+        submitScore(myNickname, score); 
+    }
+
+    function restartGame() {
+        document.getElementById("result-screen").classList.add("hidden");
+        document.getElementById("game-screen").classList.remove("hidden");
+        runCountdown(initGame);
+    }
+
+    function goHome() {
+        isGameRunning = false; if(timerInterval) clearInterval(timerInterval); if(animId) cancelAnimationFrame(animId);
+        document.getElementById("result-screen").classList.add("hidden");
+        document.getElementById("game-screen").classList.add("hidden");
+        document.getElementById("start-screen").classList.remove("hidden");
+        document.getElementById('langTriggerContainer').style.display = 'block';
+        loadRanking(); 
+    }
+
+    function addCanvasListeners() {
+        const cvs = document.getElementById('game-canvas');
+        cvs.addEventListener('mousedown', handleInputStart); cvs.addEventListener('touchstart', handleInputStart, {passive: false});
+        window.addEventListener('mousemove', handleInputMove); window.addEventListener('touchmove', handleInputMove, {passive: false});
+        window.addEventListener('mouseup', handleInputEnd); window.addEventListener('touchend', handleInputEnd);
+    }
+
+    function getEventPos(canvas, e) {
+        const rect = canvas.getBoundingClientRect();
+        let cX = (e.changedTouches && e.changedTouches.length > 0) ? e.changedTouches[0].clientX : e.clientX;
+        let cY = (e.changedTouches && e.changedTouches.length > 0) ? e.changedTouches[0].clientY : e.clientY;
+        return { x: cX - rect.left, y: cY - rect.top };
+    }
+
+    function getPercentFromPos(x, y, cx, cy) {
+        let angle = Math.atan2(y - cy, x - cx) + Math.PI / 2;
+        if (angle < 0) angle += 2 * Math.PI;
+        return (angle / (2 * Math.PI)) * 100;
+    }
+
+    function handleInputStart(e) {
+        if(!isGameRunning) return;
+        const cvs = document.getElementById('game-canvas');
+        if(e.target !== cvs || player.drawnSlices.length >= 5) return;
+        e.preventDefault(); const pos = getEventPos(cvs, e); player.isDragging = true;
+        const layout = getLayout(cvs.width, cvs.height); updateDragVal(pos.x, pos.y, layout.cx, layout.cy);
+    }
+
+    function handleInputMove(e) {
+        if(!isGameRunning || !player.isDragging) return;
+        e.preventDefault(); const cvs = document.getElementById('game-canvas'); const pos = getEventPos(cvs, e); 
+        const layout = getLayout(cvs.width, cvs.height); updateDragVal(pos.x, pos.y, layout.cx, layout.cy);
+    }
+
+    function handleInputEnd(e) {
+        if (player.isDragging && player.draggingVal > 0) { player.drawnSlices.push(player.draggingVal); player.draggingVal = 0; playSound('drop'); }
+        player.isDragging = false;
+    }
+
+    function updateDragVal(x, y, cx, cy) {
+        let dragAmount = getPercentFromPos(x, y, cx, cy) - player.drawnSlices.reduce((a, b) => a + b, 0);
+        if (dragAmount < -50) dragAmount += 100;
+        if (dragAmount < 0) dragAmount = 0; if (player.drawnSlices.reduce((a, b) => a + b, 0) + dragAmount > 100) dragAmount = 100 - player.drawnSlices.reduce((a, b) => a + b, 0);
+        let newVal = Math.round(dragAmount);
+        if(player.draggingVal !== newVal && newVal > 0 && newVal % 5 === 0) playSound('drag');
+        player.draggingVal = newVal;
+    }
+
+    function getLayout(w, h) { return { cx: w / 2, cy: h * 0.40, radius: Math.min(w, h) * 0.30 }; }
+
+    function loop() { if (!isGameRunning) return; draw(); animId = requestAnimationFrame(loop); }
+
+    function resizeCanvas() {
+        const cvs = document.getElementById('game-canvas'); const con = document.getElementById('canvas-wrapper');
+        cvs.width = con.clientWidth; cvs.height = con.clientHeight; if (!isGameRunning) draw();
+    }
+
+    function toRad(percent) { return (percent / 100) * (2 * Math.PI) - (Math.PI / 2); }
+
+    function draw() {
+        const cvs = document.getElementById('game-canvas'); const ctx = cvs.getContext('2d');
+        const w = cvs.width, h = cvs.height; if(w === 0 || h === 0) return; 
+        const { cx, cy, radius } = getLayout(w, h);
+        ctx.clearRect(0, 0, w, h);
+
+        ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.fillStyle = '#444'; ctx.fill();
+
+        let currentP = 0;
+        player.drawnSlices.forEach((sliceVal, i) => {
+            const fruit = FRUITS_COLORS[i], startAngle = toRad(currentP), endAngle = toRad(currentP + sliceVal);
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, radius, startAngle, endAngle); ctx.closePath();
+            ctx.fillStyle = fruit.color; ctx.fill();
+            if (sliceVal > 4) { 
+                const midAngle = (startAngle + endAngle) / 2, textRadius = radius * 0.7; 
+                const tx = cx + Math.cos(midAngle) * textRadius, ty = cy + Math.sin(midAngle) * textRadius;
+                ctx.fillStyle = (fruit.color === '#f1c40f') ? '#000' : '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                let fontSize = Math.min(Math.max(12, radius * 0.15), 24); ctx.font = `${fontSize}px Jua`;
+                ctx.fillText(fruit.name, tx, ty - fontSize * 0.6); ctx.fillText(sliceVal + '%', tx, ty + fontSize * 0.6);
+            }
+            currentP += sliceVal;
+        });
+
+        if (player.isDragging && player.draggingVal > 0) {
+            const currentFruit = FRUITS_COLORS[player.drawnSlices.length], startAngle = toRad(currentP), endAngle = toRad(currentP + player.draggingVal);
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, radius, startAngle, endAngle); ctx.closePath();
+            ctx.fillStyle = currentFruit.color; ctx.globalAlpha = 0.8; ctx.fill(); ctx.globalAlpha = 1.0;
+
+            const lineX = cx + Math.cos(endAngle) * (radius + 10), lineY = cy + Math.sin(endAngle) * (radius + 10);
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(lineX, lineY); ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.stroke();
+
+            ctx.fillStyle = '#fff'; ctx.font = `${Math.max(16, w * 0.05)}px Jua`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(player.draggingVal + '%', cx + Math.cos(endAngle) * (radius + 40), cy + Math.sin(endAngle) * (radius + 40));
+        }
+
+        ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+        ctx.fillStyle = '#ccc'; ctx.font = `${Math.max(12, w * 0.03)}px Jua`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        for(let i=0; i<100; i+=10) {
+            const angle = toRad(i), rStart = radius - 5, rEnd = radius + 5;
+            ctx.beginPath(); ctx.moveTo(cx + Math.cos(angle) * rStart, cy + Math.sin(angle) * rStart); ctx.lineTo(cx + Math.cos(angle) * rEnd, cy + Math.sin(angle) * rEnd);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillText(i === 0 ? "0" : i, cx + Math.cos(angle) * (radius + 20), cy + Math.sin(angle) * (radius + 20));
+        }
+
+        if (player.drawnSlices.length < 5) {
+            ctx.save(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, radius * 0.15, 0, Math.PI * 2); ctx.fill();
+            ctx.font = `${radius * 0.18}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(FRUITS_COLORS[player.drawnSlices.length].icon, cx, cy); ctx.restore();
+        }
+    }
+
+    function submitScore(name, score) {
+        const formData = new FormData(); formData.append('nickname', name); formData.append('score', score);
+        fetch(API_URL + '?action=submit', { method: 'POST', body: formData })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("res-rank").innerText = (data.status === 'success') ? i18nData[currentLang].rankResult.replace('{rank}', data.rank) : ((data.message === 'bad_word') ? i18nData[currentLang].alertBadWord : "Error!");
+            if(data.status === 'success') loadTop3(); 
+        }).catch(error => document.getElementById("res-rank").innerText = "Network Error");
+    }
+
+    function loadRanking() {
+        const list = document.getElementById("ranking-board"); list.innerHTML = `<div class="center">${i18nData[currentLang].rankingLoading}</div>`;
+        fetch(API_URL + '?action=list').then(r => r.json()).then(data => {
+            if(data.length === 0) { list.innerHTML = `<div class="center" style="margin-top:20px;">${i18nData[currentLang].rankingEmpty}</div>`; return; }
+            let html = ""; data.forEach((item, index) => {
+                html += `<div class="rank-item">${index < 3 ? `<span style="width:15%; text-align:center; font-size:1.5em; line-height:1;">${["🥇","🥈","🥉"][index]}</span>` : `<span style="width:15%; text-align:center; color:#FFD700; font-weight:bold;">${index+1}</span>`}
+                <span style="width:50%; padding-left:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.nickname}</span><span style="width:35%; text-align:right; color:#2ecc71; font-weight:bold;">${item.score}</span></div>`;
+            }); list.innerHTML = html;
+        }).catch(e => list.innerHTML = `<div class="center" style="color:red;">${i18nData[currentLang].rankingError}</div>`);
+    }
+
+    function loadTop3() {
+        const list = document.getElementById("top3-list"); list.innerHTML = `<div class="center" style="font-size:2vh; color:#fff;">Loading...</div>`;
+        fetch(API_URL + '?action=list').then(r => r.json()).then(data => {
+            let html = ""; for(let i=0; i < Math.min(data.length, 3); i++) {
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px dashed rgba(255,255,255,0.2); font-size:2.2vh;">
+                <div style="color:#fff; display:flex; align-items:center; gap:5px;"><span>${["🥇","🥈","🥉"][i]}</span><span style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${data[i].nickname}</span></div>
+                <span style="font-weight:bold; color:#FFD700;">${data[i].score}</span></div>`;
+            } list.innerHTML = data.length === 0 ? `<div class="center" style="font-size:2vh; color:#fff;">No Data 👑</div>` : html;
+        }).catch(e => list.innerHTML = `<div class="center" style="font-size:2vh; color:#aaa;">Error</div>`);
+    }
+</script>
+</body>
+</html>

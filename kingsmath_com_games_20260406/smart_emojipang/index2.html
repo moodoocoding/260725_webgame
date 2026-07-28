@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <?php
+    // [통계 연결] 킹수학 카운터
+    if(file_exists($_SERVER['DOCUMENT_ROOT'] . '/counter.php')) {
+        include_once $_SERVER['DOCUMENT_ROOT'] . '/counter.php';
+    }
+    ?>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5YW0T2C109');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="seo-title">이모지 팡 모바일 - 킹수학</title>
+    <meta name="description" id="seo-desc" content="킹수학의 재미있는 이모지 팡 게임! 60초 안에 같은 이모지를 찾으세요.">
+    <meta name="keywords" id="seo-keys" content="킹수학, 이모지, 모바일 게임, 퍼즐, 두뇌 게임">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            corePlugins: { preflight: false } // 게임 본연의 CSS와 충돌하지 않도록 기본 스타일화 방지
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* 트렌디하고 산뜻한 모바일 스타일 적용 */
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@700;900&display=swap');
+
+        :root {
+            --primary: #FF006E;
+            --secondary: #3A86FF;
+            --accent: #FFBE0B;
+            --bg-color: #F8F9FA;
+            --text-dark: #2B2D42;
+            --white: #FFFFFF;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color); 
+            color: var(--text-dark);
+            font-family: 'Jua', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+            transition: font-family 0.3s ease;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 500px;
+            background-color: var(--bg-color);
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 0; 
+        }
+
+        .screen { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; }
+        .screen.active { display: flex; }
+
+        /* 공통 헤더: 요구사항 13번에 맞춰 양쪽 링크/버튼 균형 적용 */
+        .header-top {
+            width: 100%;
+            display: flex;
+            justify-content: space-between; /* 양쪽 끝 배치 */
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .icon-btn {
+            background: var(--white);
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+            border-radius: 12px;
+            font-size: 1.1rem;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            box-shadow: 0 4px 0 var(--secondary);
+            transition: transform 0.1s, box-shadow 0.1s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .icon-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 var(--secondary);
+        }
+
+        h1 {
+            font-family: inherit;
+            font-size: 3rem;
+            color: var(--primary);
+            text-shadow: 2px 2px 0px rgba(255, 0, 110, 0.2);
+            margin: 10px 0;
+            text-align: center;
+            letter-spacing: 2px;
+            transition: font-size 0.2s;
+        }
+
+        p.desc {
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            font-size: 1.2rem;
+            color: #555;
+            background: #FFF0F5;
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px dashed var(--primary);
+            transition: font-size 0.2s;
+        }
+
+        input[type="text"] {
+            background: var(--white);
+            color: var(--text-dark);
+            border: 3px solid var(--secondary);
+            border-radius: 15px;
+            padding: 12px;
+            font-size: 1.3rem;
+            text-align: center;
+            font-family: inherit;
+            margin-bottom: 15px;
+            width: 80%;
+            max-width: 300px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus { border-color: var(--primary); }
+
+        button.btn-main {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 20px;
+            padding: 15px 30px;
+            font-size: 1.6rem;
+            font-family: inherit;
+            cursor: pointer;
+            margin-bottom: 15px;
+            width: 80%;
+            max-width: 300px;
+            box-shadow: 0 6px 0 #C10053;
+            transition: transform 0.1s, box-shadow 0.1s, font-size 0.2s;
+            white-space: nowrap;
+        }
+        button.btn-main:active { 
+            transform: translateY(6px); 
+            box-shadow: 0 0 0 #C10053; 
+        }
+
+        .link-btn {
+            color: var(--secondary);
+            font-size: 1.1rem;
+            text-decoration: underline;
+            cursor: pointer;
+            margin-bottom: 25px;
+            font-weight: bold;
+            transition: font-size 0.2s;
+        }
+
+        /* QR 모달 */
+        #qr-container { margin: 15px 0; cursor: pointer; border: 4px solid var(--accent); border-radius: 15px; padding: 10px; background: var(--white); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #qr-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+        #qr-modal.active { display: flex; }
+        #qr-modal img { width: 80%; max-width: 350px; border: 15px solid var(--white); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+
+        /* 랭킹 보드 */
+        .ranking-box {
+            width: 100%; background: var(--white); border: 3px solid var(--accent); 
+            border-radius: 20px; padding: 15px; box-sizing: border-box;
+            overflow-y: auto; flex-grow: 1; margin-top: 10px;
+            box-shadow: 0 8px 0 var(--accent);
+        }
+        .ranking-box h3 {
+            color: var(--accent); text-shadow: 1px 1px 0 #D49D00; font-size: 1.4rem; transition: font-size 0.2s;
+        }
+        .ranking-item { display: flex; justify-content: space-between; border-bottom: 2px dotted #EEE; padding: 10px 5px; font-size: 1.2rem; transition: font-size 0.2s; }
+        .ranking-item:last-child { border-bottom: none; }
+        .ranking-item:nth-child(1) { color: #FF006E; font-size: 1.4rem; }
+        .ranking-item:nth-child(2) { color: #3A86FF; font-size: 1.3rem; }
+        .ranking-item:nth-child(3) { color: #8338EC; font-size: 1.2rem; }
+
+        /* 카운트다운 오버레이 */
+        #countdown-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.85); display: none; justify-content: center; align-items: center;
+            z-index: 200; font-size: 8rem; color: var(--primary); font-family: 'Nunito', sans-serif;
+            font-weight: 900; text-shadow: 4px 4px 0 var(--accent);
+        }
+        #countdown-overlay.active { display: flex; }
+
+        /* 게임 화면 */
+        .game-nav { display: flex; justify-content: space-between; width: 100%; margin-bottom: 15px; }
+        .info-panel {
+            position: relative; 
+            display: flex; justify-content: space-between; width: 100%;
+            background: var(--white); border: 3px solid var(--primary); border-radius: 15px;
+            padding: 12px 20px; margin-bottom: 20px; box-sizing: border-box;
+            font-size: 1.4rem; color: var(--text-dark);
+            box-shadow: 0 5px 0 var(--primary);
+        }
+        .info-panel div { font-family: 'Nunito', sans-serif; font-weight: 900; }
+        .time-alert { color: var(--primary) !important; animation: pulse 0.5s infinite alternate; }
+        @keyframes pulse { to { transform: scale(1.1); color: #D90429; } }
+
+        #fixed-combo-text {
+            position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 2.5rem; color: var(--accent); text-shadow: 2px 2px 0 var(--primary);
+            font-weight: 900; font-family: 'Nunito', sans-serif; pointer-events: none; opacity: 0; z-index: 50;
+            white-space: nowrap; text-align: center; 
+        }
+        .combo-anim { animation: floatUpFixed 1s ease-out forwards; }
+        @keyframes floatUpFixed {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -60%) scale(1.2); }
+            80% { opacity: 1; transform: translate(-50%, -65%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -80%) scale(1); }
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .emoji-cell {
+            background: var(--white);
+            border: 3px solid #E9ECEF;
+            border-radius: 15px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 0 #DEE2E6;
+        }
+        .emoji-cell:active { transform: translateY(4px); box-shadow: 0 0 0 #DEE2E6; }
+        .emoji-cell.selected { 
+            background: #FFF3CD; 
+            border-color: var(--accent); 
+            transform: scale(0.9) translateY(4px); 
+            box-shadow: 0 0 0 var(--accent); 
+        }
+        
+        .shake { animation: shake 0.4s; border-color: var(--primary) !important; background: #FFE5EC !important; }
+        @keyframes shake {
+            0% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-5deg); }
+            50% { transform: translateX(5px) rotate(5deg); } 75% { transform: translateX(-5px) rotate(-5deg); } 100% { transform: translateX(0); }
+        }
+
+        .bottom-info { font-size: 1.3rem; text-align: center; color: var(--secondary); font-weight: bold; background: #E2EAFC; padding: 10px 20px; border-radius: 20px; }
+
+        .result-box {
+            background: var(--white); border: 4px solid var(--secondary); border-radius: 20px; 
+            padding: 15px; 
+            text-align: center; width: 100%; box-sizing: border-box; margin-bottom: 15px; 
+            box-shadow: 0 8px 0 var(--secondary);
+        }
+        .result-box h2 { margin-top: 0; margin-bottom: 5px; color: #555; font-size: 1.5rem; transition: font-size 0.2s; }
+        .result-score { font-family: 'Nunito', sans-serif; font-size: 3rem; font-weight: 900; color: var(--primary); margin: 5px 0; }
+        
+
+        /* --------------------------------------------------------
+           다국어 모달 UI 전용 CSS 격리 (게임 요소와 철저한 분리)
+        ---------------------------------------------------------*/
+        #langModal, #langModal * {
+            box-sizing: border-box !important;
+            font-family: sans-serif; /* 다국어 대응 무난한 폰트 */
+        }
+        /* 폰트어썸 아이콘은 깨지지 않도록 강제 예외 처리 */
+        #langModal i, #langModal .fa-solid, #langModal .fa-regular,
+        #langTriggerBtn i, #langTriggerBtn .fa-solid {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+        .modal-overlay {
+            opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            transform: scale(0.95) translateY(-10px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        .toast { transform: translateY(100%); opacity: 0; transition: all 0.3s ease; z-index: 99999 !important; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        /* 모달 및 언어버튼 Z-index 최우선순위 강제 */
+        #langTriggerBtn { z-index: 99999 !important; position: relative; }
+/* 개별 버튼 스타일 정의 (배경색 및 글자색 차별화) */
+/* 결과 화면 하단 버튼 컨테이너 (가운데 정렬) */
+.result-btns {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    margin-top: 15px;
+}
+
+/* 두 버튼의 크기, 높이, 폰트 사이즈 완벽 통일 */
+.result-btns button.btn-main,
+.result-btns button.icon-btn {
+    flex: 1;
+    max-width: 180px;
+    margin: 0;
+    padding: 0 10px;
+    font-size: 1.3rem !important; /* 폰트 사이즈 완벽 통일 */
+    font-family: inherit; /* 폰트 종류 통일 */
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    box-sizing: border-box;
+    height: 55px !important; /* 높이 완벽 통일 */
+    border: 2px solid var(--secondary) !important; /* 파란색 테두리 통일 */
+    box-shadow: 0 4px 0 var(--secondary) !important; /* 파란색 그림자 통일 */
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+/* 배경색과 글자색만 다르게 (버튼 역할 구분) */
+.result-btns button.btn-main {
+    background-color: var(--primary) !important; /* 빨간 배경 */
+    color: var(--white) !important; /* 하얀 글씨 */
+}
+
+.result-btns button.icon-btn {
+    background-color: var(--white) !important; /* 하얀 배경 */
+    color: var(--secondary) !important; /* 파란 글씨 */
+}
+
+/* 클릭(활성화) 상태 효과 통일 */
+.result-btns button.btn-main:active,
+.result-btns button.icon-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 var(--secondary) !important;
+}
+
+</style>
+</head>
+<body>
+
+<div id="countdown-overlay">3</div>
+
+<div id="app">
+    <div id="start-screen" class="screen active">
+        <div class="header-top">
+            <a href="/" target="_self" class="icon-btn" id="top-left-link">
+                <i class="fa-solid fa-crown text-accent"></i> <span data-i18n="kingsmath">킹수학.com</span>
+            </a>
+            <button id="langTriggerBtn" class="icon-btn text-sm font-medium">
+                <i class="fa-solid fa-globe"></i>
+                <img id="currentFlag" src="https://flagcdn.com/w40/kr.png" alt="KR" class="w-5 h-auto rounded-[2px] shadow-sm ml-1">
+            </button>
+        </div>
+        
+        <h1 style="line-height: 1.1;">
+            <span data-i18n="title">이모지 팡</span><br>
+            <span style="font-size: 0.55em;" data-i18n="mobile">모바일</span>
+        </h1>
+        
+        <div id="qr-container" onclick="toggleQrModal(true)">
+            <img id="qr-image" src="" alt="QR Code" width="100" height="100">
+        </div>
+
+        <p class="desc" data-i18n="desc">60초 안에 똑같이 생긴 이모지 쌍을 찾아 터치하세요!<br>연속으로 맞추면 콤보 점수 획득!</p>
+        
+        <input type="text" id="nickname-input" data-i18n-placeholder="placeholder" placeholder="닉네임 입력" maxlength="10">
+        <button class="btn-main" onclick="startGame()" data-i18n="startBtn">게임 시작</button>
+        <div class="link-btn" onclick="location.href='/'" data-i18n="otherGames">다른 게임 고르기</div>
+
+        <div class="ranking-box">
+            <h3 style="margin-top:0; text-align:center;" data-i18n="rankTitle">🏆 TOP 100 랭킹 🏆</h3>
+            <div id="main-ranking-list"></div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div class="game-nav">
+            <button class="icon-btn" onclick="goHome()">🏠 <span data-i18n="homeShort">홈</span></button>
+            <button class="icon-btn" onclick="restartGame()">🔄 <span data-i18n="retry">다시하기</span></button>
+        </div>
+        <div class="info-panel">
+            <div id="timer-display">TIME: 60</div>
+            <div id="fixed-combo-text"></div> 
+            <div id="score-display">SCORE: 0</div>
+        </div>
+        <div class="board" id="emoji-board">
+        </div>
+        <div class="bottom-info" id="player-name-display"></div>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1 style="color: var(--primary); font-size: 2.5rem; margin: 10px 0;" data-i18n="timeOver">TIME OVER!</h1>
+        <div class="result-box">
+            <h2 data-i18n="finalScore">최종 점수</h2>
+            <div class="result-score" id="final-score">0</div>
+        </div>
+        
+        <div class="ranking-box" style="margin-bottom: 15px; flex-grow: 0; min-height: 150px;">
+            <h3 style="margin-top:0; text-align:center;" data-i18n="top3">🏅 실시간 TOP 3 🏅</h3>
+            <div id="result-ranking-list"></div>
+        </div>
+
+        <div class="result-btns">
+            <button class="btn-main" style="box-shadow: 0 4px 0 #C10053;" onclick="restartGame()">🔄 <span data-i18n="retry">다시하기</span></button>
+            <button class="icon-btn" onclick="goHome()">🏠 <span data-i18n="home">홈으로</span></button>
+        </div>
+    </div>
+</div>
+
+<div id="qr-modal" onclick="toggleQrModal(false)">
+    <img id="qr-modal-image" src="" alt="QR Code Large">
+</div>
+
+<div id="langModal" class="modal-overlay fixed inset-0 z-[99999] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm pt-16 sm:pt-0 px-4">
+    <div class="modal-content bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden text-gray-100">
+        <div class="flex items-center justify-between p-5 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10">
+            <div>
+                <h2 class="text-xl font-bold text-white flex items-center gap-2 m-0">
+                    <i class="fa-solid fa-language text-yellow-500"></i>
+                    <span>Language / 언어</span>
+                </h2>
+            </div>
+            <button id="closeModalBtn" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors border-none cursor-pointer">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <div class="p-5 pb-2 bg-gray-900">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="searchInput" placeholder="Search / 검색 ..." 
+                    class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 block pl-11 p-3.5 outline-none transition-all placeholder-gray-500 box-border m-0">
+            </div>
+        </div>
+        <div class="p-5 overflow-y-auto custom-scrollbar flex-1 bg-gray-900">
+            <div id="languageGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+            <div id="noResult" class="hidden flex-col items-center justify-center py-12 text-gray-500">
+                <i class="fa-regular fa-face-frown-open text-4xl mb-3"></i>
+                <p class="m-0">No results / 검색 결과 없음</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toastNotification" class="toast fixed bottom-6 right-6 bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 flex items-center gap-3">
+    <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+        <i class="fa-solid fa-check"></i>
+    </div>
+    <div>
+        <p id="ui-toast" class="text-sm font-medium text-white m-0">언어가 변경되었습니다.</p>
+        <p id="toastLangName" class="text-xs text-gray-400 m-0 mt-1">Korean</p>
+    </div>
+</div>
+
+<script>
+    // ----------------------------------------------------------------------
+    // 다국어 데이터베이스 (총 16개국 - 직관적인 수학 용어 반영 & SEO 반영)
+    // ----------------------------------------------------------------------
+    const i18nData = {
+        'ko': {
+            title: "이모지 팡", mobile: "모바일", desc: "60초 안에 똑같이 생긴 이모지 쌍을 찾아 터치하세요!<br>연속으로 맞추면 콤보 점수 획득!", placeholder: "닉네임 입력", startBtn: "게임 시작", otherGames: "다른 게임 고르기", rankTitle: "🏆 TOP 100 랭킹 🏆", timeOver: "TIME OVER!", finalScore: "최종 점수", top3: "🏅 실시간 TOP 3 🏅", home: "홈으로", homeShort: "홈", retry: "다시하기", loading: "로딩중...", noRecord: "기록이 없습니다. 첫 기록을 세워보세요!", saving: "데이터 기록 중...", saveFail: "점수 저장에 실패했습니다.", kingsmath: "킹수학.com",
+            seoDesc: "킹수학의 재미있는 이모지 팡 게임! 60초 안에 같은 이모지를 찾으세요.", seoKeys: "킹수학, 이모지, 모바일 게임, 퍼즐, 두뇌 게임", toast: "언어가 변경되었습니다."
+        },
+        'en': {
+            title: "Emoji Match King", mobile: "Mobile", desc: "Find identical emoji pairs within 60s!<br>Match fast to earn combo points!", placeholder: "Nickname", startBtn: "Start Game", otherGames: "More Games", rankTitle: "🏆 TOP 100 🏆", timeOver: "TIME OVER!", finalScore: "Final Score", top3: "🏅 Live TOP 3 🏅", home: "Home", homeShort: "Home", retry: "Retry", loading: "Loading...", noRecord: "No records yet. Be the first!", saving: "Saving...", saveFail: "Save failed.", kingsmath: "KingsMath.com",
+            seoDesc: "Fun Emoji Match Game by KingsMath! Find pairs in 60s.", seoKeys: "KingsMath, Emoji, Match Game, Brain, Puzzle", toast: "Language changed."
+        },
+        'zh': {
+            title: "表情匹配之王", mobile: "移动版", desc: "在60秒内找出相同的表情包！<br>连续匹配可获得连击积分！", placeholder: "输入昵称", startBtn: "开始游戏", otherGames: "更多游戏", rankTitle: "🏆 前100名 🏆", timeOver: "时间到！", finalScore: "最终得分", top3: "🏅 实时前3名 🏅", home: "主页", homeShort: "主页", retry: "重玩", loading: "加载中...", noRecord: "暂无记录，快来创造吧！", saving: "保存中...", saveFail: "保存失败", kingsmath: "KingsMath.com",
+            seoDesc: "KingsMath表情匹配游戏！", seoKeys: "KingsMath, 表情, 游戏, 谜题", toast: "语言已更改。"
+        },
+        'ja': {
+            title: "絵文字マッチキング", mobile: "モバイル", desc: "60秒以内に同じ絵文字を見つけよう！<br>連続で当ててコンボを稼ごう！", placeholder: "ニックネーム", startBtn: "ゲーム開始", otherGames: "他のゲーム", rankTitle: "🏆 TOP 100 🏆", timeOver: "タイムオーバー", finalScore: "最終スコア", top3: "🏅 リアルタイム TOP 3 🏅", home: "ホーム", homeShort: "ホーム", retry: "もう一度", loading: "ロード中...", noRecord: "記録がありません", saving: "保存中...", saveFail: "保存に失敗しました", kingsmath: "KingsMath.com",
+            seoDesc: "KingsMathの楽しい絵文字マッチゲーム", seoKeys: "KingsMath, 絵文字, ゲーム, パズル", toast: "言語が変更されました。"
+        },
+        'es': {
+            title: "Rey del Emoji", mobile: "Móvil", desc: "¡Encuentra emojis iguales en 60s!<br>¡Haz combos para ganar puntos!", placeholder: "Tu apodo", startBtn: "Jugar", otherGames: "Más Juegos", rankTitle: "🏆 TOP 100 🏆", timeOver: "¡TIEMPO!", finalScore: "Puntaje Final", top3: "🏅 Mejores 3 🏅", home: "Inicio", homeShort: "Inicio", retry: "Reintentar", loading: "Cargando...", noRecord: "¡Sé el primero!", saving: "Guardando...", saveFail: "Error al guardar.", kingsmath: "KingsMath.com",
+            seoDesc: "Juego de emojis de KingsMath.", seoKeys: "KingsMath, Emoji, Juego", toast: "Idioma cambiado."
+        },
+        'fr': {
+            title: "Roi des Emojis", mobile: "Mobile", desc: "Trouvez les paires en 60s!<br>Faites des combos pour les points!", placeholder: "Pseudo", startBtn: "Jouer", otherGames: "Plus de jeux", rankTitle: "🏆 TOP 100 🏆", timeOver: "TEMPS ÉCOULÉ!", finalScore: "Score Final", top3: "🏅 TOP 3 🏅", home: "Accueil", homeShort: "Accueil", retry: "Réessayer", loading: "Chargement...", noRecord: "Aucun record!", saving: "Sauvegarde...", saveFail: "Erreur.", kingsmath: "KingsMath.com",
+            seoDesc: "Jeu d'emojis par KingsMath.", seoKeys: "KingsMath, Emoji, Jeu", toast: "Langue modifiée."
+        },
+        'ru': {
+            title: "Король Эмодзи", mobile: "Мобильная версия", desc: "Найди пары эмодзи за 60 секунд!<br>Делай комбо для очков!", placeholder: "Никнейм", startBtn: "Играть", otherGames: "Другие игры", rankTitle: "🏆 ТОП 100 🏆", timeOver: "ВРЕМЯ ВЫШЛО!", finalScore: "Итог", top3: "🏅 ТОП 3 🏅", home: "Домой", homeShort: "Домой", retry: "Заново", loading: "Загрузка...", noRecord: "Пока нет рекордов!", saving: "Сохранение...", saveFail: "Ошибка.", kingsmath: "KingsMath.com",
+            seoDesc: "Игра с эмодзи от KingsMath.", seoKeys: "KingsMath, Эмодзи, Игра", toast: "Язык изменен."
+        },
+        'id': {
+            title: "Raja Emoji", mobile: "Mobile", desc: "Cari pasangan emoji dalam 60 detik!<br>Buat kombo untuk poin!", placeholder: "Nama", startBtn: "Mulai", otherGames: "Game Lain", rankTitle: "🏆 TOP 100 🏆", timeOver: "WAKTU HABIS!", finalScore: "Skor Akhir", top3: "🏅 TOP 3 🏅", home: "Beranda", homeShort: "Beranda", retry: "Ulangi", loading: "Memuat...", noRecord: "Belum ada rekor!", saving: "Menyimpan...", saveFail: "Gagal menyimpan.", kingsmath: "KingsMath.com",
+            seoDesc: "Game emoji seru KingsMath.", seoKeys: "KingsMath, Emoji, Game", toast: "Bahasa telah diubah."
+        },
+        'vi': {
+            title: "Vua Emoji", mobile: "Mobile", desc: "Tìm cặp emoji trong 60 giây!<br>Ghi điểm combo!", placeholder: "Biệt danh", startBtn: "Bắt đầu", otherGames: "Game khác", rankTitle: "🏆 TOP 100 🏆", timeOver: "HẾT GIỜ!", finalScore: "Điểm Cuối", top3: "🏅 TOP 3 🏅", home: "Trang chủ", homeShort: "Trang chủ", retry: "Thử lại", loading: "Đang tải...", noRecord: "Chưa có kỷ lục!", saving: "Đang lưu...", saveFail: "Lỗi lưu.", kingsmath: "KingsMath.com",
+            seoDesc: "Trò chơi emoji của KingsMath.", seoKeys: "KingsMath, Emoji, Game", toast: "Ngôn ngữ đã thay đổi."
+        },
+        'th': {
+            title: "ราชาอีโมจิ", mobile: "มือถือ", desc: "จับคู่อีโมจิใน 60 วินาที!<br>ทำคอมโบเพื่อรับคะแนน!", placeholder: "ชื่อเล่น", startBtn: "เริ่มเกม", otherGames: "เกมอื่นๆ", rankTitle: "🏆 TOP 100 🏆", timeOver: "หมดเวลา!", finalScore: "คะแนนรวม", top3: "🏅 TOP 3 🏅", home: "หน้าแรก", homeShort: "หน้าแรก", retry: "เริ่มใหม่", loading: "กำลังโหลด...", noRecord: "ยังไม่มีสถิติ!", saving: "กำลังบันทึก...", saveFail: "บันทึกล้มเหลว", kingsmath: "KingsMath.com",
+            seoDesc: "เกมอีโมจิโดย KingsMath", seoKeys: "KingsMath, Emoji, เกม", toast: "เปลี่ยนภาษาเรียบร้อย"
+        },
+        'pt-br': {
+            title: "Rei do Emoji", mobile: "Mobile", desc: "Ache pares em 60s!<br>Faça combos para ganhar pontos!", placeholder: "Apelido", startBtn: "Jogar", otherGames: "Mais Jogos", rankTitle: "🏆 TOP 100 🏆", timeOver: "TEMPO ESGOTADO!", finalScore: "Placar Final", top3: "🏅 TOP 3 🏅", home: "Início", homeShort: "Início", retry: "Repetir", loading: "Carregando...", noRecord: "Sem recordes!", saving: "Salvando...", saveFail: "Erro ao salvar.", kingsmath: "KingsMath.com",
+            seoDesc: "Jogo de emoji do KingsMath.", seoKeys: "KingsMath, Emoji, Jogo", toast: "Idioma alterado."
+        },
+        'hi': {
+            title: "इमोजी किंग", mobile: "मोबाइल", desc: "60 सेकंड में जोड़े खोजें!<br>अंकों के लिए कॉम्बो बनाएं!", placeholder: "उपनाम", startBtn: "शुरू करें", otherGames: "अन्य खेल", rankTitle: "🏆 TOP 100 🏆", timeOver: "समय समाप्त!", finalScore: "अंतिम स्कोर", top3: "🏅 TOP 3 🏅", home: "होम", homeShort: "होम", retry: "फिर से", loading: "लोड हो रहा है...", noRecord: "कोई रिकॉर्ड नहीं!", saving: "सहेज रहा है...", saveFail: "त्रुटि", kingsmath: "KingsMath.com",
+            seoDesc: "KingsMath द्वारा इमोजी गेम।", seoKeys: "KingsMath, इमोजी, गेम", toast: "भाषा बदल दी गई है।"
+        },
+        'bn': {
+            title: "ইমোজি রাজা", mobile: "মোবাইল", desc: "৬০ সেকেন্ডের মধ্যে জোড়া খুঁজুন!<br>কম্বো পয়েন্ট পান!", placeholder: "ডাকনাম", startBtn: "শুরু করুন", otherGames: "অন্যান্য গেম", rankTitle: "🏆 TOP 100 🏆", timeOver: "সময় শেষ!", finalScore: "চূড়ান্ত স্কোর", top3: "🏅 TOP 3 🏅", home: "হোম", homeShort: "হোম", retry: "পুনরায়", loading: "লোড হচ্ছে...", noRecord: "কোনো রেকর্ড নেই!", saving: "সংরক্ষণ হচ্ছে...", saveFail: "ব্যর্থ হয়েছে", kingsmath: "KingsMath.com",
+            seoDesc: "KingsMath ইমোজি গেম।", seoKeys: "KingsMath, ইমোজি, গেম", toast: "ভাষা পরিবর্তন করা হয়েছে।"
+        },
+        'tr': {
+            title: "Emoji Kralı", mobile: "Mobil", desc: "60 saniyede eşleri bul!<br>Puan için kombo yap!", placeholder: "Takma ad", startBtn: "Başla", otherGames: "Diğer Oyunlar", rankTitle: "🏆 İLK 100 🏆", timeOver: "SÜRE BİTTİ!", finalScore: "Sonuç", top3: "🏅 İLK 3 🏅", home: "Ana Sayfa", homeShort: "Ana Sayfa", retry: "Tekrar", loading: "Yükleniyor...", noRecord: "Kayıt yok!", saving: "Kaydediliyor...", saveFail: "Hata.", kingsmath: "KingsMath.com",
+            seoDesc: "KingsMath Emoji oyunu.", seoKeys: "KingsMath, Emoji, Oyun", toast: "Dil değiştirildi."
+        },
+        'de': {
+            title: "Emoji König", mobile: "Mobile", desc: "Finde Paare in 60s!<br>Mache Kombos für Punkte!", placeholder: "Spitzname", startBtn: "Spielen", otherGames: "Mehr Spiele", rankTitle: "🏆 TOP 100 🏆", timeOver: "ZEIT ABGELAUFEN!", finalScore: "Endstand", top3: "🏅 TOP 3 🏅", home: "Start", homeShort: "Start", retry: "Nochmal", loading: "Lädt...", noRecord: "Kein Rekord!", saving: "Speichern...", saveFail: "Fehler.", kingsmath: "KingsMath.com",
+            seoDesc: "Emoji Spiel von KingsMath.", seoKeys: "KingsMath, Emoji, Spiel", toast: "Sprache geändert."
+        },
+        'it': {
+            title: "Re degli Emoji", mobile: "Mobile", desc: "Trova le coppie in 60s!<br>Fai combo per i punti!", placeholder: "Nickname", startBtn: "Gioca", otherGames: "Altri Giochi", rankTitle: "🏆 TOP 100 🏆", timeOver: "TEMPO SCADUTO!", finalScore: "Punteggio", top3: "🏅 TOP 3 🏅", home: "Home", homeShort: "Home", retry: "Riprova", loading: "Caricamento...", noRecord: "Nessun record!", saving: "Salvataggio...", saveFail: "Errore.", kingsmath: "KingsMath.com",
+            seoDesc: "Gioco Emoji di KingsMath.", seoKeys: "KingsMath, Emoji, Gioco", toast: "Lingua cambiata."
+        }
+    };
+
+    const languages = [
+        { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+        { code: 'en', country: 'us', name: 'English', enName: 'English' },
+        { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)' },
+        { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+        { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+        { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+        { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+        { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' },
+        { code: 'pt-br', country: 'br', name: 'Português', enName: 'Portuguese (Brazil)' },
+        { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+        { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+        { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+        { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+        { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+        { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+        { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' }
+    ];
+
+    let currentLang = 'en'; // Fallback
+    const STORAGE_KEY = 'kingsmath_lang';
+
+    // --- 언어 감지 및 초기화 (요구사항 2, 3) ---
+    function initLanguage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlLang = urlParams.get('lang');
+        const savedLang = localStorage.getItem(STORAGE_KEY);
+        const browserLang = (navigator.language || navigator.userLanguage).split('-')[0].toLowerCase();
+
+        if (urlLang && i18nData[urlLang]) {
+            currentLang = urlLang;
+        } else if (savedLang && i18nData[savedLang]) {
+            currentLang = savedLang;
+        } else if (i18nData[browserLang]) {
+            currentLang = browserLang;
+        } else {
+            currentLang = 'en';
+        }
+        applyLanguage(currentLang, false);
+    }
+
+    // --- 언어 적용 및 동적 UI 업데이트 ---
+    function applyLanguage(lang, showNotification = true) {
+        currentLang = lang;
+        const data = i18nData[lang];
+        if (!data) return;
+
+        // 1. DOM 텍스트 갱신
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (data[key]) el.innerHTML = data[key];
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            if (data[key]) el.placeholder = data[key];
+        });
+
+        // 2. SEO 태그 업데이트
+        document.getElementById('seo-title').innerText = `${data.title} ${data.mobile} - ${data.kingsmath}`;
+        document.getElementById('seo-desc').content = data.seoDesc;
+        document.getElementById('seo-keys').content = data.seoKeys;
+
+        // 3. 폰트 동적 제어 (한국어는 기본, 나머지는 sans-serif)
+        if (lang === 'ko') {
+            document.body.style.fontFamily = "'Jua', sans-serif";
+        } else {
+            document.body.style.fontFamily = "'Nunito', sans-serif";
+        }
+
+        // 4. URL 업데이트 & 로컬 스토리지
+        localStorage.setItem(STORAGE_KEY, lang);
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.set('lang', lang);
+        window.history.pushState({}, '', newUrl);
+
+        // 5. 버튼 폰트 동적 사이즈 조절 (글자 오버플로우 방지)
+        adjustFontSize();
+
+        // 6. 상태 갱신 (모달버튼)
+        const langObj = languages.find(l => l.code === lang);
+        if (langObj) {
+            document.getElementById('currentFlag').src = `https://flagcdn.com/w40/${langObj.country}.png`;
+            document.getElementById('currentFlag').alt = langObj.country;
+        }
+
+        // 초기 로딩용 텍스트 강제 업데이트
+        const mainList = document.getElementById('main-ranking-list');
+        if (mainList && mainList.innerHTML.includes('로딩중') || mainList.innerHTML.includes('Loading')) {
+            mainList.innerHTML = `<div class="ranking-item" style="justify-content: center; color:#999;">${data.loading}</div>`;
+        }
+
+        if (showNotification && langObj) {
+            showToast(langObj.name, lang);
+        }
+    }
+
+    function adjustFontSize() {
+        // 주요 버튼/텍스트에 대해 길이가 길어지면 폰트를 줄임
+        const elementsToAdjust = document.querySelectorAll('button.btn-main, .link-btn, h1');
+        elementsToAdjust.forEach(el => {
+            el.style.fontSize = ''; // 초기화
+            let maxFont = el.tagName === 'H1' ? 48 : (el.tagName === 'BUTTON' ? 25 : 17); // 기준 px
+            el.style.fontSize = maxFont + 'px';
+            while (el.scrollWidth > el.clientWidth && maxFont > 12) {
+                maxFont--;
+                el.style.fontSize = maxFont + 'px';
+            }
+        });
+    }
+
+    // --- 언어 선택기 모달 관련 (요구사항 5, 8, 9, 10, 11) ---
+    const triggerBtn = document.getElementById('langTriggerBtn');
+    const modal = document.getElementById('langModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const searchInput = document.getElementById('searchInput');
+    const grid = document.getElementById('languageGrid');
+    const noResult = document.getElementById('noResult');
+    const toast = document.getElementById('toastNotification');
+    let toastTimeout;
+
+    function renderLanguages(filterText = '') {
+        grid.innerHTML = '';
+        const lowerFilter = filterText.toLowerCase();
+        
+        const filteredLangs = languages.filter(lang => 
+            lang.name.toLowerCase().includes(lowerFilter) || 
+            lang.enName.toLowerCase().includes(lowerFilter) ||
+            lang.code.toLowerCase().includes(lowerFilter)
+        );
+
+        if (filteredLangs.length === 0) {
+            grid.classList.add('hidden');
+            noResult.classList.remove('hidden');
+            noResult.classList.add('flex');
+        } else {
+            grid.classList.remove('hidden');
+            noResult.classList.add('hidden');
+            noResult.classList.remove('flex');
+
+            filteredLangs.forEach(lang => {
+                const isSelected = lang.code === currentLang;
+                const baseClasses = "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 group relative overflow-hidden";
+                const stateClasses = isSelected 
+                    ? "bg-gray-800 border-yellow-500 ring-1 ring-yellow-500/50" 
+                    : "bg-gray-800/40 border-gray-700 hover:bg-gray-700 hover:border-gray-500";
+                const flagUrl = `https://flagcdn.com/w40/${lang.country}.png`;
+                const btn = document.createElement('div');
+                btn.className = `${baseClasses} ${stateClasses} m-0 box-border`;
+
+                btn.innerHTML = `
+                    <div class="shrink-0 w-8 h-6 rounded overflow-hidden shadow-sm border border-gray-700/50 m-0">
+                        <img src="${flagUrl}" alt="${lang.country}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                    </div>
+                    <div class="flex-1 min-w-0 flex flex-col items-start m-0">
+                        <span class="text-sm font-medium text-white truncate w-full m-0 ${isSelected ? 'text-yellow-400' : ''}">${lang.name}</span>
+                        <span class="text-xs text-gray-400 truncate w-full m-0">${lang.enName}</span>
+                    </div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check text-yellow-500 text-lg ml-2 m-0"></i>' : ''}
+                `;
+                btn.addEventListener('click', () => {
+                    applyLanguage(lang.code);
+                    closeModal(); // 모달 닫기
+                    renderLanguages(searchInput.value); // 렌더링 갱신
+                });
+                grid.appendChild(btn);
+            });
+        }
+    }
+
+    function openModal() {
+        modal.classList.add('active');
+        renderLanguages(); // 항상 열때 최신상태 렌더
+        setTimeout(() => searchInput.focus(), 100);
+    }
+
+    function closeModal() {
+        modal.classList.remove('active');
+    }
+
+    function showToast(langName, langCode) {
+        document.getElementById('ui-toast').textContent = i18nData[langCode].toast;
+        document.getElementById('toastLangName').textContent = langName;
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+
+    triggerBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    searchInput.addEventListener('input', (e) => renderLanguages(e.target.value));
+    
+    // --- 기존 게임 변수 및 로직 절대 수정 금지 ---
+    const allEmojis = ["😀","😂","😍","😎","😡","🥶","😱","👽","👻","💩","🐵","🐶","🐺","🐱","🦁","🐯","🦒","🦊","🦝","🐮","🐷","🐗","🐭","🐹","🐰","🐻","🐨","🐼","🐸","🦓","🐴","🦄","🐔","🐲","🦖","🐳","🐬","🐟","🐙","🐌","🦋","🐛","🐜","🐝","🐞","🦂","🕸","🐢","🐍","🦎","🦖","🦕","🐙","🦑","🦐","🦞","🦀","🐡","🐠","🐟","🐬","🐳","🐋","🦈","🐊","🐅","🐆","🦓","🦍","🦧","🐘","🦛","🦏","🐪","🐫","🦒","🦘","🐃","🐂","🐄","🐎","🐖","🐏","🐑","🦙","🐐","🦌","🐕","🐩","🦮","🐕‍","🐈","🐓","🦃","🦚","🦜","🦢","🦩","🕊","🐇","🦝","🦨","🦡","🦦","🦥","🐁","🐀","🐿","🦔"];
+    
+    let timer, countdownTimer, timeLeft = 60, score = 0, combo = 0;
+    let nickname = "";
+    let currentBoardEmojis = [];
+    let selectedIndices = [];
+    let isAnimating = false;
+
+    // Web Audio API 사운드 제너레이터
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        if (type === 'pop') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        } else if (type === 'error') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+        } else if (type === 'beep') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        } else if (type === 'start') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        } else if (type === 'end') {
+            const notes = [
+                { freq: 392.00, time: 0, dur: 0.15 }, { freq: 523.25, time: 0.15, dur: 0.15 }, 
+                { freq: 659.25, time: 0.3, dur: 0.15 }, { freq: 523.25, time: 0.5, dur: 0.15 }, 
+                { freq: 659.25, time: 0.65, dur: 0.15 }, { freq: 783.99, time: 0.8, dur: 0.4 }  
+            ];
+            notes.forEach(note => {
+                const oscEnd = audioCtx.createOscillator();
+                const gainNodeEnd = audioCtx.createGain();
+                oscEnd.connect(gainNodeEnd); gainNodeEnd.connect(audioCtx.destination);
+                oscEnd.type = 'triangle'; 
+                oscEnd.frequency.value = note.freq;
+                gainNodeEnd.gain.setValueAtTime(0, audioCtx.currentTime + note.time);
+                gainNodeEnd.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + note.time + 0.02);
+                gainNodeEnd.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + note.time + note.dur);
+                oscEnd.start(audioCtx.currentTime + note.time); oscEnd.stop(audioCtx.currentTime + note.time + note.dur);
+            });
+        }
+    }
+
+    window.onload = () => {
+        initLanguage(); // 다국어 초기화 먼저 실행
+        renderLanguages(); // 모달 렌더 에러 방지용 명시적 호출
+        
+        const currentUrl = encodeURIComponent(window.location.href);
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${currentUrl}`;
+        document.getElementById('qr-image').src = qrUrl;
+        document.getElementById('qr-modal-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${currentUrl}`;
+        loadRanking('main-ranking-list', 100);
+    };
+
+    function toggleQrModal(show) {
+        document.getElementById('qr-modal').classList.toggle('active', show);
+    }
+
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function goHome() {
+        clearInterval(timer);
+        clearTimeout(countdownTimer);
+        document.getElementById('countdown-overlay').classList.remove('active');
+        switchScreen('start-screen');
+        loadRanking('main-ranking-list', 100);
+    }
+
+    function startGame() {
+        const nameInput = document.getElementById('nickname-input').value.trim();
+        if (!nameInput) { alert(i18nData[currentLang].placeholder + "!"); return; }
+        nickname = nameInput;
+        document.getElementById('player-name-display').innerText = `PLAYER: ${nickname}`;
+        restartGame();
+    }
+
+    function restartGame() {
+        clearInterval(timer);
+        clearTimeout(countdownTimer);
+        timeLeft = 60; score = 0; combo = 0; selectedIndices = []; 
+        isAnimating = true; 
+        updateUI();
+        generateInitialBoard();
+        switchScreen('game-screen');
+        document.getElementById('timer-display').classList.remove('time-alert');
+        startCountdown();
+    }
+
+    function startCountdown() {
+        const overlay = document.getElementById('countdown-overlay');
+        overlay.classList.add('active');
+        overlay.style.fontSize = ''; 
+        let count = 3;
+
+        function tick() {
+            if (count > 0) {
+                overlay.innerText = count; playSound('beep'); count--;
+                countdownTimer = setTimeout(tick, 1000);
+            } else if (count === 0) {
+                overlay.innerText = "START!"; overlay.style.fontSize = "4.5rem";
+                playSound('start'); count--;
+                countdownTimer = setTimeout(tick, 1000);
+            } else {
+                overlay.classList.remove('active');
+                isAnimating = false; startTimer();
+            }
+        }
+        tick();
+    }
+
+    function startTimer() {
+        timer = setInterval(() => {
+            timeLeft--; updateUI();
+            if (timeLeft <= 10) document.getElementById('timer-display').classList.add('time-alert');
+            if (timeLeft <= 0) endGame();
+        }, 1000);
+    }
+
+    function updateUI() {
+        document.getElementById('timer-display').innerText = `TIME: ${timeLeft}`;
+        document.getElementById('score-display').innerText = `SCORE: ${score}`;
+    }
+
+    function generateInitialBoard() {
+        let uniqueEmojis = [...new Set(allEmojis)]; 
+        let shuffledPool = uniqueEmojis.sort(() => 0.5 - Math.random());
+        let boardSet = shuffledPool.slice(0, 23); 
+        let targetEmoji1 = boardSet[21]; let targetEmoji2 = boardSet[22]; 
+        
+        currentBoardEmojis = boardSet.slice(0, 21); 
+        currentBoardEmojis.push(targetEmoji1, targetEmoji1, targetEmoji2, targetEmoji2); 
+        currentBoardEmojis.sort(() => 0.5 - Math.random()); 
+        renderBoard();
+    }
+
+    function renderBoard() {
+        const board = document.getElementById('emoji-board');
+        board.innerHTML = ''; 
+        currentBoardEmojis.forEach((emoji, index) => {
+            const cell = document.createElement('div');
+            cell.className = 'emoji-cell';
+            cell.innerText = emoji;
+            cell.onclick = () => handleCellClick(index, cell);
+            board.appendChild(cell);
+        });
+    }
+
+    function handleCellClick(index, cellElem) {
+        if (isAnimating) return;
+        if (selectedIndices.includes(index)) {
+            selectedIndices = selectedIndices.filter(i => i !== index);
+            cellElem.classList.remove('selected'); return;
+        }
+        selectedIndices.push(index);
+        cellElem.classList.add('selected');
+        if (selectedIndices.length === 2) checkMatch();
+    }
+
+    function checkMatch() {
+        isAnimating = true;
+        const [idx1, idx2] = selectedIndices;
+        const cells = document.querySelectorAll('.emoji-cell');
+        const isMatch = currentBoardEmojis[idx1] === currentBoardEmojis[idx2];
+
+        if (isMatch) {
+            playSound('pop'); combo++; score += (100 + (combo * 20)); updateUI();
+            showComboText(`${combo} COMBO`);
+
+            setTimeout(() => {
+                let remainingIndices = [];
+                for(let i = 0; i < 25; i++) { if(i !== idx1 && i !== idx2) remainingIndices.push(i); }
+                let counts = {};
+                for(let i of remainingIndices) {
+                    let e = currentBoardEmojis[i]; counts[e] = (counts[e] || 0) + 1;
+                }
+                let singletonIndices = remainingIndices.filter(i => counts[currentBoardEmojis[i]] === 1);
+                let randomPartnerIndex = singletonIndices[Math.floor(Math.random() * singletonIndices.length)];
+                let newTargetEmoji = currentBoardEmojis[randomPartnerIndex];
+                let uniquePool = [...new Set(allEmojis)];
+                let newUniqueEmoji;
+                while(true) {
+                    newUniqueEmoji = uniquePool[Math.floor(Math.random() * uniquePool.length)];
+                    if(!currentBoardEmojis.includes(newUniqueEmoji)) break;
+                }
+
+                if (Math.random() < 0.5) {
+                    currentBoardEmojis[idx1] = newTargetEmoji; currentBoardEmojis[idx2] = newUniqueEmoji;
+                } else {
+                    currentBoardEmojis[idx1] = newUniqueEmoji; currentBoardEmojis[idx2] = newTargetEmoji;
+                }
+
+                renderBoard(); selectedIndices = []; isAnimating = false;
+            }, 300);
+        } else {
+            playSound('error'); combo = 0;
+            document.getElementById('emoji-board').classList.add('shake');
+            cells[idx1].classList.add('shake'); cells[idx2].classList.add('shake');
+
+            setTimeout(() => {
+                document.getElementById('emoji-board').classList.remove('shake');
+                cells[idx1].classList.remove('shake', 'selected');
+                cells[idx2].classList.remove('shake', 'selected');
+                selectedIndices = []; isAnimating = false;
+            }, 400);
+        }
+    }
+
+    function showComboText(text) {
+        const popup = document.getElementById('fixed-combo-text');
+        popup.innerText = text; popup.classList.remove('combo-anim');
+        void popup.offsetWidth; popup.classList.add('combo-anim');
+    }
+
+    function endGame() {
+        clearInterval(timer); playSound('end'); 
+        document.getElementById('final-score').innerText = score;
+        switchScreen('result-screen');
+        submitScoreAndLoadTop3Server();
+    }
+
+    async function loadRanking(elementId, limit) {
+        const container = document.getElementById(elementId);
+        container.innerHTML = `<div class="ranking-item" style="justify-content: center; color:#999;">${i18nData[currentLang].loading}</div>`;
+        
+        try {
+            const response = await fetch(`ranking.php?limit=${limit}`);
+            if (!response.ok) throw new Error('서버 로드 실패');
+            const data = await response.json();
+            
+            container.innerHTML = '';
+            if(data.length === 0) {
+                container.innerHTML = `<div class="ranking-item" style="justify-content: center; color:#999;">${i18nData[currentLang].noRecord}</div>`;
+                return;
+            }
+            data.forEach((row, index) => {
+                const div = document.createElement('div');
+                div.className = 'ranking-item';
+                div.innerHTML = `<span><b>${index + 1}위</b></span> <span>${row.nickname}</span> <span><b>${row.score}점</b></span>`;
+                container.appendChild(div);
+            });
+        } catch (error) {
+            console.error('랭킹 로드 오류:', error);
+            container.innerHTML = '<div class="ranking-item" style="justify-content: center; color:red;">랭킹 정보를 불러올 수 없습니다.</div>';
+        }
+    }
+
+    async function submitScoreAndLoadTop3Server() {
+        const resultList = document.getElementById('result-ranking-list');
+        resultList.innerHTML = `<div class="ranking-item" style="justify-content: center; color:#999;">${i18nData[currentLang].saving}</div>`;
+        
+        const formData = new FormData();
+        formData.append('action', 'save'); formData.append('nickname', nickname); formData.append('score', score);
+
+        try {
+            const response = await fetch('ranking.php', { method: 'POST', body: formData });
+            if (!response.ok) throw new Error('서버 저장 실패');
+            loadRanking('result-ranking-list', 3);
+        } catch (error) {
+            console.error('점수 저장 오류:', error);
+            resultList.innerHTML = `<div class="ranking-item" style="justify-content: center; color:red;">${i18nData[currentLang].saveFail}</div>`;
+        }
+    }
+</script>
+</body>
+</html>

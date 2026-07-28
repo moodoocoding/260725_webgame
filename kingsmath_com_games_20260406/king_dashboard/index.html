@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <?php
+    // [통계 연결] 킹수학 폴더에 있는 counter.php를 불러와서 실행해라!
+    include_once $_SERVER['DOCUMENT_ROOT'] . '/counter.php';
+    ?>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5YW0T2C109');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>킹수학 대쉬보드 소개</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Base Styles & Reset */
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            color: var(--dark);
+            background-color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, .font-jua {
+            font-family: 'Jua', sans-serif;
+            font-weight: normal;
+        }
+
+        /* Reusable Components */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+            font-family: 'Jua', sans-serif;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-outline {
+            background-color: white;
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--light);
+            transform: translateY(-2px);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+            margin-top: 1rem;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--gray);
+            margin-bottom: 4rem;
+        }
+
+        /* Sections */
+        section {
+            padding: 100px 0;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #e0e7ff 0%, #d1fae5 100%);
+            padding: 120px 0 80px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 50px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .hero-content {
+            flex: 1;
+            max-width: 600px;
+        }
+        
+        /* 킹수학 대쉬보드 타이틀 스타일 */
+        .hero-subtitle {
+            color: var(--primary);
+            font-family: 'Jua', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            color: var(--dark);
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero h1 span {
+            color: var(--primary);
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--gray);
+            margin-bottom: 40px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .hero-image {
+            flex: 1.2;
+            perspective: 1000px;
+        }
+
+        .hero-image img {
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: rotateY(-5deg) rotateX(5deg);
+            transition: transform 0.5s ease;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .hero-image img:hover {
+            transform: rotateY(0) rotateX(0);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotateY(-5deg) rotateX(5deg); }
+            50% { transform: translateY(-20px) rotateY(-5deg) rotateX(5deg); }
+            100% { transform: translateY(0px) rotateY(-5deg) rotateX(5deg); }
+        }
+
+        /* Highlight Section */
+        .highlight-section {
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+        }
+
+        .highlight-section h2 {
+            color: white;
+            font-size: 3.5rem;
+        }
+
+        .countdown-display {
+            font-size: 8rem;
+            font-family: 'Jua', sans-serif;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+            margin: 20px 0;
+            line-height: 1;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 50px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #e0e7ff;
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+        
+        /* 상세 기능 섹션 */
+        .detail-features-section {
+            background-color: #f8fafc;
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: stretch;
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        .detail-row:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .detail-img-wrapper {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 350px; 
+        }
+
+        .detail-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            max-height: 400px;
+            object-fit: contain; 
+            border-radius: 10px;
+        }
+
+        .detail-text-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .detail-text-wrapper h3 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-family: 'Jua', sans-serif;
+        }
+
+        .detail-text-wrapper p {
+            font-size: 1.15rem;
+            color: var(--dark);
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .detail-text-wrapper ul {
+            list-style: none;
+        }
+        
+        .detail-text-wrapper ul li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 10px;
+            color: var(--gray);
+        }
+
+        .detail-text-wrapper ul li::before {
+            content: "✨";
+            position: absolute;
+            left: 0;
+            top: 2px;
+            font-size: 0.9rem;
+        }
+
+        /* Themes Section */
+        .themes-section {
+            background-color: #ffffff;
+        }
+        
+        .theme-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .theme-card {
+            width: calc(33.333% - 20px);
+            min-width: 300px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.12);
+        }
+
+        .theme-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Target Audience Section */
+        .audience {
+            background-color: var(--light);
+        }
+
+        .audience-flex {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .audience-box {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            border-left: 8px solid var(--secondary);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        
+        .audience-box:nth-child(2) {
+            border-left-color: var(--accent);
+        }
+
+        .audience-box h3 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        /* How to Install */
+        .install-section {
+            background-color: #ffffff;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            background: var(--light);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .step-number {
+            font-family: 'Jua', sans-serif;
+            font-size: 4rem;
+            color: var(--primary);
+            opacity: 0.3;
+            margin-right: 30px;
+            line-height: 1;
+        }
+
+        .step-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        /* Footer / CTA */
+        .cta-section {
+            background: linear-gradient(135deg, var(--primary) 0%, #818cf8 100%);
+            color: white;
+            text-align: center;
+            padding: 80px 0;
+        }
+
+        .cta-section h2 {
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .cta-section .btn {
+            background-color: white;
+            color: var(--primary);
+            font-size: 1.5rem;
+            padding: 20px 50px;
+        }
+
+        .cta-section .btn:hover {
+            background-color: var(--light);
+            color: var(--dark);
+        }
+
+        .cta-section .btn-preview {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .cta-section .btn-preview:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .hero-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .hero h1 { font-size: 3.5rem; }
+            .hero-buttons { justify-content: center; }
+            .hero-image img { transform: none; animation: none; margin-top: 30px; }
+            .theme-card { width: calc(50% - 20px); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 3rem; }
+            .countdown-display { font-size: 5rem; }
+            .step-item { flex-direction: column; text-align: center; }
+            .step-number { margin-right: 0; margin-bottom: 15px; }
+            .theme-card { width: 100%; }
+            .detail-row, .detail-row:nth-child(even) { flex-direction: column; margin-bottom: 50px; }
+            .detail-img-wrapper { min-height: auto; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-subtitle">킹수학 바탕화면 대시보드</div>
+                <h1>바탕화면으로<br><span>멋있음</span>을 뿜으세요</h1>
+                <p>요즘 대부분의 선생님께서 듀얼 모니터를 사용하시잖아요. 그런데 학생용 TV 쪽 모니터가 허허벌판인 채로 있는 게 참 아쉽더라고요. 저기에 학생들에게, 그리고 나에게 도움이 될 정보를 딱! 띄워 놓으면 좋을 텐데… 마땅한 게 없었죠. 그래서 직접 만들었습니다! 교사 맞춤 실시간 반응형 킹수학 바탕화면 대시보오오드!!! 미리보기 먼저 보시고 시작하실게요.</p>
+                
+                <div class="hero-buttons">
+                    <a href="https://11ukul.com/king_dashboard/test.html" target="_blank" class="btn btn-outline">
+                        <i class="fa-solid fa-eye"></i> 대시보드 미리보기
+                    </a>
+                    <a href="https://docs.google.com/presentation/d/1vUxFvM8HNLnWZOJbltaPFCvGy-BjS-Y_AaLUHyISoKo/edit?usp=sharing" target="_blank" class="btn btn-primary">
+                        <i class="fa-solid fa-desktop"></i> 쉽게 설치하기
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="https://11ukul.com/king_dashboard/1.jpg" alt="대쉬보드 미리보기">
+            </div>
+        </div>
+    </header>
+
+    <section class="highlight-section">
+        <div class="container">
+            <h2 class="font-jua">설치해야 하는 가장 치명적인 이유</h2>
+            <div class="countdown-display">멋 있 다!</div>
+            <p style="font-size: 1.5rem; color: #cbd5e1; max-width: 800px; margin: 0 auto;">
+            아직 실시간으로 변하는 반응형 바탕화면을 쓰시는 선생님은 거의 없을 거예요. 왜냐면 이 아이디어는 제가 지난주(3월 초)에 떠올려서 '바이브 코딩'으로 후다닥 만든 거거든요. 커뮤니티든 어디든 여태 본 적 없으실 거예요. 그야말로 따끈따끈한 신상 기술이라는 거...!
+그냥 허허벌판인 TV 쪽 듀얼 모니터를 멋지게 바꿔보세요. 얼른 설치하셔서 한껏 거들먹거리셔도 됩니다! "아~ 이거 요즘 다들 하던데? 허허 참... 젊은 선생님이 아직 이런 걸 몰라요? 링크 보내줘요?" 하면서. ㅋㅋㅋ
+            </p>
+        </div>
+    </section>
+
+    <section class="container">
+        <h2 class="section-title">대쉬보드 바탕화면 핵심 기능</h2>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon" style="background-color: #fee2e2; color: #ef4444;"><i class="fa-solid fa-list-check"></i></div>
+                <h3>공문 일정 & 할일 관리</h3>
+                <p>중요한 학교 행사와 개인 업무(To-Do)를 바탕화면에서 원터치로 체크하세요.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon" style="background-color: #fef3c7; color: var(--accent);"><i class="fa-solid fa-calendar-check"></i></div>
+                <h3>급식 안내</h3>
+                <p>나이스 API 연동으로 오늘, 내일 급식이 바탕화면에 매일 알아서 업데이트됩니다.</p>
+            </div>
+
+     <div class="feature-card">
+                <div class="feature-icon" style="background-color: #e0f2fe; color: #0284c7;"><i class="fa-regular fa-hand-point-left"></i></div>
+                <h3>남은 쉬는 시간,<br>다음 시간 교과 알림</h3>
+                <p>"쉬는 시간 몇 분 남았어요? 무슨 책 펴요?" 하면 TV로 손가락만 가르키세요.</p>
+            </div>
+
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-users"></i></div>
+                <h3>공정성 100% 뽑기</h3>
+                <p>뽑힌 학생 누적 저장으로 "대현이 아까 국어시간에 했는데 발표했는데요?"같은 소리 안들어요.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon" style="background-color: #dcfce7; color: var(--secondary);"><i class="fa-solid fa-stopwatch"></i></div>
+                <h3>타이머, 그림판, 칠판 미니앱</h3>
+                <p>클릭, 로그인 없이 바탕화면에서 바로 실행하고 할 수 있습니다.</p>
+            </div>
+            
+       
+
+            <div class="feature-card">
+                <div class="feature-icon" style="background-color: #f3e8ff; color: #a855f7;"><i class="fa-solid fa-code"></i></div>
+                <h3>바이브코딩 커스텀</h3>
+                <p>피땀눈물 코딩 소스 파일을 그대로 드려요. AI(바이브코딩)를 활용해 자유롭게 커스텀 해보세요.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="detail-features-section">
+        <div class="container">
+            <h2 class="section-title" style="margin-bottom: 60px;">대쉬보드 100% 활용 가이드</h2>
+            
+            <div class="detail-row">
+                <div class="detail-img-wrapper">
+                    <img src="https://11ukul.com/king_dashboard/date.jpg" alt="날씨 및 알림 정보">
+                </div>
+                <div class="detail-text-wrapper">
+                    <h3>일과 시작의 든든한 가이드</h3>
+                    <p>대쉬보드 상단에는 오늘의 환경 정보와 알림이 직관적으로 배치되어 있습니다.</p>
+                    <ul>
+                        <li>오늘의 날씨, 기온, 초미세먼지 수치를 매일 한눈에 파악하세요.</li>
+                        <li>화면 우측에는 "4교시 미술 30분 후 시작"과 같은 맞춤형 수업 알림이 표시되어 수업 준비를 돕습니다.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-img-wrapper">
+                    <img src="https://11ukul.com/king_dashboard/time.jpg" alt="주간 시간표">
+                </div>
+                <div class="detail-text-wrapper">
+                    <h3>지금 무슨 시간인지 헷갈릴 틈이 없어요</h3>
+                    <p>왼쪽 하단 시간표에는 우리 반의 전체 주간 시간표가 깔끔하게 정리되어 있습니다.</p>
+                    <ul>
+                        <li>오늘 요일과 지금 진행 중인 수업 과목 정보가 명확하게 하이라이트 표시됩니다.</li>
+                        <li>교시별 시간과 과목명을 함께 확인하여 수업 흐름을 자연스럽게 이어가세요.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-img-wrapper">
+                    <img src="https://11ukul.com/king_dashboard/food.jpg" alt="급식 메뉴">
+                </div>
+                <div class="detail-text-wrapper">
+                    <h3>아이들의 최애 관심사, 급식표</h3>
+                    <p>대쉬보드 중간 부분에는 상세한 식단표가 나란히 제공됩니다.</p>
+                    <ul>
+                        <li>오늘과 내일의 급식 메뉴가 화면에 바로 표시됩니다.</li>
+                        <li>밥, 국, 반찬, 디저트까지 상세히 나와 있어 쏟아지는 급식 질문 공세에서 해방될 수 있습니다.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-img-wrapper">
+                    <img src="https://11ukul.com/king_dashboard/link.jpg" alt="도구 링크 바로가기">
+                </div>
+                <div class="detail-text-wrapper">
+                    <h3>수업 필수 도구를 한곳에</h3>
+                    <p>유용한 사이트 즐겨찾기가 아이콘과 버튼으로 모여있습니다.</p>
+                    <ul>
+                        <li>킹수학, 안전한줄, 움직임 교육, 우쿨렐레 독학 등 주요 사이트 링크가 명확하게 제공됩니다.</li>
+                        <li>바탕화면에서 바로 클릭하여 수업 보조 자료와 교육 도구에 1초 만에 접근하세요.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-img-wrapper">
+                    <img src="https://11ukul.com/king_dashboard/timer.jpg" alt="타이머 기능">
+                </div>
+                <div class="detail-text-wrapper">
+                    <h3>원터치 초간편 타이머</h3>
+                    <p>타이머 기능은 수업 중 빠르게 사용할 수 있는 간단한 조작법을 제공합니다.</p>
+                    <ul>
+                        <li>+1분, +3분, +5분, +10분 단위 버튼으로 직관적인 시간 추가가 가능합니다.</li>
+                        <li>큼직한 숫자 표시와 함께 초기화, 일시정지 버튼으로 흐름을 완벽하게 통제해 보세요.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-img-wrapper">
+                    <img src="https://11ukul.com/king_dashboard/random.jpg" alt="랜덤 학생 뽑기">
+                </div>
+                <div class="detail-text-wrapper">
+                    <h3>기억력 좋은 랜덤 뽑기</h3>
+                    <p>이 번호뽑기 기능 하나면 공정성 시비는 완전 끝입니다.</p>
+                    <ul>
+                        <li>성별 탭(모두, 남자, 여자)으로 대상을 손쉽게 필터링할 수 있습니다.</li>
+                        <li>1명부터 6명까지 원하는 인원수를 한 번에 다수 추첨할 수 있습니다.</li>
+                        <li>화면을 터치하면 뽑힌 학생 결과 창이 간편하게 닫힙니다.</li>
+                        <li>이전에 뽑힌 학생이 누적 저장되어 남아있어 발표 독점 방지에 탁월합니다!</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-img-wrapper">
+                    <img src="https://11ukul.com/king_dashboard/board.png" alt="타이머 달린 칠판">
+                </div>
+                <div class="detail-text-wrapper">
+                    <h3>신박한 타이머 달린 칠판</h3>
+                    <p>간단히 쓰기 좋은 칠판에 타이머 기능이 합쳐졌어요.</p>
+                    <ul>
+                        <li>글자 확대 및 축소가 가능해서 뒷자리 학생도 잘 볼 수 있게 조절할 수 있습니다.</li>
+                        <li>작성한 내용을 한 번에 지울 수 있는 지우기 기능이 있어요.</li>
+                        <li>칠판 우측 상단에 타이머가 함께 달려 있어 활동 시간을 직관적으로 체크하기 정말 편리합니다.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-img-wrapper">
+                    <img src="https://11ukul.com/king_dashboard/grim.png" alt="간단한 그림판 기능">
+                </div>
+                <div class="detail-text-wrapper">
+                    <h3>간단한 그림판 기능도 가능해요</h3>
+                    <p>자유롭게 필기하고 그릴 수 있는 직관적인 그림판 기능이 포함되어 있습니다.</p>
+                    <ul>
+                        <li>다양한 펜 색상과 굵기를 선택하여 강조하고 싶은 내용을 명확하게 전달할 수 있습니다.</li>
+                        <li>간단한 판서나 아이들의 흥미를 끄는 그림을 그릴 때 유용하게 활용하세요.</li>
+                        <li>작성한 내용을 지우개로 지우거나, 한 번에 모두 지우고 이미지로 저장할 수도 있습니다.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-img-wrapper">
+                    <img src="https://11ukul.com/king_dashboard/todo2.jpg" alt="할일 관리 팝업">
+                </div>
+                <div class="detail-text-wrapper">
+                    <h3>깜빡하기 쉬운 업무, 팝업으로 바로 추가</h3>
+                    <p>할일(To-Do) 영역을 누르면 전용 관리 팝업창이 떠서 직접 일정을 관리할 수 있습니다.</p>
+                    <ul>
+                        <li>'새로운 할일을 입력하세요' 창에 기억해야 할 중요한 업무를 직접 타이핑하세요.</li>
+                        <li>'추가' 버튼을 눌러 리스트에 즉시 등록할 수 있습니다.</li>
+                        <li>오른쪽 하단 달력 영역의 할일 목록에서도 클릭 한 번으로 간편하게 완료(체크) 표시를 할 수 있습니다.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-img-wrapper">
+                    <img src="https://11ukul.com/king_dashboard/font.jpg" alt="테마 및 폰트 설정">
+                </div>
+                <div class="detail-text-wrapper">
+                    <h3>톱니바퀴 버튼으로 간편한 디자인 변경</h3>
+                    <p>우측 상단의 톱니바퀴 아이콘(정보 수정)을 눌러 대쉬보드의 분위기를 1초 만에 바꿔보세요.</p>
+                    <ul>
+                        <li><strong>5가지 컬러 테마:</strong> 핑크, 하늘, 다크, 블랙, 그린 중 오늘의 기분에 맞춰 자유롭게 선택할 수 있습니다.</li>
+                        <li><strong>5가지 폰트 테마:</strong> 나눔고딕, 싱글 데이, 주아, 도현, 송명 등 가독성 좋고 예쁜 폰트들을 지원합니다.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-img-wrapper">
+                    <img src="https://11ukul.com/king_dashboard/dash.jpg" alt="대쉬보드 설정창">
+                </div>
+                <div class="detail-text-wrapper">
+                    <h3>클릭 몇 번으로 끝나는 상세 설정</h3>
+                    <p>복잡한 코드 수정 없이 전용 설정 창에서 모든 환경을 제어하세요.</p>
+                    <ul>
+                        <li>School, Link, ToDo, Student, Table, Time, Month 등 7개의 세분화된 탭으로 구성되어 있습니다.</li>
+                        <li>나이스 API 정보, 학교 위도 및 경도 등을 정확하게 입력해 우리 학교 맞춤형 데이터를 즉시 연동합니다.</li>
+                        <li>설정된 정보를 파일 백업 및 불러오기 기능으로 안전하게 관리하고, 완전 초기화 기능도 함께 지원합니다.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-img-wrapper">
+                    <img src="https://11ukul.com/king_dashboard/test.jpg" alt="일시 변경 테스트 모드">
+                </div>
+                <div class="detail-text-wrapper">
+                    <h3>미리 겪어보는 내일의 수업 (테스트 모드)</h3>
+                    <p>화면의 비밀 링크(토)를 클릭하여 원하는 날짜와 시간으로 타임워프!</p>
+                    <ul>
+                        <li>테스트할 특정 날짜와 시간(YYYY-MM-DD HH:mm 형식)을 입력하여 대쉬보드가 잘 작동하는지 미리 점검해 볼 수 있습니다.</li>
+                        <li>시간표 변동, 특정 행사일 등을 앞당겨 시뮬레이션 해보는 유용한 치트키 기능입니다.</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="detail-row">
+                <div class="detail-img-wrapper">
+                    <img src="https://11ukul.com/king_dashboard/code.png" alt="바이브 코딩으로 커스텀하기">
+                </div>
+                <div class="detail-text-wrapper">
+                    <h3>소스 코드 원본 제공! 내 입맛대로 바이브 코딩</h3>
+                    <p>고생해서 만든 HTML 원본 파일을 숨김없이 그대로 드립니다.</p>
+                    <ul>
+                        <li>마음에 들지 않는 부분이 있거나 추가하고 싶은 기능이 있다면 마음껏 직접 수정하실 수 있습니다.</li>
+                        <li>코딩을 전혀 몰라도 괜찮습니다! AI(제미나이 등)에게 코드를 통째로 복사해 넣고 "여기에 00 기능 추가해 줘"라고 말만 하면(바이브 코딩) 알아서 척척 만들어 줍니다.</li>
+                        <li>선생님만의 톡톡 튀는 아이디어로 세상에 하나뿐인 맞춤형 대시보드를 완성해 보세요.</li>
+                    </ul>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <section class="themes-section">
+        <div class="container">
+            <h2 class="section-title">취향대로 고르는 5가지 컬러 테마 & 5가지 폰트</h2>
+            <p class="section-subtitle">오늘의 기분에 맞춰 바탕화면 분위기를 바꿔보세요. 핑크, 하늘, 다크, 블랙, 그린 등 5가지 색상 테마와 함께 나눔고딕, 싱글 데이, 주아, 도현, 송명 등 5가지 폰트를 자유롭게 조합할 수 있습니다. 모두 마음에 안드신다면. ㅠㅠ 이참에 AI 바이브 코딩 입문하셔서 여러분만의 스타일로 바꿔보세요!</p>
+            
+            <div class="theme-grid">
+                <div class="theme-card">
+                    <img src="https://11ukul.com/king_dashboard/2.png" alt="핑크 테마 대쉬보드">
+                </div>
+                <div class="theme-card">
+                    <img src="https://11ukul.com/king_dashboard/3.png" alt="그린 테마 대쉬보드">
+                </div>
+                <div class="theme-card">
+                    <img src="https://11ukul.com/king_dashboard/4.png" alt="다크 테마 대쉬보드">
+                </div>
+                <div class="theme-card">
+                    <img src="https://11ukul.com/king_dashboard/5.png" alt="블랙 테마 대쉬보드">
+                </div>
+                <div class="theme-card">
+                    <img src="https://11ukul.com/king_dashboard/1.jpg" alt="스카이 테마 대쉬보드">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="audience">
+        <div class="container">
+            <h2 class="section-title">이런 분들께 강력히 처방합니다 💊</h2>
+            
+            <div class="audience-flex">
+                <div class="audience-box">
+                    <h3 class="font-jua text-dark">새로운 것에 도전해 보고 싶은 선생님들</h3>
+                    <p>이 바탕화면 대시보드는 쓰는 사람이 아직 거의 없어요. 학교 컴퓨터 수리 기사님도 놀라실 정도니까요. <strong>한껏 목에 힘을 주세요. ㅋㅋ</strong></p>
+                </div>
+                <div class="audience-box">
+                    <h3 class="font-jua text-dark">말을 줄이고 싶은 선생님들</h3>
+                    <p>"지금 무슨 시간이에요?" "쉬는 시간 몇 시까지예요?" "오늘 무슨 요일이에요?" 선생님, 이제 우리 목을 보호해요. 그저 손가락으로 TV를 가리키기만 하면 됩니다. <strong>우리 조금 더 우아해지자고요!</strong></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="install" class="install-section">
+        <div class="container">
+            <h2 class="section-title">설치? 쉽습니다!</h2>
+            <p class="section-subtitle">어허~~ 참 그게 아니고 비켜 봐. 내가 해줄게. 하실 준비 되셨나요?<br>아래 쉽게 설치하기 버튼에 자세하게 설명 담아놨어요.</p>
+
+            <div class="steps">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3 class="font-jua">대쉬보드 파일 다운로드</h3>
+                        <p>대쉬보드 웹페이지 html 압축파일인 `king_dashboard.zip` 파일을 다운받고 적당한 곳에 압축을 풀어주세요.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3 class="font-jua">Lively Wallpaper 설치</h3>
+                        <p>마이크로소프트 스토어에서 무료 배경화면 프로그램인 'Lively Wallpaper'를 설치해 줍니다.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3 class="font-jua">끌어다 놓으면 끝!</h3>
+                        <p>Lively Wallpaper를 실행하고 압축을 푼 html 파일을 화면에 드래그 앤 드롭하세요. 그리고 설정 버튼을 눌러 우리 반 정보만 입력하면 세팅 완료!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section style="background-color: #fff; text-align: center; padding: 60px 20px;">
+        <div class="container">
+            <blockquote style="font-size: 2rem; font-family: 'Jua', sans-serif; color: var(--dark); margin-bottom: 20px;">
+                "이거 깔고 나서 이상하게 어깨 통증이 사라졌어요. (기분 탓인가?)"
+            </blockquote>
+            <p style="color: var(--gray); font-size: 1.2rem;">- 설치 1일 차, 어느 40대 중반 교사</p>
+        </div>
+    </section>
+
+    <footer class="cta-section">
+        <div class="container">
+            <h2 class="font-jua">광명 찾을 준비 되셨나요?</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 20px; opacity: 0.9;">선생님의 무난하고 안녕한 2026년 교직 생활을 응원합니다.</p>
+            
+            <div class="cta-buttons">
+                <a href="https://11ukul.com/king_dashboard/test.html" target="_blank" class="btn btn-preview">
+                    <i class="fa-solid fa-eye"></i> 대시보드 미리보기
+                </a>
+                <a href="https://docs.google.com/presentation/d/1vUxFvM8HNLnWZOJbltaPFCvGy-BjS-Y_AaLUHyISoKo/edit?usp=sharing" target="_blank" class="btn">
+                    <i class="fa-solid fa-desktop"></i> 쉽게 설치하기
+                </a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

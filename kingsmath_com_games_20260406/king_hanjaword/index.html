@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5YW0T2C109');
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0F4C3A">
+
+<title>한자 급수킹</title>
+<meta name="description" content="선생님이 만든, 안전한 한자 놀이터! 전자칠판을 최고의 한자 학습 도구로 만드세요!">
+<meta name="keywords" content="전자칠판, 한자, 한자게임, 급수킹, 두뇌게임, 무료게임, 교육용게임, 급수한자">
+<link rel="canonical" href="/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="한자 급수킹">
+<meta property="og:description" content="전자칠판 전용 무료·무설치 한자 배틀 게임">
+<meta property="og:url" content="/">
+<meta property="og:site_name" content="한자 급수킹">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    corePlugins: {
+      preflight: false,
+    }
+  }
+</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+/* === [핵심] 색상 변수 설정 (다크모드 고정) === */
+:root {
+    --bg: #121212;
+    --panel-bg: #1e1e2e;
+    --dark: #e0e0e0;
+    --text-muted: #a0a0a0;
+    --border-color: #333333;
+
+    /* 팀 배경색 (다크모드용: 어두운 톤) */
+    --dog-color: #332b00;
+    --cat-color: #1e1b2e;
+    --rabbit-color: #2e151a;
+    --hamster-color: #2e1e0f;
+    --panda-color: #0f2e26;
+    --monkey-color: #221826;
+
+    /* 메뉴 색상 */
+    --math-blue: #4dabf7; --math-blue-light: #183e5c;
+    --math-red: #ff8787; --math-red-light: #4a1818;
+    --math-green: #69db7c; --math-green-light: #164020;
+    --math-purple: #da77f2; --math-purple-light: #3e1b4a;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--dark);
+    font-family: 'Noto Sans KR', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    overflow: hidden;
+    user-select: none; -webkit-user-select: none;
+    touch-action: pan-y; overscroll-behavior: none;
+    -webkit-text-size-adjust: none;
+    display: flex; flex-direction: column;
+    height: 100vh; height: -webkit-fill-available; height: 100dvh;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
+}
+
+i[class^="fa-"] {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+#overlay {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    opacity: 0.98;
+    display: flex; flex-direction: column;
+    z-index: 100; backdrop-filter: blur(15px);
+    text-align: center; padding: 0;
+    overflow-y: auto; touch-action: pan-y;
+}
+
+.overlay-content {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 0px; width: 100%; box-sizing: border-box;
+}
+
+.title-area { margin-bottom: 15px; }
+
+#msgTitle {
+    font-size: 3.6rem;
+    color: var(--dark);
+    margin: 0; font-weight: 500;
+    text-shadow: 0 0 20px rgba(255,255,255,0.1); word-break: keep-all; line-height: 1.2;
+}
+.subtitle {
+    color: var(--text-muted);
+    font-size: 1.2rem; margin-top: 5px; line-height: 1.4;
+}
+
+#setupArea {
+    width: 480px; max-width: 95vw;
+    margin: 0 auto 15px auto;
+    display: flex; flex-direction: column; gap: 15px;
+}
+
+.setup-row { display: flex; gap: 10px; width: 100%; }
+.setup-group { flex: 1; text-align: left; }
+
+.setup-label {
+    font-size: 1.2rem; color: var(--text-muted);
+    margin-bottom: 6px; display: block; margin-left: 5px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.custom-select {
+    width: 100%; font-family: inherit;
+    font-size: 1.2rem; padding: 12px 12px;
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    background: var(--panel-bg);
+    cursor: pointer; outline: none;
+    color: var(--dark);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.math-menu-wrapper {
+    width: 480px; max-width: 95vw; margin: 0 auto;
+}
+
+.math-menu-container {
+    width: 100%; background: var(--panel-bg);
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.math-tabs {
+    display: flex;
+    background: rgba(128, 128, 128, 0.1);
+    padding: 8px 8px 0 8px; gap: 4px; overflow-x: auto;
+}
+.math-tabs::-webkit-scrollbar { display: none; }
+
+.math-tab {
+    flex: 1; min-width: 45px; padding: 10px 2px;
+    border-radius: 12px 12px 0 0; border: none;
+    background: transparent; cursor: pointer;
+    transition: all 0.2s; color: var(--text-muted);
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.math-tab.active {
+    background: var(--panel-bg);
+    box-shadow: 0 -3px 10px rgba(0,0,0,0.05);
+    color: var(--dark); font-weight: bold;
+    transform: translateY(2px);
+}
+
+.tab-icon { font-size: 1.4rem; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
+.tab-text { font-size: 0.9rem; white-space: nowrap; overflow: hidden; }
+
+.math-tab[data-type="hanja_kr"].active { color: var(--math-blue); background: var(--math-blue-light); border-bottom: 2px solid var(--math-blue);}
+.math-tab[data-type="kr_hanja"].active { color: var(--math-red); background: var(--math-red-light); border-bottom: 2px solid var(--math-red);}
+.math-tab[data-type="ox_quiz"].active { color: var(--math-purple); background: var(--math-purple-light); border-bottom: 2px solid var(--math-purple);}
+.math-tab[data-type="random"].active { color: var(--math-green); background: var(--math-green-light); border-bottom: 2px solid var(--math-green);}
+
+.level-list { padding: 10px; background: var(--panel-bg); max-height: 250px; overflow-y: auto; }
+
+/* 체크박스 스타일 리스트 */
+.level-checkbox-item {
+    display: flex; align-items: center; padding: 8px 15px;
+    margin-bottom: 8px; border-radius: 12px;
+    border: 2px solid var(--border-color);
+    background: var(--panel-bg);
+    cursor: pointer; transition: all 0.15s; text-align: left;
+    color: var(--dark);
+}
+.level-checkbox-item:hover { background: #2a2a3c; }
+.level-checkbox-item input[type="checkbox"] {
+    width: 20px; height: 20px; margin-right: 15px; cursor: pointer;
+    accent-color: var(--math-blue);
+}
+.level-list[data-theme="hanja_kr"] input[type="checkbox"] { accent-color: var(--math-blue); }
+.level-list[data-theme="kr_hanja"] input[type="checkbox"] { accent-color: var(--math-red); }
+.level-list[data-theme="ox_quiz"] input[type="checkbox"] { accent-color: var(--math-purple); }
+.level-list[data-theme="random"] input[type="checkbox"] { accent-color: var(--math-green); }
+
+.level-title { font-size: 1.1rem; color: var(--dark); flex: 1; }
+
+#startBtn {
+    font-size: 2.2rem; padding: 12px 0; border-radius: 50px; border: none;
+    background: #339af0; color: white; cursor: pointer;
+    box-shadow: 0 6px 0 #1c7ed6; transition: 0.1s;
+    font-family: inherit; touch-action: manipulation;
+    width: 470px; max-width: 92vw; margin: 20px auto 0 auto; display: block;
+    white-space: nowrap; overflow: hidden;
+}
+#startBtn:active { transform: translateY(4px); box-shadow: 0 2px 0 #1c7ed6 !important; }
+#startBtn:disabled { background: #555; box-shadow: 0 6px 0 #333; cursor: not-allowed; }
+
+/* === 인게임 스타일 === */
+#finalPodium { height: 25vh; width: 100%; display: none; flex-direction: row; }
+.podium-col {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative; border-top: 4px solid rgba(255,255,255,0.05);
+}
+.podium-medal {
+    font-size: clamp(45px, 5vw, 69px); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+    margin-bottom: 5px; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+.podium-name {
+    font-size: clamp(45px, 5vw, 69px); color: var(--dark);
+    display: flex; align-items: center; justify-content: center; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+@keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+#countdownLayer {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
+    display: none; align-items: center; justify-content: center;
+    z-index: 200; pointer-events: none; backdrop-filter: blur(5px);
+}
+#countdownText {
+    font-size: 30vw; color: white;
+    text-shadow: 0 0 50px rgba(255,255,255,0.5);
+    animation: countAnim 1s ease-out forwards;
+}
+@keyframes countAnim { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+
+/* === 헤더 & 타이머 === */
+#header {
+    height: 160px; background: var(--panel-bg);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; z-index: 20; padding: 0 -3px;
+    border-bottom: 2px solid #333;
+}
+.header-logo { font-size: clamp(20px, 2vw, 30px); flex: 1; color: var(--text-muted); }
+.header-logo a { color: #ff8787; text-decoration: none; transition: all 0.2s ease-in-out; }
+.header-logo a:hover { color: #ffc9c9; text-decoration: underline; }
+.logo-left { text-align: center; } 
+.logo-right { text-align: center; }
+
+#timerDisplay {
+    font-size:120px; padding: 0 20px; color: #ff6b6b;
+    text-align: center; width: 260px; min-width: auto;
+    font-weight: bold; flex-shrink: 0; text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+}
+.timer-urgent { animation: timerBlink 0.5s infinite; background: #c92a2a !important; color: white !important; border-radius: 20px; box-shadow: 0 0 20px #c92a2a; }
+@keyframes timerBlink { 50% { opacity: 0.7; } }
+
+/* === 팀전 전용 스코어보드 === */
+#teamScoreBoard {
+    display: none; width: 100%; height: 31vh;
+    flex-direction: row; justify-content: space-around; align-items: center;
+    background: var(--bg); padding: 0 10px; box-sizing: border-box; z-index: 15;
+}
+.team-card {
+    flex: 1; height: 90%; border-radius: 20px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.3); margin: 0 5px; border: 2px solid rgba(255,255,255,0.05);
+}
+.team-A { background: var(--dog-color); }
+.team-B { background: var(--rabbit-color); }
+.team-C { background: var(--panda-color); display: none; }
+
+.team-card .team-name { font-size: 3.5rem; color: var(--dark); margin-bottom: 5px; white-space: nowrap; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+.team-card .team-score { font-size: 4rem; color: #ff8787; font-weight: bold; display: flex; align-items: center; gap: 10px; text-shadow: 0 0 10px rgba(255,135,135,0.3); }
+.team-card .team-rank {
+    position: absolute; bottom: -30px; background: #333; color: #ccc;
+    padding: 5px 20px; border-radius: 20px; font-size: 2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: 0.3s;
+    border: 2px solid #444;
+}
+.team-card .team-rank.rank-1 {
+    background: #ff6b6b; color: white; transform: scale(1.2);
+    border: none; font-weight: bold; box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+}
+
+/* === 게임판 레이아웃 === */
+#arena {
+    display: flex; flex: 1; width: 100vw; gap: 0;
+    touch-action: none; background: #000;
+}
+.teamBox {
+    flex: 1; display: none; flex-direction: column; align-items: center; justify-content: space-evenly;
+    padding: 10px 2px; position: relative;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    overflow: hidden; z-index: 1;
+}
+body.team-mode .teamTitle, body.team-mode .scoreBadge, body.team-mode .rank-badge { display: none !important; }
+body.team-mode .problem { font-size: 40px; margin-bottom: -10px; }
+.teamBox:last-child { border-right: none; }
+
+.bg-dog { background: var(--dog-color); }
+.bg-dog::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='35'%3E🐶%3C/text%3E%3C/svg%3E"); }
+.bg-cat { background: var(--cat-color); }
+.bg-cat::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='35'%3E🐱%3C/text%3E%3C/svg%3E"); }
+.bg-rabbit { background: var(--rabbit-color); }
+.bg-rabbit::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='35'%3E🐰%3C/text%3E%3C/svg%3E"); }
+.bg-hamster { background: var(--hamster-color); }
+.bg-hamster::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='35'%3E🐹%3C/text%3E%3C/svg%3E"); }
+.bg-panda { background: var(--panda-color); }
+.bg-panda::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='35'%3E🐼%3C/text%3E%3C/svg%3E"); }
+.bg-monkey { background: var(--monkey-color); }
+.bg-monkey::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='35'%3E🐵%3C/text%3E%3C/svg%3E"); }
+.teamBox::before, .podium-col::before {
+    content: ""; position: absolute; inset: 0; opacity: 0.05; z-index: -1; pointer-events: none;
+    background-size: 80px 80px; background-repeat: repeat;
+}
+
+.teamTitle {
+    font-size: clamp(40px, 4vw, 60px); min-font-size: 18px; margin: 0; color: var(--dark);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;
+    width: 100%; z-index: 15; margin-bottom: 5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+.scoreBadge {
+    font-size: clamp(45px, 4vw, 60px); color: #ff8787; margin: 2px 0; z-index: 15; margin-bottom: 5px; text-shadow: 0 0 5px rgba(255,135,135,0.3);
+}
+.rank-badge {
+    font-size: clamp(40px, 5vw, 55px);
+    width: 100%; height: 60px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent !important; box-shadow: none !important; border: none !important;
+    padding: 0; margin-bottom: 5px; z-index: 15;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); line-height: 1;
+}
+
+.rank-badge.rank-low { font-size: clamp(28px, 3.5vw, 38px) !important;  }
+.rank-1 { background: transparent !important; color: inherit !important; transform: scale(1.2); box-shadow: none !important; }
+
+.problem { 
+    font-size: clamp(35px, 4vw, 55px); color: #ffffff; margin: 0;
+    letter-spacing: 0px; white-space: normal; z-index: 15;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    line-height: 1.2; text-shadow: 0 2px 2px rgba(0,0,0,0.8);
+    word-break: keep-all; padding: 0 10px; min-height: 80px;
+}
+.problem-sub {
+    font-size: clamp(20px, 2vw, 30px); color: #ffeb3b;
+    margin-top: 10px;
+}
+
+/* 4지선다형 키패드 (2x2) */
+.keypad {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; 
+    width: 100% !important; max-width: 280px !important; min-width: 120px !important;
+    position: relative; z-index: 15;
+}
+.keypad.ox-mode {
+    grid-template-columns: repeat(2, 1fr);
+}
+.keypad.ox-mode .key {
+    font-size: clamp(40px, 6vw, 60px); font-weight: bold;
+    height: 100px; max-height: 120px;
+}
+.key { 
+    height: auto; min-height: 60px; max-height: 80px; padding: 5px;
+    background: #2b2b2b; border-radius: 12px; 
+    font-size: clamp(16px, 2vw, 24px); display: flex; align-items: center; justify-content: center; 
+    cursor: pointer; box-shadow: 0 4px 0 #111; transition: 0.1s; touch-action: manipulation;
+    color: #e0e0e0; border: 1px solid #3d3d3d; text-align: center; word-break: keep-all; line-height: 1.1;
+}
+.key.key-o { color: #4dabf7; }
+.key.key-x { color: #ff6b6b; }
+.key:active { transform: translateY(2px); box-shadow: 0 1px 0 #111; }
+
+.item-effect {
+    position: absolute; bottom: -80px; font-size: 4rem; pointer-events: none;
+    z-index: 50; animation: itemFlyUp 1.875s ease-in forwards; opacity: 0; filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
+}
+@keyframes itemFlyUp {
+    0% { transform: translateY(0) scale(0.6) rotate(0deg); opacity: 0; }
+    20% { opacity: 0.8; }
+    100% { transform: translateY(-700px) scale(2.8) rotate(500deg); opacity: 0; }
+}
+
+.combo-text {
+    position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 2.5rem; font-weight: 800; color: #69db7c;
+    text-shadow: 2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000;
+    z-index: 100; pointer-events: none; white-space: nowrap; animation: comboPop 0.8s ease-out forwards;
+}
+.combo-text.super { color: #ff8787; font-size: 3.2rem; top: 25%; }
+@keyframes comboPop {
+    0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+    40% { transform: translate(-50%, -40px) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -100px) scale(1); opacity: 0; }
+}
+
+.fixed-btn {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    z-index: 500; font-size: 2.8rem; background: rgba(0,0,0,0.5); 
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 50%;
+    width: 60px; height: 60px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; outline: none; touch-action: manipulation;
+    backdrop-filter: blur(5px); color: white;
+}
+.fixed-btn:active { transform: translateY(-50%) scale(0.85); background: rgba(0,0,0,0.8); }
+#resetBtn { left: 10px; }
+#gameFsBtn { right: 10px; }
+
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+.wrong { animation: shake 0.2s; color: #ff6b6b !important; text-shadow: none !important;}
+
+@keyframes winPulse { 0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(255,215,0,0.2); } 50% { transform: scale(1.02); box-shadow: 0 4px 25px rgba(255,215,0,0.5); } }
+.gold { background: #332b00 !important; border: 2px solid #fcc419 !important; color: #fcc419; animation: winPulse 0.6s infinite ease-in-out; }
+
+#resultList {margin: 20px 0;padding: 0;list-style: none;width: 470px;max-width: 92vw;}
+#resultList li {
+    font-size: 1.5rem; padding: 10px 20px; margin: 8px 0; background: var(--panel-bg);
+    border-radius: 15px; display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid #333; color: var(--dark);
+}
+.result-name { display: flex; gap: 10px; align-items: center; }
+
+.desktop-view { display: inline; }
+.mobile-view { display: none; cursor: pointer; }
+
+@media (max-width: 768px) {
+    #header { height: 100px; }
+    .header-logo { font-size: 0px; }
+    .desktop-view { display: none !important; }
+    .mobile-view { display: inline !important; font-size: 3rem; color: #fff; }
+    .header-logo .mobile-view { font-size: 3.5rem; display: inline-block !important; line-height: 1; }
+    #timerDisplay { font-size: 70px; width: 120px; }
+    #msgTitle { font-size: 3rem; }
+    .subtitle { font-size: 1rem; }
+    .title-area { margin-bottom: 12px; }
+    .fixed-btn { display: none !important; }
+}
+</style>
+</head>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col relative overflow-x-hidden lang-ko">
+
+<div id="countdownLayer"><div id="countdownText">3</div></div>
+
+<div id="overlay">
+    <div class="overlay-content">
+        <div class="title-area">
+            <span>한자 ↔ 훈음 배틀 게임</span>
+            <h1 id="msgTitle" class="dynamic-text">👑한자 급수킹<span class="desktop-view">⚔️</span><span class="mobile-view" id="mobileTitleFsBtn">↕️</span></h1>
+            <div class="subtitle dynamic-text" id="subtitle">한국어문회 8급~특급 한자를 마스터하세요!<br>추천 인원: 📱폰: ~2인 | 📑패드: ~4인 | 📺칠판: ~6인</div>
+        </div>
+        
+        <ul id="resultList" style="display:none;"></ul>
+        
+        <div id="setupArea">
+            <div class="setup-row">
+                <div class="setup-group">
+                    <label class="setup-label dynamic-text">⏱️ 시간</label>
+                    <select id="gameTimeLimit" class="custom-select">
+                        <option value="60" selected>1분</option>
+                        <option value="120">2분</option>
+                        <option value="180">3분</option>
+                    </select>
+                </div>
+                <div class="setup-group">
+                    <label class="setup-label dynamic-text">👥 대전 방식</label>
+                    <select id="playerCount" class="custom-select">
+                        <option value="1">1인 개인전</option>
+                        <option value="2">2인 개인전</option>
+                        <option value="3">3인 개인전</option>
+                        <option value="4" selected>4인 개인전</option>
+                        <option value="5">5인 개인전</option>
+                        <option value="6">6인 개인전</option>
+                        <option value="team2vs2">2:2 팀전</option>
+                        <option value="team3vs3">3:3 팀전</option>
+                        <option value="team2vs2vs2">2:2:2 팀전</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="math-menu-wrapper">
+            <div class="math-menu-container">
+                <div class="math-tabs" id="mathTabs"></div>
+                <div class="level-list custom-scrollbar" id="levelList" data-theme="hanja_kr">
+                    </div>
+            </div>
+        </div>
+        
+        <button id="startBtn" class="dynamic-text">데이터 불러오는 중...</button>
+<a id="otherGameLink" href="/" target="_self" style="display: inline-block; margin-top: 20px; padding: 10px 24px; font-size: 1.1rem; font-weight: 700; color: #e0e0e0; text-decoration: none; background-color: rgba(255, 255, 255, 0.1); border-radius: 30px; transition: all 0.2s;">🎮 다른 게임 고르기</a>
+    </div>
+    
+    <div id="finalPodium"></div>
+</div>
+
+<button id="resetBtn" class="fixed-btn">🏠</button>
+<button id="gameFsBtn" class="fixed-btn">↕️</button>
+
+<header id="header">
+    <div class="header-logo logo-left">
+        <span class="mobile-view" id="headerHomeBtn">🏠</span>
+    </div>
+    <div id="timerDisplay">60</div>
+    <div class="header-logo logo-right">
+        <span class="mobile-view" id="headerFsBtn">↕️</span>
+    </div>
+</header>
+
+<div id="teamScoreBoard">
+    <div class="team-card team-A" id="teamCardA">
+        <div class="team-name" id="teamNameA">🐶멍냥이팀🐱</div>
+        <div class="team-score">🦴 <span id="scoreA">0</span> 🐟</div>
+        <div class="team-rank" id="rankA">1st</div>
+    </div>
+    <div class="team-card team-B" id="teamCardB">
+        <div class="team-name" id="teamNameB">🐰햄토리팀🐹</div>
+        <div class="team-score">🥕 <span id="scoreB">0</span> 🥜</div>
+        <div class="team-rank" id="rankB">1st</div>
+    </div>
+    <div class="team-card team-C" id="teamCardC">
+        <div class="team-name" id="teamNameC">🐼판숭이팀🐵</div>
+        <div class="team-score">🎋 <span id="scoreC">0</span> 🍌</div>
+        <div class="team-rank" id="rankC">1st</div>
+    </div>
+</div>
+
+<div id="arena">
+    <div class="teamBox bg-dog" id="dogSide">
+        <div class="teamTitle" id="title-dog">🐶 강아지</div>
+        <div class="scoreBadge" id="dogScore">🦴 0</div>
+        <div id="dogRank" class="rank-badge">1st</div>
+        <div class="problem" id="dogProb">단어</div>
+        <div class="keypad" id="dogPad"></div>
+    </div>
+    <div class="teamBox bg-cat" id="catSide">
+        <div class="teamTitle" id="title-cat">🐱 고양이</div>
+        <div class="scoreBadge" id="catScore">🐟 0</div>
+        <div id="catRank" class="rank-badge">1st</div>
+        <div class="problem" id="catProb">단어</div>
+        <div class="keypad" id="catPad"></div>
+    </div>
+    <div class="teamBox bg-rabbit" id="rabbitSide">
+        <div class="teamTitle" id="title-rabbit">🐰 토끼</div>
+        <div class="scoreBadge" id="rabbitScore">🥕 0</div>
+        <div id="rabbitRank" class="rank-badge">1st</div>
+        <div class="problem" id="rabbitProb">단어</div>
+        <div class="keypad" id="rabbitPad"></div>
+    </div>
+    <div class="teamBox bg-hamster" id="hamsterSide">
+        <div class="teamTitle" id="title-hamster">🐹 햄스터</div>
+        <div class="scoreBadge" id="hamsterScore">🥜 0</div>
+        <div id="hamsterRank" class="rank-badge">1st</div>
+        <div class="problem" id="hamsterProb">단어</div>
+        <div class="keypad" id="hamsterPad"></div>
+    </div>
+    <div class="teamBox bg-panda" id="pandaSide">
+        <div class="teamTitle" id="title-panda">🐼 판다</div>
+        <div class="scoreBadge" id="pandaScore">🎋 0</div>
+        <div id="pandaRank" class="rank-badge">1st</div>
+        <div class="problem" id="pandaProb">단어</div>
+        <div class="keypad" id="pandaPad"></div>
+    </div>
+    <div class="teamBox bg-monkey" id="monkeySide">
+        <div class="teamTitle" id="title-monkey">🐵 원숭이</div>
+        <div class="scoreBadge" id="monkeyScore">🍌 0</div>
+        <div id="monkeyRank" class="rank-badge">1st</div>
+        <div class="problem" id="monkeyProb">단어</div>
+        <div class="keypad" id="monkeyPad"></div>
+    </div>
+</div>
+
+<script>
+/* === 한자 급수 및 메뉴 데이터 설정 === */
+const HANJA_LEVELS = [
+    { id: '80', name: '8급 신습한자' },
+    { id: '72', name: '7급Ⅱ 신습한자' },
+    { id: '70', name: '7급 신습한자' },
+    { id: '62', name: '6급Ⅱ 신습한자' },
+    { id: '60', name: '6급 신습한자' },
+    { id: '52', name: '5급Ⅱ 신습한자' },
+    { id: '50', name: '5급 신습한자' },
+    { id: '42', name: '4급Ⅱ 신습한자' },
+    { id: '40', name: '4급 신습한자' },
+    { id: '32', name: '3급Ⅱ 신습한자' },
+    { id: '30', name: '3급 신습한자' },
+    { id: '20', name: '2급 신습한자' },
+    { id: '12', name: '2급중 인명지명 350자' },
+    { id: '10', name: '1급 신습한자' },
+    { id: '02', name: '특급Ⅱ 신습한자' },
+    { id: '00', name: '특급 신습한자' }
+];
+
+const GAME_MODES = [
+    { id: 'hanja_kr', title: '한자→훈음', icon: '漢', theme: 'hanja_kr', color: '#339af0' },
+    { id: 'kr_hanja', title: '훈음→한자', icon: '가', theme: 'kr_hanja', color: '#ff6b6b' },
+    { id: 'ox_quiz', title: 'O/X 퀴즈', icon: '⭕', theme: 'ox_quiz', color: '#da77f2' },
+    { id: 'random', title: '랜덤출제', icon: '🎲', theme: 'random', color: '#51cf66' }
+];
+
+const playerIds = ['dog', 'cat', 'rabbit', 'hamster', 'panda', 'monkey'];
+const state = {
+    dog: { id: 'dog', name: '강아지', emoji: '🐶', item: '🦴', score: 0, ans: "", active: false, rank: 1, colorClass: 'bg-dog', combo: 0 },
+    cat: { id: 'cat', name: '고양이', emoji: '🐱', item: '🐟', score: 0, ans: "", active: false, rank: 1, colorClass: 'bg-cat', combo: 0 },
+    rabbit: { id: 'rabbit', name: '토끼', emoji: '🐰', item: '🥕', score: 0, ans: "", active: false, rank: 1, colorClass: 'bg-rabbit', combo: 0 },
+    hamster: { id: 'hamster', name: '햄스터', emoji: '🐹', item: '🥜', score: 0, ans: "", active: false, rank: 1, colorClass: 'bg-hamster', combo: 0 },
+    panda: { id: 'panda', name: '판다', emoji: '🐼', item: '🎋', score: 0, ans: "", active: false, rank: 1, colorClass: 'bg-panda', combo: 0 },
+    monkey: { id: 'monkey', name: '원숭이', emoji: '🐵', item: '🍌', score: 0, ans: "", active: false, rank: 1, colorClass: 'bg-monkey', combo: 0 },
+    timeLeft: 60, baseTime: 60, timerInterval: null, isGameOver: true, isCounting: false,
+    count: 4, teamModeType: 'none', currentTabId: 'hanja_kr',
+    
+    hanjaData: [],
+    selectedLevels: ['80'] // 기본 선택
+};
+
+async function loadCSV() {
+    try {
+        const response = await fetch('data.csv');
+        if (!response.ok) throw new Error("CSV Load Failed");
+        const text = await response.text();
+        const rows = text.split('\n');
+        
+        state.hanjaData = [];
+        // 첫 번째 줄(헤더) 제외
+        for(let i=1; i<rows.length; i++) {
+            const rowStr = rows[i].trim();
+            if(!rowStr) continue;
+            
+            const cols = rowStr.split(',');
+            if(cols.length >= 4) {
+                // 급수는 0으로 시작하는 문자열을 유지하기 위해 처리
+                let levelId = cols[0].trim();
+                // 1자리 수라면 0을 붙여줌 (데이터가 0만 있는 경우 방지)
+                if(levelId.length === 1) levelId = '0' + levelId;
+                
+                state.hanjaData.push({
+                    level: levelId,
+                    hanja: cols[1].trim(),
+                    hun: cols[2].trim(),
+                    eum: cols[3].trim(),
+                    hunEum: cols[2].trim() + ' ' + cols[3].trim()
+                });
+            }
+        }
+        
+        if(state.hanjaData.length > 0) {
+            document.getElementById('startBtn').textContent = "배틀 시작";
+            document.getElementById('startBtn').disabled = false;
+        } else {
+            throw new Error("No data loaded");
+        }
+    } catch (e) {
+        console.error(e);
+        document.getElementById('startBtn').textContent = "CSV 로드 실패";
+        document.getElementById('startBtn').disabled = true;
+    }
+}
+
+function renderMathMenu() {
+    const tabsContainer = document.getElementById('mathTabs');
+    const levelListContainer = document.getElementById('levelList');
+    
+    tabsContainer.innerHTML = '';
+    GAME_MODES.forEach(menu => {
+        const btn = document.createElement('button');
+        btn.className = `math-tab ${state.currentTabId === menu.id ? 'active' : ''}`;
+        btn.dataset.type = menu.id;
+        btn.innerHTML = `<span class="tab-icon">${menu.icon}</span><span class="tab-text">${menu.title}</span>`;
+        btn.onclick = () => {
+            state.currentTabId = menu.id;
+            renderMathMenu();
+        };
+        tabsContainer.appendChild(btn);
+    });
+
+    const currentMenu = GAME_MODES.find(m => m.id === state.currentTabId);
+    levelListContainer.dataset.theme = currentMenu.theme;
+    levelListContainer.innerHTML = '';
+    
+    // 체크리스트 렌더링
+    HANJA_LEVELS.forEach((level) => {
+        const item = document.createElement('label');
+        item.className = `level-checkbox-item`;
+        
+        const isChecked = state.selectedLevels.includes(level.id);
+        
+        item.innerHTML = `
+            <input type="checkbox" value="${level.id}" ${isChecked ? 'checked' : ''}>
+            <div class="level-title">${level.name}</div>
+        `;
+        
+        // 체크박스 변경 시 상태 업데이트
+        item.querySelector('input').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                if (!state.selectedLevels.includes(level.id)) state.selectedLevels.push(level.id);
+            } else {
+                state.selectedLevels = state.selectedLevels.filter(id => id !== level.id);
+            }
+        });
+        
+        levelListContainer.appendChild(item);
+    });
+    
+    updateStartButtonColor();
+    adjustFontSize();
+}
+
+function updateStartButtonColor() {
+    const currentMenu = GAME_MODES.find(m => m.id === state.currentTabId);
+    const btn = document.getElementById('startBtn');
+    btn.style.backgroundColor = currentMenu.color;
+    btn.style.boxShadow = `0 6px 0 ${adjustColor(currentMenu.color, -20)}`;
+}
+
+function adjustColor(color, amount) {
+    return '#' + color.replace(/^#/, '').replace(/../g, color => ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
+}
+
+function adjustFontSize() {
+    setTimeout(() => {
+        const els = document.querySelectorAll('.dynamic-text, .math-tab .tab-text, .setup-label, #startBtn');
+        els.forEach(el => {
+            el.style.fontSize = '';
+            let fontSize = parseFloat(window.getComputedStyle(el).fontSize);
+            while (el.scrollWidth > el.clientWidth && fontSize > 10) {
+                fontSize -= 1;
+                el.style.fontSize = fontSize + 'px';
+            }
+        });
+    }, 50);
+}
+
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); }
+function playBeep(freq, duration, type = 'sine') {
+    if(!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime); gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration); osc.stop(audioCtx.currentTime + duration);
+}
+function playSuccessSound() { if(!audioCtx) return; [523.25, 659.25, 783.99].forEach((f, i) => { const osc = audioCtx.createOscillator(); const g = audioCtx.createGain(); osc.frequency.setValueAtTime(f, audioCtx.currentTime + (i*0.07)); g.gain.setValueAtTime(0.4, audioCtx.currentTime + (i*0.07)); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + (i*0.07) + 0.3); osc.connect(g); g.connect(audioCtx.destination); osc.start(audioCtx.currentTime + (i*0.07)); osc.stop(audioCtx.currentTime + (i*0.07) + 0.3); }); }
+function playFailSound() { if(!audioCtx) return; [392.00, 349.23, 311.13].forEach((f, i) => { const osc = audioCtx.createOscillator(); const g = audioCtx.createGain(); osc.frequency.setValueAtTime(f, audioCtx.currentTime + (i*0.1)); g.gain.setValueAtTime(0.4, audioCtx.currentTime + (i*0.1)); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + (i*0.1) + 0.4); osc.connect(g); g.connect(audioCtx.destination); osc.start(audioCtx.currentTime + (i*0.1)); osc.stop(audioCtx.currentTime + (i*0.1) + 0.4); }); }
+function playVictorySound() { if(!audioCtx) return; const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; notes.forEach((f, i) => { const osc = audioCtx.createOscillator(); const g = audioCtx.createGain(); const startTime = audioCtx.currentTime + (i * 0.12); osc.type = (i === notes.length - 1) ? 'square' : 'triangle'; osc.frequency.setValueAtTime(f, startTime); g.gain.setValueAtTime(0.4, startTime); g.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.6); osc.connect(g); g.connect(audioCtx.destination); osc.start(startTime); osc.stop(startTime + 0.6); }); }
+
+async function startCountdown() {
+    state.isCounting = true;
+    const layer = document.getElementById('countdownLayer');
+    const text = document.getElementById('countdownText');
+    const counts = ['3', '2', '1', 'GO!'];
+    
+    layer.style.display = 'flex';
+    for(let i = 0; i < counts.length; i++) {
+        if (state.isGameOver) { layer.style.display = 'none'; state.isCounting = false; return; }
+        text.textContent = counts[i];
+        if (i === counts.length - 1) playBeep(880, 0.4, 'triangle'); else playBeep(440, 0.2, 'sine');
+        text.style.animation = 'none'; text.offsetHeight; text.style.animation = 'countAnim 1s ease-out forwards';
+        await new Promise(r => setTimeout(r, 1000));
+    }
+    layer.style.display = 'none'; state.isCounting = false;
+}
+
+// 4지선다 및 OX 문제 출제 로직
+function generate(team) {
+    if(state.hanjaData.length === 0) return;
+    
+    let pool = state.hanjaData.filter(d => state.selectedLevels.includes(d.level));
+    if(pool.length < 4) pool = state.hanjaData; // 데이터 부족 시 전체 풀 사용
+    
+    // 정답 단어 뽑기
+    const correctWord = pool[Math.floor(Math.random() * pool.length)];
+    
+    // 문제 타입 결정
+    let qType = state.currentTabId;
+    if (qType === 'random') {
+        const types = ['hanja_kr', 'kr_hanja', 'ox_quiz'];
+        qType = types[Math.floor(Math.random() * types.length)];
+    }
+    
+    const probEl = document.getElementById(team+'Prob');
+    const pad = document.getElementById(team+'Pad');
+    pad.innerHTML = '';
+    
+    if(qType === 'ox_quiz') {
+        pad.classList.add('ox-mode');
+        
+        // 50% 확률로 정답 혹은 오답(섞인 문제) 출제
+        const isTrueMatch = Math.random() < 0.5;
+        let displayHanja = correctWord.hanja;
+        let displayHunEum = correctWord.hunEum;
+        
+        if(!isTrueMatch) {
+            let wrongWord = pool[Math.floor(Math.random() * pool.length)];
+            while(wrongWord.hunEum === correctWord.hunEum && pool.length > 1) {
+                wrongWord = pool[Math.floor(Math.random() * pool.length)];
+            }
+            displayHunEum = wrongWord.hunEum;
+        }
+        
+        probEl.innerHTML = `${displayHanja}<div class="problem-sub">${displayHunEum}</div>`;
+        state[team].ans = isTrueMatch ? 'O' : 'X';
+        
+        // O/X 버튼 생성
+        ['O', 'X'].forEach(opt => {
+            const btn = document.createElement('div');
+            btn.className = `key key-${opt.toLowerCase()}`;
+            btn.textContent = opt;
+            btn.onpointerdown = (e) => {
+                e.preventDefault();
+                checkAnswer(team, opt);
+            };
+            pad.appendChild(btn);
+        });
+        
+    } else {
+        pad.classList.remove('ox-mode');
+        
+        let questionText, correctText;
+        if (qType === 'hanja_kr') {
+            questionText = correctWord.hanja;
+            correctText = correctWord.hunEum;
+        } else {
+            questionText = correctWord.hunEum;
+            correctText = correctWord.hanja;
+        }
+        
+        // 오답 3개 뽑기
+        let distractors = [];
+        while(distractors.length < 3) {
+            const randomWord = pool[Math.floor(Math.random() * pool.length)];
+            const wrongText = (qType === 'hanja_kr') ? randomWord.hunEum : randomWord.hanja;
+            if (wrongText !== correctText && !distractors.includes(wrongText)) {
+                distractors.push(wrongText);
+            }
+        }
+        
+        let options = [correctText, ...distractors];
+        options.sort(() => Math.random() - 0.5);
+        
+        state[team].ans = correctText;
+        probEl.innerHTML = questionText;
+        
+        // 4지선다 버튼 생성
+        options.forEach(opt => {
+            const btn = document.createElement('div');
+            btn.className = 'key';
+            btn.textContent = opt;
+            btn.onpointerdown = (e) => {
+                e.preventDefault();
+                checkAnswer(team, opt);
+            };
+            pad.appendChild(btn);
+        });
+    }
+}
+
+function checkAnswer(team, selectedOpt) {
+    if(state.isGameOver || state.isCounting) return;
+    const s = state[team];
+    const probEl = document.getElementById(team+'Prob');
+
+    if(selectedOpt === s.ans) {
+        // 정답
+        playSuccessSound(); s.combo++; 
+        let addScore = 1;
+        if (s.combo > 0 && s.combo % 5 === 0) { addScore = 3; showComboEffect(team, s.combo, true); } 
+        else if (s.combo > 1) { showComboEffect(team, s.combo, false); }
+        
+        let currentMax = 0; let t1, t2, t3;
+        if (state.teamModeType === '2vs2') { t1 = state.dog.score + state.cat.score; t2 = state.rabbit.score + state.hamster.score; currentMax = Math.max(t1, t2); } 
+        else if (state.teamModeType === '3vs3') { t1 = state.dog.score + state.cat.score + state.rabbit.score; t2 = state.hamster.score + state.panda.score + state.monkey.score; currentMax = Math.max(t1, t2); } 
+        else if (state.teamModeType === '2vs2vs2') { t1 = state.dog.score + state.cat.score; t2 = state.rabbit.score + state.hamster.score; t3 = state.panda.score + state.monkey.score; currentMax = Math.max(t1, t2, t3); } 
+        else { const activeTeams = playerIds.map(id => state[id]).filter(t => t.active); currentMax = Math.max(...activeTeams.map(t => t.score)); }
+        
+        s.score += addScore; 
+        let becomeFirst = false;
+        if (state.teamModeType !== 'none') {
+            let myTeamScore = 0;
+            if (state.teamModeType === '2vs2') { if (team==='dog'||team==='cat') myTeamScore = state.dog.score + state.cat.score; else myTeamScore = state.rabbit.score + state.hamster.score; } 
+            else if (state.teamModeType === '3vs3') { if (team==='dog'||team==='cat'||team==='rabbit') myTeamScore = state.dog.score + state.cat.score + state.rabbit.score; else myTeamScore = state.hamster.score + state.panda.score + state.monkey.score; } 
+            else if (state.teamModeType === '2vs2vs2') { if (team==='dog'||team==='cat') myTeamScore = state.dog.score + state.cat.score; else if (team==='rabbit'||team==='hamster') myTeamScore = state.rabbit.score + state.hamster.score; else myTeamScore = state.panda.score + state.monkey.score; }
+            becomeFirst = (myTeamScore >= currentMax && currentMax > 0);
+        } else { becomeFirst = (s.score >= currentMax && currentMax > 0); }
+        
+        spawnItem(team, becomeFirst); updateRanks(); generate(team);
+    } else {
+        // 오답
+        playFailSound(); s.combo = 0;
+        probEl.classList.add('wrong'); setTimeout(()=>probEl.classList.remove('wrong'), 300);
+        if(s.score > 0) s.score--; updateRanks(); generate(team);
+    }
+    render();
+}
+
+function spawnItem(team, isGold) {
+    const parent = document.getElementById(team + 'Side');
+    const itemEl = document.createElement('div'); itemEl.className = 'item-effect';
+    itemEl.textContent = isGold ? '🥇' : state[team].item;
+    itemEl.style.left = (Math.random() * 70 + 10) + '%';
+    parent.appendChild(itemEl); setTimeout(() => itemEl.remove(), 1875);
+}
+
+function showComboEffect(team, count, isSuper) {
+    const parent = document.getElementById(team + 'Side');
+    const comboEl = document.createElement('div'); comboEl.className = `combo-text ${isSuper ? 'super' : ''}`;
+    if (isSuper) { comboEl.innerHTML = `🔥SUPER<br>COMBO! +3`; } else { comboEl.innerHTML = `⚡ ${count} COMBO`; }
+    parent.appendChild(comboEl); setTimeout(() => comboEl.remove(), 800);
+}
+
+function updateRanks() {
+    if (state.teamModeType !== 'none') {
+        let scores = [];
+        if (state.teamModeType === '2vs2') { scores.push({ id:'A', val: state.dog.score + state.cat.score }); scores.push({ id:'B', val: state.rabbit.score + state.hamster.score }); } 
+        else if (state.teamModeType === '3vs3') { scores.push({ id:'A', val: state.dog.score + state.cat.score + state.rabbit.score }); scores.push({ id:'B', val: state.hamster.score + state.panda.score + state.monkey.score }); } 
+        else if (state.teamModeType === '2vs2vs2') { scores.push({ id:'A', val: state.dog.score + state.cat.score }); scores.push({ id:'B', val: state.rabbit.score + state.hamster.score }); scores.push({ id:'C', val: state.panda.score + state.monkey.score }); }
+        scores.sort((a,b) => b.val - a.val);
+        let currentRank = 1;
+        for(let i=0; i<scores.length; i++) { if(i > 0 && scores[i].val < scores[i-1].val) { currentRank = i + 1; } const rankEl = document.getElementById('rank' + scores[i].id); if(rankEl) { rankEl.textContent = getRankSymbol(currentRank); rankEl.classList.remove('rank-1'); if(currentRank === 1) rankEl.classList.add('rank-1'); } }
+    } else {
+        const activeTeams = playerIds.map(id => state[id]).filter(t => t.active);
+        const sortedScores = activeTeams.map(t => t.score).sort((a, b) => b - a);
+        activeTeams.forEach(t => { const rank = sortedScores.indexOf(t.score) + 1; state[t.id].rank = rank; updateBadge(t.id, rank); });
+    }
+}
+
+function updateBadge(id, rank) {
+    const badge = document.getElementById(id + 'Rank');
+    if (badge) {
+        badge.className = 'rank-badge';
+        const symbols = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣'];
+        badge.textContent = symbols[rank - 1] || rank;
+        if (rank === 1) { badge.classList.add('rank-1'); }
+        if (rank >= 4) { badge.classList.add('rank-low'); }
+    }
+}
+
+function render() {
+    const timerDisp = document.getElementById('timerDisplay');
+    if(state.teamModeType !== 'none') {
+        let sa=0, sb=0, sc=0;
+        if(state.teamModeType === '2vs2' || state.teamModeType === '2vs2vs2') { sa = state.dog.score + state.cat.score; sb = state.rabbit.score + state.hamster.score; if(state.teamModeType === '2vs2vs2') sc = state.panda.score + state.monkey.score; } 
+        else if(state.teamModeType === '3vs3') { sa = state.dog.score + state.cat.score + state.rabbit.score; sb = state.hamster.score + state.panda.score + state.monkey.score; }
+        document.getElementById('scoreA').textContent = sa; document.getElementById('scoreB').textContent = sb; if(state.teamModeType === '2vs2vs2') document.getElementById('scoreC').textContent = sc;
+    }
+    playerIds.forEach(id => { const t = state[id]; if(t && t.active) { const scoreBadge = document.getElementById(t.id+'Score'); if (scoreBadge && state.teamModeType === 'none') { scoreBadge.textContent = `${t.item} ${t.score}`; } } });
+    timerDisp.textContent = state.timeLeft;
+    if (state.timeLeft <= 5 && state.timeLeft > 0) timerDisp.classList.add('timer-urgent'); else timerDisp.classList.remove('timer-urgent');
+}
+
+function getRankSymbol(rank) { const symbols = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣']; return symbols[rank-1] || rank; }
+
+async function prepareGame() {
+    if(state.selectedLevels.length === 0) {
+        alert("최소 한 개의 급수를 선택해주세요!");
+        return;
+    }
+
+    initAudio(); state.isGameOver = false;
+
+    const pVal = document.getElementById('playerCount').value;
+    const tVal = document.getElementById('gameTimeLimit').value; 
+    state.teamModeType = 'none';
+    if(pVal === 'team2vs2') { state.count = 4; state.teamModeType = '2vs2'; } else if(pVal === 'team3vs3') { state.count = 6; state.teamModeType = '3vs3'; } else if(pVal === 'team2vs2vs2') { state.count = 6; state.teamModeType = '2vs2vs2'; } else { state.count = parseInt(pVal); state.teamModeType = 'none'; }
+    state.baseTime = parseInt(tVal); 
+    document.body.dataset.pcount = state.count;
+
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('resultList').style.display = 'none';
+    document.getElementById('finalPodium').style.display = 'none';
+    document.getElementById('setupArea').style.display = 'none';
+    document.getElementById('subtitle').style.display = 'none';
+    document.querySelector('.math-menu-wrapper').style.display = 'none';
+    
+    const scoreBoard = document.getElementById('teamScoreBoard');
+    const cardB = document.getElementById('teamCardB');
+    const cardC = document.getElementById('teamCardC');
+    
+    if (state.teamModeType !== 'none') {
+        document.body.classList.add('team-mode');
+        scoreBoard.style.display = 'flex';
+        cardB.style.background = ''; 
+        cardB.querySelector('.team-score').innerHTML = '🥕 <span id="scoreB">0</span> 🥜'; 
+        
+        if (state.teamModeType === '2vs2vs2') {
+            cardC.style.display = 'flex';
+            document.getElementById('teamNameA').textContent = '🐶멍냥이팀🐱';
+            document.getElementById('teamNameB').textContent = '🐰햄토리팀🐹';
+            document.getElementById('teamNameC').textContent = '🐼판숭이팀🐵';
+        } else if (state.teamModeType === '3vs3') {
+            cardC.style.display = 'none';
+            document.getElementById('teamNameA').textContent = '🐶멍냥토팀🐰';
+            document.getElementById('teamNameB').textContent = '🐹햄판원팀🐵';
+            cardB.style.background = 'var(--hamster-color)';
+            cardB.querySelector('.team-score').innerHTML = '🥜 <span id="scoreB">0</span> 🍌';
+        } else {
+            cardC.style.display = 'none';
+            document.getElementById('teamNameA').textContent = '🐶멍냥이팀🐱';
+            document.getElementById('teamNameB').textContent = '🐰햄토리팀🐹';
+        }
+    } else {
+        document.body.classList.remove('team-mode');
+        scoreBoard.style.display = 'none';
+    }
+    
+    playerIds.forEach((id, idx) => {
+        const box = document.getElementById(id + 'Side');
+        if (idx < state.count) {
+            state[id].active = true; state[id].score = 0; state[id].ans = "";
+            state[id].combo = 0;
+            box.style.display = 'flex';
+            generate(id);
+        } else {
+            state[id].active = false; box.style.display = 'none';
+        }
+    });
+    
+    state.timeLeft = state.baseTime; 
+    updateRanks(); render(); 
+    await startCountdown();
+    if(state.isGameOver) return;
+    state.timeLeft = state.baseTime; startTimer();
+}
+
+function startTimer() {
+    clearInterval(state.timerInterval);
+    state.timerInterval = setInterval(() => {
+        state.timeLeft--;
+        if (state.timeLeft <= 5 && state.timeLeft > 0) playBeep(900, 0.1);
+        else if (state.timeLeft === 0) playBeep(400, 0.5);
+        render();
+        if (state.timeLeft <= 0) endGame();
+    }, 1000);
+}
+
+function goToMenu() {
+    state.isGameOver = true; state.isCounting = false;
+    clearInterval(state.timerInterval);
+
+    document.getElementById('overlay').style.display = 'flex';
+    document.getElementById('resultList').style.display = 'none';
+    document.getElementById('finalPodium').style.display = 'none';
+    document.getElementById('setupArea').style.display = 'flex'; 
+    document.getElementById('subtitle').style.display = 'block';
+    document.querySelector('.math-menu-wrapper').style.display = 'block';
+    document.getElementById('countdownLayer').style.display = 'none';
+    
+    document.getElementById('msgTitle').innerHTML = '👑한자 급수킹<span class="desktop-view">⚔️</span><span class="mobile-view" id="mobileTitleFsBtn">↕️</span>';
+    attachMobileEvents();
+    document.getElementById('startBtn').textContent = "배틀 시작";
+    adjustFontSize();
+}
+
+function endGame() {
+    state.isGameOver = true; clearInterval(state.timerInterval); playVictorySound();
+    
+    document.getElementById('setupArea').style.display = 'none'; 
+    document.getElementById('subtitle').style.display = 'none';
+    document.querySelector('.math-menu-wrapper').style.display = 'none';
+    document.getElementById('overlay').style.display = 'flex';
+    document.getElementById('msgTitle').textContent = "게임 종료!";
+    
+    const resultList = document.getElementById('resultList');
+    const podium = document.getElementById('finalPodium');
+    resultList.innerHTML = ''; podium.innerHTML = ''; podium.style.display = 'flex';
+    
+    if (state.teamModeType !== 'none') {
+        let teams = [];
+        if (state.teamModeType === '2vs2') { teams = [ { name: '🐶멍냥이팀🐱', score: state.dog.score + state.cat.score, ids: ['dog','cat'], class: 'bg-dog' }, { name: '🐰햄토리팀🐹', score: state.rabbit.score + state.hamster.score, ids: ['rabbit','hamster'], class: 'bg-rabbit' } ]; } 
+        else if (state.teamModeType === '3vs3') { teams = [ { name: '🐶멍냥토팀🐰', score: state.dog.score + state.cat.score + state.rabbit.score, ids: ['dog','cat','rabbit'], class: 'bg-dog' }, { name: '🐹햄판원팀🐵', score: state.hamster.score + state.panda.score + state.monkey.score, ids: ['hamster','panda','monkey'], class: 'bg-hamster' } ]; } 
+        else if (state.teamModeType === '2vs2vs2') { teams = [ { name: '🐶멍냥이팀🐱', score: state.dog.score + state.cat.score, ids: ['dog','cat'], class: 'bg-dog' }, { name: '🐰햄토리팀🐹', score: state.rabbit.score + state.hamster.score, ids: ['rabbit','hamster'], class: 'bg-rabbit' }, { name: '🐼판숭이팀🐵', score: state.panda.score + state.monkey.score, ids: ['panda','monkey'], class: 'bg-panda' } ]; }
+        teams.sort((a,b) => b.score - a.score);
+        let currentRank = 1; for(let i=0; i<teams.length; i++){ if(i>0 && teams[i].score < teams[i-1].score) currentRank = i+1; teams[i].rank = currentRank; }
+        teams.forEach(t => { const li = document.createElement('li'); if(t.rank === 1) li.className = 'gold'; const symbol = getRankSymbol(t.rank); li.innerHTML = `<div class="result-name"><span>${symbol}</span><span>${t.name}</span></div><div class="result-score">Total ${t.score}</div>`; resultList.appendChild(li); });
+        playerIds.forEach(id => { if(state[id].active) { const myTeam = teams.find(t => t.ids.includes(id)); const rank = myTeam ? myTeam.rank : 6; const tInfo = state[id]; const col = document.createElement('div'); col.className = `podium-col ${tInfo.colorClass}`; col.innerHTML = ` <div class="podium-medal">${getRankSymbol(rank)}</div> <div class="podium-name">${tInfo.emoji}</div> `; podium.appendChild(col); } });
+    } else {
+        const activeTeams = playerIds.map(id => state[id]).filter(t => t.active);
+        const finalSort = [...activeTeams].sort((a, b) => b.score - a.score);
+        const allScores = activeTeams.map(t => t.score).sort((a,b) => b-a);
+        finalSort.forEach((t) => { const li = document.createElement('li'); const rank = allScores.indexOf(t.score) + 1; if(rank === 1) li.className = 'gold'; const symbol = getRankSymbol(rank); li.innerHTML = `<div class="result-name"><span>${symbol}</span><span>${t.emoji}${t.name}</span></div><div class="result-score">${t.item} ${t.score}</div>`; resultList.appendChild(li); });
+        playerIds.forEach(id => { const t = state[id]; if(t.active) { const rank = allScores.indexOf(t.score) + 1; const col = document.createElement('div'); col.className = `podium-col ${t.colorClass}`; col.innerHTML = ` <div class="podium-medal">${getRankSymbol(rank)}</div> <div class="podium-name">${t.emoji}</div> `; podium.appendChild(col); } });
+    }
+    resultList.style.display = 'block';
+    const startBtn = document.getElementById('startBtn');
+    startBtn.textContent = "다시 하기";
+    startBtn.style.background = "#ff7675"; startBtn.style.boxShadow = "0 6px 0 #fa5252"; 
+    startBtn.onpointerdown = null;
+    startBtn.onclick = (e) => { 
+        e.preventDefault(); goToMenu(); 
+        startBtn.onclick = null; startBtn.onpointerdown = (e) => { e.preventDefault(); prepareGame(); };
+    };
+}
+
+function toggleFullScreen() {
+    var doc = window.document; var docEl = doc.documentElement;
+    var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+    var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+    var activeFullScreen = doc.fullscreenElement || doc.mozFullScreenElement || doc.webkitFullscreenElement || doc.msFullscreenElement;
+    if (!requestFullScreen) return;
+    if (!activeFullScreen) requestFullScreen.call(docEl); else cancelFullScreen.call(doc);
+}
+
+function attachMobileEvents() {
+    const mTitleFs = document.getElementById('mobileTitleFsBtn');
+    const mHeaderHome = document.getElementById('headerHomeBtn');
+    const mHeaderFs = document.getElementById('headerFsBtn');
+    if (mTitleFs) mTitleFs.onclick = toggleFullScreen;
+    if (mHeaderHome) mHeaderHome.onclick = () => {
+        if (document.fullscreenElement) {
+            state.isPlaying = false;
+            clearInterval(state.timerInterval);
+            goToMenu();
+        } else {
+            location.reload();
+        }
+    };
+    if (mHeaderFs) mHeaderFs.onclick = toggleFullScreen;
+}
+
+const gameFsBtn = document.getElementById('gameFsBtn');
+if(gameFsBtn) gameFsBtn.onclick = (e) => { toggleFullScreen(); };
+
+document.addEventListener('touchmove', function(e) { if (e.scale !== 1) { e.preventDefault(); } }, { passive: false });
+document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function (event) {
+    var now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) { event.preventDefault(); }
+    lastTouchEnd = now;
+}, false);
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+document.getElementById('resetBtn').onpointerdown = (e) => { 
+    e.preventDefault(); 
+    if (document.fullscreenElement) {
+        state.isPlaying = false;
+        clearInterval(state.timerInterval);
+        goToMenu();
+    } else {
+        location.reload();
+    }
+};
+
+const pcSelect = document.getElementById('playerCount');
+if (window.innerWidth <= 768) { pcSelect.value = "1"; } else { pcSelect.value = "4"; }
+
+document.getElementById('startBtn').onpointerdown = (e) => { e.preventDefault(); prepareGame(); };
+attachMobileEvents();
+
+// 초기화
+renderMathMenu();
+loadCSV(); // CSV 파일 불러오기
+
+</script>
+</body>
+</html>

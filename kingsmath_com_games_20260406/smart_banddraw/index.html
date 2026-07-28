@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5YW0T2C109');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>띠그래프 그려킹 모바일</title>
+    <meta name="description" id="meta-desc" content="띠그래프를 정확히 그리고 시간을 획득하세요! 타임어택 수학 킹!">
+    <meta name="keywords" id="meta-keywords" content="띠그래프, 수학게임, 타임어택, 킹수학">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --game-bg-color: #0b0e27; 
+        }
+
+        /* --- 기존 게임 기본 CSS (유지) --- */
+        * { 
+            box-sizing: border-box; 
+            touch-action: manipulation; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--game-bg-color);
+            font-family: 'Jua', sans-serif;
+            height: 100vh; 
+            height: 100dvh; 
+            display: flex; justify-content: center;
+            overflow: hidden; user-select: none;
+            -webkit-user-select: none; touch-action: none; 
+        }
+
+        #game-container {
+            width: 100%; max-width: 500px; height: 100%;
+            background: var(--game-bg-color); position: relative;
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .hidden { display: none !important; }
+        .center { text-align: center; }
+        button { 
+            cursor: pointer; border: none; font-family: inherit; 
+            transition: transform 0.05s; outline: none;
+        }
+
+        /* --- 1. 시작 화면 --- */
+        #start-screen {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            justify-content: flex-start; padding-top: 2.5vh; padding-bottom: 5vh; 
+            background-color: var(--game-bg-color); 
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
+        }
+        
+        #top-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; padding: 0 20px; margin-bottom: 1vh; flex-shrink: 0;
+            z-index: 99999; /* 상단 메뉴 레이어 최상단 */
+        }
+
+        .main-title { 
+            font-size: 6.5vh; color: #fff; margin: 1vh 0; 
+            text-shadow: 3px 3px 0px #00ffff, 2px 2px 0px #e74c3c; line-height: 1.2; text-align: center;
+            display: flex; align-items: baseline; justify-content: center; gap: 10px; flex-wrap: wrap;
+            transition: font-size 0.2s; /* 동적 폰트 사이즈 변환 애니메이션 */
+        }
+        .title-sub { font-size: 3.5vh; color: #FFD700; text-shadow: 2px 2px 0px #d35400; transition: font-size 0.2s; }
+        
+        #qrcode-area {
+            margin: 1.5vh 0; padding: 10px; background: white;
+            border: 3px dashed #3498db; border-radius: 15px; cursor: pointer;
+        }
+        .qr-invite-text {
+            font-size: 1.8vh; color: #3498db; text-align: center;
+            margin-top: -1vh; margin-bottom: 1.5vh; cursor: pointer; font-weight: bold;
+        }
+
+        .desc { font-size: 2.5vh; color: #2ecc71; margin: 1.5vh 0; font-weight: bold; text-align: center; padding: 0 10px; word-break: keep-all;}
+
+        input#nickname {
+            width: 85%; padding: 1.5vh; font-size: 4vh; text-align: center;
+            border: 3px dashed #f1c40f; border-radius: 30px; 
+            font-family: inherit; margin-bottom: 2vh; flex-shrink: 0;
+            color: #fff; background-color: rgba(0,0,0,0.4);
+        }
+        input#nickname:focus { outline: none; border-color: #2ecc71; border-style: solid; }
+
+        .btn-start {
+            width: 85%; padding: 1.5vh; font-size: 4.5vh; flex-shrink: 0;
+            background: linear-gradient(to bottom, #00c6ff, #0072ff); color: white;
+            border: 3px dashed rgba(255,255,255,0.5); border-radius: 30px;
+            box-shadow: 0 0.6vh #0056b3; margin-bottom: 2vh;
+        }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 0.2vh #0056b3; }
+
+        #ranking-board {
+            margin-top: 2vh; margin-bottom: 2vh; width: 90%; background: rgba(0,0,0,0.5);
+            border: 3px dashed #9b59b6; border-radius: 15px; color: #fff;
+            padding: 1vh; flex: 1; min-height: 15vh; overflow-y: auto; 
+        }
+        .rank-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0.8vh 0.5vh; border-bottom: 1px dashed rgba(255,255,255,0.2); font-size: 2.2vh; 
+        }
+
+        /* --- 2. 게임 화면 (상단 UI) --- */
+        #game-screen {
+            flex: 1; display: flex; flex-direction: column;
+            background-color: var(--game-bg-color);
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            position: relative; overflow: hidden; width: 100%;
+        }
+
+        .game-header-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px; width: 100%; flex-shrink: 0;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .icon-btn {
+            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+            color: white; border-radius: 10px; font-size: 3vh; padding: 5px 15px;
+            cursor: pointer; transition: transform 0.1s;
+        }
+        .icon-btn:active { transform: scale(0.9); }
+
+        .status-box {
+            background: rgba(255,255,255,0.95); border: 2px solid #333;
+            border-radius: 10px; padding: 2px 15px; text-align: center;
+            box-shadow: 0 4px 0px rgba(0,0,0,0.5); position: relative;
+        }
+        .status-label { font-size: 1.5vh; color: #555; margin-bottom: -5px; }
+        .status-val { font-size: 3.5vh; color: #000; font-weight: bold; }
+        
+        #bonus-anim {
+            position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+            color: #2ecc71; font-size: 3vh; font-weight: bold;
+            text-shadow: 0 0 5px #000; opacity: 0; pointer-events: none;
+        }
+        .bonus-anim-run { animation: floatUp 1s ease-out; }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translate(-50%, 0); }
+            100% { opacity: 0; transform: translate(-50%, -30px); }
+        }
+
+        /* --- 3. 게임 영역 --- */
+        #game-area-wrapper {
+            flex: 1; display: flex; flex-direction: column; width: 100%; padding: 10px;
+        }
+
+        .data-table-container {
+            background: rgba(255, 255, 255, 0.95); border: 3px solid #333; border-radius: 10px;
+            padding: 5px 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            width: 100%; text-align: center; margin-bottom: 10px; flex-shrink: 0;
+        }
+        .table-title { color: #000; font-size: 2.2vh; margin-bottom: 4px; font-weight: normal; }
+        .custom-table { width: 100%; border-collapse: collapse; color: #000; font-size: 2vh; }
+        .custom-table th, .custom-table td { border: 2px solid #555; padding: 3px 2px; background: #fff; text-align: center; }
+        .custom-table thead th { background-color: #f0f0f0; font-weight: normal; }
+        .table-header-col { background-color: #e0e0e0 !important; width: 15%; font-size: 1.8vh; }
+        
+        .t-strawberry { color: #d63031; } .t-watermelon { color: #009432; }
+        .t-mango { color: #e1b12c; } .t-apple { color: #c0392b; }
+        .t-grape { color: #8e44ad; } .t-sum { color: #000; font-weight: normal; background-color: #fffbd7 !important; }
+
+        .player-zone {
+            flex: 1; position: relative; display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-end; width: 100%;
+        }
+        
+        .canvas-container { flex: 1; width: 100%; position: relative; cursor: pointer; }
+        
+        #game-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+        .btn-container {
+            display: flex; gap: 15px; width: 100%; justify-content: center;
+            margin-bottom: 10px; z-index: 400;
+        }
+
+        .submit-btn, .undo-btn {
+            padding: 10px 0; font-size: 2.5vh; flex: 1; max-width: 180px;
+            color: white; border: none; border-radius: 50px;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .submit-btn {
+            background: linear-gradient(to bottom, #2ecc71, #27ae60);
+            box-shadow: 0 5px 0 #1e8449, 0 10px 10px rgba(0,0,0,0.3);
+        }
+        .submit-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #1e8449, 0 5px 5px rgba(0,0,0,0.3); }
+        .undo-btn {
+            background: linear-gradient(to bottom, #e67e22, #d35400);
+            box-shadow: 0 5px 0 #a84300, 0 10px 10px rgba(0,0,0,0.3);
+        }
+        .undo-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #a84300, 0 5px 5px rgba(0,0,0,0.3); }
+
+        .error-display {
+            position: absolute; top: 10%; width: 100%; text-align: center;
+            font-size: 5vh; color: #ff4757; text-shadow: 0 0 10px #000;
+            opacity: 0; transition: opacity 0.5s; z-index: 500; pointer-events: none;
+        }
+        .instruction-text {
+            position: absolute; top: 25%; width: 100%; text-align: center;
+            color: rgba(255, 255, 255, 0.7); font-size: 2vh; pointer-events: none;
+            z-index: 200; text-shadow: 0px 0px 5px #000;
+        }
+
+        /* --- 4. 기타 모달 및 결과 화면 --- */
+        #result-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(11, 14, 39, 0.95);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 1000; padding-bottom: 5vh; 
+        }
+        .result-score { font-size: 9vh; color: #FFD700; margin: 1vh 0; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+
+        #qr-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .qr-modal-content {
+            background: white; padding: 20px; border-radius: 20px; text-align: center;
+            width: 80vw; max-width: 300px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #qrcode-large { display: flex; justify-content: center; align-items: center; width: 100%; }
+        #qrcode-large img, #qrcode-large canvas { 
+            width: 100% !important; height: auto !important; 
+            max-width: 200px !important; max-height: 200px !important; 
+        }
+
+        #countdown-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 14, 39, 0.9); z-index: 2000;
+            display: flex; justify-content: center; align-items: center;
+        }
+        #countdown-text {
+            font-size: 20vh; font-weight: bold; color: #FFD700; text-shadow: 0 0 20px #ff0000;
+            animation: pulse 0.5s infinite alternate;
+        }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+        ::-webkit-scrollbar { width: 14px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.3); border-radius: 10px; border: 4px solid #0b0e27; background-clip: content-box; }
+
+        /* =========================================
+           [신규] 상단 좌/우측 공통 내비게이션 버튼 & 독립 모달 CSS
+           (게임 CSS와의 충돌 방지를 위한 완벽 분리)
+           ========================================= */
+        .top-nav-btn {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            background: rgba(55, 65, 81, 0.5); border: 1px solid #4b5563; border-radius: 9999px;
+            padding: 6px 14px; color: #f3f4f6; font-size: 14px; font-weight: 500; font-family: 'Arial', sans-serif;
+            cursor: pointer; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            transition: all 0.2s; z-index: 99999;
+        }
+        .top-nav-btn:hover { background: rgba(55, 65, 81, 1); }
+        .top-nav-btn img { width: 20px; height: auto; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        
+        /* FontAwesome 깨짐 방지 */
+        .fa, .fas, .fa-solid, .fa-regular { font-family: "Font Awesome 6 Free", sans-serif !important; font-weight: 900; }
+        
+        #langModalWrapper, #langModalWrapper * { box-sizing: border-box !important; font-family: 'Arial', sans-serif; }
+        
+        .custom-lang-modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 99999;
+            display: flex; align-items: flex-start; justify-content: center;
+            background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            padding: 4rem 1rem 1rem 1rem; opacity: 0; visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .custom-lang-modal.active { opacity: 1; visibility: visible; }
+        @media (min-width: 640px) { .custom-lang-modal { align-items: center; padding-top: 0; } }
+        
+        .custom-lang-content {
+            background-color: #111827; border: 1px solid #374151; border-radius: 1rem;
+            width: 100%; max-width: 56rem; max-height: 85vh; display: flex; flex-direction: column;
+            overflow: hidden; transform: scale(0.95) translateY(-10px); opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .custom-lang-modal.active .custom-lang-content { transform: scale(1) translateY(0); opacity: 1; }
+        
+        .custom-lang-header {
+            display: flex; align-items: center; justify-content: space-between; padding: 1.25rem;
+            border-bottom: 1px solid #1f2937; background-color: rgba(17, 24, 39, 0.95);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .custom-lang-title { font-size: 1.25rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin:0; }
+        .custom-lang-close {
+            width: 2.5rem; height: 2.5rem; border-radius: 9999px; background-color: #1f2937; color: #9ca3af;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; transition: background-color 0.2s, color 0.2s;
+        }
+        .custom-lang-close:hover { background-color: #374151; color: #fff; }
+        
+        .custom-lang-search-wrap { padding: 1.25rem 1.25rem 0.5rem 1.25rem; background-color: #111827; }
+        .custom-lang-search-box { position: relative; }
+        .custom-lang-search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+        .custom-lang-input {
+            width: 100%; background-color: #1f2937; border: 1px solid #374151; color: #fff; font-size: 0.875rem;
+            border-radius: 0.75rem; padding: 0.875rem 0.875rem 0.875rem 2.75rem; outline: none; transition: border-color 0.2s;
+        }
+        .custom-lang-input:focus { border-color: #eab308; box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.2); }
+        .custom-lang-input::placeholder { color: #6b7280; }
+        
+        .custom-lang-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
+        .custom-lang-body::-webkit-scrollbar { width: 8px; }
+        .custom-lang-body::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; border: none; }
+        .custom-lang-body::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; border: none; }
+        .custom-lang-body::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        
+        .custom-lang-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+        @media (min-width: 640px) { .custom-lang-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .custom-lang-grid { grid-template-columns: repeat(3, 1fr); } }
+        
+        .custom-lang-item {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: 0.75rem; cursor: pointer;
+            background-color: rgba(31, 41, 55, 0.4); border: 1px solid #374151; transition: all 0.2s; position: relative; overflow: hidden;
+        }
+        .custom-lang-item:hover { background-color: #374151; border-color: #6b7280; }
+        .custom-lang-item.selected { background-color: #1f2937; border-color: #eab308; box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.5); }
+        
+        .custom-lang-flag { width: 2rem; height: 1.5rem; border-radius: 0.25rem; overflow: hidden; border: 1px solid rgba(55, 65, 81, 0.5); flex-shrink: 0; }
+        .custom-lang-flag img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .custom-lang-item:hover .custom-lang-flag img { transform: scale(1.1); }
+        
+        .custom-lang-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+        .custom-lang-name { font-size: 0.875rem; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+        .custom-lang-item.selected .custom-lang-name { color: #facc15; }
+        .custom-lang-en { font-size: 0.75rem; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+        .custom-lang-check { color: #eab308; font-size: 1.125rem; margin-left: 0.5rem; }
+        
+        .custom-lang-empty { display: none; flex-direction: column; items-center; justify-content: center; padding: 3rem 0; color: #6b7280; text-align: center; }
+        .custom-lang-empty.show { display: flex; }
+        .custom-lang-empty i { font-size: 2.25rem; margin-bottom: 0.75rem; }
+        
+        .custom-toast {
+            position: fixed; bottom: 1.5rem; right: 1.5rem; background-color: #1f2937; border: 1px solid #374151;
+            border-radius: 0.75rem; padding: 1rem; display: flex; align-items: center; gap: 0.75rem; z-index: 99999;
+            transform: translateY(150%); opacity: 0; transition: all 0.3s ease; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+        .custom-toast.show { transform: translateY(0); opacity: 1; }
+        .custom-toast-icon { width: 2rem; height: 2rem; border-radius: 9999px; background-color: rgba(34, 197, 94, 0.2); color: #4ade80; display: flex; align-items: center; justify-content: center; }
+        .custom-toast-text { font-size: 0.875rem; font-weight: 500; color: #fff; margin:0; }
+        .custom-toast-sub { font-size: 0.75rem; color: #9ca3af; margin:0; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen">
+        <div id="top-nav">
+            <a id="kingsmath-link-btn" href="/" target="_self" class="top-nav-btn">
+                킹수학.com
+            </a>
+            
+            <button id="langTriggerBtn" class="top-nav-btn">
+                <i class="fa-solid fa-globe text-gray-400"></i>
+                <img id="currentFlag" src="https://flagcdn.com/w40/kr.png" alt="KR">
+                <span id="currentLangName" style="display: none;">한국어</span> <i class="fa-solid fa-chevron-down text-gray-400 ml-1 text-xs" style="font-size: 10px;"></i>
+            </button>
+        </div>
+
+        <div class="main-title">
+            <span data-i18n="mainTitle">띠그래프</span>
+            <span class="title-sub" data-i18n="subTitle">그려킹 모바일</span>
+        </div>
+        
+        <div id="qrcode-area" onclick="toggleQR(true)"></div>
+        <div class="qr-invite-text" data-i18n="qrInvite" onclick="toggleQR(true)">QR 코드로 초대하기</div>
+
+        <div class="desc" data-i18n="desc">정확히 그리고 시간을 획득하세요!</div>
+        
+        <input type="text" id="nickname" maxlength="8" placeholder="닉네임 입력" onfocus="this.select()" data-i18n-ph="placeholder">
+        
+        <button class="btn-start" onclick="startGame()" data-i18n="startBtn">🚀 게임 시작!</button>
+        
+        <a href="/" target="_self" class="link-btn" style="flex-shrink: 0; color:#fff; text-decoration:none; background:rgba(52, 152, 219, 0.8); padding:10px 20px; border-radius:20px; border:2px dashed #fff;" data-i18n="otherGamesBtn">🎲 다른 게임 고르기</a>
+        
+        <div id="ranking-board">
+            <div class="center" data-i18n="rankingLoading">랭킹을 불러오고 있어요... 🏃‍♂️</div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div class="game-header-row" style="position: relative;">
+            <button class="icon-btn" onclick="forceGoHome()">🏠</button>
+            
+            <div class="status-box" style="position: absolute; left: 50%; transform: translateX(-50%); width: 140px;">
+                <div class="status-label" data-i18n="scoreLabel">SCORE</div>
+                <div class="status-val" id="score-display">0</div>
+            </div>
+
+            <div class="icon-btn" style="margin-left: auto; display: flex; align-items: center; justify-content: center; cursor: default; position: relative; min-width: 75px;">
+                ⏳ <span id="timer-display" style="margin-left: 5px; font-weight: bold; color: #fff;">60</span>
+                <div id="bonus-anim">+5</div>
+            </div>
+        </div>
+
+        <div id="game-area-wrapper">
+            <div class="data-table-container">
+                <div class="table-title" id="t-chart-title">🏫 우리 학교 학생들이 좋아하는 과일</div>
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th class="table-header-col" id="t-th-fruit">과일</th> 
+                            <th class="t-strawberry" id="t-fruit-0">딸기</th>
+                            <th class="t-watermelon" id="t-fruit-1">수박</th>
+                            <th class="t-mango" id="t-fruit-2">망고</th>
+                            <th class="t-apple" id="t-fruit-3">사과</th>
+                            <th class="t-grape" id="t-fruit-4">포도</th>
+                            <th class="t-sum" id="t-th-total">합계</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="data-row"></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="player-zone">
+                <div class="error-display" id="error-msg">다시 확인하세요!</div>
+                <div class="instruction-text" id="t-instruction">오른쪽으로 드래그해서 그리세요!</div>
+                
+                <div class="canvas-container" id="canvas-wrapper">
+                    <canvas id="game-canvas"></canvas>
+                </div>
+                
+                <div class="btn-container">
+                    <button class="undo-btn" onclick="undoDraw()" id="btn-undo">되돌리기</button>
+                    <button class="submit-btn" onclick="checkAnswer()" id="btn-submit">제출하기</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="countdown-screen" class="hidden">
+            <div id="countdown-text">3</div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <h2 style="font-size: 5vh; margin:0; color:#ff4757; text-shadow: 2px 2px 0 #000;" data-i18n="gameOver">Game Over! 🏁</h2>
+        <h3 id="res-nickname" style="font-size: 4vh; margin: 10px 0; color:#fff;">Player</h3>
+        <div class="result-score"><span id="res-score">0</span></div>
+        <div id="res-rank" style="font-size: 3vh; margin-bottom:30px; color:#2ecc71;" data-i18n="rankQuery">몇 등일까요? 🤔</div>
+        
+        <button class="btn-start" onclick="restartGame()" style="background: linear-gradient(to bottom, #2ecc71, #27ae60); box-shadow: 0 0.6vh #1e8449;" data-i18n="restartBtn">🔄 다시 하기</button>
+        <button class="btn-start" onclick="forceGoHome()" style="background: linear-gradient(to bottom, #3498db, #2980b9); color:#fff; box-shadow: 0 0.6vh #1c5986;" data-i18n="homeBtn">🏠 처음으로</button>
+
+        <div id="top3-board" style="margin-top:2vh; width:85%; background:rgba(0,0,0,0.5); border:2px dashed #f1c40f; border-radius:15px; padding:10px; color:#fff;">
+            <div style="text-align:center; color:#FFD700; font-weight:bold; font-size:2.5vh; margin-bottom:1vh;">🏆 TOP 3 🏆</div>
+            <div id="top3-list"></div>
+        </div>
+    </div>
+</div>
+
+<div id="qr-modal" class="hidden" onclick="toggleQR(false)">
+    <div class="qr-modal-content">
+        <div id="qrcode-large"></div>
+        <div class="center" style="margin-top:15px; font-size:20px; color:#8d6e63; font-weight:bold;">Close 👋</div>
+    </div>
+</div>
+
+<div id="langModalWrapper">
+    <div id="langModal" class="custom-lang-modal">
+        <div class="custom-lang-content">
+            
+            <div class="custom-lang-header">
+                <h2 class="custom-lang-title">
+                    <i class="fa-solid fa-language" style="color: #eab308;"></i>
+                    Language / 언어
+                </h2>
+                <button id="closeModalBtn" class="custom-lang-close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="custom-lang-search-wrap">
+                <div class="custom-lang-search-box">
+                    <i class="fa-solid fa-magnifying-glass custom-lang-search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Search / 검색 ..." class="custom-lang-input">
+                </div>
+            </div>
+
+            <div class="custom-lang-body">
+                <div id="languageGrid" class="custom-lang-grid"></div>
+                <div id="noResult" class="custom-lang-empty">
+                    <i class="fa-regular fa-face-frown-open"></i>
+                    <p>No results / 검색 결과 없음</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastNotification" class="custom-toast">
+        <div class="custom-toast-icon">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+            <p id="ui-toast" class="custom-toast-text">언어가 변경되었습니다.</p>
+            <p id="toastLangName" class="custom-toast-sub">Korean</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 0. 16개국 언어 지원 데이터베이스 (초등 수준 쉬운 어휘 반영) ---
+    const i18nData = {
+        ko: {
+            flag: "🇰🇷", pageTitle: "띠그래프 그려킹 모바일", mainTitle: "띠그래프", subTitle: "그려킹 모바일", desc: "정확히 그리고 시간을 획득하세요!", placeholder: "닉네임 입력",
+            startBtn: "🚀 게임 시작!", otherGamesBtn: "🎲 다른 게임 고르기", rankingLoading: "랭킹 로딩중... 🏃‍♂️",
+            rankingEmpty: "아직 1등이 없어요. 도전! 👑", rankingError: "랭킹 오류 😭",
+            homeBtn: "🏠 처음으로", restartBtn: "🔄 다시하기", gameOver: "게임 오버! 🏁",
+            rankQuery: "몇 등일까요? 🤔", rankResult: "현재 {rank}등 이에요!", rankSaved: "점수 저장 완료!",
+            alertName: "📛 닉네임을 꼭 써주세요!", alertBadWord: "🚫 예쁜 말을 써주세요!",
+            qrInvite: "QR 코드로 초대하기", scoreLabel: "SCORE", metaDesc: "띠그래프를 빨리 그리고 시간을 늘려보세요!",
+            chartTitle: "🏫 우리 학교 학생들이 좋아하는 과일", fruits: ["딸기", "수박", "망고", "사과", "포도"],
+            thFruit: "과일", thTotal: "합계", thCount: "비율(%)", unit: "%", submit: "제출하기", undo: "되돌리기", error: "다시 확인하세요!", instruction: "오른쪽으로 드래그해서 그리세요!"
+        },
+        en: {
+            flag: "🇺🇸", pageTitle: "Band Graph King Mobile", mainTitle: "Band Graph", subTitle: "Draw King Mobile", desc: "Draw correctly and earn time!", placeholder: "Enter Name",
+            startBtn: "🚀 Start Game", otherGamesBtn: "🎲 Other Games", rankingLoading: "Loading... 🏃‍♂️",
+            rankingEmpty: "No King yet. Be the first! 👑", rankingError: "Error 😭",
+            homeBtn: "🏠 Home", restartBtn: "🔄 Retry", gameOver: "Game Over! 🏁",
+            rankQuery: "Rank Checking... 🤔", rankResult: "You are Rank {rank}!", rankSaved: "Score Saved!",
+            alertName: "📛 Enter Name!", alertBadWord: "🚫 Nice words only!",
+            qrInvite: "Invite via QR", scoreLabel: "SCORE", metaDesc: "Draw band graphs fast and earn time bonus!",
+            chartTitle: "🏫 Fruits Our Students Like", fruits: ["Berry", "Melon", "Mango", "Apple", "Grape"],
+            thFruit: "Fruit", thTotal: "Total", thCount: "Ratio(%)", unit: "%", submit: "Submit", undo: "Undo", error: "Check Again!", instruction: "Drag to the right to draw!"
+        },
+        zh: {
+            flag: "🇨🇳", pageTitle: "带状图画画王 移动版", mainTitle: "带状图", subTitle: "画画王 移动版", desc: "准确画出并获得时间！", placeholder: "输入昵称",
+            startBtn: "🚀 开始游戏！", otherGamesBtn: "🎲 选择其他游戏", rankingLoading: "加载排名中... 🏃‍♂️",
+            rankingEmpty: "还没有第一名。来挑战吧！ 👑", rankingError: "排名错误 😭",
+            homeBtn: "🏠 返回首页", restartBtn: "🔄 再玩一次", gameOver: "游戏结束！ 🏁",
+            rankQuery: "第几名呢？ 🤔", rankResult: "现在是第 {rank} 名！", rankSaved: "分数保存完毕！",
+            alertName: "📛 请务必输入昵称！", alertBadWord: "🚫 请使用文明用语！",
+            qrInvite: "通过二维码邀请", scoreLabel: "SCORE", metaDesc: "快速画出带状图并增加时间吧！",
+            chartTitle: "🏫 我们学校学生喜欢的水果", fruits: ["草莓", "西瓜", "芒果", "苹果", "葡萄"],
+            thFruit: "水果", thTotal: "合计", thCount: "比例(%)", unit: "%", submit: "提交", undo: "撤销", error: "请再确认一下！", instruction: "向右拖动来画图！"
+        },
+        ja: {
+            flag: "🇯🇵", pageTitle: "帯グラフ描き王 モバイル", mainTitle: "帯グラフ", subTitle: "描き王 モバイル", desc: "正確に描いて時間をゲットしよう！", placeholder: "ニックネーム入力",
+            startBtn: "🚀 ゲームスタート！", otherGamesBtn: "🎲 他のゲームを選ぶ", rankingLoading: "ランキング読み込み中... 🏃‍♂️",
+            rankingEmpty: "まだ1位がいません。挑戦しよう！ 👑", rankingError: "ランキングエラー 😭",
+            homeBtn: "🏠 トップへ", restartBtn: "🔄 もう一度", gameOver: "ゲームオーバー！ 🏁",
+            rankQuery: "何位かな？ 🤔", rankResult: "現在 {rank} 位です！", rankSaved: "スコア保存完了！",
+            alertName: "📛 ニックネームを入力してね！", alertBadWord: "🚫 綺麗な言葉を使おう！",
+            qrInvite: "QRコードで招待する", scoreLabel: "SCORE", metaDesc: "帯グラフを早く描いて時間を増やそう！",
+            chartTitle: "🏫 うちの学校の生徒が好きな果物", fruits: ["イチゴ", "スイカ", "マンゴー", "リンゴ", "ブドウ"],
+            thFruit: "果物", thTotal: "合計", thCount: "比率(%)", unit: "%", submit: "提出する", undo: "やり直し", error: "もう一度確認してね！", instruction: "右にドラッグして描こう！"
+        },
+        es: {
+            flag: "🇪🇸", pageTitle: "Rey del Gráfico de Bandas", mainTitle: "Gráfico", subTitle: "Rey de Bandas", desc: "¡Dibuja bien y gana tiempo!", placeholder: "Tu Apodo",
+            startBtn: "🚀 ¡Empezar!", otherGamesBtn: "🎲 Otros juegos", rankingLoading: "Cargando... 🏃‍♂️",
+            rankingEmpty: "No hay rey aún. ¡Sé el primero! 👑", rankingError: "Error de ranking 😭",
+            homeBtn: "🏠 Inicio", restartBtn: "🔄 Reintentar", gameOver: "¡Fin del Juego! 🏁",
+            rankQuery: "¿Qué puesto soy? 🤔", rankResult: "¡Eres el puesto {rank}!", rankSaved: "¡Puntaje guardado!",
+            alertName: "📛 ¡Escribe tu apodo!", alertBadWord: "🚫 ¡Usa buenas palabras!",
+            qrInvite: "Invitar por QR", scoreLabel: "SCORE", metaDesc: "¡Dibuja rápido y gana tiempo extra!",
+            chartTitle: "🏫 Frutas favoritas en la escuela", fruits: ["Fresa", "Sandía", "Mango", "Manzana", "Uva"],
+            thFruit: "Fruta", thTotal: "Total", thCount: "Porcentaje(%)", unit: "%", submit: "Enviar", undo: "Deshacer", error: "¡Revisa de nuevo!", instruction: "¡Arrastra a la derecha para dibujar!"
+        },
+        fr: {
+            flag: "🇫🇷", pageTitle: "Roi du Graphique en Bandes", mainTitle: "Graphique", subTitle: "Roi des Bandes", desc: "Dessine bien et gagne du temps !", placeholder: "Ton Pseudo",
+            startBtn: "🚀 Commencer !", otherGamesBtn: "🎲 Autres jeux", rankingLoading: "Chargement... 🏃‍♂️",
+            rankingEmpty: "Pas encore de roi. À toi ! 👑", rankingError: "Erreur 😭",
+            homeBtn: "🏠 Accueil", restartBtn: "🔄 Réessayer", gameOver: "Terminé ! 🏁",
+            rankQuery: "Quel est mon rang ? 🤔", rankResult: "Tu es rang {rank} !", rankSaved: "Score enregistré !",
+            alertName: "📛 Écris ton pseudo !", alertBadWord: "🚫 Reste poli !",
+            qrInvite: "Inviter via QR", scoreLabel: "SCORE", metaDesc: "Dessine vite et gagne du temps !",
+            chartTitle: "🏫 Les fruits préférés à l'école", fruits: ["Fraise", "Pastèque", "Mangue", "Pomme", "Raisin"],
+            thFruit: "Fruit", thTotal: "Total", thCount: "Ratio(%)", unit: "%", submit: "Valider", undo: "Annuler", error: "Vérifie encore !", instruction: "Glisse vers la droite pour dessiner !"
+        },
+        ru: {
+            flag: "🇷🇺", pageTitle: "Король Графиков", mainTitle: "График", subTitle: "Король Линий", desc: "Рисуй точно и получай время!", placeholder: "Твой Ник",
+            startBtn: "🚀 Начать игру!", otherGamesBtn: "🎲 Другие игры", rankingLoading: "Загрузка... 🏃‍♂️",
+            rankingEmpty: "Пока нет короля. Дерзай! 👑", rankingError: "Ошибка 😭",
+            homeBtn: "🏠 Главная", restartBtn: "🔄 Заново", gameOver: "Игра окончена! 🏁",
+            rankQuery: "Какое место? 🤔", rankResult: "Твое место: {rank}!", rankSaved: "Счет сохранен!",
+            alertName: "📛 Введи ник!", alertBadWord: "🚫 Без плохих слов!",
+            qrInvite: "Пригласить по QR", scoreLabel: "СЧЕТ", metaDesc: "Рисуй быстро и получай время!",
+            chartTitle: "🏫 Любимые фрукты в школе", fruits: ["Клубника", "Арбуз", "Манго", "Яблоко", "Виноград"],
+            thFruit: "Фрукт", thTotal: "Итого", thCount: "Доля(%)", unit: "%", submit: "Готово", undo: "Отмена", error: "Проверь еще раз!", instruction: "Тяни вправо, чтобы рисовать!"
+        },
+        id: {
+            flag: "🇮🇩", pageTitle: "Raja Grafik Pita", mainTitle: "Grafik Pita", subTitle: "Raja Seluler", desc: "Gambar dengan benar dan dapatkan waktu!", placeholder: "Nama Panggilan",
+            startBtn: "🚀 Mulai Game!", otherGamesBtn: "🎲 Game Lainnya", rankingLoading: "Memuat peringkat... 🏃‍♂️",
+            rankingEmpty: "Belum ada Raja. Jadilah yang pertama! 👑", rankingError: "Kesalahan peringkat 😭",
+            homeBtn: "🏠 Beranda", restartBtn: "🔄 Coba Lagi", gameOver: "Permainan Selesai! 🏁",
+            rankQuery: "Peringkat berapa? 🤔", rankResult: "Kamu peringkat {rank}!", rankSaved: "Skor Disimpan!",
+            alertName: "📛 Masukkan namamu!", alertBadWord: "🚫 Gunakan kata yang baik!",
+            qrInvite: "Undang via QR", scoreLabel: "SKOR", metaDesc: "Gambar grafik dengan cepat dan tambah waktu!",
+            chartTitle: "🏫 Buah Kesukaan di Sekolah", fruits: ["Stroberi", "Semangka", "Mangga", "Apel", "Anggur"],
+            thFruit: "Buah", thTotal: "Total", thCount: "Rasio(%)", unit: "%", submit: "Kirim", undo: "Batal", error: "Coba periksa lagi!", instruction: "Geser ke kanan untuk menggambar!"
+        },
+        vi: {
+            flag: "🇻🇳", pageTitle: "Vua Biểu Đồ Dải", mainTitle: "Biểu Đồ Dải", subTitle: "Vua Mobile", desc: "Vẽ đúng và kiếm thêm thời gian!", placeholder: "Nhập Tên",
+            startBtn: "🚀 Bắt Đầu!", otherGamesBtn: "🎲 Trò Chơi Khác", rankingLoading: "Đang tải... 🏃‍♂️",
+            rankingEmpty: "Chưa có Vua. Hãy là người đầu tiên! 👑", rankingError: "Lỗi 😭",
+            homeBtn: "🏠 Trang Chủ", restartBtn: "🔄 Thử Lại", gameOver: "Kết Thúc! 🏁",
+            rankQuery: "Xếp hạng mấy? 🤔", rankResult: "Bạn hạng {rank}!", rankSaved: "Đã lưu điểm!",
+            alertName: "📛 Hãy nhập tên!", alertBadWord: "🚫 Không dùng từ xấu!",
+            qrInvite: "Mời qua QR", scoreLabel: "ĐIỂM", metaDesc: "Vẽ biểu đồ dải thật nhanh để có thời gian!",
+            chartTitle: "🏫 Trái Cây Yêu Thích Ở Trường", fruits: ["Dâu tây", "Dưa hấu", "Xoài", "Táo", "Nho"],
+            thFruit: "Trái cây", thTotal: "Tổng cộng", thCount: "Tỷ lệ(%)", unit: "%", submit: "Gửi", undo: "Hoàn tác", error: "Kiểm tra lại nhé!", instruction: "Kéo sang phải để vẽ!"
+        },
+        th: {
+            flag: "🇹🇭", pageTitle: "ราชาแห่งกราฟแถบ", mainTitle: "กราฟแถบ", subTitle: "ราชาบนมือถือ", desc: "วาดให้ถูกและรับเวลาเพิ่ม!", placeholder: "ชื่อเล่น",
+            startBtn: "🚀 เริ่มเกม!", otherGamesBtn: "🎲 เกมอื่นๆ", rankingLoading: "กำลังโหลด... 🏃‍♂️",
+            rankingEmpty: "ยังไม่มีราชา มาเป็นคนแรกสิ! 👑", rankingError: "ข้อผิดพลาด 😭",
+            homeBtn: "🏠 หน้าแรก", restartBtn: "🔄 ลองใหม่", gameOver: "จบเกม! 🏁",
+            rankQuery: "อันดับที่เท่าไหร่? 🤔", rankResult: "คุณอยู่อันดับที่ {rank}!", rankSaved: "บันทึกคะแนนแล้ว!",
+            alertName: "📛 กรุณาใส่ชื่อ!", alertBadWord: "🚫 ใช้คำสุภาพนะ!",
+            qrInvite: "เชิญผ่าน QR", scoreLabel: "คะแนน", metaDesc: "วาดกราฟให้เร็วเพื่อเพิ่มเวลา!",
+            chartTitle: "🏫 ผลไม้ที่เด็กๆ ชอบ", fruits: ["สตรอว์เบอร์รี", "แตงโม", "มะม่วง", "แอปเปิล", "องุ่น"],
+            thFruit: "ผลไม้", thTotal: "รวม", thCount: "สัดส่วน(%)", unit: "%", submit: "ส่งคำตอบ", undo: "ยกเลิก", error: "ลองตรวจดูอีกทีนะ!", instruction: "ลากไปทางขวาเพื่อวาด!"
+        },
+        "pt-br": {
+            flag: "🇧🇷", pageTitle: "Rei do Gráfico de Faixas", mainTitle: "Gráfico", subTitle: "Rei de Faixas", desc: "Desenhe certo e ganhe tempo!", placeholder: "Seu Apelido",
+            startBtn: "🚀 Começar Jogo!", otherGamesBtn: "🎲 Outros Jogos", rankingLoading: "Carregando... 🏃‍♂️",
+            rankingEmpty: "Nenhum Rei ainda. Seja o primeiro! 👑", rankingError: "Erro no ranking 😭",
+            homeBtn: "🏠 Início", restartBtn: "🔄 Tentar Novamente", gameOver: "Fim de Jogo! 🏁",
+            rankQuery: "Qual minha posição? 🤔", rankResult: "Você é o {rank}º!", rankSaved: "Pontuação Salva!",
+            alertName: "📛 Digite seu nome!", alertBadWord: "🚫 Use palavras bonitas!",
+            qrInvite: "Convidar por QR", scoreLabel: "PONTOS", metaDesc: "Desenhe rápido e ganhe tempo extra!",
+            chartTitle: "🏫 Frutas favoritas na escola", fruits: ["Morango", "Melancia", "Manga", "Maçã", "Uva"],
+            thFruit: "Fruta", thTotal: "Total", thCount: "Porcentagem(%)", unit: "%", submit: "Enviar", undo: "Desfazer", error: "Verifique de novo!", instruction: "Arraste para a direita para desenhar!"
+        },
+        hi: {
+            flag: "🇮🇳", pageTitle: "बैंड ग्राफ़ किंग", mainTitle: "बैंड ग्राफ़", subTitle: "ड्रॉ किंग मोबाइल", desc: "सही बनाएं और समय पाएं!", placeholder: "अपना नाम लिखें",
+            startBtn: "🚀 खेल शुरू करें!", otherGamesBtn: "🎲 अन्य खेल", rankingLoading: "लोड हो रहा है... 🏃‍♂️",
+            rankingEmpty: "अभी कोई राजा नहीं। पहले बनें! 👑", rankingError: "त्रुटि 😭",
+            homeBtn: "🏠 मुख्य पृष्ठ", restartBtn: "🔄 पुनः प्रयास करें", gameOver: "खेल समाप्त! 🏁",
+            rankQuery: "मेरी रैंक क्या है? 🤔", rankResult: "आप रैंक {rank} पर हैं!", rankSaved: "स्कोर सहेजा गया!",
+            alertName: "📛 नाम जरूर लिखें!", alertBadWord: "🚫 अच्छे शब्दों का प्रयोग करें!",
+            qrInvite: "QR से आमंत्रित करें", scoreLabel: "स्कोर", metaDesc: "तेजी से ग्राफ़ बनाएं और समय बढ़ाएं!",
+            chartTitle: "🏫 स्कूल में पसंदीदा फल", fruits: ["स्ट्रॉबेरी", "तरबूज", "आम", "सेब", "अंगूर"],
+            thFruit: "फल", thTotal: "कुल", thCount: "अनुपात(%)", unit: "%", submit: "जमा करें", undo: "पूर्ववत करें", error: "फिर से जांचें!", instruction: "बनाने के लिए दाईं ओर खींचें!"
+        },
+        bn: {
+            flag: "🇧🇩", pageTitle: "ব্যান্ড গ্রাফের রাজা", mainTitle: "ব্যান্ড গ্রাফ", subTitle: "আঁকার রাজা", desc: "সঠিকভাবে আঁকুন এবং সময় পান!", placeholder: "নাম লিখুন",
+            startBtn: "🚀 খেলা শুরু!", otherGamesBtn: "🎲 অন্যান্য খেলা", rankingLoading: "লোড হচ্ছে... 🏃‍♂️",
+            rankingEmpty: "এখনও কোন রাজা নেই। প্রথম হন! 👑", rankingError: "ত্রুটি 😭",
+            homeBtn: "🏠 হোম", restartBtn: "🔄 আবার চেষ্টা করুন", gameOver: "খেলা শেষ! 🏁",
+            rankQuery: "আমার অবস্থান কত? 🤔", rankResult: "আপনি {rank} নম্বরে আছেন!", rankSaved: "স্কোর সেভ হয়েছে!",
+            alertName: "📛 নাম লিখুন!", alertBadWord: "🚫 সুন্দর ভাষা ব্যবহার করুন!",
+            qrInvite: "QR দিয়ে আমন্ত্রণ জানান", scoreLabel: "স্কোর", metaDesc: "দ্রুত গ্রাফ আঁকুন এবং সময় বাড়ান!",
+            chartTitle: "🏫 স্কুলে প্রিয় ফল", fruits: ["স্ট্রবেরি", "তরমুজ", "আম", "আপেল", "আঙ্গুর"],
+            thFruit: "ফল", thTotal: "মোট", thCount: "অনুপাত(%)", unit: "%", submit: "জমা দিন", undo: "বাতিল করুন", error: "আবার চেক করুন!", instruction: "আঁকতে ডানদিকে টানুন!"
+        },
+        tr: {
+            flag: "🇹🇷", pageTitle: "Şerit Grafik Kralı", mainTitle: "Şerit Grafik", subTitle: "Çizim Kralı", desc: "Doğru çiz ve zaman kazan!", placeholder: "Takma Ad",
+            startBtn: "🚀 Oyuna Başla!", otherGamesBtn: "🎲 Diğer Oyunlar", rankingLoading: "Yükleniyor... 🏃‍♂️",
+            rankingEmpty: "Henüz Kral yok. İlk sen ol! 👑", rankingError: "Hata 😭",
+            homeBtn: "🏠 Ana Sayfa", restartBtn: "🔄 Tekrar Dene", gameOver: "Oyun Bitti! 🏁",
+            rankQuery: "Kaçıncı sıradayım? 🤔", rankResult: "{rank}. sıradasın!", rankSaved: "Puan Kaydedildi!",
+            alertName: "📛 Lütfen bir ad gir!", alertBadWord: "🚫 Güzel kelimeler kullan!",
+            qrInvite: "QR ile Davet Et", scoreLabel: "PUAN", metaDesc: "Hızlı çiz ve zaman kazan!",
+            chartTitle: "🏫 Okulda Sevilen Meyveler", fruits: ["Çilek", "Karpuz", "Mango", "Elma", "Üzüm"],
+            thFruit: "Meyve", thTotal: "Toplam", thCount: "Oran(%)", unit: "%", submit: "Gönder", undo: "Geri Al", error: "Tekrar kontrol et!", instruction: "Çizmek için sağa kaydır!"
+        },
+        de: {
+            flag: "🇩🇪", pageTitle: "Banddiagramm König", mainTitle: "Banddiagramm", subTitle: "Zeichenkönig", desc: "Zeichne richtig und gewinne Zeit!", placeholder: "Dein Name",
+            startBtn: "🚀 Spiel starten!", otherGamesBtn: "🎲 Andere Spiele", rankingLoading: "Lädt... 🏃‍♂️",
+            rankingEmpty: "Noch kein König. Sei der Erste! 👑", rankingError: "Fehler 😭",
+            homeBtn: "🏠 Startseite", restartBtn: "🔄 Noch einmal", gameOver: "Spiel vorbei! 🏁",
+            rankQuery: "Welcher Platz? 🤔", rankResult: "Du bist Platz {rank}!", rankSaved: "Punktzahl gespeichert!",
+            alertName: "📛 Bitte gib deinen Namen ein!", alertBadWord: "🚫 Benutze nette Worte!",
+            qrInvite: "Über QR einladen", scoreLabel: "PUNKTE", metaDesc: "Zeichne schnell und gewinne Zeit!",
+            chartTitle: "🏫 Beliebte Früchte in der Schule", fruits: ["Erdbeere", "Wassermelone", "Mango", "Apfel", "Traube"],
+            thFruit: "Frucht", thTotal: "Gesamt", thCount: "Anteil(%)", unit: "%", submit: "Fertig", undo: "Rückgängig", error: "Prüfe das nochmal!", instruction: "Nach rechts ziehen zum Zeichnen!"
+        },
+        it: {
+            flag: "🇮🇹", pageTitle: "Re del Grafico a Bande", mainTitle: "Grafico a Bande", subTitle: "Re Mobile", desc: "Disegna bene e guadagna tempo!", placeholder: "Il tuo nome",
+            startBtn: "🚀 Inizia a giocare!", otherGamesBtn: "🎲 Altri giochi", rankingLoading: "Caricamento... 🏃‍♂️",
+            rankingEmpty: "Ancora nessun Re. Diventa il primo! 👑", rankingError: "Errore 😭",
+            homeBtn: "🏠 Home", restartBtn: "🔄 Riprova", gameOver: "Fine del Gioco! 🏁",
+            rankQuery: "Che posizione sono? 🤔", rankResult: "Sei alla posizione {rank}!", rankSaved: "Punteggio salvato!",
+            alertName: "📛 Inserisci un nome!", alertBadWord: "🚫 Usa belle parole!",
+            qrInvite: "Invita tramite QR", scoreLabel: "PUNTI", metaDesc: "Disegna velocemente e guadagna tempo!",
+            chartTitle: "🏫 I frutti preferiti a scuola", fruits: ["Fragola", "Anguria", "Mango", "Mela", "Uva"],
+            thFruit: "Frutto", thTotal: "Totale", thCount: "Percentuale(%)", unit: "%", submit: "Invia", undo: "Annulla", error: "Controlla di nuovo!", instruction: "Trascina verso destra per disegnare!"
+        }
+    };
+
+    const FRUITS_COLORS = [
+        { color: '#ff4757', icon: '🍓' }, { color: '#2ecc71', icon: '🍉' },
+        { color: '#f1c40f', icon: '🥭' }, { color: '#e74c3c', icon: '🍎' }, { color: '#9b59b6', icon: '🍇' }
+    ];
+
+    // --- 모달용 16개국 리스트 ---
+    const modalLanguages = [
+        { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+        { code: 'en', country: 'us', name: 'English', enName: 'English' },
+        { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)' },
+        { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+        { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+        { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+        { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+        { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+        { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+        { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+        { code: 'pt-br', country: 'br', name: 'Português', enName: 'Portuguese (Brazil)' },
+        { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+        { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+        { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' },
+        { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+        { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' }
+    ];
+    
+    // 모달 토스트 전용 번역
+    const toastTranslations = {
+        'ko': '언어가 변경되었습니다.', 'en': 'Language changed.', 'zh': '语言已更改。',
+        'ja': '言語が変更されました。', 'es': 'Idioma cambiado.', 'fr': 'Langue modifiée.',
+        'ru': 'Язык изменен.', 'id': 'Bahasa telah diubah.', 'vi': 'Ngôn ngữ đã được thay đổi.',
+        'th': 'เปลี่ยนภาษาเรียบร้อยแล้ว', 'pt-br': 'Idioma alterado.', 'hi': 'भाषा बदल दी गई है.',
+        'bn': 'ভাষা পরিবর্তন করা হয়েছে।', 'tr': 'Dil değiştirildi.', 'de': 'Sprache geändert.', 'it': 'Lingua cambiata.'
+    };
+
+    // --- 2. 전역 변수 ---
+    let currentLang = 'ko';
+    let isGameRunning = false;
+    let myNickname = "";
+    let score = 0;
+    let timer = 60;
+    let timerInterval = null;
+    let countdownTimer = null;
+    let animId = null;
+
+    let gameData = { targets: [], total: 100 };
+    let player = { drawnSlices: [], draggingVal: 0, isDragging: false };
+
+    const API_URL = "./ranking.php"; 
+
+    // --- 모달 DOM 변수 ---
+    const triggerBtn = document.getElementById('langTriggerBtn');
+    const modal = document.getElementById('langModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const searchInput = document.getElementById('searchInput');
+    const grid = document.getElementById('languageGrid');
+    const noResult = document.getElementById('noResult');
+    const currentFlagImg = document.getElementById('currentFlag');
+    const currentLangSpan = document.getElementById('currentLangName');
+    const toast = document.getElementById('toastNotification');
+    const toastLangName = document.getElementById('toastLangName');
+    let toastTimeout;
+
+    // --- 3. 초기화 및 이벤트 리스너 ---
+    window.onload = function() {
+        initLanguage();
+        setupModalListeners();
+        updateQRCode();
+
+        const savedName = localStorage.getItem("kingsgraph_nickname");
+        if(savedName) document.getElementById("nickname").value = savedName;
+
+        loadRanking(); 
+
+        window.addEventListener('resize', resizeCanvas);
+        addCanvasListeners();
+    };
+
+    // 언어 우선순위 및 초기화 로직 (파라미터 > 로컬스토리지 > 브라우저 > 영어)
+    function initLanguage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let targetLang = urlParams.get('lang');
+        
+        if (!targetLang) {
+            targetLang = localStorage.getItem('kingsmath_lang');
+        }
+        
+        if (!targetLang) {
+            let browserLang = navigator.language.toLowerCase();
+            let baseLang = browserLang.split('-')[0];
+            if (i18nData[browserLang]) {
+                targetLang = browserLang;
+            } else if (i18nData[baseLang]) {
+                targetLang = baseLang;
+            } else {
+                targetLang = 'en';
+            }
+        }
+
+        changeLang(i18nData[targetLang] ? targetLang : 'en', false);
+    }
+
+    function changeLang(lang, updateHistory = true) {
+        if (!i18nData[lang]) lang = 'en';
+        currentLang = lang;
+        localStorage.setItem('kingsmath_lang', lang);
+        
+        const t = i18nData[lang];
+        document.documentElement.lang = lang;
+        document.title = t.pageTitle;
+        document.getElementById('meta-desc').setAttribute("content", t.metaDesc);
+        document.getElementById('meta-keywords').setAttribute("content", "KingsMath, " + t.mainTitle + ", Math, Game");
+
+        // UI 텍스트 업데이트
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if(t[key]) el.innerHTML = t[key];
+        });
+        document.getElementById("nickname").placeholder = t.placeholder;
+        
+        // 폰트사이즈 동적 조절 (글자수에 따라 레이아웃 안 깨지게 보정)
+        const mainTitleSpan = document.querySelector('.main-title span[data-i18n="mainTitle"]');
+        if (t.mainTitle.length > 12) mainTitleSpan.style.fontSize = '3.5vh';
+        else if (t.mainTitle.length > 8) mainTitleSpan.style.fontSize = '4.5vh';
+        else mainTitleSpan.style.fontSize = '6.5vh';
+
+        // 게임 내 한글/영문 폰트 구분 (게임의 기본 폰트 Jua 외에는 캔버스 등에서 안전한 폰트 사용)
+        const isKorean = lang === 'ko';
+        document.body.style.fontFamily = isKorean ? "'Jua', sans-serif" : "'Arial', sans-serif";
+        
+        // 좌측 링크 도메인 로직 (한국어만 킹수학.com, 그 외 KingsMath.com)
+        document.getElementById("kingsmath-link-btn").innerText = isKorean ? "킹수학.com" : "KingsMath.com";
+
+        // 게임 내부 항목 적용
+        document.getElementById('t-chart-title').innerText = t.chartTitle;
+        document.getElementById('t-th-fruit').innerText = t.thFruit;
+        document.getElementById('t-th-total').innerText = t.thTotal;
+        document.getElementById('btn-submit').innerText = t.submit;
+        document.getElementById('btn-undo').innerText = t.undo;
+        document.getElementById('error-msg').innerText = t.error;
+        document.getElementById('t-instruction').innerText = t.instruction;
+
+        for(let i=0; i<5; i++) {
+            document.getElementById(`t-fruit-${i}`).innerText = t.fruits[i];
+            FRUITS_COLORS[i].name = t.fruits[i];
+        }
+
+        // 상단 우측 버튼 플래그 업데이트
+        const modalLangData = modalLanguages.find(m => m.code === lang);
+        if(modalLangData) {
+            currentFlagImg.src = `https://flagcdn.com/w40/${modalLangData.country}.png`;
+            currentLangSpan.textContent = modalLangData.name;
+        }
+
+        if (updateHistory) {
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?lang=' + lang;
+            window.history.pushState({path: newUrl}, '', newUrl);
+            updateQRCode();
+        }
+        
+        // 캔버스 그리기 새로고침
+        if(isGameRunning === false && player.drawnSlices.length === 0) resizeCanvas();
+    }
+
+    // --- 언어 선택 모달 로직 ---
+    function setupModalListeners() {
+        triggerBtn.addEventListener('click', openModal);
+        closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
+        searchInput.addEventListener('input', (e) => { renderLanguages(e.target.value); });
+        renderLanguages();
+    }
+
+    function renderLanguages(filterText = '') {
+        grid.innerHTML = '';
+        const lowerFilter = filterText.toLowerCase();
+        
+        const filteredLangs = modalLanguages.filter(lang => 
+            lang.name.toLowerCase().includes(lowerFilter) || 
+            lang.enName.toLowerCase().includes(lowerFilter) ||
+            lang.code.toLowerCase().includes(lowerFilter)
+        );
+
+        if (filteredLangs.length === 0) {
+            grid.style.display = 'none';
+            noResult.classList.add('show');
+        } else {
+            grid.style.display = 'grid';
+            noResult.classList.remove('show');
+
+            filteredLangs.forEach(lang => {
+                const isSelected = lang.code === currentLang;
+                const flagUrl = `https://flagcdn.com/w40/${lang.country}.png`;
+
+                const btn = document.createElement('div');
+                btn.className = `custom-lang-item ${isSelected ? 'selected' : ''}`;
+                
+                btn.innerHTML = `
+                    <div class="custom-lang-flag">
+                        <img src="${flagUrl}" alt="${lang.country}">
+                    </div>
+                    <div class="custom-lang-info">
+                        <span class="custom-lang-name">${lang.name}</span>
+                        <span class="custom-lang-en">${lang.enName}</span>
+                    </div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check custom-lang-check"></i>' : ''}
+                `;
+
+                btn.addEventListener('click', () => {
+                    changeLang(lang.code);
+                    closeModal();
+                    showToast(lang.name, lang.code);
+                    renderLanguages(searchInput.value); // 재렌더링
+                });
+                grid.appendChild(btn);
+            });
+        }
+    }
+
+    function openModal() {
+        modal.classList.add('active');
+        // 모달 표시 시 목록 렌더링 호출
+        renderLanguages(searchInput.value);
+    }
+
+    function closeModal() {
+        modal.classList.remove('active');
+    }
+
+    function showToast(langName, langCode) {
+        const toastMsg = toastTranslations[langCode] || toastTranslations['en'];
+        document.getElementById('ui-toast').textContent = toastMsg;
+        toastLangName.textContent = langName;
+        
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+
+    function updateQRCode() {
+        const currentUrl = window.location.href;
+        document.getElementById("qrcode-area").innerHTML = "";
+        document.getElementById("qrcode-large").innerHTML = "";
+        new QRCode(document.getElementById("qrcode-area"), { text: currentUrl, width: 70, height: 70 });
+        new QRCode(document.getElementById("qrcode-large"), { text: currentUrl, width: 200, height: 200 });
+    }
+
+    function toggleQR(show) {
+        const modal = document.getElementById('qr-modal');
+        if(show) modal.classList.remove('hidden'); else modal.classList.add('hidden');
+    }
+
+    // --- 4. 오디오 시스템 ---
+    let audioCtx = null;
+    function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    function playTone(freq, type, duration) {
+        initAudio(); if(audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+    
+    function playSound(type) {
+        try {
+            if(type === 'tick') { playTone(400, 'sine', 0.1); } 
+            else if(type === 'start') { playTone(800, 'triangle', 0.3); } 
+            else if(type === 'slide') {
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime); gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.05);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            }
+            else if(type === 'drag') { 
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            }
+            else if(type === 'drop') { 
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+            }
+            else if(type === 'cancel') { 
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = 'square'; osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+            }
+            else if(type === 'error') { playTone(150, 'sawtooth', 0.1); setTimeout(() => playTone(100, 'sawtooth', 0.3), 100); }
+            else if(type === 'win') { setTimeout(() => playTone(523, 'triangle', 0.1), 0); setTimeout(() => playTone(659, 'triangle', 0.1), 100); setTimeout(() => playTone(784, 'triangle', 0.2), 200); }
+            else if(type === 'gameover') { playTone(523, 'triangle', 0.2); setTimeout(() => playTone(493, 'triangle', 0.2), 200); setTimeout(() => playTone(440, 'triangle', 0.4), 400); }
+        } catch(e) {}
+    }
+
+    // --- 5. 게임 로직 (타임어택 흐름) ---
+    function startGame() {
+        const nameInput = document.getElementById("nickname").value.trim();
+        const txt = i18nData[currentLang];
+
+        if(nameInput.length < 1) { alert(txt.alertName); return; }
+        const basicBadWords = ["시발", "씨발", "개새끼", "shibal", "ssibal", "fuck", "bitch", "shit"]; 
+        for(let bad of basicBadWords) { if(nameInput.toLowerCase().includes(bad)) { alert(txt.alertBadWord); return; } }
+
+        localStorage.setItem("kingsgraph_nickname", nameInput);
+        myNickname = nameInput;
+
+        document.getElementById("start-screen").classList.add("hidden");
+        document.getElementById("result-screen").classList.add("hidden");
+        document.getElementById("game-screen").classList.remove("hidden");
+        
+        resizeCanvas();
+        runCountdown(initGame);
+    }
+
+    function runCountdown(callback) {
+        initAudio();
+        const cdScreen = document.getElementById("countdown-screen");
+        const cdText = document.getElementById("countdown-text");
+        cdScreen.classList.remove("hidden");
+        isGameRunning = false; 
+
+        cdText.style.fontSize = "20vh";
+
+        let count = 3;
+        cdText.innerText = count;
+        playSound('tick');
+
+        function tick() {
+            count--;
+            if(count > 0) {
+                cdText.innerText = count;
+                playSound('tick');
+                countdownTimer = setTimeout(tick, 1000);
+            } else {
+                cdText.style.fontSize = "12vh";
+                cdText.innerText = "Start!";
+                playSound('start');
+                countdownTimer = setTimeout(() => {
+                    cdScreen.classList.add("hidden");
+                    if(callback) callback();
+                }, 500);
+            }
+        }
+        countdownTimer = setTimeout(tick, 1000);
+    }
+
+    function initGame() {
+        score = 0;
+        timer = 60; // 시작 시간 제한
+        isGameRunning = true;
+        
+        updateScoreUI();
+        updateTimerUI();
+        
+        generateData();
+        resetPlayer();
+
+        if(animId) cancelAnimationFrame(animId);
+        animId = requestAnimationFrame(loop);
+
+        if(timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if(!isGameRunning) return;
+            timer--;
+            updateTimerUI();
+            if(timer <= 0) endGame();
+        }, 1000);
+    }
+
+    function resetPlayer() {
+        player.drawnSlices = [];
+        player.draggingVal = 0;
+        player.isDragging = false;
+        document.getElementById('t-instruction').style.display = 'block';
+    }
+
+    function generateData() {
+        let nums = [10, 10, 10, 10, 10];
+        let remaining = 50;
+        while(remaining > 0) {
+            let idx = Math.floor(Math.random() * 5);
+            nums[idx] += 5;
+            remaining -= 5;
+        }
+
+        gameData.targets = nums;
+        gameData.total = 100;
+
+        const row = document.getElementById('data-row');
+        let html = `<td class="table-header-col">${i18nData[currentLang].thCount}</td>`;
+        nums.forEach(n => html += `<td>${n}${i18nData[currentLang].unit}</td>`);
+        html += `<td class="t-sum">100${i18nData[currentLang].unit}</td>`;
+        row.innerHTML = html;
+    }
+
+    function checkAnswer() {
+        if(!isGameRunning) return;
+        
+        let baseTotal = player.drawnSlices.reduce((a,b)=>a+b, 0);
+
+        if(player.drawnSlices.length !== 5 || baseTotal !== 100) {
+            triggerError();
+            return;
+        }
+
+        let isWrong = false;
+        for(let i=0; i<5; i++) {
+            if(player.drawnSlices[i] !== gameData.targets[i]) isWrong = true;
+        }
+
+        if(!isWrong) {
+            score += 10;
+            timer += 5; 
+            playSound('win');
+            updateScoreUI();
+            updateTimerUI();
+            showBonusAnim();
+            generateData();
+            resetPlayer();
+        } else {
+            triggerError();
+        }
+    }
+
+    function triggerError() {
+        score -= 5;
+        if(score < 0) score = 0;
+        updateScoreUI();
+        playSound('error');
+        const errEl = document.getElementById('error-msg');
+        errEl.style.opacity = 1;
+        setTimeout(() => { errEl.style.opacity = 0; }, 1000);
+    }
+
+    function undoDraw() {
+        if(!isGameRunning) return;
+        if (player.drawnSlices.length > 0) {
+            player.drawnSlices.pop();
+            playSound('cancel'); 
+        }
+        if (player.drawnSlices.length === 0) {
+            document.getElementById('t-instruction').style.display = 'block';
+        }
+    }
+
+    function showBonusAnim() {
+        const anim = document.getElementById('bonus-anim');
+        anim.classList.remove('bonus-anim-run');
+        void anim.offsetWidth; // trigger reflow
+        anim.classList.add('bonus-anim-run');
+    }
+
+    function updateScoreUI() { document.getElementById("score-display").innerText = score; }
+    
+    function updateTimerUI() { 
+        const tDiv = document.getElementById("timer-display");
+        tDiv.innerText = timer;
+        tDiv.style.color = timer <= 10 ? '#ff4757' : '#fff'; 
+    }
+
+    function endGame() {
+        isGameRunning = false;
+        clearInterval(timerInterval);
+        cancelAnimationFrame(animId);
+        playSound('gameover');
+        
+        document.getElementById("game-screen").classList.add("hidden");
+        document.getElementById("result-screen").classList.remove("hidden");
+        
+        document.getElementById("res-nickname").innerText = myNickname;
+        document.getElementById("res-score").innerText = score;
+        
+        submitScore(myNickname, score); 
+    }
+
+    function restartGame() {
+        document.getElementById("result-screen").classList.add("hidden");
+        document.getElementById("game-screen").classList.remove("hidden");
+        runCountdown(initGame);
+    }
+
+    // --- 홈 이모지 전체화면 대응 초기화 로직 (지시사항 완벽 반영) ---
+    function forceGoHome() {
+        if(countdownTimer) clearTimeout(countdownTimer);
+        document.getElementById("countdown-screen").classList.add("hidden");
+
+        if (document.fullscreenElement) {
+            // 새로고침 대신 화면 초기화 로직 실행 (전체 화면 유지)
+            isGameRunning = false;
+            clearInterval(timerInterval);
+            cancelAnimationFrame(animId);
+            
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            
+            if(window.playSound) window.playSound('tick'); // 'click' 대체
+            loadRanking();
+        } else {
+            // 전체 화면이 아니라면 그냥 새로고침
+            location.reload();
+        }
+    }
+
+    // --- 6. 캔버스 드로잉 및 띠그래프 입력 로직 ---
+    function addCanvasListeners() {
+        const cvs = document.getElementById('game-canvas');
+        cvs.addEventListener('mousedown', handleInputStart);
+        cvs.addEventListener('touchstart', handleInputStart, {passive: false});
+        window.addEventListener('mousemove', handleInputMove);
+        window.addEventListener('touchmove', handleInputMove, {passive: false});
+        window.addEventListener('mouseup', handleInputEnd);
+        window.addEventListener('touchend', handleInputEnd);
+    }
+
+    function getEventPos(canvas, e) {
+        const rect = canvas.getBoundingClientRect();
+        let clientX, clientY;
+        if (e.changedTouches && e.changedTouches.length > 0) {
+            clientX = e.changedTouches[0].clientX; clientY = e.changedTouches[0].clientY;
+        } else {
+            clientX = e.clientX; clientY = e.clientY;
+        }
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function getLayout(w, h) {
+        const barW = w * 0.85; 
+        const barX = w * 0.075; 
+        const barH = Math.min(h * 0.25, 80); 
+        const barY = h * 0.35; 
+        return { barW, barX, barH, barY };
+    }
+
+    function handleInputStart(e) {
+        if(!isGameRunning || player.drawnSlices.length >= 5) return;
+        const cvs = document.getElementById('game-canvas');
+        if(e.target !== cvs) return; 
+        
+        if (e.cancelable) e.preventDefault();
+        const pos = getEventPos(cvs, e);
+        
+        player.isDragging = true;
+        document.getElementById('t-instruction').style.display = 'none';
+        updateDragVal(pos.x, cvs.width);
+    }
+
+    function handleInputMove(e) {
+        if(!isGameRunning || !player.isDragging) return;
+        if (e.cancelable) e.preventDefault();
+        const cvs = document.getElementById('game-canvas');
+        const pos = getEventPos(cvs, e); 
+        updateDragVal(pos.x, cvs.width);
+    }
+
+    function handleInputEnd(e) {
+        if (player.isDragging && player.draggingVal > 0) {
+            player.drawnSlices.push(player.draggingVal);
+            player.draggingVal = 0;
+            playSound('drop'); 
+        }
+        player.isDragging = false;
+    }
+
+    function updateDragVal(x, canvasWidth) {
+        const { barW, barX } = getLayout(canvasWidth, 0);
+        
+        let percent = ((x - barX) / barW) * 100;
+        let base = player.drawnSlices.reduce((a, b) => a + b, 0);
+        
+        let dragAmount = percent - base;
+        
+        if (dragAmount < 0) dragAmount = 0;
+        if (base + dragAmount > 100) dragAmount = 100 - base;
+        
+        let newVal = Math.round(dragAmount);
+        
+        if(player.draggingVal !== newVal && newVal > 0) {
+            if (newVal % 5 === 0) playSound('drag'); 
+        }
+        player.draggingVal = newVal;
+    }
+
+    function loop() {
+        if (!isGameRunning) return;
+        draw();
+        animId = requestAnimationFrame(loop);
+    }
+
+    function resizeCanvas() {
+        const cvs = document.getElementById('game-canvas');
+        const con = document.getElementById('canvas-wrapper');
+        cvs.width = con.clientWidth;
+        cvs.height = con.clientHeight;
+        if (!isGameRunning) draw();
+    }
+
+    function draw() {
+        const cvs = document.getElementById('game-canvas');
+        const ctx = cvs.getContext('2d');
+        const w = cvs.width; const h = cvs.height;
+        if(w === 0 || h === 0) return; 
+        
+        const { barW, barX, barH, barY } = getLayout(w, h);
+        ctx.clearRect(0, 0, w, h);
+
+        // 1. 배경 막대
+        ctx.fillStyle = '#444';
+        ctx.fillRect(barX, barY, barW, barH);
+
+        // 2. 확정된 구간 그리기
+        let currentP = 0;
+        player.drawnSlices.forEach((sliceVal, i) => {
+            const fruit = FRUITS_COLORS[i];
+            const segW = (sliceVal / 100) * barW;
+            const startX = barX + (currentP / 100) * barW;
+            
+            ctx.fillStyle = fruit.color;
+            ctx.fillRect(startX, barY, segW, barH);
+            
+            if (segW > 25) { 
+                ctx.fillStyle = (fruit.color === '#f1c40f') ? '#000' : '#fff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                let centerX = startX + segW/2;
+                let centerY = barY + barH/2;
+
+                let fontSize = Math.min(segW / 3, barH / 3); 
+                if (fontSize < 10) fontSize = 10; 
+                if (fontSize > 20) fontSize = 20; 
+                
+                // 캔버스 폰트는 명시적으로 Jua나 Arial 세팅
+                const isKorean = currentLang === 'ko';
+                ctx.font = `${fontSize}px ${isKorean ? 'Jua' : 'Arial'}, sans-serif`;
+
+                ctx.fillText(fruit.name, centerX, centerY - fontSize * 0.6);
+                ctx.fillText(sliceVal + '%', centerX, centerY + fontSize * 0.6);
+            }
+
+            currentP += sliceVal;
+        });
+
+        // 3. 드래그 중인 구간 (투명도 적용)
+        if (player.isDragging && player.draggingVal > 0 && player.drawnSlices.length < 5) {
+            const currentFruit = FRUITS_COLORS[player.drawnSlices.length];
+            const segW = (player.draggingVal / 100) * barW;
+            const startX = barX + (currentP / 100) * barW;
+
+            ctx.fillStyle = currentFruit.color;
+            ctx.globalAlpha = 0.8;
+            ctx.fillRect(startX, barY, segW, barH);
+            ctx.globalAlpha = 1.0;
+
+            ctx.beginPath();
+            ctx.moveTo(startX + segW, barY - 10);
+            ctx.lineTo(startX + segW, barY + barH + 10);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            ctx.fillStyle = '#fff';
+            const isKorean = currentLang === 'ko';
+            ctx.font = `3vh ${isKorean ? 'Jua' : 'Arial'}, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(player.draggingVal + '%', startX + segW, barY - 15);
+        }
+
+        // 4. 외곽선 및 눈금선
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(barX, barY, barW, barH);
+
+        ctx.fillStyle = '#ccc';
+        let tickFont = Math.max(10, w * 0.03);
+        const isKorean = currentLang === 'ko';
+        ctx.font = `${tickFont}px ${isKorean ? 'Jua' : 'Arial'}, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top'; 
+
+        for(let i=0; i<=100; i+=10) {
+            const lineX = barX + (i/100) * barW;
+            ctx.beginPath();
+            ctx.moveTo(lineX, barY + barH);
+            ctx.lineTo(lineX, barY + barH + 10);
+            ctx.stroke();
+            
+            let label = i;
+            if (i === 100) label = "100(%)";
+            ctx.fillText(label, lineX, barY + barH + 15);
+        }
+
+        // 5. 현재 과일 아이콘 표시
+        if (player.drawnSlices.length < 5) {
+            ctx.save();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            
+            let iconSize = 22; 
+            let iconX = barX + barW / 2; 
+            let iconY = barY - 60; 
+            
+            ctx.arc(iconX, iconY, iconSize, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.font = `${iconSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(FRUITS_COLORS[player.drawnSlices.length].icon, iconX, iconY);
+            ctx.restore();
+        }
+    }
+
+    // --- 7. 서버 통신 (랭킹) ---
+    function submitScore(name, score) {
+        const txt = i18nData[currentLang];
+        const formData = new FormData();
+        formData.append('nickname', name);
+        formData.append('score', score);
+
+        fetch(API_URL + '?action=submit', { method: 'POST', body: formData })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === 'success') {
+                document.getElementById("res-rank").innerText = txt.rankResult.replace('{rank}', data.rank);
+                loadTop3(); 
+            } else if(data.status === 'error' && data.message === 'bad_word') {
+                document.getElementById("res-rank").innerText = txt.alertBadWord;
+            } else {
+                document.getElementById("res-rank").innerText = "Error!";
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById("res-rank").innerText = "Network Error";
+        });
+    }
+
+    function loadRanking() {
+        const list = document.getElementById("ranking-board");
+        const txt = i18nData[currentLang];
+        list.innerHTML = `<div class="center">${txt.rankingLoading}</div>`;
+
+        fetch(API_URL + '?action=list')
+        .then(response => response.json())
+        .then(data => {
+            if(data.length === 0) { list.innerHTML = `<div class="center" style="margin-top:20px;">${txt.rankingEmpty}</div>`; return; }
+            let html = "";
+            data.forEach((item, index) => {
+                let rankHtml = index < 3 ? `<span style="width:15%; text-align:center; font-size:1.5em; line-height:1;">${["🥇","🥈","🥉"][index]}</span>` 
+                                         : `<span style="width:15%; text-align:center; color:#FFD700; font-weight:bold;">${index+1}</span>`;
+                html += `<div class="rank-item">
+                    ${rankHtml}
+                    <span style="width:50%; padding-left:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.nickname}</span>
+                    <span style="width:35%; text-align:right; color:#2ecc71; font-weight:bold;">${item.score}</span>
+                </div>`;
+            });
+            list.innerHTML = html;
+        })
+        .catch(error => { list.innerHTML = `<div class="center" style="color:red;">${txt.rankingError}</div>`; });
+    }
+
+    function loadTop3() {
+        const list = document.getElementById("top3-list");
+        list.innerHTML = `<div class="center" style="font-size:2vh; color:#fff;">Loading...</div>`;
+        fetch(API_URL + '?action=list')
+        .then(response => response.json())
+        .then(data => {
+            let html = "";
+            for(let i=0; i < Math.min(data.length, 3); i++) {
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px dashed rgba(255,255,255,0.2); font-size:2.2vh;">
+                    <div style="color:#fff; display:flex; align-items:center; gap:5px;">
+                        <span>${["🥇","🥈","🥉"][i]}</span>
+                        <span style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${data[i].nickname}</span>
+                    </div>
+                    <span style="font-weight:bold; color:#FFD700;">${data[i].score}</span>
+                </div>`;
+            }
+            list.innerHTML = data.length === 0 ? `<div class="center" style="font-size:2vh; color:#fff;">No Data 👑</div>` : html;
+        })
+        .catch(error => { list.innerHTML = `<div class="center" style="font-size:2vh; color:#aaa;">Error</div>`; });
+    }
+</script>
+</body>
+</html>

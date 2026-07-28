@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5YW0T2C109');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KINGSMATH SPEED RACING MOBILE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a1a1a; /* 양옆 배경색 (어둡게) */
+            touch-action: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* 모바일 화면을 감싸는 래퍼 */
+        #game-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 480px; /* 모바일 최대 너비 */
+            height: 100vh;
+            background-color: #87CEEB;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            z-index: 10;
+        }
+
+        /* 좌우 여백 슬로건용 (PC 등 넓은 화면에서만 보임) */
+        .side-branding {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            font-size: 2rem;
+            font-weight: 900;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 5px;
+            user-select: none;
+        }
+
+        #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .math-panel {
+            position: absolute;
+            transform-origin: center center;
+            pointer-events: none;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .text-outline {
+            text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 0 4px 10px rgba(0,0,0,0.8);
+        }
+
+        .floating-score {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: 900;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translate(-50%, -50%) translateY(0) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) translateY(-50px) scale(1.5); }
+        }
+
+        #touch-zone {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: auto;
+        }
+
+        .modal {
+            pointer-events: auto;
+        }
+
+        /* Custom Scrollbar for Ranking */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.5);
+            border-radius: 10px;
+        }
+
+        /* Arcade Game Over Effect */
+        @keyframes arcadeGlow {
+            0%, 100% { text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 40px #aa0000, 0 0 80px #660000; opacity: 1; }
+            50% { text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 20px #aa0000, 0 0 40px #660000; opacity: 0.8; }
+        }
+        .arcade-game-over {
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            color: #ff3333;
+            animation: arcadeGlow 1.5s infinite ease-in-out;
+            -webkit-text-stroke: 2px #330000;
+        }
+
+        #countdown-text {
+            transition: transform 0.1s ease-out;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="side-branding hidden md:flex">kingsmath.com</div>
+
+    <div id="game-wrapper">
+        <div id="game-canvas"></div>
+        <div id="labels-container" class="absolute top-0 left-0 w-full h-full z-10 pointer-events-none"></div>
+        <div id="touch-zone"></div>
+
+        <div id="ui-layer" class="flex flex-col justify-between p-4 pointer-events-none">
+            
+            <div id="damage-overlay" class="absolute inset-0 bg-red-600 opacity-0 pointer-events-none transition-opacity duration-150 z-20"></div>
+
+            <div id="countdown-overlay" class="absolute inset-0 flex items-center justify-center hidden z-40 pointer-events-none">
+                <div id="countdown-text" class="text-[120px] font-black text-yellow-400 arcade-game-over text-outline drop-shadow-[0_0_30px_rgba(255,255,0,0.6)]">3</div>
+            </div>
+
+            <div class="flex justify-between items-start w-full relative gap-2 z-30">
+                <div class="bg-gray-900 bg-opacity-70 text-white px-2 py-1 rounded-lg border-2 border-gray-600 shadow-lg min-w-[70px] flex-1 text-center">
+                    <span class="text-[10px] font-bold text-gray-300">SCORE</span><br>
+                    <span id="score-display" class="text-base font-black text-yellow-400">0</span>
+                </div>
+                
+                <div class="bg-blue-900 bg-opacity-80 text-white px-2 py-1 rounded-lg border-2 border-blue-400 shadow-lg text-center flex flex-col items-center flex-1">
+                    <span class="text-[9px] font-bold text-blue-200">STAGE <span id="stage-display" class="text-sm font-black text-white">1</span></span>
+                    <span id="speed-display" class="text-[10px] font-bold text-white mt-1 whitespace-nowrap">0 KM/H</span>
+                </div>
+
+                <div class="bg-gray-900 bg-opacity-70 text-white px-2 py-1 rounded-lg border-2 border-gray-600 shadow-lg text-center min-w-[70px] flex-1">
+                    <span class="text-[10px] font-bold text-gray-300">LIVES</span><br>
+                    <span id="lives-display" class="text-[10px] tracking-tighter text-center inline-block w-full">❤️❤️❤️</span>
+                </div>
+            </div>
+
+            <div id="start-screen" class="modal absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-80 backdrop-blur-md transition-opacity duration-300 overflow-y-auto py-8 z-40">
+                <h1 class="text-4xl font-black text-white text-center mb-1 italic text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]">
+                    KINGSMATH<br>SPEED RACING
+                </h1>
+                <h2 class="text-3xl font-black text-yellow-300 mb-4 animate-pulse drop-shadow-[0_0_10px_rgba(253,224,71,0.8)]">MOBILE</h2>
+                
+                <p class="text-white text-sm mb-4 text-center font-bold">
+                    Move to the correct answer!<br>
+                    <span class="text-xs text-gray-300 font-normal mt-1 block">(Swipe or use ◀ ▶ keys)</span>
+                </p>
+
+                <div class="w-full max-w-sm px-6 flex flex-col items-center">
+                    <input type="text" id="nickname" placeholder="Enter Nickname" maxlength="8" class="w-full text-center px-4 py-3 rounded-full text-black font-bold mb-3 shadow-[0_0_15px_rgba(255,255,255,0.2)] focus:outline-none focus:ring-4 focus:ring-blue-500 transition">
+                    
+                    <button id="start-btn" class="w-full bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white font-black py-3 rounded-full text-xl shadow-[0_0_20px_rgba(74,222,128,0.5)] transform transition hover:scale-105 active:scale-95 mb-4">
+                        START GAME
+                    </button>
+
+                    <div class="bg-gray-900/80 rounded-xl p-3 w-full border border-gray-600 shadow-xl mb-4">
+                        <div class="text-yellow-400 font-black text-center mb-2 text-md drop-shadow-md">🏆 TOP 100 RANKING 🏆</div>
+                        <div class="h-32 overflow-y-auto px-2">
+                            <ul id="ranking-list" class="text-white text-xs space-y-2">
+                                <li class="text-center text-gray-400">Loading ranking...</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <a href="/" class="text-blue-300 hover:text-blue-100 underline font-bold text-xs bg-black/50 px-4 py-2 rounded-full">More math games</a>
+                </div>
+            </div>
+
+            <div id="game-over-screen" class="modal absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-95 backdrop-blur-lg hidden z-50">
+                <h1 class="text-6xl font-black text-center mb-6 tracking-widest arcade-game-over">GAME<br>OVER</h1>
+                <div class="bg-gray-900/80 border-2 border-red-900/50 px-8 py-4 rounded-2xl mb-8 shadow-[0_0_30px_rgba(255,0,0,0.2)] text-center">
+                    <p class="text-gray-300 text-lg font-bold mb-1 tracking-widest">FINAL SCORE</p>
+                    <p id="final-score" class="text-5xl text-yellow-400 font-black text-outline">0</p>
+                </div>
+                <p id="ranking-feedback" class="text-red-300 mb-8 text-lg font-bold tracking-widest animate-pulse"></p>
+                <button id="main-menu-btn" class="bg-gradient-to-r from-red-700 to-red-900 hover:from-red-600 hover:to-red-800 border-2 border-red-500 text-white font-black py-3 px-10 rounded-full text-xl shadow-[0_0_20px_rgba(255,0,0,0.5)] transform transition hover:scale-105 active:scale-95 tracking-widest">
+                    MAIN MENU
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="side-branding hidden md:flex">킹수학.com</div>
+
+    <script>
+        // 전역으로 래퍼 요소 선언 (모바일 너비 기준)
+        const gameWrapper = document.getElementById('game-wrapper');
+
+        // --- 레트로 효과음 생성기 (Web Audio API) 추가 ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function playRetroSound(type) {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+            
+            if (type === 'beep') { // 카운트다운 3, 2, 1
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(440, now);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'start') { // 카운트다운 START
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(880, now);
+                gainNode.gain.setValueAtTime(0.15, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'correct') { // 정답
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } else if (type === 'wrong') { // 오답
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(80, now + 0.2);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'heart') { // 하트 획득
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'bomb') { // 폭탄 피격
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(10, now + 0.3);
+                gainNode.gain.setValueAtTime(0.2, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'gameover') { // 게임 오버
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.6);
+                gainNode.gain.setValueAtTime(0.15, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.6);
+                osc.start(now);
+                osc.stop(now + 0.6);
+            }
+        }
+
+        // --- Game Variables ---
+        let score = 0;
+        let lives = 3;
+        const MAX_LIVES = 6;
+        let gameSpeed = 0.4; 
+        let baseSpeed = 200; 
+        let isPlaying = false;
+        let currentStage = 1; 
+        let problemsAttempted = 0; 
+        
+        let tutorialPhase = 0; 
+        let tutorialTimeouts = [];
+        let cameraShake = 0;
+
+        // --- Three.js Variables ---
+        let scene, camera, renderer;
+        let playerCar;
+        let roadLines = []; 
+        let trees = []; 
+        let obstacles = []; 
+        let heartItem = null; 
+        let bombItem = null; 
+        let bombSpark = null; 
+        
+        // --- Controls ---
+        let touchX = 0; 
+        let targetCarX = 0; 
+        let isLeftDown = false; 
+        let isRightDown = false; 
+
+        const LALNE_WIDTH = 3; 
+        const CAR_Z = 0; 
+
+        // UI Elements
+        const scoreDisplay = document.getElementById('score-display');
+        const livesDisplay = document.getElementById('lives-display');
+        const speedDisplay = document.getElementById('speed-display');
+        const labelsContainer = document.getElementById('labels-container');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const touchZone = document.getElementById('touch-zone');
+        const rankingList = document.getElementById('ranking-list');
+        const nicknameInput = document.getElementById('nickname');
+
+        // Initialize Game
+        function init() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x87CEEB, 40, 200); 
+
+            // wrapper 크기에 맞춰 설정
+            camera = new THREE.PerspectiveCamera(60, gameWrapper.clientWidth / gameWrapper.clientHeight, 0.1, 200);
+            camera.position.set(0, 3.5, 7.5); 
+            camera.lookAt(0, 1.0, -10);
+            updateCameraFOV(); 
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(gameWrapper.clientWidth, gameWrapper.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+            renderer.shadowMap.enabled = true;
+            document.getElementById('game-canvas').appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(10, 20, 10);
+            dirLight.castShadow = true;
+            dirLight.shadow.camera.top = 20;
+            dirLight.shadow.camera.bottom = -20;
+            dirLight.shadow.camera.left = -20;
+            dirLight.shadow.camera.right = 20;
+            scene.add(dirLight);
+
+            createEnvironment();
+            createMountains(); 
+            createTrees();
+            createPlayerCar();
+            initObstaclePool();
+            create3DHeartItem(); 
+            create3DBombItem();  
+
+            const savedNick = localStorage.getItem('kingsmath_nickname');
+            if(savedNick) nicknameInput.value = savedNick;
+            loadRanking();
+
+            window.addEventListener('resize', onWindowResize);
+            touchZone.addEventListener('touchstart', handleTouchStart, {passive: false});
+            touchZone.addEventListener('touchmove', handleTouchMove, {passive: false});
+            
+            window.addEventListener('keydown', (e) => {
+                if(e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') isLeftDown = true;
+                if(e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') isRightDown = true;
+            });
+            window.addEventListener('keyup', (e) => {
+                if(e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') isLeftDown = false;
+                if(e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') isRightDown = false;
+            });
+
+            let isMouseDown = false;
+            touchZone.addEventListener('mousedown', (e) => { isMouseDown = true; handleTouchMove(e); });
+            window.addEventListener('mouseup', () => { isMouseDown = false; });
+            touchZone.addEventListener('mousemove', (e) => { if(isMouseDown) handleTouchMove(e); });
+
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            document.getElementById('main-menu-btn').addEventListener('click', goToMainMenu);
+
+            onWindowResize();
+            animate();
+        }
+
+        function loadRanking() {
+            fetch('ranking.php?action=list')
+                .then(res => res.json())
+                .then(data => {
+                    rankingList.innerHTML = '';
+                    if(!data || data.length === 0) {
+                        rankingList.innerHTML = '<li class="text-center text-gray-400">No records yet. Be the first!</li>';
+                        return;
+                    }
+                    data.forEach((item, index) => {
+                        const li = document.createElement('li');
+                        li.className = 'flex justify-between items-center border-b border-gray-700 pb-1';
+                        
+                        let rankStyle = "text-gray-400";
+                        if(index === 0) rankStyle = "text-yellow-400 text-base";
+                        else if(index === 1) rankStyle = "text-gray-300 text-sm";
+                        else if(index === 2) rankStyle = "text-yellow-600 text-sm";
+
+                        li.innerHTML = `
+                            <span class="truncate pr-2">
+                                <span class="${rankStyle} font-bold mr-2 w-6 inline-block text-right">#${index+1}</span> 
+                                <span class="text-white">${item.nickname}</span>
+                            </span> 
+                            <span class="text-green-400 font-black">${item.score}</span>
+                        `;
+                        rankingList.appendChild(li);
+                    });
+                })
+                .catch(err => {
+                    rankingList.innerHTML = '<li class="text-center text-red-400">Ranking server not found (Local Mode)</li>';
+                });
+        }
+
+        function updateCameraFOV() {
+            if(!camera) return;
+            camera.aspect = gameWrapper.clientWidth / gameWrapper.clientHeight;
+            if (camera.aspect < 1) camera.fov = 85; 
+            else camera.fov = 60; 
+            camera.updateProjectionMatrix();
+        }
+
+        function createEnvironment() {
+            const roadGeometry = new THREE.PlaneGeometry(10, 300);
+            const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8 });
+            const road = new THREE.Mesh(roadGeometry, roadMaterial);
+            road.rotation.x = -Math.PI / 2;
+            road.position.z = -100;
+            road.receiveShadow = true;
+            scene.add(road);
+
+            const curbGeometry = new THREE.BoxGeometry(0.5, 0.1, 300);
+            const curbMaterial1 = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const curbLeft = new THREE.Mesh(curbGeometry, curbMaterial1);
+            curbLeft.position.set(-5.25, 0.05, -100);
+            scene.add(curbLeft);
+            
+            const curbRight = new THREE.Mesh(curbGeometry, curbMaterial1);
+            curbRight.position.set(5.25, 0.05, -100);
+            scene.add(curbRight);
+
+            const grassGeometry = new THREE.PlaneGeometry(400, 400);
+            const grassMaterial = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 1 });
+            const grass = new THREE.Mesh(grassGeometry, grassMaterial);
+            grass.rotation.x = -Math.PI / 2;
+            grass.position.y = -0.1; 
+            grass.position.z = -100;
+            grass.receiveShadow = true;
+            scene.add(grass);
+
+            for (let i = 0; i < 20; i++) {
+                const lineGeo = new THREE.PlaneGeometry(0.2, 3);
+                const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const line = new THREE.Mesh(lineGeo, lineMat);
+                line.rotation.x = -Math.PI / 2;
+                line.position.y = 0.01;
+                line.position.z = -i * 6; 
+                scene.add(line);
+                roadLines.push(line);
+            }
+        }
+
+        function createTrees() {
+            const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.5);
+            const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c4033 });
+            const leavesGeo = new THREE.ConeGeometry(1.5, 4, 8);
+            const leavesMat = new THREE.MeshStandardMaterial({ color: 0x228b22 });
+
+            for(let i = 0; i < 40; i++) {
+                const tree = new THREE.Group();
+                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+                trunk.position.y = 0.75;
+                trunk.castShadow = true;
+                
+                const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+                leaves.position.y = 2.5;
+                leaves.castShadow = true;
+
+                tree.add(trunk);
+                tree.add(leaves);
+
+                resetTreePosition(tree, true);
+                scene.add(tree);
+                trees.push(tree);
+            }
+        }
+
+        function resetTreePosition(tree, isInit = false) {
+            const isLeft = Math.random() > 0.5;
+            tree.position.x = isLeft ? -(7 + Math.random() * 20) : (7 + Math.random() * 20);
+            tree.position.z = isInit ? -(Math.random() * 200) : -(150 + Math.random() * 50);
+        }
+
+        function createMountains() {
+            const mountainGeo = new THREE.ConeGeometry(30, 50, 4); 
+            mountainGeo.rotateY(Math.PI / 4); 
+            const mountainMat = new THREE.MeshStandardMaterial({ color: 0x2d6a4f, roughness: 0.9, flatShading: true });
+            
+            for (let i = 0; i < 15; i++) {
+                const mountain = new THREE.Mesh(mountainGeo, mountainMat);
+                mountain.position.x = (Math.random() - 0.5) * 300;
+                if (Math.abs(mountain.position.x) < 20) {
+                    mountain.position.x += 30; 
+                }
+                mountain.position.y = 20; 
+                mountain.position.z = -150 - Math.random() * 100; 
+                scene.add(mountain);
+            }
+        }
+
+        function createPlayerCar() {
+            playerCar = new THREE.Group();
+
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xff8c00 }); 
+            const bodyGeo = new THREE.BoxGeometry(1.2, 0.4, 2.5);
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = 0.3;
+            body.castShadow = true;
+            playerCar.add(body);
+
+            const cabinMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+            const cabinGeo = new THREE.BoxGeometry(0.8, 0.3, 1);
+            const cabin = new THREE.Mesh(cabinGeo, cabinMat);
+            cabin.position.set(0, 0.6, -0.2);
+            cabin.castShadow = true;
+            playerCar.add(cabin);
+
+            const wingGeo = new THREE.BoxGeometry(1.6, 0.1, 0.5);
+            const wingMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6 }); 
+            const wing = new THREE.Mesh(wingGeo, wingMat);
+            wing.position.set(0, 0.8, 1);
+            wing.castShadow = true;
+            playerCar.add(wing);
+
+            const supportGeo = new THREE.BoxGeometry(0.1, 0.4, 0.2);
+            const support1 = new THREE.Mesh(supportGeo, cabinMat);
+            support1.position.set(-0.4, 0.5, 1);
+            const support2 = new THREE.Mesh(supportGeo, cabinMat);
+            support2.position.set(0.4, 0.5, 1);
+            playerCar.add(support1);
+            playerCar.add(support2);
+
+            const wheelGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 16);
+            wheelGeo.rotateZ(Math.PI / 2);
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+
+            const positions = [
+                [-0.7, 0.3, 0.8], [0.7, 0.3, 0.8], [-0.7, 0.3, -0.8], [0.7, 0.3, -0.8]
+            ];
+            positions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.position.set(pos[0], pos[1], pos[2]);
+                wheel.castShadow = true;
+                playerCar.add(wheel);
+            });
+
+            playerCar.position.set(0, 0, CAR_Z);
+            scene.add(playerCar);
+        }
+
+        function create3DHeartItem() {
+            heartItem = new THREE.Group();
+            const shape = new THREE.Shape();
+            shape.moveTo(0, 0);
+            shape.bezierCurveTo(0, 0.5, -0.5, 1, -1, 1);
+            shape.bezierCurveTo(-1.5, 1, -2, 0.5, -2, 0);
+            shape.bezierCurveTo(-2, -0.5, 0, -2, 0, -2);
+            shape.bezierCurveTo(0, -2, 2, -0.5, 2, 0);
+            shape.bezierCurveTo(2, 0.5, 1.5, 1, 1, 1);
+            shape.bezierCurveTo(0.5, 1, 0, 0.5, 0, 0);
+
+            const extrudeSettings = { depth: 0.4, bevelEnabled: true, bevelSegments: 3, steps: 1, bevelSize: 0.2, bevelThickness: 0.2 };
+            const heartGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+            heartGeo.center();
+            
+            const heartMat = new THREE.MeshStandardMaterial({ 
+                color: 0xff1493,
+                roughness: 0.2,
+                metalness: 0.3,
+                emissive: 0x440022
+            });
+            
+            const heartMesh = new THREE.Mesh(heartGeo, heartMat);
+            heartMesh.scale.set(0.4, 0.4, 0.4);
+            heartMesh.rotation.z = 0; 
+            
+            heartItem.add(heartMesh);
+            heartItem.userData = { active: false, mesh: heartMesh };
+            scene.add(heartItem);
+        }
+
+        function create3DBombItem() {
+            bombItem = new THREE.Group();
+            
+            const bodyGeo = new THREE.SphereGeometry(0.5, 16, 16);
+            const bodyMat = new THREE.MeshStandardMaterial({color: 0x222222, roughness: 0.8});
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            
+            const capGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.2);
+            const capMat = new THREE.MeshStandardMaterial({color: 0x555555});
+            const cap = new THREE.Mesh(capGeo, capMat);
+            cap.position.y = 0.5;
+
+            const sparkGeo = new THREE.SphereGeometry(0.12, 8, 8);
+            const sparkMat = new THREE.MeshBasicMaterial({color: 0xff8800});
+            bombSpark = new THREE.Mesh(sparkGeo, sparkMat);
+            bombSpark.position.set(0, 0.7, 0);
+
+            bombItem.add(body);
+            bombItem.add(cap);
+            bombItem.add(bombSpark);
+
+            bombItem.userData = { active: false };
+            scene.add(bombItem);
+        }
+
+        const GATE_COUNT = 4; 
+        const GATE_DISTANCE = 80; 
+
+        function initObstaclePool() {
+            for (let i = 0; i < GATE_COUNT; i++) {
+                const gateObj = createGate();
+                gateObj.position.z = 10;
+                gateObj.active = false;
+                scene.add(gateObj);
+                obstacles.push(gateObj);
+            }
+        }
+
+        function createGate() {
+            const group = new THREE.Group();
+            const materialNormal = new THREE.MeshBasicMaterial({ color: 0x444444, transparent: true, opacity: 0.3 });
+            
+            const leftZoneGeo = new THREE.BoxGeometry(LALNE_WIDTH - 0.2, 0.1, 1);
+            const leftZone = new THREE.Mesh(leftZoneGeo, materialNormal);
+            leftZone.position.set(-LALNE_WIDTH/2, 0.05, 0);
+            group.add(leftZone);
+
+            const rightZoneGeo = new THREE.BoxGeometry(LALNE_WIDTH - 0.2, 0.1, 1);
+            const rightZone = new THREE.Mesh(rightZoneGeo, materialNormal);
+            rightZone.position.set(LALNE_WIDTH/2, 0.05, 0);
+            group.add(rightZone);
+
+            const gateLabel = document.createElement('div');
+            gateLabel.className = 'math-panel flex flex-col items-center';
+            labelsContainer.appendChild(gateLabel);
+
+            group.userData = {
+                leftZone: leftZone,
+                rightZone: rightZone,
+                gateLabel: gateLabel, 
+                passed: false 
+            };
+
+            return group;
+        }
+
+        function getWrongAnswer(correct, type) {
+            let wrong;
+            do {
+                let offset = Math.floor(Math.random() * 3) + 1;
+                if (type === 'mul' || type === 'div') offset = Math.floor(Math.random() * 4) + 1;
+                if (Math.random() > 0.5) offset *= -1;
+                if ((type === 'add' || type === 'sub') && Math.random() > 0.8) {
+                    offset = (Math.random() > 0.5 ? 10 : -10);
+                }
+                wrong = correct + offset;
+            } while (wrong === correct || wrong < 0);
+            return wrong;
+        }
+
+        function generateProblemType(typeId) {
+            let q, a, w;
+            let op1, op2;
+            switch(typeId) {
+                case 1:
+                    if (Math.random() > 0.5) {
+                        op1 = Math.floor(Math.random() * 9) + 1; op2 = Math.floor(Math.random() * 9) + 1;
+                        q = `${op1} + ${op2}`; a = op1 + op2; w = getWrongAnswer(a, 'add');
+                    } else {
+                        op1 = Math.floor(Math.random() * 9) + 1; op2 = Math.floor(Math.random() * op1) + 1;
+                        q = `${op1} - ${op2}`; a = op1 - op2; w = getWrongAnswer(a, 'sub');
+                    }
+                    break;
+                case 2:
+                    op1 = Math.floor(Math.random() * 8) + 2; op2 = Math.floor(Math.random() * 8) + 2;
+                    q = `${op1} × ${op2}`; a = op1 * op2; w = getWrongAnswer(a, 'mul');
+                    break;
+                case 3:
+                    op2 = Math.floor(Math.random() * 8) + 2; a = Math.floor(Math.random() * 8) + 2; op1 = op2 * a;
+                    q = `${op1} ÷ ${op2}`; w = getWrongAnswer(a, 'div');
+                    break;
+                case 4:
+                    if (Math.random() > 0.5) {
+                        op1 = Math.floor(Math.random() * 90) + 10; op2 = Math.floor(Math.random() * 9) + 1;
+                        q = `${op1} + ${op2}`; a = op1 + op2; w = getWrongAnswer(a, 'add');
+                    } else {
+                        op1 = Math.floor(Math.random() * 90) + 10; op2 = Math.floor(Math.random() * 9) + 1;
+                        q = `${op1} - ${op2}`; a = op1 - op2; w = getWrongAnswer(a, 'sub');
+                    }
+                    break;
+                case 5:
+                    if (Math.random() > 0.5) {
+                        op1 = Math.floor(Math.random() * 90) + 10; op2 = Math.floor(Math.random() * 90) + 10;
+                        q = `${op1} + ${op2}`; a = op1 + op2; w = getWrongAnswer(a, 'add');
+                    } else {
+                        op1 = Math.floor(Math.random() * 90) + 10; op2 = Math.floor(Math.random() * 90) + 10;
+                        if (op1 < op2) { let temp = op1; op1 = op2; op2 = temp; }
+                        q = `${op1} - ${op2}`; a = op1 - op2; w = getWrongAnswer(a, 'sub');
+                    }
+                    break;
+            }
+            return { q, a, w };
+        }
+
+        function getProblemForStage(stage) {
+            let typeId = 1;
+            if (stage === 1) typeId = 1;
+            else if (stage === 2) typeId = Math.random() < 0.5 ? 2 : 1;
+            else if (stage === 3) typeId = Math.random() < 0.5 ? 3 : Math.floor(Math.random() * 2) + 1;
+            else if (stage === 4) typeId = Math.random() < 0.5 ? 4 : Math.floor(Math.random() * 3) + 1;
+            else if (stage === 5) typeId = Math.random() < 0.5 ? 5 : Math.floor(Math.random() * 4) + 1;
+            else typeId = Math.floor(Math.random() * 5) + 1;
+            return generateProblemType(typeId);
+        }
+
+        function resetGate(gate, zPos) {
+            gate.position.z = zPos;
+            gate.userData.passed = false; 
+            gate.active = true;
+
+            const prob = getProblemForStage(currentStage);
+            const isLeftCorrect = Math.random() > 0.5;
+            gate.userData.leftIsCorrect = isLeftCorrect;
+            
+            const leftAns = isLeftCorrect ? prob.a : prob.w;
+            const rightAns = isLeftCorrect ? prob.w : prob.a;
+
+            gate.userData.gateLabel.innerHTML = `
+                <div class="flex flex-col items-center drop-shadow-2xl">
+                    <div class="bg-black/80 border-2 border-gray-400 rounded-full px-6 py-1 mb-2 shadow-[0_0_15px_rgba(0,0,0,0.8)] backdrop-blur-md">
+                        <div class="text-2xl md:text-4xl text-white font-black text-outline whitespace-nowrap">${prob.q}</div>
+                    </div>
+                    
+                    <div class="flex rounded-3xl overflow-hidden border-4 border-white/60 shadow-[0_0_30px_rgba(0,0,0,0.6)] backdrop-blur-sm">
+                        <div class="bg-red-500/85 p-3 md:p-5 w-[100px] md:w-[140px] flex justify-center items-center border-r-2 border-white/50">
+                            <div class="text-4xl md:text-6xl text-white font-black text-outline">${leftAns}</div>
+                        </div>
+                        <div class="bg-blue-500/85 p-3 md:p-5 w-[100px] md:w-[140px] flex justify-center items-center border-l-2 border-white/50">
+                            <div class="text-4xl md:text-6xl text-white font-black text-outline">${rightAns}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            gate.userData.leftZone.material.color.setHex(0xff4444); 
+            gate.userData.rightZone.material.color.setHex(0x4444ff); 
+        }
+
+        // 터치/마우스 위치를 전체화면이 아닌 wrapper 기준으로 계산
+        function getXPositionFromEvent(e) {
+            let clientX;
+            if (e.touches && e.touches.length > 0) clientX = e.touches[0].clientX;
+            else clientX = e.clientX;
+            
+            const rect = gameWrapper.getBoundingClientRect();
+            const relX = clientX - rect.left;
+            return (relX / gameWrapper.clientWidth) * 2 - 1;
+        }
+
+        function handleTouchStart(e) {
+            if(!isPlaying) return;
+            touchX = getXPositionFromEvent(e);
+        }
+
+        function handleTouchMove(e) {
+            if(!isPlaying) return;
+            touchX = getXPositionFromEvent(e);
+        }
+
+        // --- Tutorial Logic ---
+        function startTutorial() {
+            tutorialPhase = 1;
+            let t1 = setTimeout(() => {
+                if(!isPlaying) return;
+                tutorialPhase = 2;
+                spawnTutorialHeart(-1.5, "👈 SWIPE LEFT");
+            }, 1500); 
+            tutorialTimeouts.push(t1);
+        }
+
+        function spawnTutorialHeart(x, msg) {
+            heartItem.position.z = -60;
+            heartItem.position.x = x;
+            heartItem.userData.active = true;
+            
+            const el = document.createElement('div');
+            el.className = 'absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl md:text-4xl font-black text-yellow-300 tracking-widest text-outline animate-pulse z-20 whitespace-nowrap';
+            el.innerText = msg;
+            el.id = 'tutorial-msg';
+            document.getElementById('ui-layer').appendChild(el);
+        }
+
+        function advanceTutorial() {
+            if(document.getElementById('tutorial-msg')) {
+                document.getElementById('tutorial-msg').remove();
+            }
+            
+            if (tutorialPhase === 2) {
+                tutorialPhase = 3;
+                let t = setTimeout(() => {
+                    if(!isPlaying) return;
+                    spawnTutorialHeart(1.5, "SWIPE RIGHT 👉"); 
+                }, 500);
+                tutorialTimeouts.push(t);
+            } else if (tutorialPhase === 3) {
+                tutorialPhase = 0; 
+                let t = setTimeout(() => {
+                    if(!isPlaying) return;
+                    showFloatingText("MATH STARTS NOW!", "yellow", gameWrapper.clientWidth/2, gameWrapper.clientHeight/3);
+                    let startZ = -60;
+                    obstacles.forEach((gate, index) => {
+                        resetGate(gate, startZ - (index * GATE_DISTANCE));
+                    });
+                }, 500);
+                tutorialTimeouts.push(t);
+            }
+        }
+
+        // --- 수정된 startGame 함수 (카운트다운 추가) ---
+        function startGame() {
+            const nick = nicknameInput.value.trim() || 'Anonymous';
+            localStorage.setItem('kingsmath_nickname', nick);
+
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            
+            // AudioContext 초기화 방지 우회 (사용자 인터랙션 즉시)
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const countdownOverlay = document.getElementById('countdown-overlay');
+            const countdownText = document.getElementById('countdown-text');
+            countdownOverlay.classList.remove('hidden');
+
+            let count = 3;
+            countdownText.innerText = count;
+            playRetroSound('beep');
+            countdownText.style.transform = 'scale(1.3)';
+            setTimeout(() => countdownText.style.transform = 'scale(1)', 100);
+
+            const countInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownText.innerText = count;
+                    playRetroSound('beep');
+                    countdownText.style.transform = 'scale(1.3)';
+                    setTimeout(() => countdownText.style.transform = 'scale(1)', 100);
+                } else if (count === 0) {
+                    countdownText.innerText = "START!";
+                    playRetroSound('start');
+                    countdownText.style.transform = 'scale(1.3)';
+                    setTimeout(() => countdownText.style.transform = 'scale(1)', 100);
+                } else {
+                    clearInterval(countInterval);
+                    countdownOverlay.classList.add('hidden');
+                    startActualGame();
+                }
+            }, 800);
+        }
+
+        function startActualGame() {
+            tutorialTimeouts.forEach(clearTimeout);
+            tutorialTimeouts = [];
+            if(document.getElementById('tutorial-msg')) document.getElementById('tutorial-msg').remove();
+            
+            score = 0;
+            lives = 3; 
+            currentStage = 1;
+            problemsAttempted = 0;
+            gameSpeed = 0.4; 
+            touchX = 0;
+            isLeftDown = false;
+            isRightDown = false;
+            cameraShake = 0;
+            
+            document.getElementById('stage-display').innerText = currentStage;
+            updateScoreDisplay();
+            updateLives(0); 
+            updateSpeedDisplay();
+            
+            playerCar.position.x = 0;
+            targetCarX = 0;
+            camera.position.x = 0;
+            camera.position.y = 3.5;
+
+            obstacles.forEach(gate => {
+                gate.active = false;
+                gate.userData.gateLabel.style.opacity = '0';
+            });
+
+            heartItem.userData.active = false;
+            heartItem.position.y = -10; 
+            bombItem.userData.active = false;
+            bombItem.position.y = -10;
+
+            isPlaying = true;
+            
+            startTutorial();
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            playRetroSound('gameover'); // 게임 오버 효과음
+            const finalScore = Math.floor(score);
+            document.getElementById('final-score').innerText = finalScore;
+            document.getElementById('ranking-feedback').innerText = "Submitting score...";
+            gameOverScreen.classList.remove('hidden');
+
+            const nickname = nicknameInput.value.trim() || 'Anonymous';
+            const formData = new URLSearchParams();
+            formData.append('nickname', nickname);
+            formData.append('score', finalScore);
+
+            fetch('ranking.php?action=submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    document.getElementById('ranking-feedback').innerText = `You are ranked #${data.rank}!`;
+                } else if(data.message === 'bad_word') {
+                    document.getElementById('ranking-feedback').innerText = "Warning: Inappropriate nickname detected.";
+                } else {
+                    document.getElementById('ranking-feedback').innerText = "Rank submission failed.";
+                }
+            })
+            .catch(err => {
+                document.getElementById('ranking-feedback').innerText = "Network error. Score not saved.";
+            });
+        }
+
+        function goToMainMenu() {
+            gameOverScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            loadRanking(); 
+        }
+
+        function addBonusScore(points) {
+            score += points;
+            updateScoreDisplay();
+            scoreDisplay.style.transform = 'scale(1.5)';
+            setTimeout(() => scoreDisplay.style.transform = 'scale(1)', 200);
+        }
+
+        function deductScore(points) {
+            score -= points;
+            if(score < 0) score = 0;
+            updateScoreDisplay();
+        }
+
+        function updateScoreDisplay() {
+            scoreDisplay.innerText = Math.floor(score);
+        }
+
+        function updateLives(delta) {
+            lives += delta;
+            if (lives > MAX_LIVES) lives = MAX_LIVES; 
+            if (lives < 0) lives = 0;
+            
+            let heartsText = '';
+            for(let i=0; i<lives; i++) heartsText += '❤️';
+            livesDisplay.innerText = heartsText;
+
+            if (delta !== 0) {
+                livesDisplay.style.transform = 'scale(1.3)';
+                setTimeout(() => livesDisplay.style.transform = 'scale(1)', 200);
+            }
+
+            if (lives <= 0 && isPlaying) {
+                setTimeout(gameOver, 300); 
+            }
+        }
+
+        function updateSpeedDisplay() {
+            let displaySpeed = Math.floor(baseSpeed * gameSpeed);
+            speedDisplay.innerText = displaySpeed + " KM/H";
+        }
+
+        function showFloatingText(text, color, screenX, screenY) {
+            const el = document.createElement('div');
+            el.className = `floating-score text-${color}-400`;
+            el.innerText = text;
+            el.style.left = `${screenX}px`;
+            el.style.top = `${screenY}px`;
+            labelsContainer.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        function triggerDamageEffect(intensity) {
+            cameraShake = intensity;
+            const overlay = document.getElementById('damage-overlay');
+            if (overlay) {
+                overlay.style.opacity = intensity > 1 ? '0.5' : '0.2';
+                setTimeout(() => overlay.style.opacity = '0', 150);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (cameraShake > 0) {
+                camera.position.x = (Math.random() - 0.5) * cameraShake;
+                camera.position.y = 3.5 + (Math.random() - 0.5) * cameraShake;
+                cameraShake *= 0.85; 
+                if (cameraShake < 0.05) {
+                    cameraShake = 0;
+                    camera.position.x = 0;
+                    camera.position.y = 3.5;
+                }
+            }
+
+            if (isPlaying) {
+                score += gameSpeed * 0.5;
+                updateScoreDisplay();
+
+                if (isLeftDown) touchX -= 0.06;
+                if (isRightDown) touchX += 0.06;
+                touchX = Math.max(-1, Math.min(1, touchX));
+
+                targetCarX = touchX * 2.5;
+                playerCar.position.x += (targetCarX - playerCar.position.x) * 0.15;
+                playerCar.rotation.z = (playerCar.position.x - targetCarX) * -0.1;
+                playerCar.rotation.y = (targetCarX - playerCar.position.x) * -0.2;
+
+                roadLines.forEach(line => {
+                    line.position.z += gameSpeed; 
+                    if (line.position.z > 10) line.position.z -= 120;
+                });
+
+                trees.forEach(tree => {
+                    tree.position.z += gameSpeed; 
+                    if (tree.position.z > 15) {
+                        resetTreePosition(tree, false);
+                    }
+                });
+
+                obstacles.forEach(gate => {
+                    if (!gate.active) return;
+                    gate.position.z += gameSpeed;
+
+                    updateLabelPosition(gate.userData.gateLabel, gate.position.x, gate.position.z, gate.userData.passed, 2.0);
+
+                    if (gate.position.z > -1 && gate.position.z < 1 && !gate.userData.passed) {
+                        gate.userData.passed = true; 
+                        
+                        const carX = playerCar.position.x;
+                        let choseCorrectly = false;
+                        let isMiddle = false;
+                        const threshold = 0.2; 
+
+                        if (gate.userData.leftIsCorrect) {
+                            if (carX <= -threshold) choseCorrectly = true;
+                            else if (carX > -threshold && carX < threshold) isMiddle = true; 
+                        } else {
+                            if (carX >= threshold) choseCorrectly = true;
+                            else if (carX > -threshold && carX < threshold) isMiddle = true;
+                        }
+
+                        const vector = new THREE.Vector3(playerCar.position.x, 2, 0);
+                        vector.project(camera);
+                        const screenX = (vector.x * .5 + .5) * gameWrapper.clientWidth;
+                        const screenY = (vector.y * -.5 + .5) * gameWrapper.clientHeight;
+
+                        if (choseCorrectly) {
+                            playRetroSound('correct'); // 정답 효과음
+                            addBonusScore(100); 
+                            showFloatingText("+100 BONUS!", "green", screenX, screenY);
+                            if(gate.userData.leftIsCorrect) gate.userData.leftZone.material.color.setHex(0x00ff00);
+                            else gate.userData.rightZone.material.color.setHex(0x00ff00);
+                        } else {
+                            playRetroSound('wrong'); // 오답 효과음
+                            updateLives(-1); 
+                            
+                            if (isMiddle) showFloatingText("MISSED!", "red", screenX, screenY);
+                            else showFloatingText("WRONG!", "red", screenX, screenY);
+                            
+                            triggerDamageEffect(0.8); 
+                        }
+                        
+                        gate.userData.gateLabel.style.opacity = '0'; 
+
+                        problemsAttempted++;
+                        if (problemsAttempted % 10 === 0) {
+                            currentStage++;
+                            document.getElementById('stage-display').innerText = currentStage;
+                            showFloatingText(`STAGE ${currentStage}!`, "yellow", gameWrapper.clientWidth/2, gameWrapper.clientHeight/3);
+                            
+                            if (currentStage <= 5) gameSpeed = 0.4 + ((currentStage - 1) * 0.04);
+                        } else if (currentStage >= 6) {
+                            gameSpeed += 0.002; 
+                        }
+                        updateSpeedDisplay();
+                    }
+
+                    if (gate.position.z > 15) {
+                        let minZ = 0;
+                        obstacles.forEach(o => { if(o.position.z < minZ) minZ = o.position.z; });
+                        resetGate(gate, minZ - GATE_DISTANCE);
+                    }
+                });
+
+                if (heartItem.userData.active) {
+                    heartItem.position.z += gameSpeed;
+                    
+                    heartItem.rotation.y += 0.08;
+                    heartItem.position.y = 1.0 + Math.sin(Date.now() * 0.005) * 0.2;
+
+                    if (heartItem.position.z > -1 && heartItem.position.z < 1) {
+                        if (Math.abs(playerCar.position.x - heartItem.position.x) < LALNE_WIDTH / 1.5) {
+                            playRetroSound('heart'); // 하트 효과음
+                            updateLives(1);
+                            showFloatingText("+1 LIFE", "pink", gameWrapper.clientWidth/2, gameWrapper.clientHeight/2);
+                            heartItem.userData.active = false;
+                            heartItem.position.y = -10; 
+                            
+                            if (tutorialPhase > 0) advanceTutorial();
+                        }
+                    }
+
+                    if (heartItem.position.z > 15) {
+                        heartItem.userData.active = false;
+                        heartItem.position.y = -10;
+                        
+                        if (tutorialPhase > 0) advanceTutorial();
+                    }
+                } else if (tutorialPhase === 0) {
+                    const spawnChance = lives < MAX_LIVES ? 0.003 : 0.001; 
+                    if (Math.random() < spawnChance) {
+                        let minZ = 0;
+                        obstacles.forEach(o => { if(o.position.z < minZ) minZ = o.position.z; });
+                        heartItem.position.z = minZ - (GATE_DISTANCE / 2); 
+                        heartItem.position.x = Math.random() > 0.5 ? -1.5 : 1.5;
+                        heartItem.userData.active = true;
+                    }
+                }
+
+                if (bombItem.userData.active) {
+                    bombItem.position.z += gameSpeed;
+                    
+                    bombItem.position.y = 0.5 + Math.abs(Math.sin(Date.now() * 0.008)) * 0.4;
+                    bombSpark.scale.setScalar(1.0 + Math.random() * 0.5);
+
+                    if (bombItem.position.z > -1 && bombItem.position.z < 1) {
+                        if (Math.abs(playerCar.position.x - bombItem.position.x) < LALNE_WIDTH / 1.5) {
+                            playRetroSound('bomb'); // 폭탄 효과음
+                            updateLives(-1);
+                            deductScore(50); 
+                            showFloatingText("BOMB! -50", "red", gameWrapper.clientWidth/2, gameWrapper.clientHeight/2);
+                            bombItem.userData.active = false;
+                            bombItem.position.y = -10; 
+                            
+                            triggerDamageEffect(1.5); 
+                        }
+                    }
+
+                    if (bombItem.position.z > 15) {
+                        bombItem.userData.active = false;
+                        bombItem.position.y = -10;
+                    }
+                } else if (tutorialPhase === 0) {
+                    const bombChance = 0.004; 
+                    if (Math.random() < bombChance) {
+                        let minZ = 0;
+                        obstacles.forEach(o => { if(o.position.z < minZ) minZ = o.position.z; });
+                        
+                        if (!heartItem.userData.active || Math.abs(heartItem.position.z - (minZ - GATE_DISTANCE * 0.6)) > 20) {
+                            bombItem.position.z = minZ - (GATE_DISTANCE * 0.6); 
+                            const r = Math.random();
+                            if (r < 0.33) bombItem.position.x = -1.5;
+                            else if (r < 0.66) bombItem.position.x = 1.5;
+                            else bombItem.position.x = 0;
+                            bombItem.userData.active = true;
+                        }
+                    }
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // 라벨 위치 역시 전체화면이 아닌 wrapper 너비 기준으로 배치합니다
+        function updateLabelPosition(element, worldX, worldZ, isPassed, worldY = 2.0) {
+            if (worldZ > camera.position.z || isPassed) {
+                element.style.opacity = '0';
+                return;
+            }
+            
+            const tempV = new THREE.Vector3(worldX, worldY, worldZ); 
+            tempV.project(camera);
+
+            const x = (tempV.x * .5 + .5) * gameWrapper.clientWidth;
+            const y = (tempV.y * -.5 + .5) * gameWrapper.clientHeight;
+
+            const dist = camera.position.z - worldZ;
+            let scale = 11 / dist; 
+            
+            scale = Math.max(0.15, Math.min(scale, 1.8));
+            const opacity = Math.max(0, 1 - (dist / 140));
+
+            element.style.opacity = opacity.toString();
+            element.style.left = `${x}px`;
+            element.style.top = `${y}px`;
+            element.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            element.style.zIndex = Math.floor(100 - worldZ);
+        }
+
+        function onWindowResize() {
+            if(!camera || !renderer) return;
+            updateCameraFOV();
+            renderer.setSize(gameWrapper.clientWidth, gameWrapper.clientHeight);
+        }
+
+        init();
+    </script>
+</body>
+</html>

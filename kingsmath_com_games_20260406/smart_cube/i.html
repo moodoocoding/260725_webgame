@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<?php
+// [통계 연결]
+include_once $_SERVER['DOCUMENT_ROOT'] . '/counter.php';
+?>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5YW0T2C109');
+    </script>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <title>쌓기나무킹 - KingsMath</title>
+    <meta name="description" content="3D Block counting game for spatial ability.">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        :root {
+            --main-yellow: #FFD93D;
+            --main-dark: #1e1e2e;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
+
+        * { 
+            box-sizing: border-box; 
+            touch-action: none; 
+            user-select: none; 
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Jua', sans-serif; 
+        }
+        
+        body {
+            margin: 0; padding: 0; 
+            overflow: hidden;
+            background-color: #111;
+            height: 100vh; height: 100dvh; 
+            display: flex; justify-content: center; align-items: center;
+            color: white;
+        }
+
+        /* 모바일 래퍼 */
+        #mobile-wrapper {
+            width: 100%; max-width: 480px; height: 100%; max-height: 100dvh;
+            background-color: var(--main-dark);
+            position: relative;
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        /* --- 상단 헤더 --- */
+        header {
+            position: absolute; top: 0; left: 0; width: 100%;
+            height: calc(70px + var(--safe-top));
+            padding-top: var(--safe-top);
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 20; pointer-events: none;
+        }
+
+        .nav-icon {
+            position: absolute; top: calc(15px + var(--safe-top));
+            font-size: 1.8rem; cursor: pointer; pointer-events: auto;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            transition: transform 0.1s;
+        }
+        .nav-icon:active { transform: scale(0.9); }
+        #btn-home-game { left: 15px; }
+        #btn-restart-game { right: 15px; }
+
+        .game-info-bar { display: flex; align-items: center; gap: 10px; pointer-events: none; }
+        .info-brick { font-size: 1.5rem; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .timer-badge { font-size: 2.2rem; color: white; background: #ef4444; padding: 2px 20px; border-radius: 99px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 3px solid #fca5a5; min-width: 80px; text-align: center; z-index: 2; }
+        .info-score { font-size: 1.8rem; color: var(--main-yellow); text-shadow: 0 2px 5px rgba(0,0,0,0.5); min-width: 60px; text-align: left; }
+
+        /* --- 언어 선택 스위처 (플로팅) --- */
+        .lang-container {
+            position: absolute;
+            top: calc(10px + var(--safe-top));
+            right: 15px;
+            z-index: 250;
+        }
+        .lang-btn {
+            background: #aaaaaa52; 
+            border: none; 
+            padding: 8px 12px; 
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+            cursor: pointer; 
+            display: flex; 
+            gap: 4px;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .lang-btn span { font-size: 1.2rem; line-height: 1; }
+        
+        .lang-dropdown {
+            position: absolute; top: 110%; right: 0; 
+            background: rgba(30, 30, 46, 0.95); 
+            border-radius: 15px;
+            display: none; flex-direction: column; 
+            overflow: hidden; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 1px solid var(--glass-border);
+            min-width: 140px;
+        }
+        .lang-dropdown.show { display: flex; }
+        .lang-opt { 
+            padding: 12px 15px; cursor: pointer; font-size: 1rem; 
+            color: white; border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .lang-opt:last-child { border: none; }
+        .lang-opt:hover { background: rgba(255,255,255,0.1); }
+
+        /* --- 기존 스타일 유지 --- */
+        #game-container { flex: 1; display: flex; flex-direction: column; position: relative; background: radial-gradient(circle at center, #2b3248 0%, #161821 100%); }
+        #canvas-area { flex: 1; width: 100%; position: relative; cursor: grab; z-index: 1; }
+        #input-display-area { height: 70px; background: rgba(30, 30, 46, 0.95); display: flex; justify-content: center; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); position: relative; z-index: 10; }
+        #input-value { font-size: 2.8rem; color: var(--main-yellow); letter-spacing: 4px; }
+        .placeholder { opacity: 0.3; font-size: 1.8rem !important; letter-spacing: 0 !important; }
+        #keypad-area { background: #23242a; padding: 10px 10px calc(10px + var(--safe-bottom)) 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; flex-shrink: 0; z-index: 10; }
+        .key-btn { background: #3b3e4f; color: #fff; font-size: 1.6rem; border: none; border-radius: 16px; box-shadow: 0 4px 0 #252733; height: 60px; display: flex; justify-content: center; align-items: center; }
+        .btn-clear { background: #ef5350; box-shadow: 0 4px 0 #c62828; font-size: 1.1rem; }
+        .btn-enter { background: #66bb6a; box-shadow: 0 4px 0 #2e7d32; font-size: 1.1rem; }
+
+        .overlay-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; display: flex; flex-direction: column; align-items: center; padding: 80px 20px 20px 20px; background: linear-gradient(135deg, #1e1e2e, #2d2b42); overflow-y: auto; }
+        .start-card { background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--glass-border); padding: 25px 20px; border-radius: 30px; text-align: center; width: 100%; max-width: 400px; margin-bottom: 20px; flex-shrink: 0; }
+        .game-logo { font-size: 2.5rem; margin-bottom: 5px; background: linear-gradient(45deg, #FFD93D, #FF6B6B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nickname-input { width: 80%; padding: 12px; border-radius: 12px; border: 2px solid #555; background: rgba(0,0,0,0.3); color: white; font-size: 1.1rem; text-align: center; margin-bottom: 15px; }
+        .start-btn { background: linear-gradient(90deg, #FFD93D, #FF9F1C); color: #1a1a1a; border: none; padding: 12px 40px; font-size: 1.5rem; border-radius: 50px; cursor: pointer; width: 80%; font-weight: bold; }
+        
+        /* QR 및 기타 요소 */
+        .qr-area { margin-bottom: 15px; background: white; padding: 5px; border-radius: 10px; display: inline-block; }
+        .qr-area img { display: block; width: 80px; height: 80px; }
+        #qr-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 3000; display: none; justify-content: center; align-items: center; flex-direction: column; }
+        .start-rank-container { width: 100%; max-width: 400px; background: rgba(0,0,0,0.4); border-radius: 15px; padding: 10px; flex-grow: 1; display: flex; flex-direction: column; max-height: 300px; }
+        .rank-title { color: #FFD93D; margin-bottom: 8px; text-align: center; }
+        .rank-scroll-area { overflow-y: auto; flex: 1; }
+        .rank-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem; }
+        .time-bonus-effect { position: absolute; top: 100%; left: 50%; transform: translate(-50%, 0); font-size: 1.5rem; color: #00e676; font-weight: bold; opacity: 0; z-index: 1; pointer-events: none; }
+        
+        @keyframes floatTimeUp {
+            0% { opacity: 0; transform: translate(-50%, 20px); }
+            20% { opacity: 1; transform: translate(-50%, 10px); }
+            100% { opacity: 0; transform: translate(-50%, -30px); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="mobile-wrapper">
+    <div class="lang-container">
+        <button class="lang-btn" onclick="toggleLang()">
+            <span id="current-flag">🌐</span>
+        </button>
+        <div class="lang-dropdown" id="lang-menu">
+            <div class="lang-opt" onclick="setLanguage('ko')">🇰🇷 한국어</div>
+            <div class="lang-opt" onclick="setLanguage('en')">🇺🇸 English</div>
+            <div class="lang-opt" onclick="setLanguage('zh')">🇨🇳 中文</div>
+            <div class="lang-opt" onclick="setLanguage('ja')">🇯🇵 日本語</div>
+            <div class="lang-opt" onclick="setLanguage('es')">🇪🇸 Español</div>
+            <div class="lang-opt" onclick="setLanguage('fr')">🇫🇷 Français</div>
+            <div class="lang-opt" onclick="setLanguage('ru')">🇷🇺 Русский</div>
+        </div>
+    </div>
+
+    <div id="qr-modal" onclick="closeQrModal()">
+        <img id="qr-img-large" src="" alt="Large QR">
+        <span id="txt-qr-close">Touch to close</span>
+    </div>
+
+    <div id="start-screen" class="overlay-screen">
+        <div style="margin-bottom: 20px; text-align: center;">
+            <a href="#" id="domain-link" class="brand-link" target="_blank" style="color:white; text-decoration:none; opacity:0.7;">KingsMath.com</a>
+        </div>
+
+        <div class="start-card">
+            <div class="game-logo" id="txt-logo">🧊 쌓기나무킹</div>
+            <div style="font-size: 1rem; color: #aaa; margin-bottom: 10px;">Mobile Time Attack</div>
+            
+            <p class="desc-text" id="txt-desc">
+                1분 타임어택!<br>회전하며 블록 개수를 세어보세요.
+            </p>
+
+            <div class="qr-area" onclick="openQrModal()">
+                <img id="qr-img-small" src="" alt="QR">
+            </div>
+
+            <input type="text" id="nickname" class="nickname-input" placeholder="닉네임" maxlength="8">
+
+            <button class="start-btn" onclick="readyGame()" id="btn-start">게임 시작! 🚀</button>
+
+            <a href="/" class="more-games" id="link-more" style="display:block; margin-top:15px; color:#aaa; font-size:0.9rem; text-decoration:none;">🎮 다른 게임 고르기</a>
+        </div>
+
+        <div class="start-rank-container">
+            <div class="rank-title" id="txt-hall">🏆 명예의 전당</div>
+            <div class="rank-scroll-area" id="start-rank-list">
+                <div style="text-align:center; color:#888; padding:20px;">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="nav-icon" id="btn-home-game" onclick="goHome()">🏠</div>
+        <div class="game-info-bar">
+            <div class="info-brick">🧱</div>
+            <div class="timer-wrapper" style="position:relative;">
+                <div class="timer-badge" id="ui-timer">60</div>
+                <div class="time-bonus-effect" id="time-bonus-effect">+5s</div>
+            </div>
+            <div class="info-score" id="ui-score">0</div>
+        </div>
+        <div class="nav-icon" id="btn-restart-game" onclick="restartGame()">🔄</div>
+    </header>
+    
+    <div id="bonus-badge" style="position:absolute; right:20px; top:calc(80px + var(--safe-top)); background:#ff1744; color:white; padding:4px 8px; border-radius:8px; display:none; z-index:10; border:2px solid #fff;">🔥 BONUS x2</div>
+
+    <div id="game-container">
+        <div id="canvas-area">
+            <div id="feedback" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; font-size:5rem; z-index:50; opacity:0; font-weight:bold; text-shadow:0 0 20px rgba(0,0,0,0.5);"></div>
+        </div>
+        
+        <div id="input-display-area">
+            <span id="input-value" class="placeholder">?</span>
+        </div>
+
+        <div id="keypad-area">
+            <button class="key-btn" onpointerdown="inputNum(1)">1</button>
+            <button class="key-btn" onpointerdown="inputNum(2)">2</button>
+            <button class="key-btn" onpointerdown="inputNum(3)">3</button>
+            <button class="key-btn" onpointerdown="inputNum(4)">4</button>
+            <button class="key-btn" onpointerdown="inputNum(5)">5</button>
+            <button class="key-btn" onpointerdown="inputNum(6)">6</button>
+            <button class="key-btn" onpointerdown="inputNum(7)">7</button>
+            <button class="key-btn" onpointerdown="inputNum(8)">8</button>
+            <button class="key-btn" onpointerdown="inputNum(9)">9</button>
+            <button class="key-btn btn-clear" onpointerdown="inputClear()" id="btn-clear">지움</button>
+            <button class="key-btn" onpointerdown="inputNum(0)">0</button>
+            <button class="key-btn btn-enter" onpointerdown="inputEnter()" id="btn-enter">입력</button>
+        </div>
+    </div>
+
+    <div id="countdown-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:200; display:none; justify-content:center; align-items:center; font-size:10rem; color:#FFD93D;">3</div>
+
+    <div id="result-screen" class="overlay-screen" style="display:none; justify-content:center;">
+        <div class="start-card">
+            <div style="font-size: 2rem; margin-bottom: 5px;">GAME OVER</div>
+            <div style="font-size: 3.5rem; color:var(--main-yellow); font-weight:bold; margin: 10px 0;" id="result-score-display">🧱 0</div>
+            <div class="ranking-box" style="background:rgba(0,0,0,0.3); padding:15px; border-radius:15px; text-align:left;">
+                <div id="my-rank-txt" style="color:#FFD93D; text-align:center; margin-bottom:10px;">Ranking...</div>
+                <div id="top-rank-list"></div>
+            </div>
+            <div style="display:flex; gap:20px; justify-content:center; margin-top:20px;">
+                <div style="font-size:2.5rem; cursor:pointer;" onclick="goHome()">🏠</div>
+                <div style="font-size:2.5rem; cursor:pointer;" onclick="restartGame()">🔄</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* --- 다국어 설정 및 번역 데이터 --- */
+    const translations = {
+        ko: {
+            title: "쌓기나무킹: 1분 타임어택",
+            logo: "🧊 쌓기나무킹",
+            desc: "1분 타임어택!<br>회전하며 블록 개수를 세어보세요.",
+            start: "게임 시작! 🚀",
+            clear: "지움",
+            enter: "입력",
+            placeholder: "?",
+            more: "🎮 다른 게임 고르기",
+            hall: "🏆 명예의 전당",
+            nickPlaceholder: "닉네임 (최대 8자)",
+            myRank: "나의 등수: ",
+            registering: "등록 중...",
+            alertNick: "닉네임을 입력해주세요!",
+            qrClose: "화면을 터치하면 닫힙니다",
+            domainText: "킹수학.com",
+            domainUrl: "https://킹수학.com",
+            seoDesc: "1분 동안 3D 쌓기나무의 개수를 맞히는 모바일 두뇌 게임! 공간지각능력을 키워보세요."
+        },
+        en: {
+            title: "Block King: 1min Time Attack",
+            logo: "🧊 Block King",
+            desc: "60s Time Attack!<br>Rotate and count the blocks.",
+            start: "Start Game! 🚀",
+            clear: "Del",
+            enter: "OK",
+            placeholder: "?",
+            more: "🎮 More Games",
+            hall: "🏆 Hall of Fame",
+            nickPlaceholder: "Nickname",
+            myRank: "My Rank: ",
+            registering: "Saving...",
+            alertNick: "Please enter a nickname!",
+            qrClose: "Touch to close",
+            domainText: "KingsMath.com",
+            domainUrl: "http://www.kingsmath.com",
+            seoDesc: "Count 3D blocks in 1 minute! A brain game to improve spatial awareness."
+        },
+        zh: {
+            title: "积木大王: 1分钟限时赛",
+            logo: "🧊 积木大王",
+            desc: "1分钟挑战!<br>旋转并计算方块数量。",
+            start: "开始游戏! 🚀",
+            clear: "清除",
+            enter: "确认",
+            placeholder: "?",
+            more: "🎮 更多游戏",
+            hall: "🏆 荣誉榜",
+            nickPlaceholder: "输入昵称",
+            myRank: "我的排名: ",
+            registering: "正在保存...",
+            alertNick: "请输入昵称!",
+            qrClose: "点击屏幕关闭",
+            domainText: "KingsMath.com",
+            domainUrl: "http://www.kingsmath.com",
+            seoDesc: "在一分钟内计算3D积木数量！提升空间想象力的脑力游戏。"
+        },
+        ja: {
+            title: "つみき王: 1分タイムアタック",
+            logo: "🧊 つみき王",
+            desc: "1分間タイムアタック!<br>回転させてブロックを数えよう。",
+            start: "スタート! 🚀",
+            clear: "消す",
+            enter: "決定",
+            placeholder: "?",
+            more: "🎮 他のゲーム",
+            hall: "🏆 殿堂入り",
+            nickPlaceholder: "ニックネーム",
+            myRank: "順位: ",
+            registering: "登録中...",
+            alertNick: "ニックネームを入力してください!",
+            qrClose: "画面タッチで閉じる",
+            domainText: "KingsMath.com",
+            domainUrl: "http://www.kingsmath.com",
+            seoDesc: "1分間で3D積み木の数を当てる脳トレゲーム！空間認識能力を鍛えましょう。"
+        },
+        es: {
+            title: "Rey de Bloques: 1 min de ataque",
+            logo: "🧊 Rey de Bloques",
+            desc: "¡60s de ataque!<br>Gira y cuenta los bloques.",
+            start: "¡Jugar! 🚀",
+            clear: "Borrar",
+            enter: "OK",
+            placeholder: "?",
+            more: "🎮 Más juegos",
+            hall: "🏆 Salón de la Fama",
+            nickPlaceholder: "Apodo",
+            myRank: "Tu puesto: ",
+            registering: "Guardando...",
+            alertNick: "¡Ingresa un apodo!",
+            qrClose: "Toca para cerrar",
+            domainText: "KingsMath.com",
+            domainUrl: "http://www.kingsmath.com",
+            seoDesc: "¡Cuenta bloques 3D en 1 minuto! Un juego mental para mejorar la visión espacial."
+        },
+        fr: {
+            title: "Roi des Blocs: 1 min chrono",
+            logo: "🧊 Roi des Blocs",
+            desc: "60s Chrono !<br>Faites pivoter et comptez.",
+            start: "Jouer ! 🚀",
+            clear: "Effacer",
+            enter: "OK",
+            placeholder: "?",
+            more: "🎮 Plus de jeux",
+            hall: "🏆 Tableau d'honneur",
+            nickPlaceholder: "Pseudo",
+            myRank: "Rang : ",
+            registering: "Enregistrement...",
+            alertNick: "Entrez un pseudo !",
+            qrClose: "Touchez pour fermer",
+            domainText: "KingsMath.com",
+            domainUrl: "http://www.kingsmath.com",
+            seoDesc: "Comptez les blocs 3D en 1 minute ! Améliorez votre perception spatiale."
+        },
+        ru: {
+            title: "Король Блоков: 1 мин",
+            logo: "🧊 Король Блоков",
+            desc: "60 сек. испытание!<br>Вращай и считай блоки.",
+            start: "Начать! 🚀",
+            clear: "Стереть", Russian_clear_size: "0.9rem",
+            enter: "ОК",
+            placeholder: "?",
+            more: "🎮 Другие игры",
+            hall: "🏆 Доска почета",
+            nickPlaceholder: "Имя",
+            myRank: "Мой ранг: ",
+            registering: "Запись...",
+            alertNick: "Введите имя!",
+            qrClose: "Нажмите, чтобы закрыть",
+            domainText: "KingsMath.com",
+            domainUrl: "http://www.kingsmath.com",
+            seoDesc: "Считай 3D-блоки за 1 минуту! Развивай пространственное мышление."
+        }
+    };
+
+    let curLang = 'en';
+    const flagEmojis = { ko: "🇰🇷", en: "🇺🇸", zh: "🇨🇳", ja: "🇯🇵", es: "🇪🇸", fr: "🇫🇷", ru: "🇷🇺" };
+
+    function initLanguage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const langParam = urlParams.get('lang');
+        const savedLang = localStorage.getItem('kingsmath_lang');
+        const browserLang = navigator.language.split('-')[0];
+
+        if (langParam && translations[langParam]) curLang = langParam;
+        else if (savedLang && translations[savedLang]) curLang = savedLang;
+        else if (translations[browserLang]) curLang = browserLang;
+        else curLang = 'en';
+
+        setLanguage(curLang);
+    }
+
+    function setLanguage(lang) {
+        curLang = lang;
+        localStorage.setItem('kingsmath_lang', lang);
+        const t = translations[lang];
+
+        // SEO 및 텍스트 업데이트
+        document.title = t.title;
+        document.querySelector('meta[name="description"]').setAttribute('content', t.seoDesc);
+        
+        document.getElementById('txt-logo').innerText = t.logo;
+        document.getElementById('txt-desc').innerHTML = t.desc;
+        document.getElementById('btn-start').innerText = t.start;
+        document.getElementById('nickname').placeholder = t.nickPlaceholder;
+        document.getElementById('btn-clear').innerText = t.clear;
+        document.getElementById('btn-enter').innerText = t.enter;
+        document.getElementById('link-more').innerText = t.more;
+        document.getElementById('txt-hall').innerText = t.hall;
+        document.getElementById('txt-qr-close').innerText = t.qrClose;
+        document.getElementById('current-flag').innerText = flagEmojis[lang] + " " + lang.toUpperCase();
+        
+        // 도메인 링크 업데이트
+        const dLink = document.getElementById('domain-link');
+        dLink.innerText = t.domainText;
+        dLink.href = t.domainUrl;
+
+        // 키패드 폰트 사이즈 조정 (긴 단어 대응)
+        if (t.Russian_clear_size) document.getElementById('btn-clear').style.fontSize = t.Russian_clear_size;
+        else document.getElementById('btn-clear').style.fontSize = "1.1rem";
+
+        // 입력창 플레이스홀더 업데이트
+        const inputVal = document.getElementById('input-value');
+        if (inputVal.classList.contains('placeholder')) inputVal.innerText = t.placeholder;
+
+        // URL 파라미터 업데이트 (새로고침 없이)
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?lang=' + lang;
+        window.history.pushState({ path: newUrl }, '', newUrl);
+
+        document.getElementById('lang-menu').classList.remove('show');
+    }
+
+    function toggleLang() { document.getElementById('lang-menu').classList.toggle('show'); }
+
+    /* --- 게임 로직 (기존 유지 및 일부 텍스트 변수화) --- */
+    let scene, camera, renderer, group, isGameRunning = false, isProcessing = false;
+    let score = 0, timeLeft = 60, timerInterval, currentAnswer = 0, currentInput = "", isBonusRound = false, audioCtx = null, nickname = "";
+
+    const geometry = new THREE.BoxGeometry(0.96, 0.96, 0.96);
+    const matNormal = new THREE.MeshLambertMaterial({ color: 0xffca28 });
+    const matBonus = new THREE.MeshLambertMaterial({ color: 0xff1744 });
+    const edgeGeo = new THREE.EdgesGeometry(geometry);
+    const edgeMat = new THREE.LineBasicMaterial({ color: 0x5d4037 });
+
+    window.onload = function() {
+        initLanguage();
+        init3D();
+        loadStartRanking();
+        animate();
+        
+        // QR 생성
+        const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(window.location.href);
+        document.getElementById('qr-img-small').src = qrUrl;
+        document.getElementById('qr-img-large').src = qrUrl;
+    };
+
+    function init3D() {
+        const container = document.getElementById('canvas-area');
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+        camera.position.set(5, 6, 8); camera.lookAt(0, 0, 0);
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 7); scene.add(dirLight);
+        group = new THREE.Group(); scene.add(group);
+
+        let isDragging = false, prevPos = { x: 0, y: 0 };
+        container.addEventListener('pointerdown', e => { if(isProcessing) return; isDragging = true; prevPos = { x: e.clientX, y: e.clientY }; container.setPointerCapture(e.pointerId); });
+        container.addEventListener('pointermove', e => {
+            if(!isDragging) return;
+            const dx = e.clientX - prevPos.x; const dy = e.clientY - prevPos.y;
+            group.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), dx * 0.01);
+            group.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), dy * 0.01);
+            prevPos = { x: e.clientX, y: e.clientY };
+        });
+        container.addEventListener('pointerup', () => isDragging = false);
+        generateProblem(false);
+    }
+
+    function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); if(!isGameRunning) group.rotation.y += 0.005; }
+
+    function readyGame() {
+        const nickInput = document.getElementById('nickname');
+        if(!nickInput.value.trim()) { alert(translations[curLang].alertNick); nickInput.focus(); return; }
+        nickname = nickInput.value.trim();
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        document.getElementById('start-screen').style.display = 'none';
+        const ov = document.getElementById('countdown-overlay');
+        ov.style.display = 'flex';
+        let c = 3; ov.innerText = c;
+        const iv = setInterval(() => {
+            c--;
+            if(c > 0) ov.innerText = c;
+            else { clearInterval(iv); ov.innerText = "GO!"; setTimeout(() => { ov.style.display = 'none'; startGame(); }, 600); }
+        }, 1000);
+    }
+
+    function startGame() {
+        isGameRunning = true; score = 0; timeLeft = 60;
+        document.getElementById('ui-timer').innerText = timeLeft;
+        document.getElementById('ui-score').innerText = score;
+        generateProblem(true);
+        timerInterval = setInterval(() => {
+            if(!isProcessing) {
+                timeLeft--; document.getElementById('ui-timer').innerText = timeLeft;
+                if(timeLeft <= 0) endGame();
+            }
+        }, 1000);
+    }
+
+    function generateProblem(randomize) {
+        while(group.children.length > 0) group.remove(group.children[0]);
+        group.rotation.set(0,0,0);
+        inputClear();
+        isBonusRound = Math.random() < 0.2;
+        document.getElementById('bonus-badge').style.display = isBonusRound ? 'block' : 'none';
+        
+        let map = Array(3).fill().map(()=>Array(3).fill().map(()=>Array(3).fill(0)));
+        let target = Math.floor(Math.random() * (isBonusRound ? 10 : 8)) + (isBonusRound ? 12 : 5);
+        let count = 0;
+        while(count < target) {
+            let x = Math.floor(Math.random()*3), y = Math.floor(Math.random()*3), z = Math.floor(Math.random()*3);
+            if(map[x][y][z] === 0 && (y === 0 || map[x][y-1][z] === 1)) { map[x][y][z] = 1; count++; }
+        }
+        currentAnswer = count;
+        const mat = isBonusRound ? matBonus : matNormal;
+        for(let x=0; x<3; x++) for(let y=0; y<3; y++) for(let z=0; z<3; z++) {
+            if(map[x][y][z]) {
+                const m = new THREE.Mesh(geometry, mat);
+                m.position.set(x-1, y-1, z-1);
+                m.add(new THREE.LineSegments(edgeGeo, edgeMat));
+                group.add(m);
+            }
+        }
+        if(randomize) { group.rotation.y = Math.random() * 0.5; group.rotation.x = 0.2; }
+    }
+
+    function inputNum(n) {
+        if(!isGameRunning || isProcessing) return;
+        const disp = document.getElementById('input-value');
+        if(currentInput.length >= 2) return;
+        if(disp.classList.contains('placeholder')) { disp.classList.remove('placeholder'); currentInput = ""; }
+        currentInput += n; disp.innerText = currentInput;
+    }
+
+    function inputClear() {
+        currentInput = "";
+        const disp = document.getElementById('input-value');
+        disp.classList.add('placeholder'); disp.innerText = translations[curLang].placeholder;
+    }
+
+    function inputEnter() {
+        if(!isGameRunning || isProcessing || currentInput === "") return;
+        isProcessing = true;
+        const val = parseInt(currentInput);
+        const fb = document.getElementById('feedback');
+        
+        if(val === currentAnswer) {
+            let earned = currentAnswer * 10 * (isBonusRound ? 2 : 1);
+            score += earned; document.getElementById('ui-score').innerText = score;
+            fb.innerText = `+${earned}`; fb.style.color = "#00e676";
+            animateTimerAdd(5);
+        } else {
+            fb.innerText = "❌"; fb.style.color = "#ff1744";
+        }
+        fb.style.opacity = 1; fb.style.animation = "popFade 0.6s forwards";
+        setTimeout(() => { fb.style.opacity = 0; isProcessing = false; generateProblem(true); }, 800);
+    }
+
+    function animateTimerAdd(sec) {
+        timeLeft += sec;
+        const eff = document.getElementById('time-bonus-effect');
+        eff.style.animation = 'floatTimeUp 1s forwards';
+        setTimeout(() => eff.style.animation = 'none', 1000);
+    }
+
+    function endGame() {
+        isGameRunning = false; clearInterval(timerInterval);
+        document.getElementById('result-screen').style.display = 'flex';
+        document.getElementById('result-score-display').innerText = `🧱 ${score}`;
+        submitRanking(nickname, score);
+    }
+
+    function goHome() { location.reload(); }
+    function restartGame() { document.getElementById('result-screen').style.display = 'none'; clearInterval(timerInterval); readyGame(); }
+    function openQrModal() { document.getElementById('qr-modal').style.display = 'flex'; }
+    function closeQrModal() { document.getElementById('qr-modal').style.display = 'none'; }
+
+    function loadStartRanking() {
+        const list = document.getElementById('start-rank-list');
+        fetch('ranking.php?action=list').then(r => r.json()).then(data => {
+            list.innerHTML = "";
+            data.slice(0, 100).forEach((item, i) => {
+                const row = document.createElement('div'); row.className = 'rank-item';
+                row.innerHTML = `<span>${i+1}. ${item.nickname}</span><span style="color:#FFD93D">${item.score}</span>`;
+                list.appendChild(row);
+            });
+        }).catch(() => { list.innerHTML = "No Records"; });
+    }
+
+    function submitRanking(nick, sc) {
+        const txt = document.getElementById('my-rank-txt');
+        txt.innerText = translations[curLang].registering;
+        const fd = new FormData(); fd.append('nickname', nick); fd.append('score', sc);
+        fetch('ranking.php?action=submit', { method: 'POST', body: fd })
+        .then(r => r.json()).then(data => {
+            if(data.status === 'success') {
+                txt.innerText = `${translations[curLang].myRank} ${data.rank}`;
+                loadResultRanking();
+            }
+        });
+    }
+
+    function loadResultRanking() {
+        fetch('ranking.php?action=list').then(r => r.json()).then(data => {
+            const list = document.getElementById('top-rank-list');
+            list.innerHTML = "";
+            data.slice(0, 3).forEach((item, i) => {
+                const medals = ["🥇", "🥈", "🥉"];
+                const row = document.createElement('div'); row.className = 'rank-item';
+                row.innerHTML = `<span>${medals[i]} ${item.nickname}</span><span>${item.score}</span>`;
+                list.appendChild(row);
+            });
+        });
+    }
+
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes popFade { 0% { opacity:0; transform:translate(-50%,-50%) scale(0.5); } 50% { opacity:1; transform:translate(-50%,-50%) scale(1.2); } 100% { opacity:0; transform:translate(-50%,-50%) scale(1); } }
+    `;
+    document.head.appendChild(style);
+</script>
+</body>
+</html>

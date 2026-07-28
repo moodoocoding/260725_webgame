@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>출동! 킹지구 방위대</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --p1-color: #00f3ff; /* Cyan */
+            --p2-color: #ff007f; /* Magenta */
+            --p3-color: #39ff14; /* Lime Green */
+            --p4-color: #ffaa00; /* Orange */
+            --ui-font: 'Jua', sans-serif;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: #050505;
+            font-family: var(--ui-font);
+            overflow: hidden;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        #game-container {
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at bottom, #1b2735 0%, #090a0f 100%);
+        }
+
+        /* --- 상단 정보창 --- */
+        #top-bar {
+            height: 90px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.7);
+            border-bottom: 2px solid #444;
+            z-index: 20;
+            color: white;
+            flex-shrink: 0;
+            padding: env(safe-area-inset-top) 20px 0 20px;
+            gap: 60px;
+        }
+
+        .top-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .top-label {
+            font-size: 20px;
+            color: #aaa;
+            font-weight: bold;
+        }
+
+        #defense-timer {
+            font-size: 48px;
+            color: #00f3ff;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+            width: 180px; 
+            text-align: center;
+            font-variant-numeric: tabular-nums; 
+        }
+
+        #life-container {
+            display: flex;
+            gap: 4px;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 15px;
+            border-radius: 30px;
+            border: 1px solid #555;
+        }
+
+        .heart {
+            font-size: 38px;
+            color: #ff3333;
+            transition: all 0.3s;
+            filter: drop-shadow(0 0 5px red);
+            line-height: 1;
+        }
+
+        .heart.lost {
+            color: #444;
+            filter: none;
+            transform: scale(0.8);
+            opacity: 0.3;
+        }
+
+        /* 메인 스테이지 */
+        #main-stage {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* 하단 컨트롤러 영역 */
+        #bottom-controls {
+            height: auto;
+            padding-bottom: env(safe-area-inset-bottom);
+            display: flex;
+            border-top: 4px solid #555;
+            background: rgba(15, 15, 20, 0.98);
+        }
+
+        .player-ctrl {
+            flex: 1;
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: flex-start;
+            padding: 5px;
+            position: relative;
+            border-right: 1px solid #333;
+        }
+
+        .player-ctrl:last-child { border-right: none; }
+
+        #p1-ctrl { border-top: 4px solid var(--p1-color); margin-top: -4px; }
+        #p1-ctrl .player-label, #p1-ctrl .score-box { color: var(--p1-color); text-shadow: 0 0 10px rgba(0, 243, 255, 0.3); }
+        #p1-ctrl .input-display { border-color: var(--p1-color); color: var(--p1-color); }
+        #p1-ctrl .key:active { background: var(--p1-color); color: #000; border-color: var(--p1-color); }
+        #p1-ctrl .key.key-enter { background: var(--p1-color); border-color: #fff; color: #000; box-shadow: 0 0 10px var(--p1-color); }
+        #p1-ctrl .key.key-enter:active { background: #fff; }
+
+        #p2-ctrl { border-top: 4px solid var(--p2-color); margin-top: -4px; }
+        #p2-ctrl .player-label, #p2-ctrl .score-box { color: var(--p2-color); text-shadow: 0 0 10px rgba(255, 0, 127, 0.3); }
+        #p2-ctrl .input-display { border-color: var(--p2-color); color: var(--p2-color); }
+        #p2-ctrl .key:active { background: var(--p2-color); color: #000; border-color: var(--p2-color); }
+        #p2-ctrl .key.key-enter { background: var(--p2-color); border-color: #fff; color: #000; box-shadow: 0 0 10px var(--p2-color); }
+        #p2-ctrl .key.key-enter:active { background: #fff; }
+
+        #p3-ctrl { border-top: 4px solid var(--p3-color); margin-top: -4px; }
+        #p3-ctrl .player-label, #p3-ctrl .score-box { color: var(--p3-color); text-shadow: 0 0 10px rgba(57, 255, 20, 0.3); }
+        #p3-ctrl .input-display { border-color: var(--p3-color); color: var(--p3-color); }
+        #p3-ctrl .key:active { background: var(--p3-color); color: #000; border-color: var(--p3-color); }
+        #p3-ctrl .key.key-enter { background: var(--p3-color); border-color: #fff; color: #000; box-shadow: 0 0 10px var(--p3-color); }
+        #p3-ctrl .key.key-enter:active { background: #fff; }
+
+        #p4-ctrl { border-top: 4px solid var(--p4-color); margin-top: -4px; }
+        #p4-ctrl .player-label, #p4-ctrl .score-box { color: var(--p4-color); text-shadow: 0 0 10px rgba(255, 170, 0, 0.3); }
+        #p4-ctrl .input-display { border-color: var(--p4-color); color: var(--p4-color); }
+        #p4-ctrl .key:active { background: var(--p4-color); color: #000; border-color: var(--p4-color); }
+        #p4-ctrl .key.key-enter { background: var(--p4-color); border-color: #fff; color: #000; box-shadow: 0 0 10px var(--p4-color); }
+        #p4-ctrl .key.key-enter:active { background: #fff; }
+
+        .info-header {
+            display: flex;
+            width: 200px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5px;
+            margin-bottom: 2px;
+        }
+
+        .player-label { font-size: 20px; font-weight: bold; }
+        .score-box { font-size: 24px; font-weight: bold; font-family: 'Courier New', monospace; letter-spacing: -1px; }
+
+        .input-display {
+            width: 200px; height: 30px;
+            background: #000; border-radius: 6px; border: 2px solid #555;
+            font-size: 20px; display: flex; align-items: center; justify-content: center;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5); margin-bottom: 5px;
+        }
+
+        .keypad {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; 
+            width: 200px; padding: 3px; border-radius: 8px;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+
+        .keypad.critical-mode {
+            background-color: rgba(255, 0, 0, 0.15);
+            border: 1px solid rgba(255, 50, 50, 0.6);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+        .key {
+            height: 40px; background: #2a2a2a; border: 1px solid #444; border-radius: 5px; 
+            color: #ddd; font-size: 18px; font-weight: bold; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; box-shadow: 0 3px 0 rgba(0,0,0,0.5); 
+            transition: transform 0.1s; touch-action: manipulation; 
+        }
+
+        .key:active { transform: translateY(2px); box-shadow: 0 0px 0 rgba(0,0,0,0.5); }
+        .key.key-clear, .key.key-enter { font-size: 14px; }
+
+        /* 오버레이 */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white;
+            backdrop-filter: blur(8px);
+        }
+
+        .brand-link {
+            font-size: 18px;
+            color: #fff;
+            background: linear-gradient(90deg, #00f3ff, #ff007f);
+            padding: 8px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            margin-bottom: 30px;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+            transition: transform 0.2s;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        .title {
+            font-size: 55px; margin-bottom: 5px;
+            background: linear-gradient(to right, var(--p1-color), var(--p2-color), var(--p3-color), var(--p4-color));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-align: center; line-height: 1.2;
+        }
+
+        .sub-title {
+            font-size: 22px; color: #ddd; margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        .info-box {
+            background: rgba(255,255,255,0.08); 
+            padding: 25px 40px; 
+            border-radius: 20px;
+            text-align: center; 
+            border: 1px solid rgba(255,255,255,0.2); 
+            max-width: 600px;
+        }
+
+        .info-row { margin: 10px 0; font-size: 20px; color: #eee; }
+        .highlight-red { color: #ff5555; font-weight: bold; }
+        .highlight-yellow { color: #ffdd00; font-weight: bold; }
+
+        .btn-start, .btn-secondary {
+            padding: 15px 40px; font-size: 24px; border: none; border-radius: 50px;
+            font-family: var(--ui-font); cursor: pointer; font-weight: bold; transition: 0.1s;
+        }
+        .btn-start { background: white; color: #000; box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #666; margin-left: 10px; }
+
+        .hidden { display: none !important; }
+        
+        .floating-btn {
+            position: fixed; bottom: max(20px, env(safe-area-inset-bottom) + 20px);
+            width: 40px; height: 40px; border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.15); border: 2px solid rgba(255, 255, 255, 0.4);
+            color: white; font-size: 20px; cursor: pointer; z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            transition: all 0.2s; backdrop-filter: blur(5px);
+        }
+        .floating-btn:hover { background-color: rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+        #btn-home { left: 20px; }
+        #btn-fs { right: 20px; }
+
+        /* 결과 테이블 디자인 유지 */
+        .result-title { font-size: 24px; color: #aaa; margin-bottom: 5px; }
+        .final-time-box { text-align: center; margin-bottom: 20px; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .final-time-label { font-size: 20px; color: #ccc; margin-bottom: 5px; }
+        .final-time-val { font-size: 60px; font-weight: bold; color: #ffe200; text-shadow: 0 0 20px rgba(255, 226, 0, 0.5); font-family: 'Courier New', monospace; }
+        .mvp-box { font-size: 32px; font-weight: bold; margin-bottom: 20px; text-shadow: 0 0 15px rgba(255,255,255,0.5); animation: pulse-winner 2s infinite; }
+        @keyframes popIn { from{transform: scale(0.5); opacity:0;} to{transform: scale(1); opacity:1;} }
+        @keyframes pulse-winner { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .result-table { width: 95%; max-width: 800px; margin-bottom: 20px; border-collapse: separate; border-spacing: 0; font-size: 18px; color: white; }
+        .result-table th, .result-table td { padding: 6px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .result-table th { font-size: 16px; color: #aaa; }
+        .result-total { font-size: 22px; font-weight: bold; color: #ffe200; }
+        .col-p1 { color: var(--p1-color); } .col-p2 { color: var(--p2-color); } .col-p3 { color: var(--p3-color); } .col-p4 { color: var(--p4-color); } .col-category { color: #ccc; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="top-bar">
+        <div class="top-group">
+            <span class="top-label">🛡️ 방어 시간</span>
+            <span id="defense-timer">0.0</span>
+        </div>
+        <div class="top-group">
+            <span class="top-label">❤️ 에너지</span>
+            <div id="life-container"></div>
+        </div>
+    </div>
+
+    <div id="main-stage">
+        <canvas id="world"></canvas>
+    </div>
+
+    <div id="bottom-controls">
+        <div id="p1-ctrl" class="player-ctrl">
+            <div class="info-header"><div class="player-label">P1</div><div class="score-box"><span id="p1-score">0</span></div></div>
+            <div class="input-display" id="p1-input"></div>
+            <div class="keypad" id="p1-keypad"></div>
+        </div>
+        <div id="p2-ctrl" class="player-ctrl">
+            <div class="info-header"><div class="player-label">P2</div><div class="score-box"><span id="p2-score">0</span></div></div>
+            <div class="input-display" id="p2-input"></div>
+            <div class="keypad" id="p2-keypad"></div>
+        </div>
+        <div id="p3-ctrl" class="player-ctrl">
+            <div class="info-header"><div class="player-label">P3</div><div class="score-box"><span id="p3-score">0</span></div></div>
+            <div class="input-display" id="p3-input"></div>
+            <div class="keypad" id="p3-keypad"></div>
+        </div>
+        <div id="p4-ctrl" class="player-ctrl">
+            <div class="info-header"><div class="player-label">P4</div><div class="score-box"><span id="p4-score">0</span></div></div>
+            <div class="input-display" id="p4-input"></div>
+            <div class="keypad" id="p4-keypad"></div>
+        </div>
+    </div>
+
+    <button id="btn-home" class="floating-btn" title="처음으로">🏠</button>
+    <button id="btn-fs" class="floating-btn" title="전체화면">⛶</button>
+
+    <div id="start-screen" class="overlay">
+        <a href="https://킹수학.com" target="_blank" class="brand-link">게임으로 수학의 킹이 되어라. 킹수학.com</a>
+        <div class="title">출동! 킹지구 방위대</div>
+        <div class="sub-title">UFO 군단으로부터 지구를 사수하라!</div>
+        <div class="info-box">
+            <div class="info-row highlight-red">🚨 경고: UFO 10대 놓치면 패배</div>
+            <div class="info-row highlight-yellow">⚡ 형광색 우주선은 특수 효과 발동!</div>
+        </div>
+        <div style="display: flex; margin-top: 30px;">
+            <button id="btn-start-main" class="btn-start">작전 개시</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="overlay hidden">
+        <div class="final-time-box">
+            <div class="final-time-label">지구 방어 성공 시간</div>
+            <div class="final-time-val" id="result-time-val">00.00</div>
+        </div>
+        <div id="mvp-announcement" class="mvp-box"></div>
+        
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <button id="btn-start-retry" class="btn-start" style="font-size: 24px;">재대결</button>
+        </div>
+
+        <div class="result-title">요원별 전투 기록</div>
+        <table class="result-table">
+            <thead>
+                <tr><th class="col-category">항목</th><th class="col-p1">P1</th><th class="col-p2">P2</th><th class="col-p3">P3</th><th class="col-p4">P4</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="col-category">🚀 격추</td><td class="col-p1" id="res-p1-destroy">0</td><td class="col-p2" id="res-p2-destroy">0</td><td class="col-p3" id="res-p3-destroy">0</td><td class="col-p4" id="res-p4-destroy">0</td></tr>
+                <tr><td class="col-category">🔥 콤보</td><td class="col-p1" id="res-p1-combo">0</td><td class="col-p2" id="res-p2-combo">0</td><td class="col-p3" id="res-p3-combo">0</td><td class="col-p4" id="res-p4-combo">0</td></tr>
+                <tr><td class="col-category">🚨 위기</td><td class="col-p1" id="res-p1-crisis">0</td><td class="col-p2" id="res-p2-crisis">0</td><td class="col-p3" id="res-p3-crisis">0</td><td class="col-p4" id="res-p4-crisis">0</td></tr>
+                <tr><td class="col-category result-total">🏆 총점</td><td class="col-p1 result-total" id="res-p1-total">0</td><td class="col-p2 result-total" id="res-p2-total">0</td><td class="col-p3 result-total" id="res-p3-total">0</td><td class="col-p4 result-total" id="res-p4-total">0</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // === 기본 설정 및 오디오 ===
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const Sound = {
+        play: (freq, type, dur, vol=0.1) => {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + dur);
+        },
+        shoot: (id) => Sound.play(500 + (id * 150), 'square', 0.1, 0.1),
+        boom: () => { Sound.play(100, 'sawtooth', 0.2, 0.2); Sound.play(50, 'square', 0.2, 0.2); },
+        win: () => { Sound.play(523, 'sine', 0.2); setTimeout(()=>Sound.play(784, 'sine', 0.6), 400); },
+        effect: (type) => { // 특수 효과 사운드
+            if(type === 'good') { Sound.play(880, 'sine', 0.1); setTimeout(()=>Sound.play(1760, 'sine', 0.3), 100); }
+            else { Sound.play(200, 'sawtooth', 0.5); setTimeout(()=>Sound.play(100, 'sawtooth', 0.5), 200); }
+        },
+        sirenNodes: null,
+        startSiren: () => {
+            if (Sound.sirenNodes) return;
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const lfo = audioCtx.createOscillator();
+            const lfoGain = audioCtx.createGain();
+            const masterGain = audioCtx.createGain();
+            lfo.type = 'sine'; lfo.frequency.value = 2; // 더 긴박하게
+            lfoGain.gain.value = 500;
+            osc.type = 'triangle'; osc.frequency.value = 800; masterGain.gain.value = 0.15;
+            lfo.connect(lfoGain); lfoGain.connect(osc.frequency); osc.connect(masterGain); masterGain.connect(audioCtx.destination);
+            osc.start(); lfo.start();
+            Sound.sirenNodes = { osc, lfo };
+        },
+        stopSiren: () => { if (Sound.sirenNodes) { Sound.sirenNodes.osc.stop(); Sound.sirenNodes.lfo.stop(); Sound.sirenNodes = null; } }
+    };
+
+    // === 문제 생성 ===
+    function generateProblem() {
+        const elapsedSec = (Date.now() - game.startTime) / 1000;
+        let types, op, a, b, ans;
+        if (elapsedSec < 30) {
+            types = ['+', '-', '*']; op = types[Math.floor(Math.random() * types.length)];
+            if (op === '+') { a = Math.floor(Math.random() * 9) + 1; b = Math.floor(Math.random() * 9) + 1; ans = a + b; }
+            else if (op === '-') { a = Math.floor(Math.random()*10)+1; b = Math.floor(Math.random()*a); if(b===0)b=1; ans = a - b; }
+            else if (op === '*') { a = Math.floor(Math.random() * 3) + 2; b = Math.floor(Math.random() * 9) + 1; ans = a * b; }
+        } else if (elapsedSec < 60) {
+            types = ['+', '-', '*', '/']; op = types[Math.floor(Math.random() * types.length)];
+            if (op === '+') { a = Math.floor(Math.random() * 20) + 1; b = Math.floor(Math.random() * 20) + 1; ans = a + b; }
+            else if (op === '-') { a = Math.floor(Math.random() * 20) + 5; b = Math.floor(Math.random() * (a - 1)) + 1; ans = a - b; }
+            else if (op === '*') { a = Math.floor(Math.random() * 8) + 2; b = Math.floor(Math.random() * 9) + 1; ans = a * b; }
+            else if (op === '/') { b = Math.floor(Math.random() * 8) + 2; ans = Math.floor(Math.random() * 9) + 1; a = b * ans; }
+        } else {
+            types = ['+', '-', '*', '/']; op = types[Math.floor(Math.random() * types.length)];
+            const isHard = Math.random() > 0.4;
+            if (op === '+') { isHard ? (a=Math.floor(Math.random()*900)+100, b=Math.floor(Math.random()*90)+10) : (a=Math.floor(Math.random()*50)+1, b=Math.floor(Math.random()*50)+1); ans = a + b; }
+            else if (op === '-') { isHard ? (a=Math.floor(Math.random()*900)+100, b=Math.floor(Math.random()*90)+10) : (a=Math.floor(Math.random()*50)+10, b=Math.floor(Math.random()*(a-1))+1); ans = a - b; }
+            else if (op === '*') { isHard ? (a=Math.floor(Math.random()*90)+10, b=Math.floor(Math.random()*8)+2) : (a=Math.floor(Math.random()*8)+2, b=Math.floor(Math.random()*9)+1); ans = a * b; }
+            else if (op === '/') { b = Math.floor(Math.random()*8)+2; ans = isHard ? Math.floor(Math.random()*11)+10 : Math.floor(Math.random()*9)+1; a = b * ans; }
+        }
+        const symbol = op === '*' ? '×' : (op === '/' ? '÷' : op);
+        return { text: `${a} ${symbol} ${b}`, ans: ans };
+    }
+
+    class Player {
+        constructor(id, color) {
+            this.id = id; this.color = color;
+            this.elInput = document.getElementById(`p${id}-input`);
+            this.elScore = document.getElementById(`p${id}-score`);
+            this.reset();
+        }
+        reset() { this.score = 0; this.destroyScore = 0; this.comboScore = 0; this.crisisScore = 0; this.combo = 0; this.inputBuffer = ""; this.updateUI(); }
+        updateUI() { if(this.elInput) this.elInput.innerText = this.inputBuffer; if(this.elScore) this.elScore.innerText = `${this.score}`; }
+    }
+
+    class FloatingText {
+        constructor(x, y, text, color, size = 30) { this.x = x; this.y = y; this.text = text; this.color = color; this.size = size; this.life = 1.0; this.vy = 0.5; }
+        update() { this.y -= this.vy; this.life -= 0.01; }
+        draw(ctx) { ctx.globalAlpha = Math.max(0, this.life); ctx.fillStyle = this.color; ctx.font = `bold ${this.size}px Jua`; ctx.strokeStyle = 'black'; ctx.lineWidth = 3; ctx.textAlign = 'center'; ctx.strokeText(this.text, this.x, this.y); ctx.fillText(this.text, this.x, this.y); ctx.globalAlpha = 1.0; }
+    }
+
+    const game = {
+        active: false, missedCount: 0, maxMissed: 10, startTime: 0,
+        players: [], enemies: [], particles: [], lasers: [], floatingTexts: [],
+        effectState: { frozen: false, speedMult: 1, blind: false, endTime: 0 },
+        init: function() {
+            this.canvas = document.getElementById('world');
+            this.ctx = this.canvas.getContext('2d');
+            this.players = [new Player(1, '#00f3ff'), new Player(2, '#ff007f'), new Player(3, '#39ff14'), new Player(4, '#ffaa00')];
+            for(let i=1; i<=4; i++) this.createKeypad(i);
+
+            document.getElementById('btn-start-main').onclick = () => this.start();
+            document.getElementById('btn-start-retry').onclick = () => this.start();
+            // [수정] 랭킹 관련 이벤트 리스너 제거됨
+            
+            document.getElementById('btn-home').onclick = () => location.reload();
+            document.getElementById('btn-fs').onclick = () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); };
+            
+            this.resize();
+            window.onresize = () => this.resize();
+        },
+        createKeypad: function(id) {
+            const container = document.getElementById(`p${id}-keypad`);
+            ['1','2','3','4','5','6','7','8','9','C','0','E'].forEach(k => {
+                const b = document.createElement('div'); 
+                b.className = 'key' + (k==='E' ? ' key-enter' : '') + (k==='C' ? ' key-clear' : '');
+                b.innerText = k==='C'?'지움':k==='E'?'발사':k;
+                b.onpointerdown = (e) => { e.preventDefault(); this.input(id, k); };
+                container.appendChild(b);
+            });
+        },
+        resize: function() { this.canvas.width = document.getElementById('main-stage').clientWidth; this.canvas.height = document.getElementById('main-stage').clientHeight; },
+        start: function() {
+            document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
+            // [수정] 랭킹 입력창 숨김 로직 제거 (애초에 요소가 없으므로)
+            Sound.stopSiren(); this.players.forEach(p => p.reset()); this.enemies = []; this.particles = []; this.lasers = []; this.floatingTexts = [];
+            this.active = true; this.missedCount = 0; this.startTime = Date.now(); this.spawnTimer = 2000;
+            this.effectState = { frozen: false, speedMult: 1, blind: false, endTime: 0 };
+            this.updateLifeUI(); this.loop(performance.now()); Sound.win();
+        },
+        input: function(id, k) {
+            if(!this.active) return;
+            const p = this.players[id-1];
+            if(k==='C') p.inputBuffer = "";
+            else if(k==='E') { if(p.inputBuffer) this.checkAnswer(p); }
+            else if(p.inputBuffer.length < 3) p.inputBuffer += k;
+            p.updateUI();
+        },
+        checkAnswer: function(player) {
+            const val = parseInt(player.inputBuffer);
+            let hit = false;
+            this.enemies.sort((a,b)=>b.y - a.y);
+            for(let i=0; i<this.enemies.length; i++) {
+                const e = this.enemies[i];
+                if(e.prob.ans === val) {
+                    hit = true; this.enemies.splice(i, 1);
+                    const isCritical = this.missedCount >= 7;
+                    const mult = e.multiplier * (isCritical ? 2 : 1);
+                    player.combo++;
+                    const score = (50 + Math.min(player.combo * 10, 100)) * mult;
+                    player.score += score; player.destroyScore++;
+                    this.floatingTexts.push(new FloatingText(e.x, e.y, `+${score}`, player.color, 40));
+                    
+                    if(e.multiplier > 1) {
+                        this.triggerRandomEffect(e.x, e.y);
+                    }
+
+                    this.createExplosion(e.x, e.y, player.color);
+                    this.lasers.push({ owner: player.id, x: e.x, y: e.y, tx: e.x, ty: e.y, color: player.color, active: true });
+                    Sound.shoot(player.id); Sound.boom(); break;
+                }
+            }
+            if(!hit) { Sound.play(150, 'sawtooth', 0.1); player.combo = 0; }
+            player.inputBuffer = ""; player.updateUI();
+        },
+        triggerRandomEffect: function(x, y) {
+            const effects = [
+                { name: "❤️ 에너지 충전", type: "heal" },
+                { name: "❄️ 얼음 폭풍", type: "freeze" },
+                { name: "⚡ UFO 총공격", type: "speed" }, // 함정
+                { name: "☁️ 안개", type: "blind" } // 함정
+            ];
+            const effect = effects[Math.floor(Math.random() * effects.length)];
+            this.floatingTexts.push(new FloatingText(x, y - 50, effect.name, "#fff", 35));
+            
+            if(effect.type === "heal") {
+                if(this.missedCount > 0) {
+                    this.missedCount--;
+                    this.updateLifeUI();
+                }
+                Sound.effect('good');
+            } else {
+                this.effectState.endTime = Date.now() + 3000;
+                if(effect.type === "freeze") { this.effectState.frozen = true; Sound.effect('good'); }
+                if(effect.type === "speed") { this.effectState.speedMult = 2; Sound.effect('bad'); }
+                if(effect.type === "blind") { this.effectState.blind = true; Sound.effect('bad'); }
+            }
+        },
+        createExplosion: function(x, y, color) {
+            for(let i=0; i<15; i++) {
+                const angle = Math.random() * Math.PI * 2; const spd = Math.random() * 5 + 2;
+                this.particles.push({ x, y, vx: Math.cos(angle)*spd, vy: Math.sin(angle)*spd, color, life: 1.0 });
+            }
+        },
+        updateLifeUI: function() {
+            const container = document.getElementById('life-container');
+            container.innerHTML = '';
+            if (this.active && this.missedCount >= 7) Sound.startSiren();
+            else Sound.stopSiren();
+
+            for(let i=0; i<10; i++) {
+                const s = document.createElement('span'); s.className = 'heart' + (i < this.missedCount ? ' lost' : '');
+                s.innerText = '♥'; container.appendChild(s);
+            }
+        },
+        endGame: function() {
+            this.active = false; Sound.stopSiren();
+            this.defenseTime = (Date.now() - this.startTime) / 1000;
+            this.totalTeamScore = this.players.reduce((sum, p) => sum + p.score, 0);
+            document.getElementById('result-time-val').innerText = this.defenseTime.toFixed(2) + "초";
+            
+            let maxS = -1; let winners = [];
+            this.players.forEach(p => {
+                document.getElementById(`res-p${p.id}-destroy`).innerText = p.destroyScore;
+                document.getElementById(`res-p${p.id}-total`).innerText = p.score;
+                if(p.score > maxS) { maxS = p.score; winners = [p]; } else if(p.score === maxS) winners.push(p);
+            });
+            document.getElementById('mvp-announcement').innerText = winners.length === 1 ? `BEST PLAYER: P${winners[0].id}` : "공동 MVP!";
+
+            // [수정] 랭킹 체크 및 입력창 표시 로직 제거됨
+            document.getElementById('result-screen').classList.remove('hidden');
+            Sound.win();
+        },
+        loop: function(now) {
+            if(!this.active) return;
+            const ctx = this.ctx; const w = this.canvas.width; const h = this.canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            if(Date.now() > this.effectState.endTime) {
+                this.effectState.frozen = false;
+                this.effectState.speedMult = 1;
+                this.effectState.blind = false;
+            }
+
+            const elapsed = (Date.now() - this.startTime) / 1000;
+            document.getElementById('defense-timer').innerText = elapsed.toFixed(1);
+
+            const difficulty = 1 + (elapsed / 45);
+            // [수정] 물량 1.2배 증가 (스폰 간격을 1.2로 나눔)
+            const spawnRate = Math.max(250, (1000 / difficulty) / 1.2); 
+
+            if(!this.lastSpawn) this.lastSpawn = 0;
+            
+            if(!this.effectState.frozen && now - this.lastSpawn > spawnRate) {
+                const prob = generateProblem();
+                const isSpecial = Math.random() > 0.8;
+                this.enemies.push({ 
+                    x: Math.random()*(w-100)+50, y: -50, prob, 
+                    // [수정] 속도 4/5로 감소 (* 0.8)
+                    speed: ((Math.random()*0.2+0.3)*difficulty*3) * 0.8, 
+                    multiplier: isSpecial?2:1, 
+                    textColor: isSpecial?'#ffff00':'#ffffff', 
+                    color: isSpecial ? '#00ff00' : `hsl(${Math.random()*360}, 70%, 60%)` 
+                });
+                this.lastSpawn = now;
+            }
+
+            this.enemies.forEach((e, i) => {
+                if(!this.effectState.frozen) {
+                    e.y += e.speed * this.effectState.speedMult;
+                }
+
+                if(e.multiplier > 1) { ctx.shadowColor = e.textColor; ctx.shadowBlur = 15; }
+                ctx.fillStyle = '#ddd'; ctx.beginPath(); ctx.ellipse(e.x, e.y, 35, 12, 0, 0, Math.PI*2); ctx.fill();
+                ctx.shadowBlur = 0; ctx.fillStyle = e.color; ctx.beginPath(); ctx.arc(e.x, e.y-5, 15, Math.PI, 0); ctx.fill();
+                ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.beginPath(); ctx.roundRect(e.x-40, e.y-45, 80, 28, 5); ctx.fill();
+                ctx.fillStyle = e.textColor; ctx.font = 'bold 30px Jua'; ctx.textAlign = 'center'; ctx.fillText(e.prob.text, e.x, e.y-24);
+                if(e.y > h) { this.enemies.splice(i,1); this.missedCount++; this.updateLifeUI(); if(this.missedCount>=10) this.endGame(); }
+            });
+
+            this.lasers = this.lasers.filter(l => {
+                ctx.strokeStyle = l.color; ctx.lineWidth = 4; ctx.beginPath();
+                ctx.moveTo(w * ((l.owner*2-1)/8), h); ctx.lineTo(l.x, l.y); ctx.stroke();
+                return false;
+            });
+
+            this.particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life -= 0.03; ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill(); });
+            ctx.globalAlpha = 1.0;
+            
+            if(this.effectState.blind) {
+                ctx.fillStyle = 'rgba(200, 200, 200, 0.85)';
+                ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = '#333'; ctx.font = 'bold 50px Jua'; ctx.textAlign = 'center';
+                ctx.fillText("☁️ 시야 차단 중! ☁️", w/2, h/2);
+            }
+
+            this.floatingTexts.forEach((t, i) => { t.update(); t.draw(ctx); if(t.life <= 0) this.floatingTexts.splice(i,1); });
+            requestAnimationFrame((t) => this.loop(t));
+        }
+    };
+    game.init();
+</script>
+</body>
+</html>

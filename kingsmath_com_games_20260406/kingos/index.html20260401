@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5YW0T2C109');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>한붓그리기 킹 👑</title>
+    <meta name="description" content="선생님이 만든 안전한 수학 놀이터 - 한붓그리기 킹">
+    <meta name="keywords" content="수학게임, 한붓그리기, 초등수학, 킹수학">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #2b2b2b;
+            --card-bg: #3a3a3a;
+            --text-color: #f0f0f0;
+            --accent-color: #FFD93D;
+            --btn-active: #6c5ce7;
+            --p1-color: #00cec9;
+            --p2-color: #fdcb6e;
+            --p3-color: #ff7675;
+            --p4-color: #a29bfe;
+            --p5-color: #55efc4;
+            --p6-color: #fab1a0;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Jua', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: font-family 0.3s ease;
+        }
+
+        /* 헤더 */
+        header {
+            background-color: #1e1e1e;
+            padding: 0 20px;
+            height: 70px; 
+            display: flex;
+            justify-content: center; 
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 100;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .header-title {
+            position: absolute;
+            left: 20px;
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            text-shadow: 1px 1px 0 #000;
+        }
+        #timer-display {
+            font-size: 2.5rem;
+            color: #fff;
+            background: #444;
+            padding: 2px 30px;
+            border-radius: 15px;
+            border: 5px solid #888; 
+            min-width: 120px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        #timer-display.urgent {
+            color: #ff7675;
+            border-color: #ff7675;
+            animation: blink 0.5s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        /* 공통 버튼 디자인 */
+        .option-group { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .btn-option {
+            padding: 10px 20px;
+            font-size: 1.2rem;   
+            border: 2px solid #555;
+            background: #222;
+            color: #aaa;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-option.selected {
+            background-color: var(--btn-active);
+            color: white;
+            border-color: var(--btn-active);
+            transform: scale(1.05);
+            box-shadow: 0 0 10px var(--btn-active);
+        }
+
+        #btn-start {
+            width: 100%;
+            padding: 15px;
+            font-size: 2rem;
+            background-color: #d63031;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 6px 0 #b32525;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+        #btn-start:active { transform: translateY(6px); box-shadow: none; }
+
+        .footer-link {
+            color: #888;
+            text-decoration: none;
+            font-size: 1.2rem;
+            display: inline-block;
+            border-bottom: 1px solid #555;
+            transition: color 0.2s;
+        }
+        .footer-link:hover { color: #fff; border-color: #fff; }
+        .top-banner-link { color: #FFD93D; text-decoration: none; font-size: 1rem; margin-bottom: 10px; display: block; font-weight: bold; }
+
+        /* 시작 화면 */
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 90vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: var(--bg-color); z-index: 200;
+        }
+        .start-card {
+            background: var(--card-bg); padding: 30px; border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); border: 3px solid #444;
+            text-align: center; max-width: 90%; width: 600px;
+        }
+        .start-card h1 { font-size: 3rem; color: #fff; text-shadow: 3px 3px 0 #000; margin-bottom: 20px; font-weight: normal; }
+        .instruction-box {
+            background: #222; padding: 20px; border-radius: 15px; text-align: left; 
+            color: #ccc; font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px;
+            border: 2px dashed #555;
+        }
+
+        /* 플로팅 버튼 */
+        #floating-btns { display: none; }
+        .floating-btn {
+            position: absolute; top: 85px; width: 50px; height: 50px;
+            background: rgba(0,0,0,0.6); border: 2px solid #666; border-radius: 50%;
+            color: white; font-size: 1.5rem; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 200; transition: transform 0.2s;
+        }
+        .floating-btn:hover { transform: scale(1.1); background: rgba(0,0,0,0.8); }
+        .floating-btn:active { transform: scale(0.95); }
+        #btn-home { left: 15px; }
+        #btn-fs { right: 15px; }
+
+        /* 게임 화면 컨테이너 */
+        #app-container {
+            flex: 1; position: relative; display: flex; flex-direction: column; width: 100%;
+        }
+        #game-screen {
+            display: none; width: 100%; flex: 1; padding: 10px; gap: 10px;
+            grid-template-rows: 1fr;
+            /* 가운데 정렬 추가: 1~3인용 시 왼쪽 쏠림 방지 */
+            justify-content: center;
+            align-content: center;
+        }
+
+        /* 플레이어 영역 */
+        .player-area {
+            background: #222; border: 3px solid #444; border-radius: 20px;
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
+            min-width: 0; 
+            max-height: 80vh;
+        }
+        .player-header {
+            padding: 10px; text-align: center; background: rgba(0,0,0,0.4); border-bottom: 1px solid #333;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .p-name { font-size: 1.5rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .p-status { font-size: 1.2rem; color: #fff; background: #555; padding: 2px 10px; border-radius: 10px; white-space: nowrap; }
+        
+        .pattern-name {
+            text-align: center;
+            background: #333;
+            color: var(--accent-color);
+            padding: 6px 10px;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #444;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .canvas-container {
+            flex: 1; position: relative; display: flex; align-items: center; justify-content: center;
+            background: #2a2a2a; margin: 10% 10px 5px 10px; border-radius: 15px; overflow: hidden;
+        }
+        canvas {
+            max-width: 100%; max-height: 90vh; object-fit: contain;
+            cursor: crosshair; touch-action: none;
+        }
+
+        .redraw-btn {
+            background: #444; color: #fff; border: 2px solid #666; padding: 8px 15px;
+            border-radius: 10px; font-size: 1.2rem; cursor: pointer;
+            margin: 5px 10px 15px 10px; align-self: center; transition: background 0.2s;
+            box-shadow: 0 4px 0 #222; width: calc(100% - 20px);
+        }
+        .redraw-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .success-overlay {
+            position: absolute; top: 30%; left: 0; width: 100%;
+            display: none; justify-content: center; align-items: center; 
+            z-index: 10; pointer-events: none;
+        }
+        .success-text {
+            font-size: 4rem; color: #FFD93D; font-weight: bold;
+            text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .result-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none; flex-direction: column;
+            justify-content: flex-end; padding-bottom: 30%; align-items: center; 
+            z-index: 50; text-align: center;
+        }
+        .rank-text { font-size: 6rem; line-height: 1; margin-bottom: 10px; }
+        .info-text { font-size: 1.5rem; color: var(--accent-color); }
+
+        #global-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 500;
+        }
+        #countdown-txt { font-size: 8rem; color: var(--accent-color); text-shadow: 4px 4px 0 #000; }
+        
+        .winner-banner { font-size: 3rem; color: #FFD93D; margin-bottom: 30px; font-weight: bold; text-shadow: 2px 2px 4px #000;}
+        .restart-btn {
+            padding: 15px 40px; font-size: 2rem; border-radius: 50px; border: none;
+            background: var(--btn-active); color: white; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .ranking-bar {
+            width: 100%; height: 40px; background: #111; border-top: 2px solid #333;
+            display: none; align-items: center; justify-content: center; gap: 20px;
+            color: #fff; font-size: 1.2rem; flex-shrink: 0; overflow-x: auto; white-space: nowrap; padding: 0 10px;
+        }
+
+        .theme-0 .p-name { color: var(--p1-color); } .theme-0 { border-color: var(--p1-color); }
+        .theme-1 .p-name { color: var(--p2-color); } .theme-1 { border-color: var(--p2-color); }
+        .theme-2 .p-name { color: var(--p3-color); } .theme-2 { border-color: var(--p3-color); }
+        .theme-3 .p-name { color: var(--p4-color); } .theme-3 { border-color: var(--p4-color); }
+        .theme-4 .p-name { color: var(--p5-color); } .theme-4 { border-color: var(--p5-color); }
+        .theme-5 .p-name { color: var(--p6-color); } .theme-5 { border-color: var(--p6-color); }
+
+        @keyframes popIn { 
+            0% { transform: scale(0); opacity: 0; } 
+            70% { transform: scale(1.2); opacity: 1; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+
+        /* --- 다국어 선택기 모달 독립 CSS --- */
+        #langSelectorContainer { position: absolute; top: 15px; right: 20px; z-index: 99999; }
+        #langModal { z-index: 99999; }
+        #toastNotification { z-index: 99999; }
+        
+        #langModal, #langModal * {
+            box-sizing: border-box !important;
+            font-family: sans-serif; /* 일반 폰트 */
+        }
+        /* 폰트어썸 깨짐 방지 예외 처리 */
+        #langModal i.fa-solid, #langModal i.fa-regular, #langModal i.fa-brands,
+        #langSelectorContainer i.fa-solid, #toastNotification i.fa-solid {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+            font-weight: 900;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        .modal-overlay {
+            opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-overlay.active {
+            opacity: 1; visibility: visible;
+        }
+        .modal-content {
+            transform: scale(0.95) translateY(-10px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0); opacity: 1;
+        }
+        .toast {
+            transform: translateY(100%); opacity: 0; transition: all 0.3s ease;
+        }
+        .toast.show {
+            transform: translateY(0); opacity: 1;
+        }
+
+        /* 텍스트 길이 동적 조정 유틸 */
+        .dynamic-text { white-space: normal; word-break: keep-all; }
+    </style>
+</head>
+<body>
+
+    <div id="langSelectorContainer">
+        <button id="langTriggerBtn" class="flex items-center gap-2 bg-gray-700/50 hover:bg-gray-700 border border-gray-600 rounded-full px-4 py-2 transition-all duration-200 text-sm font-medium shadow-lg" style="color: white;">
+            <i class="fa-solid fa-globe text-gray-400"></i>
+            <img id="currentFlag" src="https://flagcdn.com/w40/kr.png" alt="KR" class="w-5 h-auto rounded-[2px] shadow-sm">
+            <span id="currentLangName" class="hidden sm:inline-block">한국어</span>
+            <i class="fa-solid fa-chevron-down text-gray-400 ml-1 text-xs"></i>
+        </button>
+    </div>
+
+    <div id="langModal" class="modal-overlay fixed inset-0 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm pt-16 sm:pt-0 px-4">
+        <div class="modal-content bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden text-gray-100">
+            <div class="flex items-center justify-between p-5 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-language text-yellow-500"></i>
+                        <span id="i18n-modal-title">Language / 언어</span>
+                    </h2>
+                </div>
+                <button id="closeModalBtn" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-5 pb-2 bg-gray-900">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="Search / 검색 ..." 
+                        class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 block pl-11 p-3.5 outline-none transition-all placeholder-gray-500">
+                </div>
+            </div>
+            <div class="p-5 overflow-y-auto custom-scrollbar flex-1">
+                <div id="languageGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+                <div id="noResult" class="hidden flex-col items-center justify-center py-12 text-gray-500">
+                    <i class="fa-regular fa-face-frown-open text-4xl mb-3"></i>
+                    <p id="i18n-no-result">No results / 검색 결과 없음</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastNotification" class="toast fixed bottom-6 right-6 bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+            <p id="ui-toast" class="text-sm font-medium text-white">언어가 변경되었습니다.</p>
+            <p id="toastLangName" class="text-xs text-gray-400">Korean</p>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-title" id="i18n-game-title-header">한붓그리기 킹 👑</div>
+        <div id="timer-display">60</div>
+    </header>
+
+    <div id="app-container">
+        <div id="start-screen">
+            <div class="start-card">
+                <a href="/" class="top-banner-link" target="_self" id="i18n-top-banner">선생님이 만든, 안전한 수학 놀이터 - 킹수학.com</a>
+                <h1 id="i18n-game-title-main" class="dynamic-text">한붓그리기 킹 👑</h1>
+                
+                <div class="instruction-box">
+                    <b style="color:#fff; font-size:1.2rem;" id="i18n-desc-title">📢 게임 설명 및 규칙</b><br><br>
+                    <span id="i18n-desc-1">✨ 모든 플레이어는 <b>정확히 동일한 3개의 문제</b>를 받습니다.</span><br>
+                    <span id="i18n-desc-2">✨ 화면에 나타난 <b>붓(🖌️) 위치</b>에서 드래그를 시작하세요.</span><br>
+                    <span id="i18n-desc-3">✨ 막혔다면 아래 <b>[다시 그리기]</b> 버튼을 누르면 됩니다.</span><br>
+                    <span id="i18n-desc-4">✨ <b>1분 이내</b>에 3개의 한붓그리기를 가장 먼저 완성한 사람이 우승합니다!</span>
+                </div>
+                
+                <p style="color:#aaa; margin-bottom:5px;" id="i18n-player-count">인원수 선택 (1~6인)</p>
+                <div class="option-group" id="player-options">
+                    <div class="btn-option selected" onclick="selectPlayer(1)" id="i18n-p1">1인</div>
+                    <div class="btn-option" onclick="selectPlayer(2)" id="i18n-p2">2인</div>
+                    <div class="btn-option" onclick="selectPlayer(3)" id="i18n-p3">3인</div>
+                    <div class="btn-option" onclick="selectPlayer(4)" id="i18n-p4">4인</div>
+                    <div class="btn-option" onclick="selectPlayer(5)" id="i18n-p5">5인</div>
+                    <div class="btn-option" onclick="selectPlayer(6)" id="i18n-p6">6인</div>
+                </div>
+
+                <p style="color:#aaa; margin-bottom:5px;" id="i18n-difficulty">난이도 선택</p>
+                <div class="option-group" id="difficulty-options">
+                    <div class="btn-option" onclick="selectDifficulty('easy')" id="i18n-diff-easy">쉬움</div>
+                    <div class="btn-option" onclick="selectDifficulty('normal')" id="i18n-diff-normal">보통</div>
+                    <div class="btn-option" onclick="selectDifficulty('hard')" id="i18n-diff-hard">어려움</div>
+                    <div class="btn-option selected" onclick="selectDifficulty('random')" id="i18n-diff-random">랜덤</div>
+                </div>
+
+                <button id="btn-start" onclick="initGame()" class="dynamic-text">게임 시작! 🚀</button>
+                <a href="/" class="footer-link" target="_self" id="i18n-other-games">🎮 다른 게임 고르기</a>
+            </div>
+        </div>
+        <div class="ranking-bar" id="ranking-bar"></div>
+        <div id="game-screen"></div>
+
+        <div id="global-overlay">
+            <div id="countdown-txt">3</div>
+        </div>
+
+        <div id="floating-btns">
+            <div id="btn-home" class="floating-btn" style="cursor:pointer;" title="처음으로">🏠</div>
+            <div id="btn-fs" class="floating-btn" onclick="toggleFullScreen()" title="전체화면">⛶</div>
+        </div>
+    </div>
+
+    <script>
+        // --- 16개국 다국어 번역 데이터베이스 ---
+        const translations = {
+            'ko': {
+                title: '한붓그리기 킹 👑', topBanner: '선생님이 만든, 안전한 수학 놀이터 - 킹수학.com', descTitle: '📢 게임 설명 및 규칙',
+                desc1: '✨ 모든 플레이어는 <b>정확히 동일한 3개의 문제</b>를 받습니다.', desc2: '✨ 화면에 나타난 <b>붓(🖌️) 위치</b>에서 드래그를 시작하세요.',
+                desc3: '✨ 막혔다면 아래 <b>[다시 그리기]</b> 버튼을 누르면 됩니다.', desc4: '✨ <b>1분 이내</b>에 3개의 한붓그리기를 가장 먼저 완성한 사람이 우승합니다!',
+                playerCount: '인원수 선택 (1~6인)', p1: '1인', p2: '2인', p3: '3인', p4: '4인', p5: '5인', p6: '6인',
+                difficulty: '난이도 선택', diffEasy: '쉬움', diffNormal: '보통', diffHard: '어려움', diffRandom: '랜덤',
+                startBtn: '게임 시작! 🚀', otherGames: '🎮 다른 게임 고르기', redraw: '다시 그리기 🔄', success: '성공! 🎉',
+                clear: 'CLEAR!', record: '기록', stageStr: '완료', lineStr: '선', winnerPrefix: '👑 최종 우승', goBack: '처음으로 돌아가기 🔄',
+                modalTitle: 'Language / 언어', searchPlaceholder: 'Search / 검색 ...', noResult: 'No results / 검색 결과 없음', toastChanged: '언어가 변경되었습니다.'
+            },
+            'en': {
+                title: 'One Stroke King 👑', topBanner: 'Safe Math Playground by Teachers - KingsMath.com', descTitle: '📢 Rules & Guide',
+                desc1: '✨ All players receive <b>exactly the same 3 puzzles</b>.', desc2: '✨ Start dragging from the <b>brush(🖌️)</b>.',
+                desc3: '✨ If you get stuck, press the <b>[Redraw]</b> button.', desc4: '✨ The first to finish 3 puzzles in <b>1 minute</b> wins!',
+                playerCount: 'Select Players (1~6)', p1: '1P', p2: '2P', p3: '3P', p4: '4P', p5: '5P', p6: '6P',
+                difficulty: 'Select Difficulty', diffEasy: 'Easy', diffNormal: 'Normal', diffHard: 'Hard', diffRandom: 'Random',
+                startBtn: 'Start Game! 🚀', otherGames: '🎮 Choose Another Game', redraw: 'Redraw 🔄', success: 'Success! 🎉',
+                clear: 'CLEAR!', record: 'Time', stageStr: 'Done', lineStr: 'Lines', winnerPrefix: '👑 Winner', goBack: 'Go Back to Home 🔄',
+                modalTitle: 'Language / 언어', searchPlaceholder: 'Search ...', noResult: 'No results', toastChanged: 'Language changed.'
+            },
+            'zh': {
+                title: '一笔画王者 👑', topBanner: '老师制作的安全数学游乐场 - KingsMath.com', descTitle: '📢 游戏说明与规则',
+                desc1: '✨ 所有玩家将收到<b>完全相同的 3 个谜题</b>。', desc2: '✨ 从画面上的<b>画笔(🖌️)</b>位置开始拖动。',
+                desc3: '✨ 如果卡住了，请按下方<b>[重新画]</b>按钮。', desc4: '✨ <b>1分钟内</b>最先完成3个一笔画的人获胜！',
+                playerCount: '选择人数 (1~6人)', p1: '1人', p2: '2人', p3: '3人', p4: '4人', p5: '5人', p6: '6人',
+                difficulty: '选择难度', diffEasy: '简单', diffNormal: '普通', diffHard: '困难', diffRandom: '随机',
+                startBtn: '开始游戏！🚀', otherGames: '🎮 选择其他游戏', redraw: '重新画 🔄', success: '成功！🎉',
+                clear: '通关！', record: '记录', stageStr: '完成', lineStr: '线', winnerPrefix: '👑 最终冠军', goBack: '返回主页 🔄',
+                modalTitle: '语言 / Language', searchPlaceholder: '搜索 ...', noResult: '没有结果', toastChanged: '语言已更改。'
+            },
+            'ja': {
+                title: '一筆書きキング 👑', topBanner: '先生が作った安全な算数遊び場 - KingsMath.com', descTitle: '📢 ゲームの説明とルール',
+                desc1: '✨ 全プレイヤーは<b>全く同じ3つの問題</b>を解きます。', desc2: '✨ 画面の<b>筆(🖌️)</b>の位置からドラッグを開始してください。',
+                desc3: '✨ 行き詰まったら下の<b>[描き直す]</b>ボタンを押してください。', desc4: '✨ <b>1分以内</b>に3つの問題を一番早く完成させた人が優勝！',
+                playerCount: 'プレイ人数 (1~6人)', p1: '1人', p2: '2人', p3: '3人', p4: '4人', p5: '5人', p6: '6人',
+                difficulty: '難易度選択', diffEasy: '簡単', diffNormal: '普通', diffHard: '難しい', diffRandom: 'ランダム',
+                startBtn: 'ゲーム開始! 🚀', otherGames: '🎮 他のゲームを選ぶ', redraw: '描き直す 🔄', success: '成功! 🎉',
+                clear: 'クリア!', record: '記録', stageStr: '完了', lineStr: '線', winnerPrefix: '👑 最終優勝', goBack: '最初に戻る 🔄',
+                modalTitle: '言語 / Language', searchPlaceholder: '検索 ...', noResult: '検索結果なし', toastChanged: '言語が変更されました。'
+            },
+            'es': {
+                title: 'Rey de un Trazo 👑', topBanner: 'Parque de matemáticas seguro por maestros - KingsMath.com', descTitle: '📢 Reglas y guía',
+                desc1: '✨ Todos reciben <b>exactamente los mismos 3 acertijos</b>.', desc2: '✨ Comienza a arrastrar desde el <b>pincel(🖌️)</b>.',
+                desc3: '✨ Si te atascas, presiona el botón <b>[Rehacer]</b>.', desc4: '✨ ¡El primero en terminar los 3 en <b>1 minuto</b> gana!',
+                playerCount: 'Jugadores (1~6)', p1: '1P', p2: '2P', p3: '3P', p4: '4P', p5: '5P', p6: '6P',
+                difficulty: 'Dificultad', diffEasy: 'Fácil', diffNormal: 'Normal', diffHard: 'Difícil', diffRandom: 'Aleatorio',
+                startBtn: '¡Iniciar Juego! 🚀', otherGames: '🎮 Elegir Otro Juego', redraw: 'Rehacer 🔄', success: '¡Éxito! 🎉',
+                clear: '¡LISTO!', record: 'Tiempo', stageStr: 'Hecho', lineStr: 'Líneas', winnerPrefix: '👑 Ganador', goBack: 'Volver al Inicio 🔄',
+                modalTitle: 'Idioma / Language', searchPlaceholder: 'Buscar ...', noResult: 'Sin resultados', toastChanged: 'Idioma cambiado.'
+            },
+            'fr': {
+                title: 'Roi du Tracé 👑', topBanner: 'Terrain de jeu mathématique par des profs - KingsMath.com', descTitle: '📢 Règles et Guide',
+                desc1: '✨ Tous reçoivent <b>exactement les 3 mêmes puzzles</b>.', desc2: '✨ Commencez à glisser à partir du <b>pinceau(🖌️)</b>.',
+                desc3: '✨ Si vous êtes bloqué, appuyez sur <b>[Redessiner]</b>.', desc4: '✨ Le premier à finir les 3 en <b>1 minute</b> gagne !',
+                playerCount: 'Joueurs (1~6)', p1: '1J', p2: '2J', p3: '3J', p4: '4J', p5: '5J', p6: '6J',
+                difficulty: 'Difficulté', diffEasy: 'Facile', diffNormal: 'Normal', diffHard: 'Difficile', diffRandom: 'Aléatoire',
+                startBtn: 'Démarrer! 🚀', otherGames: '🎮 Autre Jeu', redraw: 'Redessiner 🔄', success: 'Succès! 🎉',
+                clear: 'RÉUSSI!', record: 'Temps', stageStr: 'Fait', lineStr: 'Lignes', winnerPrefix: '👑 Gagnant', goBack: 'Retourner à l\'accueil 🔄',
+                modalTitle: 'Langue / Language', searchPlaceholder: 'Rechercher ...', noResult: 'Aucun résultat', toastChanged: 'Langue modifiée.'
+            },
+            'ru': {
+                title: 'Король Одной Линии 👑', topBanner: 'Безопасная математика от учителей - KingsMath.com', descTitle: '📢 Правила игры',
+                desc1: '✨ Все игроки получают <b>одинаковые 3 задачи</b>.', desc2: '✨ Начинайте рисовать от <b>кисти(🖌️)</b>.',
+                desc3: '✨ Если застряли, нажмите <b>[Перерисовать]</b>.', desc4: '✨ Кто первым решит 3 задачи за <b>1 минуту</b> - побеждает!',
+                playerCount: 'Игроки (1~6)', p1: '1И', p2: '2И', p3: '3И', p4: '4И', p5: '5И', p6: '6И',
+                difficulty: 'Сложность', diffEasy: 'Легко', diffNormal: 'Норма', diffHard: 'Сложно', diffRandom: 'Случайно',
+                startBtn: 'Начать игру! 🚀', otherGames: '🎮 Выбрать другую', redraw: 'Заново 🔄', success: 'Успех! 🎉',
+                clear: 'ГОТОВО!', record: 'Время', stageStr: 'Пройдено', lineStr: 'Линии', winnerPrefix: '👑 Победитель', goBack: 'Вернуться на главную 🔄',
+                modalTitle: 'Язык / Language', searchPlaceholder: 'Поиск ...', noResult: 'Нет результатов', toastChanged: 'Язык изменен.'
+            },
+            'id': {
+                title: 'Raja Satu Garis 👑', topBanner: 'Taman Bermain Matematika oleh Guru - KingsMath.com', descTitle: '📢 Aturan & Panduan',
+                desc1: '✨ Semua pemain menerima <b>3 teka-teki yang sama persis</b>.', desc2: '✨ Mulai seret dari <b>kuas(🖌️)</b>.',
+                desc3: '✨ Jika tersendat, tekan tombol <b>[Gambar Ulang]</b>.', desc4: '✨ Yang pertama menyelesaikan 3 teka-teki dalam <b>1 menit</b> menang!',
+                playerCount: 'Pilih Pemain (1~6)', p1: '1P', p2: '2P', p3: '3P', p4: '4P', p5: '5P', p6: '6P',
+                difficulty: 'Kesulitan', diffEasy: 'Mudah', diffNormal: 'Normal', diffHard: 'Sulit', diffRandom: 'Acak',
+                startBtn: 'Mulai Main! 🚀', otherGames: '🎮 Pilih Game Lain', redraw: 'Ulang 🔄', success: 'Sukses! 🎉',
+                clear: 'SELESAI!', record: 'Waktu', stageStr: 'Selesai', lineStr: 'Garis', winnerPrefix: '👑 Pemenang', goBack: 'Kembali ke Beranda 🔄',
+                modalTitle: 'Bahasa / Language', searchPlaceholder: 'Cari ...', noResult: 'Tidak ada hasil', toastChanged: 'Bahasa telah diubah.'
+            },
+            'vi': {
+                title: 'Vua Một Nét 👑', topBanner: 'Sân chơi Toán học an toàn bởi Giáo viên - KingsMath.com', descTitle: '📢 Luật & Hướng dẫn',
+                desc1: '✨ Tất cả người chơi nhận <b>cùng 3 câu đố giống nhau</b>.', desc2: '✨ Bắt đầu kéo từ <b>cây cọ(🖌️)</b>.',
+                desc3: '✨ Nếu bị kẹt, hãy nhấn nút <b>[Vẽ Lại]</b>.', desc4: '✨ Người đầu tiên hoàn thành 3 câu đố trong <b>1 phút</b> sẽ thắng!',
+                playerCount: 'Số Người (1~6)', p1: '1 Người', p2: '2 Người', p3: '3 Người', p4: '4 Người', p5: '5 Người', p6: '6 Người',
+                difficulty: 'Độ Khó', diffEasy: 'Dễ', diffNormal: 'Thường', diffHard: 'Khó', diffRandom: 'Ngẫu nhiên',
+                startBtn: 'Bắt Đầu Chơi! 🚀', otherGames: '🎮 Chọn Game Khác', redraw: 'Vẽ Lại 🔄', success: 'Thành Công! 🎉',
+                clear: 'XONG!', record: 'Kỷ lục', stageStr: 'Hoàn thành', lineStr: 'Đường', winnerPrefix: '👑 Người Thắng', goBack: 'Quay về Trang Chủ 🔄',
+                modalTitle: 'Ngôn ngữ / Language', searchPlaceholder: 'Tìm kiếm ...', noResult: 'Không có kết quả', toastChanged: 'Ngôn ngữ đã được thay đổi.'
+            },
+            'th': {
+                title: 'ราชาลากเส้น 👑', topBanner: 'สนามเด็กเล่นคณิตศาสตร์โดยคุณครู - KingsMath.com', descTitle: '📢 กฎและวิธีเล่น',
+                desc1: '✨ ผู้เล่นทุกคนจะได้รับ <b>3 ปริศนาที่เหมือนกันทุกประการ</b>.', desc2: '✨ เริ่มลากเส้นจาก <b>พู่กัน(🖌️)</b>.',
+                desc3: '✨ หากติดขัดให้กดปุ่ม <b>[วาดใหม่]</b>.', desc4: '✨ คนแรกที่ทำครบ 3 ปริศนาภายใน <b>1 นาที</b> ชนะ!',
+                playerCount: 'จำนวนผู้เล่น (1~6)', p1: '1 คน', p2: '2 คน', p3: '3 คน', p4: '4 คน', p5: '5 คน', p6: '6 คน',
+                difficulty: 'ระดับความยาก', diffEasy: 'ง่าย', diffNormal: 'ปานกลาง', diffHard: 'ยาก', diffRandom: 'สุ่ม',
+                startBtn: 'เริ่มเกมเลย! 🚀', otherGames: '🎮 เลือกเกมอื่น', redraw: 'วาดใหม่ 🔄', success: 'สำเร็จ! 🎉',
+                clear: 'ผ่าน!', record: 'เวลา', stageStr: 'เสร็จสิ้น', lineStr: 'เส้น', winnerPrefix: '👑 ผู้ชนะ', goBack: 'กลับหน้าแรก 🔄',
+                modalTitle: 'ภาษา / Language', searchPlaceholder: 'ค้นหา ...', noResult: 'ไม่พบผลลัพธ์', toastChanged: 'เปลี่ยนภาษาเรียบร้อยแล้ว'
+            },
+            'pt-br': {
+                title: 'Rei de Um Traço 👑', topBanner: 'Playground Matemático por Professores - KingsMath.com', descTitle: '📢 Regras e Guia',
+                desc1: '✨ Todos recebem <b>exatamente os mesmos 3 quebra-cabeças</b>.', desc2: '✨ Comece a arrastar a partir do <b>pincel(🖌️)</b>.',
+                desc3: '✨ Se você travar, pressione o botão <b>[Refazer]</b>.', desc4: '✨ O primeiro a terminar 3 quebra-cabeças em <b>1 minuto</b> vence!',
+                playerCount: 'Jogadores (1~6)', p1: '1J', p2: '2J', p3: '3J', p4: '4J', p5: '5J', p6: '6J',
+                difficulty: 'Dificuldade', diffEasy: 'Fácil', diffNormal: 'Normal', diffHard: 'Difícil', diffRandom: 'Aleatório',
+                startBtn: 'Começar Jogo! 🚀', otherGames: '🎮 Escolher Outro Jogo', redraw: 'Refazer 🔄', success: 'Sucesso! 🎉',
+                clear: 'FEITO!', record: 'Tempo', stageStr: 'Concluído', lineStr: 'Linhas', winnerPrefix: '👑 Vencedor', goBack: 'Voltar ao Início 🔄',
+                modalTitle: 'Idioma / Language', searchPlaceholder: 'Pesquisar ...', noResult: 'Sem resultados', toastChanged: 'Idioma alterado.'
+            },
+            'hi': {
+                title: 'वन स्ट्रोक किंग 👑', topBanner: 'शिक्षकों द्वारा बनाया गया गणित का खेल - KingsMath.com', descTitle: '📢 नियम और निर्देश',
+                desc1: '✨ सभी खिलाड़ियों को <b>बिल्कुल समान 3 पहेलियां</b> मिलती हैं।', desc2: '✨ <b>ब्रश(🖌️)</b> से खींचना शुरू करें।',
+                desc3: '✨ यदि आप फंस जाते हैं, तो <b>[फिर से बनाएं]</b> बटन दबाएं।', desc4: '✨ जो पहले <b>1 मिनट</b> में 3 पहेलियां पूरी करेगा वह जीतेगा!',
+                playerCount: 'खिलाड़ी चुनें (1~6)', p1: '1खि', p2: '2खि', p3: '3खि', p4: '4खि', p5: '5खि', p6: '6खि',
+                difficulty: 'कठिनाई चुनें', diffEasy: 'आसान', diffNormal: 'सामान्य', diffHard: 'कठिन', diffRandom: 'यादृच्छिक',
+                startBtn: 'खेल शुरू करें! 🚀', otherGames: '🎮 अन्य खेल चुनें', redraw: 'फिर से बनाएं 🔄', success: 'सफलता! 🎉',
+                clear: 'स्पष्ट!', record: 'समय', stageStr: 'पूर्ण', lineStr: 'रेखाएं', winnerPrefix: '👑 विजेता', goBack: 'होम पर वापस जाएं 🔄',
+                modalTitle: 'भाषा / Language', searchPlaceholder: 'खोजें ...', noResult: 'कोई परिणाम नहीं', toastChanged: 'भाषा बदल दी गई है।'
+            },
+            'bn': {
+                title: 'ওয়ান স্ট্রোক কিং 👑', topBanner: 'শিক্ষকদের দ্বারা তৈরি নিরাপদ গণিত খেলার মাঠ - KingsMath.com', descTitle: '📢 নিয়ম ও নির্দেশিকা',
+                desc1: '✨ সব খেলোয়াড় <b>ঠিক একই ৩টি ধাঁধা</b> পাবেন।', desc2: '✨ <b>ব্রাশ(🖌️)</b> থেকে টানা শুরু করুন।',
+                desc3: '✨ আটকে গেলে <b>[পুনরায় আঁকুন]</b> বোতাম চাপুন।', desc4: '✨ যে প্রথমে <b>১ মিনিট</b> এর মধ্যে ৩টি ধাঁধা শেষ করবে সে জিতবে!',
+                playerCount: 'খেলোয়াড় নির্বাচন (১~৬)', p1: '১জন', p2: '২জন', p3: '৩জন', p4: '৪জন', p5: '৫জন', p6: '৬জন',
+                difficulty: 'কঠিনতা নির্বাচন', diffEasy: 'সহজ', diffNormal: 'সাধারণ', diffHard: 'কঠিন', diffRandom: 'এলোমেলো',
+                startBtn: 'খেলা শুরু! 🚀', otherGames: '🎮 অন্য খেলা বাছুন', redraw: 'পুনরায় আঁকুন 🔄', success: 'সফল! 🎉',
+                clear: 'সম্পন্ন!', record: 'সময়', stageStr: 'হয়েছে', lineStr: 'লাইন', winnerPrefix: '👑 বিজয়ী', goBack: 'হোমে ফিরে যান 🔄',
+                modalTitle: 'ভাষা / Language', searchPlaceholder: 'অনুসন্ধান ...', noResult: 'কোনো ফলাফল নেই', toastChanged: 'ভাষা পরিবর্তন করা হয়েছে।'
+            },
+            'tr': {
+                title: 'Tek Çizgi Kralı 👑', topBanner: 'Öğretmenler Tarafından Güvenli Matematik Oyunları - KingsMath.com', descTitle: '📢 Kurallar ve Rehber',
+                desc1: '✨ Tüm oyuncular <b>tamamen aynı 3 bulmacayı</b> alır.', desc2: '✨ <b>Fırçadan(🖌️)</b> sürüklemeye başlayın.',
+                desc3: '✨ Sıkışırsanız <b>[Yeniden Çiz]</b> düğmesine basın.', desc4: '✨ 3 bulmacayı <b>1 dakika</b> içinde ilk bitiren kazanır!',
+                playerCount: 'Oyuncu Seç (1~6)', p1: '1 Oyu', p2: '2 Oyu', p3: '3 Oyu', p4: '4 Oyu', p5: '5 Oyu', p6: '6 Oyu',
+                difficulty: 'Zorluk', diffEasy: 'Kolay', diffNormal: 'Normal', diffHard: 'Zor', diffRandom: 'Rastgele',
+                startBtn: 'Oyuna Başla! 🚀', otherGames: '🎮 Başka Oyun Seç', redraw: 'Yeniden Çiz 🔄', success: 'Başarılı! 🎉',
+                clear: 'TAMAM!', record: 'Süre', stageStr: 'Bitti', lineStr: 'Çizgi', winnerPrefix: '👑 Kazanan', goBack: 'Ana Sayfaya Dön 🔄',
+                modalTitle: 'Dil / Language', searchPlaceholder: 'Ara ...', noResult: 'Sonuç bulunamadı', toastChanged: 'Dil değiştirildi.'
+            },
+            'de': {
+                title: 'Ein-Strich König 👑', topBanner: 'Sicherer Mathe-Spielplatz von Lehrern - KingsMath.com', descTitle: '📢 Regeln & Anleitung',
+                desc1: '✨ Alle Spieler erhalten <b>exakt die gleichen 3 Rätsel</b>.', desc2: '✨ Beginne ab dem <b>Pinsel(🖌️)</b> zu ziehen.',
+                desc3: '✨ Wenn du nicht weiterweißt, drücke <b>[Neu zeichnen]</b>.', desc4: '✨ Wer zuerst 3 Rätsel in <b>1 Minute</b> löst, gewinnt!',
+                playerCount: 'Spieler (1~6)', p1: '1S', p2: '2S', p3: '3S', p4: '4S', p5: '5S', p6: '6S',
+                difficulty: 'Schwierigkeit', diffEasy: 'Leicht', diffNormal: 'Mittel', diffHard: 'Schwer', diffRandom: 'Zufällig',
+                startBtn: 'Spiel starten! 🚀', otherGames: '🎮 Anderes Spiel', redraw: 'Neu zeichnen 🔄', success: 'Erfolg! 🎉',
+                clear: 'GESCHAFFT!', record: 'Zeit', stageStr: 'Fertig', lineStr: 'Linien', winnerPrefix: '👑 Gewinner', goBack: 'Zurück zum Start 🔄',
+                modalTitle: 'Sprache / Language', searchPlaceholder: 'Suchen ...', noResult: 'Keine Ergebnisse', toastChanged: 'Sprache geändert.'
+            },
+            'it': {
+                title: 'Re del Tratto Unico 👑', topBanner: 'Parco giochi di matematica dei professori - KingsMath.com', descTitle: '📢 Regole e Guida',
+                desc1: '✨ Tutti ricevono <b>esattamente gli stessi 3 puzzle</b>.', desc2: '✨ Inizia a trascinare dal <b>pennello(🖌️)</b>.',
+                desc3: '✨ Se ti blocchi, premi <b>[Ridisegna]</b>.', desc4: '✨ Il primo che finisce i 3 in <b>1 minuto</b> vince!',
+                playerCount: 'Giocatori (1~6)', p1: '1G', p2: '2G', p3: '3G', p4: '4G', p5: '5G', p6: '6G',
+                difficulty: 'Difficoltà', diffEasy: 'Facile', diffNormal: 'Normale', diffHard: 'Difficile', diffRandom: 'Casuale',
+                startBtn: 'Inizia Gioco! 🚀', otherGames: '🎮 Altro Gioco', redraw: 'Ridisegna 🔄', success: 'Successo! 🎉',
+                clear: 'FATTO!', record: 'Tempo', stageStr: 'Fatto', lineStr: 'Linee', winnerPrefix: '👑 Vincitore', goBack: 'Torna alla Home 🔄',
+                modalTitle: 'Lingua / Language', searchPlaceholder: 'Cerca ...', noResult: 'Nessun risultato', toastChanged: 'Lingua modificata.'
+            }
+        };
+
+        const languages = [
+            { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+            { code: 'en', country: 'us', name: 'English', enName: 'English' },
+            { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)' },
+            { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+            { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+            { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+            { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+            { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' },
+            { code: 'pt-br', country: 'br', name: 'Português', enName: 'Portuguese (Brazil)' },
+            { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+            { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+            { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+            { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+            { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+            { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+            { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' }
+        ];
+
+        let currentLang = 'en'; // default
+
+        // 1. Language Detection Logic
+        function detectLanguage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlLang = urlParams.get('lang');
+            const localLang = localStorage.getItem('kingsmath_lang');
+            const browserLang = navigator.language.split('-')[0];
+
+            if (urlLang && languages.some(l => l.code === urlLang)) return urlLang;
+            if (localLang && languages.some(l => l.code === localLang)) return localLang;
+            if (languages.some(l => l.code === browserLang)) return browserLang;
+            return 'en'; // Fallback
+        }
+
+        // Apply translations to UI
+        function applyTranslations() {
+            const t = translations[currentLang];
+            
+            // Meta & Title
+            document.title = t.title;
+            document.querySelector('meta[name="description"]').setAttribute("content", t.topBanner);
+
+            // Set Font: Jua for KO, sans-serif for others
+            document.body.style.fontFamily = currentLang === 'ko' ? "'Jua', sans-serif" : "sans-serif";
+            if (currentLang !== 'ko') {
+                document.querySelectorAll('button, .btn-option, .pattern-name, .header-title, .p-name, .success-text').forEach(el => {
+                    el.style.fontFamily = "sans-serif";
+                    el.style.fontWeight = "bold";
+                });
+            } else {
+                document.querySelectorAll('button, .btn-option, .pattern-name, .header-title, .p-name, .success-text').forEach(el => {
+                    el.style.fontFamily = "'Jua', sans-serif";
+                    el.style.fontWeight = "normal";
+                });
+            }
+
+            // HTML Elements
+            document.getElementById('i18n-game-title-header').innerText = t.title;
+            document.getElementById('i18n-game-title-main').innerText = t.title;
+            document.getElementById('i18n-top-banner').innerText = t.topBanner;
+            document.getElementById('i18n-desc-title').innerText = t.descTitle;
+            document.getElementById('i18n-desc-1').innerHTML = t.desc1;
+            document.getElementById('i18n-desc-2').innerHTML = t.desc2;
+            document.getElementById('i18n-desc-3').innerHTML = t.desc3;
+            document.getElementById('i18n-desc-4').innerHTML = t.desc4;
+            
+            document.getElementById('i18n-player-count').innerText = t.playerCount;
+            document.getElementById('i18n-p1').innerText = t.p1;
+            document.getElementById('i18n-p2').innerText = t.p2;
+            document.getElementById('i18n-p3').innerText = t.p3;
+            document.getElementById('i18n-p4').innerText = t.p4;
+            document.getElementById('i18n-p5').innerText = t.p5;
+            document.getElementById('i18n-p6').innerText = t.p6;
+
+            document.getElementById('i18n-difficulty').innerText = t.difficulty;
+            document.getElementById('i18n-diff-easy').innerText = t.diffEasy;
+            document.getElementById('i18n-diff-normal').innerText = t.diffNormal;
+            document.getElementById('i18n-diff-hard').innerText = t.diffHard;
+            document.getElementById('i18n-diff-random').innerText = t.diffRandom;
+
+            document.getElementById('btn-start').innerText = t.startBtn;
+            document.getElementById('i18n-other-games').innerText = t.otherGames;
+
+            // Modal texts
+            document.getElementById('i18n-modal-title').innerText = t.modalTitle;
+            document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+            document.getElementById('i18n-no-result').innerText = t.noResult;
+
+            // Update dynamically generated elements (if in game)
+            for(let i=0; i<6; i++) {
+                let rBtn = document.getElementById(`redraw-btn-${i}`);
+                if(rBtn) rBtn.innerText = t.redraw;
+                let sTxt = document.getElementById(`success-txt-${i}`);
+                if(sTxt) sTxt.innerText = t.success;
+            }
+        }
+
+        // --- Language UI Logic ---
+        const triggerBtn = document.getElementById('langTriggerBtn');
+        const modal = document.getElementById('langModal');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const searchInput = document.getElementById('searchInput');
+        const grid = document.getElementById('languageGrid');
+        const noResult = document.getElementById('noResult');
+        const currentFlagImg = document.getElementById('currentFlag');
+        const currentLangSpan = document.getElementById('currentLangName');
+        const toast = document.getElementById('toastNotification');
+        const toastLangName = document.getElementById('toastLangName');
+        let toastTimeout;
+
+        function renderLanguages(filterText = '') {
+            grid.innerHTML = '';
+            const lowerFilter = filterText.toLowerCase();
+            const filteredLangs = languages.filter(lang => 
+                lang.name.toLowerCase().includes(lowerFilter) || 
+                lang.enName.toLowerCase().includes(lowerFilter) ||
+                lang.code.toLowerCase().includes(lowerFilter)
+            );
+
+            if (filteredLangs.length === 0) {
+                grid.classList.add('hidden');
+                noResult.classList.remove('hidden');
+                noResult.classList.add('flex');
+            } else {
+                grid.classList.remove('hidden');
+                noResult.classList.add('hidden');
+                noResult.classList.remove('flex');
+
+                filteredLangs.forEach(lang => {
+                    const isSelected = lang.code === currentLang;
+                    const baseClasses = "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 group relative overflow-hidden";
+                    const stateClasses = isSelected 
+                        ? "bg-gray-800 border-yellow-500 ring-1 ring-yellow-500/50" 
+                        : "bg-gray-800/40 border-gray-700 hover:bg-gray-700 hover:border-gray-500";
+                    const flagUrl = `https://flagcdn.com/w40/${lang.country}.png`;
+                    const btn = document.createElement('div');
+                    btn.className = `${baseClasses} ${stateClasses}`;
+
+                    btn.innerHTML = `
+                        <div class="shrink-0 w-8 h-6 rounded overflow-hidden shadow-sm border border-gray-700/50">
+                            <img src="${flagUrl}" alt="${lang.country}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                        </div>
+                        <div class="flex-1 min-w-0 flex flex-col items-start">
+                            <span class="text-sm font-medium text-white truncate w-full ${isSelected ? 'text-yellow-400' : ''}">${lang.name}</span>
+                            <span class="text-xs text-gray-400 truncate w-full">${lang.enName}</span>
+                        </div>
+                        ${isSelected ? '<i class="fa-solid fa-circle-check text-yellow-500 text-lg ml-2"></i>' : ''}
+                    `;
+                    btn.addEventListener('click', () => selectLanguage(lang));
+                    grid.appendChild(btn);
+                });
+            }
+        }
+
+        function selectLanguage(lang) {
+            currentLang = lang.code;
+            localStorage.setItem('kingsmath_lang', currentLang);
+            
+            // URL 파라미터 업데이트 (공유 가능하게)
+            const url = new URL(window.location);
+            url.searchParams.set('lang', currentLang);
+            window.history.pushState({}, '', url);
+
+            currentFlagImg.src = `https://flagcdn.com/w40/${lang.country}.png`;
+            currentLangSpan.textContent = lang.name;
+            
+            closeModal();
+            showToast(lang.name, lang.code);
+            applyTranslations();
+            renderLanguages(searchInput.value);
+        }
+
+        function openModal() {
+            modal.classList.add('active');
+            // document.body.style.overflow = 'hidden'; // Body overflow is already hidden
+            setTimeout(() => searchInput.focus(), 100);
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        function showToast(langName, langCode) {
+            const t = translations[langCode] || translations['en'];
+            document.getElementById('ui-toast').textContent = t.toastChanged;
+            toastLangName.textContent = langName;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        triggerBtn.addEventListener('click', openModal);
+        closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
+        searchInput.addEventListener('input', (e) => { renderLanguages(e.target.value); });
+
+
+        // --- 초기화 로직 ---
+        window.onload = () => {
+            currentLang = detectLanguage();
+            const langObj = languages.find(l => l.code === currentLang) || languages[1];
+            currentFlagImg.src = `https://flagcdn.com/w40/${langObj.country}.png`;
+            currentLangSpan.textContent = langObj.name;
+            applyTranslations();
+            renderLanguages();
+        }
+
+
+        // --- 기존 게임 로직 (수정 최소화, 번역 적용) ---
+        // 우클릭, 더블클릭 방지
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('dblclick', e => e.preventDefault());
+
+        // --- 오디오 시스템 ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            if (type === 'tick') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(880, now); 
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'click') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            } else if (type === 'correct') { 
+                osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.1); osc.frequency.setValueAtTime(783.99, now + 0.2); 
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            } else if (type === 'win') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(783.99, now + 0.1); osc.frequency.setValueAtTime(1046.50, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.6);
+                osc.start(now); osc.stop(now + 0.6);
+            }
+            osc.connect(gain); gain.connect(audioCtx.destination);
+        }
+
+        // 전체화면
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else if (document.exitFullscreen) document.exitFullscreen();
+        }
+        
+        // 홈 이모지 전체 화면 지체 없이 첫화면 가는 소스 반영
+        document.getElementById('btn-home').addEventListener('click', () => {
+            if (document.fullscreenElement) {
+                // 새로고침 대신 화면 초기화 로직 실행 (전체 화면 유지)
+                clearInterval(timerInterval);
+                clearInterval(rankInterval);
+                document.getElementById('langSelectorContainer').style.display = 'block'; // 게임 종료/홈 이동시 언어 버튼 부활
+                document.getElementById('start-screen').style.display = 'flex';
+                document.getElementById('game-screen').style.display = 'none';
+                document.getElementById('ranking-bar').style.display = 'none';
+                document.getElementById('global-overlay').style.display = 'none';
+                document.getElementById('floating-btns').style.display = 'none';
+                playSound('click');
+            } else {
+                location.reload();
+            }
+        });
+
+        // --- 도안 생성 ---
+        let easyLevels = [], normalLevels = [], hardLevels = [];
+        
+        function generateAllPatterns() {
+            let patterns = [];
+            let count = 1;
+
+            function mergeNodesAndEdges(nodes, edges) {
+                let uniqueNodes = [];
+                let indexMap = {};
+                const MIN_DIST = 0.15; 
+                
+                for(let i = 0; i < nodes.length; i++) {
+                    let found = -1;
+                    for(let j = 0; j < uniqueNodes.length; j++) {
+                        let dx = nodes[i].x - uniqueNodes[j].x;
+                        let dy = nodes[i].y - uniqueNodes[j].y;
+                        if(Math.sqrt(dx*dx + dy*dy) < MIN_DIST) { found = j; break; }
+                    }
+                    if(found !== -1) { indexMap[i] = found; } 
+                    else { indexMap[i] = uniqueNodes.length; uniqueNodes.push(nodes[i]); }
+                }
+                
+                let mappedEdges = edges.map(e => [indexMap[e[0]], indexMap[e[1]]]).filter(e => e[0] !== e[1]);
+                return { newNodes: uniqueNodes, newEdges: mappedEdges };
+            }
+
+            function removeDuplicateEdges(edges) {
+                let unique = [];
+                edges.forEach(e => {
+                    let u = e[0], v = e[1];
+                    let exists = unique.some(ext => (ext[0] === u && ext[1] === v) || (ext[0] === v && ext[1] === u));
+                    if (!exists) unique.push(e);
+                });
+                return unique;
+            }
+
+            function add(fn, ...args) {
+                let name = `Pattern ${count}`;
+                if(fn === poly) name = `Poly-${args[0]}`;
+                if(fn === star) name = `Star-${args[0]}`;
+                if(fn === polygonStar) name = `MixStar-${args[0]}`;
+                if(fn === flower) name = `Flower-${args[0]}`;
+                if(fn === complete) name = `K-${args[0]}`;
+
+                let p = fn(...args, name);
+                
+                let merged = mergeNodesAndEdges(p.nodes, p.edges);
+                p.nodes = merged.newNodes;
+                p.edges = removeDuplicateEdges(merged.newEdges);
+
+                p.degrees = new Array(p.nodes.length).fill(0);
+                p.edges.forEach(edge => { p.degrees[edge[0]]++; p.degrees[edge[1]]++; });
+                p.oddCount = p.degrees.filter(d => d % 2 !== 0).length;
+                p.totalEdges = p.edges.length;
+                patterns.push(p);
+                count++;
+            }
+
+            for(let i = 3; i <= 10; i++) add(poly, i);
+            const starArgs = [[5,2], [7,2], [7,3], [8,3], [9,2], [9,4], [10,3], [11,3], [11,4], [12,5]];
+            for(let arg of starArgs) add(star, arg[0], arg[1]);
+            const polyStarArgs = [[5,2], [6,2], [7,2], [7,3], [8,2], [8,3], [9,2], [9,3], [9,4], [10,3]];
+            for(let arg of polyStarArgs) add(polygonStar, arg[0], arg[1]);
+            const flowerArgs = [[3,3], [4,3], [5,3], [6,3], [8,3], [10,3], [3,4], [4,4], [5,4], [6,4]];
+            for(let arg of flowerArgs) add(flower, arg[0], arg[1]);
+            add(complete, 5); add(complete, 7); add(complete, 9);
+
+            function addCustom(obj) {
+                let merged = mergeNodesAndEdges(obj.nodes, obj.edges);
+                obj.nodes = merged.newNodes;
+                obj.edges = removeDuplicateEdges(merged.newEdges);
+                obj.degrees = new Array(obj.nodes.length).fill(0);
+                obj.edges.forEach(edge => { obj.degrees[edge[0]]++; obj.degrees[edge[1]]++; });
+                obj.oddCount = obj.degrees.filter(d => d % 2 !== 0).length;
+                obj.totalEdges = obj.edges.length;
+                patterns.push(obj);
+            }
+            
+            addCustom({
+                name: "Class-A", nodes: [{x:-0.6, y:0.4}, {x:0.6, y:0.4}, {x:0.6, y:-0.4}, {x:-0.6, y:-0.4}, {x:0, y:-0.9}],
+                edges: [[0,1], [1,2], [2,3], [3,0], [0,2], [1,3], [3,4], [2,4]]
+            });
+            addCustom({
+                name: "Class-B", nodes: [{x:-0.7, y:0.5}, {x:0.7, y:0.5}, {x:0.7, y:-0.3}, {x:-0.7, y:-0.3}, {x:0, y:-0.7}],
+                edges: [[0,1], [1,2], [2,3], [3,0], [0,2], [1,3], [2,4], [3,4]]
+            });
+
+            patterns = patterns.filter(p => {
+                const MIN_ANGLE_RAD = 20 * (Math.PI / 180);
+                for(let i=0; i<p.edges.length; i++) {
+                    for(let j=i+1; j<p.edges.length; j++) {
+                        let e1 = p.edges[i], e2 = p.edges[j];
+                        let n1 = p.nodes[e1[0]], n2 = p.nodes[e1[1]];
+                        let n3 = p.nodes[e2[0]], n4 = p.nodes[e2[1]];
+                        let dx1 = n2.x - n1.x, dy1 = n2.y - n1.y;
+                        let dx2 = n4.x - n3.x, dy2 = n4.y - n3.y;
+                        
+                        let len1 = Math.sqrt(dx1*dx1 + dy1*dy1);
+                        let len2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+                        if (len1 === 0 || len2 === 0) continue;
+                        
+                        let cosTheta = (dx1*dx2 + dy1*dy2) / (len1 * len2);
+                        cosTheta = Math.max(-1, Math.min(1, cosTheta)); 
+                        let angle = Math.acos(cosTheta);
+                        if (angle > Math.PI / 2) angle = Math.PI - angle; 
+                        
+                        if (angle > 0.01 && angle < MIN_ANGLE_RAD) {
+                            if (e1[0] === e2[0] || e1[0] === e2[1] || e1[1] === e2[0] || e1[1] === e2[1]) {
+                                return false; 
+                            } else {
+                                let det = dx1 * dy2 - dy1 * dx2;
+                                if (Math.abs(det) > 0.001) {
+                                    let t = ((n3.x - n1.x) * dy2 - (n3.y - n1.y) * dx2) / det;
+                                    let u = -((n1.x - n3.x) * dy1 - (n1.y - n3.y) * dx1) / det;
+                                    if (t > 0.01 && t < 0.99 && u > 0.01 && u < 0.99) return false;
+                                }
+                            }
+                        }
+                    }
+                }
+                return true;
+            });
+
+            patterns = patterns.filter(p => p.oddCount === 0 || p.oddCount === 2);
+            patterns.sort((a, b) => a.edges.length - b.edges.length);
+
+            if (patterns.length > 0) patterns.shift();
+            if (patterns.length > 0) patterns.pop();
+
+            const third = Math.floor(patterns.length / 3);
+            easyLevels = patterns.slice(0, third);
+            normalLevels = patterns.slice(third, third * 2);
+            hardLevels = patterns.slice(third * 2);
+        }
+
+        function poly(n, title) {
+            let nodes = [], edges = [];
+            for(let i=0; i<n; i++) {
+                let a = -Math.PI/2 + (Math.PI*2*i/n);
+                nodes.push({x: Math.cos(a), y: Math.sin(a)});
+                edges.push([i, (i+1)%n]);
+            }
+            if (n === 4) edges.push([0, 2]);
+            else if (n === 5) { edges.push([0, 2]); edges.push([0, 3]); }
+            else if (n === 6) { edges.push([0, 2]); edges.push([2, 4]); edges.push([4, 0]); }
+            else if (n === 7) { edges.push([0, 2]); edges.push([2, 4]); edges.push([4, 6]); }
+            else if (n === 8) { edges.push([0, 3]); edges.push([3, 6]); edges.push([6, 1]); edges.push([1, 4]); }
+            else if (n > 8) { edges.push([0, 3]); edges.push([1, 4]); edges.push([2, 5]); }
+            return {name: title, nodes, edges};
+        }
+
+        function star(n, step, title) {
+            let nodes = [], edges = [];
+            for(let i=0; i<n; i++) {
+                let a = -Math.PI/2 + (Math.PI*2*i/n);
+                nodes.push({x: Math.cos(a), y: Math.sin(a)});
+                edges.push([i, (i+step)%n]);
+            }
+            return {name: title, nodes, edges};
+        }
+
+        function polygonStar(n, step, title) {
+            let p = poly(n, title);
+            for(let i=0; i<n; i++) p.edges.push([i, (i+step)%n]);
+            return p;
+        }
+
+        function flower(petals, sides, title) {
+            let nodes = [{x:0, y:0}]; let edges = []; let r = 0.8;
+            for(let p=0; p<petals; p++) {
+                let angleOffset = (Math.PI*2*p/petals);
+                let startIdx = nodes.length;
+                for(let i=1; i<sides; i++) {
+                    let localAngle = (Math.PI*2*i/sides);
+                    let lx = r * Math.sin(localAngle);
+                    let ly = r - r * Math.cos(localAngle);
+                    let rx = lx * Math.cos(angleOffset) - ly * Math.sin(angleOffset);
+                    let ry = lx * Math.sin(angleOffset) + ly * Math.cos(angleOffset);
+                    nodes.push({x: rx, y: ry});
+                }
+                edges.push([0, startIdx]);
+                for(let i=1; i<sides-1; i++) edges.push([startIdx + i - 1, startIdx + i]);
+                edges.push([startIdx + sides - 2, 0]);
+            }
+            return {name: title, nodes, edges};
+        }
+
+        function complete(n, title) {
+            let nodes = [], edges = [];
+            for(let i=0; i<n; i++) {
+                let a = -Math.PI/2 + (Math.PI*2*i/n);
+                nodes.push({x: Math.cos(a), y: Math.sin(a)});
+            }
+            for(let i=0; i<n; i++) {
+                for(let j=i+1; j<n; j++) edges.push([i, j]);
+            }
+            return {name: title, nodes, edges};
+        }
+
+        let playerCount = 1;
+        let difficultyMode = 'random';
+        let gameTime = 60;
+        let timerInterval, rankInterval;
+        let players = [];
+        const themeColors = ['#00cec9', '#fdcb6e', '#ff7675', '#a29bfe', '#55efc4', '#fab1a0'];
+        const animalIcons = ['🐶', '🐱', '🐰', '🐹', '🦊', '🐼'];
+        // Name localization mapping internally isn't strictly necessary, use icons. 
+        // We'll keep default array, but not explicitly translate animals to save size, just icons + Player N
+        const animalNames = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6']; 
+
+        function selectPlayer(num) {
+            playerCount = num;
+            document.querySelectorAll('#player-options .btn-option').forEach(b => b.classList.remove('selected'));
+            event.target.classList.add('selected');
+            playSound('click');
+        }
+        function selectDifficulty(mode) {
+            difficultyMode = mode;
+            document.querySelectorAll('#difficulty-options .btn-option').forEach(b => b.classList.remove('selected'));
+            event.target.classList.add('selected');
+            playSound('click');
+        }
+        function getRandomLevel(pool) {
+            return JSON.parse(JSON.stringify(pool[Math.floor(Math.random() * pool.length)]));
+        }
+
+        function initGame() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('floating-btns').style.display = 'block';
+            document.getElementById('langSelectorContainer').style.display = 'none'; // 게임 진입시 숨김
+            generateAllPatterns();
+
+            const gameScreen = document.getElementById('game-screen');
+            gameScreen.style.display = 'grid';
+            gameScreen.innerHTML = '';
+            
+            // 1,2,3인용 등 왼쪽 쏠림 방지 및 가운데 정렬 처리
+            gameScreen.style.gridTemplateColumns = `repeat(${playerCount}, minmax(150px, 400px))`;
+            gameScreen.style.justifyContent = 'center';
+
+            let commonStages = [];
+            if(difficultyMode === 'random') {
+                commonStages = [getRandomLevel(easyLevels), getRandomLevel(normalLevels), getRandomLevel(hardLevels)];
+            } else if(difficultyMode === 'easy') {
+                commonStages = [getRandomLevel(easyLevels), getRandomLevel(easyLevels), getRandomLevel(easyLevels)];
+            } else if(difficultyMode === 'normal') {
+                commonStages = [getRandomLevel(normalLevels), getRandomLevel(normalLevels), getRandomLevel(normalLevels)];
+            } else if(difficultyMode === 'hard') {
+                commonStages = [getRandomLevel(hardLevels), getRandomLevel(hardLevels), getRandomLevel(hardLevels)];
+            }
+
+            commonStages.forEach(stage => {
+                let oddNodes = [];
+                for(let i=0; i<stage.degrees.length; i++) {
+                    if(stage.degrees[i] % 2 !== 0) oddNodes.push(i);
+                }
+                if(oddNodes.length === 2) stage.startNode = oddNodes[Math.floor(Math.random() * 2)];
+                else stage.startNode = Math.floor(Math.random() * stage.nodes.length);
+            });
+
+            players = [];
+            for(let i=0; i<playerCount; i++) {
+                let pStages = JSON.parse(JSON.stringify(commonStages));
+                players.push({
+                    id: i, stages: pStages, currentStageIdx: 0, totalLinesDrawn: 0, finishTime: null,
+                    isDone: false, isPaused: false, visitedEdges: [], currentPath: [], lastNodeIndex: -1,
+                    isDrawing: false, brushPos: {x:0, y:0}
+                });
+                createPlayerUI(i);
+                setupCanvas(i);
+                document.getElementById(`pattern-name-${i}`).innerText = pStages[0].name;
+            }
+
+            document.getElementById('ranking-bar').style.display = 'flex';
+            startCountdown();
+        }
+
+        function createPlayerUI(idx) {
+            const container = document.getElementById('game-screen');
+            const div = document.createElement('div');
+            const t = translations[currentLang];
+            div.className = `player-area theme-${idx}`;
+            div.id = `player-${idx}`;
+
+            div.innerHTML = `
+                <div class="player-header">
+                    <span class="p-name">${animalIcons[idx]} ${animalNames[idx]}</span>
+                    <span class="p-status" id="status-${idx}">0 / 3 ${t.stageStr}</span>
+                </div>
+                <div class="pattern-name" id="pattern-name-${idx}">Pattern</div>
+                
+                <div class="success-overlay" id="success-${idx}">
+                    <div class="success-text" id="success-txt-${idx}">${t.success}</div>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="canvas-${idx}"></canvas>
+                </div>
+                
+                <button class="redraw-btn dynamic-text" id="redraw-btn-${idx}" onpointerdown="resetDrawing(${idx})">${t.redraw}</button>
+
+                <div class="result-overlay" id="result-${idx}">
+                    <div class="rank-text" id="rank-${idx}"></div>
+                    <div class="info-text" id="info-${idx}"></div>
+                </div>
+            `;
+            container.appendChild(div);
+            // 폰트 동기화
+            if(currentLang !== 'ko') {
+                div.querySelector('.redraw-btn').style.fontFamily = "sans-serif";
+                div.querySelector('.success-text').style.fontFamily = "sans-serif";
+            }
+        }
+
+        function setupCanvas(idx) {
+            const canvas = document.getElementById(`canvas-${idx}`);
+            const container = canvas.parentElement;
+            
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+
+            canvas.addEventListener('pointerdown', (e) => handlePointerDown(e, idx));
+            canvas.addEventListener('pointermove', (e) => handlePointerMove(e, idx));
+            window.addEventListener('pointerup', (e) => handlePointerUp(e, idx));
+            
+            window.addEventListener('resize', () => {
+                if(canvas.parentElement) {
+                    canvas.width = canvas.parentElement.clientWidth;
+                    canvas.height = canvas.parentElement.clientHeight;
+                }
+            });
+        }
+
+        function resetDrawing(idx) {
+            const p = players[idx];
+            if(p.isDone || p.isPaused || gameTime <= 0) return;
+            
+            p.visitedEdges = [];
+            p.currentPath = [];
+            p.lastNodeIndex = -1;
+            p.isDrawing = false;
+            playSound('click');
+        }
+
+        function startCountdown() {
+            const overlay = document.getElementById('global-overlay');
+            overlay.innerHTML = '<div id="countdown-txt">3</div>';
+            overlay.style.display = 'flex';
+            overlay.style.background = 'rgba(0,0,0,0.9)';
+            
+            let count = 3;
+            playSound('tick'); 
+            let iv = setInterval(() => {
+                count--;
+                if(count > 0) {
+                    document.getElementById('countdown-txt').innerText = count;
+                    playSound('tick');
+                } else if(count === 0) {
+                    document.getElementById('countdown-txt').innerText = "START!";
+                    playSound('win');
+                } else {
+                    clearInterval(iv);
+                    overlay.style.display = 'none';
+                    startGameLoop();
+                }
+            }, 1000);
+        }
+
+        function startGameLoop() {
+            gameTime = 60;
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                gameTime--;
+                updateTimerDisplay();
+                if(gameTime <= 5 && gameTime > 0) playSound('tick');
+                if(gameTime <= 0) endGame();
+            }, 1000);
+
+            rankInterval = setInterval(updateRankingBar, 1000);
+            requestAnimationFrame(renderLoop);
+        }
+
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('timer-display');
+            timerEl.innerText = gameTime;
+            if(gameTime <= 10) timerEl.classList.add('urgent');
+            else timerEl.classList.remove('urgent');
+        }
+
+        function getTransform(canvas, pattern) {
+            const pad = 30;
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            for(let n of pattern.nodes) {
+                if(n.x < minX) minX = n.x; if(n.x > maxX) maxX = n.x;
+                if(n.y < minY) minY = n.y; if(n.y > maxY) maxY = n.y;
+            }
+            let rangeX = maxX - minX || 1; let rangeY = maxY - minY || 1;
+            let scale = Math.min((canvas.width - pad*2)/rangeX, (canvas.height - pad*2)/rangeY);
+            let cx = (minX + maxX) / 2; let cy = (minY + maxY) / 2;
+            
+            return {
+                tx: (x) => canvas.width/2 + (x - cx) * scale,
+                ty: (y) => canvas.height/2 + (y - cy) * scale,
+                nodeRadius: Math.max(4, Math.min(canvas.width, canvas.height) * 0.025)
+            };
+        }
+
+        function handlePointerDown(e, idx) {
+            if(gameTime <= 0) return;
+            const p = players[idx];
+            if(p.isDone || p.isPaused) return;
+
+            const canvas = document.getElementById(`canvas-${idx}`);
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const stage = p.stages[p.currentStageIdx];
+            const t = getTransform(canvas, stage);
+
+            let clickedNode = -1;
+            for(let i=0; i<stage.nodes.length; i++) {
+                let nx = t.tx(stage.nodes[i].x);
+                let ny = t.ty(stage.nodes[i].y);
+                if(Math.sqrt((x-nx)**2 + (y-ny)**2) < t.nodeRadius * 2.5) {
+                    clickedNode = i; break;
+                }
+            }
+
+            if(clickedNode !== -1) {
+                if(p.currentPath.length === 0) {
+                    if(clickedNode === stage.startNode) {
+                        p.isDrawing = true;
+                        p.lastNodeIndex = clickedNode;
+                        p.currentPath.push(clickedNode);
+                        p.brushPos = {x, y};
+                        canvas.setPointerCapture(e.pointerId);
+                    }
+                } else if(clickedNode === p.lastNodeIndex) {
+                    p.isDrawing = true;
+                    p.brushPos = {x, y};
+                    canvas.setPointerCapture(e.pointerId);
+                }
+            }
+        }
+
+        function handlePointerMove(e, idx) {
+            const p = players[idx];
+            if(!p.isDrawing || p.isDone || p.isPaused) return;
+
+            const canvas = document.getElementById(`canvas-${idx}`);
+            const rect = canvas.getBoundingClientRect();
+            p.brushPos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+            const stage = p.stages[p.currentStageIdx];
+            const t = getTransform(canvas, stage);
+
+            let hoveredNode = -1;
+            for(let i=0; i<stage.nodes.length; i++) {
+                let nx = t.tx(stage.nodes[i].x);
+                let ny = t.ty(stage.nodes[i].y);
+                if(Math.sqrt((p.brushPos.x-nx)**2 + (p.brushPos.y-ny)**2) < t.nodeRadius * 2.5) {
+                    hoveredNode = i; break;
+                }
+            }
+
+            if(hoveredNode !== -1 && hoveredNode !== p.lastNodeIndex) {
+                let edgeIdx = stage.edges.findIndex(edge => 
+                    (edge[0] === p.lastNodeIndex && edge[1] === hoveredNode) ||
+                    (edge[1] === p.lastNodeIndex && edge[0] === hoveredNode)
+                );
+
+                if(edgeIdx !== -1 && !p.visitedEdges.includes(edgeIdx)) {
+                    p.visitedEdges.push(edgeIdx);
+                    p.currentPath.push(hoveredNode);
+                    p.lastNodeIndex = hoveredNode;
+                    p.totalLinesDrawn++;
+
+                    checkWin(idx);
+                }
+            }
+        }
+
+        function handlePointerUp(e, idx) {
+            const p = players[idx];
+            if(p && p.isDrawing) {
+                p.isDrawing = false;
+                const canvas = document.getElementById(`canvas-${idx}`);
+                if(canvas.hasPointerCapture(e.pointerId)) {
+                    canvas.releasePointerCapture(e.pointerId);
+                }
+            }
+        }
+
+        function checkWin(idx) {
+            const p = players[idx];
+            const stage = p.stages[p.currentStageIdx];
+            
+            if(p.visitedEdges.length === stage.totalEdges) {
+                p.isDrawing = false;
+                p.isPaused = true;
+                playSound('correct'); 
+                
+                const successOverlay = document.getElementById(`success-${idx}`);
+                successOverlay.style.display = 'flex';
+                
+                setTimeout(() => {
+                    successOverlay.style.display = 'none';
+                    if(gameTime <= 0) return; 
+
+                    p.currentStageIdx++;
+                    const t = translations[currentLang];
+                    document.getElementById(`status-${idx}`).innerText = `${p.currentStageIdx} / 3 ${t.stageStr}`;
+                    
+                    if(p.currentStageIdx >= 3) {
+                        p.isDone = true;
+                        p.finishTime = 60 - gameTime;
+                        showPlayerDone(idx);
+                        checkAllDone();
+                    } else {
+                        document.getElementById(`pattern-name-${idx}`).innerText = p.stages[p.currentStageIdx].name;
+                        
+                        p.visitedEdges = [];
+                        p.currentPath = [];
+                        p.lastNodeIndex = -1;
+                        p.isPaused = false; 
+                    }
+                }, 3000);
+            }
+        }
+
+        function showPlayerDone(idx) {
+            const overlay = document.getElementById(`result-${idx}`);
+            overlay.style.display = 'flex';
+            const t = translations[currentLang];
+            document.getElementById(`rank-${idx}`).innerHTML = `<span style="font-size:3rem">${t.clear}</span>`;
+            document.getElementById(`info-${idx}`).innerText = `${t.record}: ${players[idx].finishTime}s`;
+        }
+
+        function checkAllDone() {
+            if(players.every(p => p.isDone)) endGame();
+        }
+
+        function renderLoop() {
+            if(gameTime < 0) return;
+
+            for(let i=0; i<playerCount; i++) {
+                const p = players[i];
+                if(p.isDone) continue;
+
+                const canvas = document.getElementById(`canvas-${i}`);
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const stage = p.stages[p.currentStageIdx];
+                if(!stage) continue;
+
+                const t = getTransform(canvas, stage);
+
+                ctx.lineWidth = 4.8;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                
+                stage.edges.forEach((edge, eIdx) => {
+                    if(!p.visitedEdges.includes(eIdx)) {
+                        ctx.beginPath();
+                        ctx.moveTo(t.tx(stage.nodes[edge[0]].x), t.ty(stage.nodes[edge[0]].y));
+                        ctx.lineTo(t.tx(stage.nodes[edge[1]].x), t.ty(stage.nodes[edge[1]].y));
+                        ctx.strokeStyle = '#555';
+                        ctx.stroke();
+                    }
+                });
+
+                for(let nIdx=0; nIdx<stage.nodes.length; nIdx++) {
+                    const node = stage.nodes[nIdx];
+                    const isStartNode = (nIdx === stage.startNode);
+                    const isCurrent = (nIdx === p.lastNodeIndex);
+
+                    ctx.beginPath();
+                    if (isStartNode && p.currentPath.length === 0) {
+                        ctx.arc(t.tx(node.x), t.ty(node.y), t.nodeRadius * 1.5, 0, Math.PI*2);
+                        ctx.fillStyle = '#f59e0b';
+                    } else if (isCurrent) {
+                        ctx.arc(t.tx(node.x), t.ty(node.y), t.nodeRadius * 1.5, 0, Math.PI*2);
+                        ctx.fillStyle = themeColors[i];
+                    } else {
+                        ctx.arc(t.tx(node.x), t.ty(node.y), t.nodeRadius, 0, Math.PI*2);
+                        ctx.fillStyle = '#a29bfe';
+                    }
+                    ctx.fill();
+                    ctx.lineWidth = 1.8;
+                    ctx.strokeStyle = '#fff';
+                    ctx.stroke();
+                }
+
+                ctx.lineWidth = 4.8;
+                stage.edges.forEach((edge, eIdx) => {
+                    if(p.visitedEdges.includes(eIdx)) {
+                        ctx.beginPath();
+                        ctx.moveTo(t.tx(stage.nodes[edge[0]].x), t.ty(stage.nodes[edge[0]].y));
+                        ctx.lineTo(t.tx(stage.nodes[edge[1]].x), t.ty(stage.nodes[edge[1]].y));
+                        ctx.strokeStyle = themeColors[i];
+                        ctx.stroke();
+                    }
+                });
+
+                if(p.isDrawing && p.lastNodeIndex !== -1 && !p.isPaused) {
+                    ctx.beginPath();
+                    ctx.moveTo(t.tx(stage.nodes[p.lastNodeIndex].x), t.ty(stage.nodes[p.lastNodeIndex].y));
+                    ctx.lineTo(p.brushPos.x, p.brushPos.y);
+                    ctx.strokeStyle = themeColors[i] + '80';
+                    ctx.setLineDash([6, 6]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                if(!p.isPaused) {
+                    let bx, by;
+                    if(p.currentPath.length === 0) {
+                        bx = t.tx(stage.nodes[stage.startNode].x);
+                        by = t.ty(stage.nodes[stage.startNode].y);
+                    } else if(p.lastNodeIndex !== -1) {
+                        bx = p.isDrawing ? p.brushPos.x : t.tx(stage.nodes[p.lastNodeIndex].x);
+                        by = p.isDrawing ? p.brushPos.y : t.ty(stage.nodes[p.lastNodeIndex].y);
+                    }
+
+                    if(bx !== undefined && by !== undefined) {
+                        // Canvas에 폰트 상속 이슈 해결 (명시적으로 sans-serif 지정)
+                        ctx.font = `${t.nodeRadius * 2.5}px sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('🖌️', bx + 15, by - 15);
+                    }
+                }
+            }
+            requestAnimationFrame(renderLoop);
+        }
+
+        function updateRankingBar() {
+            const bar = document.getElementById('ranking-bar');
+            let sorted = [...players].sort((a, b) => {
+                if(b.currentStageIdx !== a.currentStageIdx) return b.currentStageIdx - a.currentStageIdx;
+                return b.totalLinesDrawn - a.totalLinesDrawn;
+            });
+            const t = translations[currentLang];
+
+            let html = '';
+            for(let i=0; i<sorted.length; i++) {
+                html += `<span>${i+1}:</span> ${animalIcons[sorted[i].id]} (S${sorted[i].currentStageIdx}/L${sorted[i].totalLinesDrawn}) `;
+                if(i < sorted.length -1) html += ' &nbsp;|&nbsp; ';
+            }
+            bar.innerHTML = html;
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            clearInterval(rankInterval);
+            playSound('win');
+
+            let sorted = [...players].sort((a, b) => {
+                if(a.isDone && b.isDone) return a.finishTime - b.finishTime; 
+                if(a.isDone) return -1;
+                if(b.isDone) return 1;
+                if(b.currentStageIdx !== a.currentStageIdx) return b.currentStageIdx - a.currentStageIdx;
+                return b.totalLinesDrawn - a.totalLinesDrawn;
+            });
+
+            const t = translations[currentLang];
+
+            players.forEach(p => {
+                const rank = sorted.findIndex(s => s.id === p.id) + 1;
+                const overlay = document.getElementById(`result-${p.id}`);
+                const rankText = document.getElementById(`rank-${p.id}`);
+                const infoText = document.getElementById(`info-${p.id}`);
+                
+                let rankHtml = '';
+                if(rank === 1) rankHtml = '🥇';
+                else if(rank === 2) rankHtml = '🥈';
+                else if(rank === 3) rankHtml = '🥉';
+                else if(rank === 4) rankHtml = '<span style="font-size:0.7em;">4️⃣</span>';
+                else if(rank === 5) rankHtml = '<span style="font-size:0.7em;">5️⃣</span>';
+                else if(rank === 6) rankHtml = '<span style="font-size:0.7em;">6️⃣</span>';
+
+                overlay.style.display = 'flex';
+                rankText.innerHTML = rankHtml;
+                
+                if(p.isDone) infoText.innerText = `${t.record}: ${p.finishTime}s`;
+                else infoText.innerText = `S${p.currentStageIdx} / L${p.totalLinesDrawn}`;
+            });
+
+            const globalOverlay = document.getElementById('global-overlay');
+            globalOverlay.style.display = 'flex';
+            globalOverlay.style.background = 'rgba(0,0,0,0.4)'; 
+            globalOverlay.innerHTML = `
+                <div style="position:absolute; top: 15%; background:var(--card-bg); padding:30px 50px; border-radius:30px; text-align:center; border:3px solid #555; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+                    <div class="winner-banner" style="font-family: ${currentLang === 'ko' ? "'Jua', sans-serif" : "sans-serif"}">${t.winnerPrefix}: ${animalIcons[sorted[0].id]} ${animalNames[sorted[0].id]}</div>
+                    <button class="restart-btn" onclick="document.getElementById('btn-home').click()" style="font-family: ${currentLang === 'ko' ? "'Jua', sans-serif" : "sans-serif"}">${t.goBack}</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

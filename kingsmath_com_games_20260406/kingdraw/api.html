@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 키 발급 모달 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 모달 내부 스크롤바 디자인 */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* 모달 등장 애니메이션 */
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-animate {
+            animation: modalFadeIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-800/80 h-screen w-full flex items-center justify-center p-4 antialiased">
+
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[600px] overflow-hidden flex flex-col modal-animate">
+        
+        <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                </svg>
+                <span data-i18n="modal_title">Google AI Studio API 발급</span>
+            </h2>
+            
+            <div class="flex items-center gap-3">
+                <select id="langSelect" class="bg-white border border-gray-300 text-gray-700 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block p-1.5 outline-none cursor-pointer">
+                    <option value="ko">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh">中文</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="ru">Русский</option>
+                    <option value="id">Bahasa Indonesia</option>
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="th">ไทย</option>
+                    <option value="pt-br">Português (BR)</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="bn">বাংলা</option>
+                    <option value="tr">Türkçe</option>
+                    <option value="de">Deutsch</option>
+                    <option value="it">Italiano</option>
+                </select>
+                <button class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="px-6 py-6 overflow-y-auto custom-scrollbar max-h-[70vh]">
+            
+            <div class="mb-6 bg-blue-50/60 border border-blue-100 rounded-xl p-4">
+                <h3 class="text-sm font-bold text-blue-800 mb-2 flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span data-i18n="why_title">왜 개별 API 키가 필요한가요?</span>
+                </h3>
+                <ul class="text-xs text-blue-700 space-y-2 ml-1">
+                    <li class="flex items-start gap-1.5">
+                        <span class="mt-0.5 font-bold">•</span>
+                        <span class="leading-relaxed" data-i18n="reason1"><strong>안정적인 사용량 확보:</strong> 공용 키를 사용하면 다른 사람의 사용량과 합산되어 한도 초과(Rate Limit)로 서비스가 멈출 수 있습니다. 개인 키를 쓰면 무료 할당량을 안정적으로 온전히 사용할 수 있습니다.</span>
+                    </li>
+                    <li class="flex items-start gap-1.5">
+                        <span class="mt-0.5 font-bold">•</span>
+                        <span class="leading-relaxed" data-i18n="reason2"><strong>개인정보 및 보안:</strong> 본인의 API 키를 사용하여 요청해야 데이터가 타인과 섞이지 않고 안전하게 처리됩니다.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <p class="text-sm text-gray-600 mb-5 leading-relaxed" data-i18n="guide_desc">
+                Gemini API를 사용하기 위해 무료로 API 키를 발급받는 과정입니다. 그림을 보고 순서대로 따라해 주세요.
+            </p>
+
+            <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" 
+               class="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition-colors mb-8 shadow-sm">
+                <span data-i18n="btn_go">Google AI Studio 바로가기</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            </a>
+
+            <div class="space-y-8">
+                
+                <div class="flex items-start gap-4">
+                    <div class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-600 font-bold text-xs shrink-0 border-2 border-white shadow-sm">1</div>
+                    <div class="pt-0.5">
+                        <h3 class="text-base font-bold text-gray-800 mb-1" data-i18n="step1_title">구글 계정 로그인</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed" data-i18n="step1_desc">위 버튼을 눌러 사이트에 접속한 후, 본인의 구글 계정으로 로그인합니다.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                    <div class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-600 font-bold text-xs shrink-0 border-2 border-white shadow-sm">2</div>
+                    <div class="pt-0.5 w-full">
+                        <h3 class="text-base font-bold text-gray-800 mb-1" data-i18n="step2_title">API 키 메뉴 이동</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-3" data-i18n="step2_desc">화면 왼쪽 사이드바 하단에서 $GET_API_KEY_BTN$ 메뉴를 클릭합니다.</p>
+                        <img src="1.png" alt="Get API key Menu" class="w-full max-w-[500px] rounded-lg border border-gray-200 shadow-sm block">
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                    <div class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-600 font-bold text-xs shrink-0 border-2 border-white shadow-sm">3</div>
+                    <div class="pt-0.5">
+                        <h3 class="text-base font-bold text-gray-800 mb-1" data-i18n="step3_title">API 키 선택</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed" data-i18n="step3_desc">목록에 기본으로 생성되어 있는 <span class="font-semibold text-blue-600">파란색 글씨의 API 키(예: ..._8gE)</span>를 클릭합니다.<br><span class="text-xs text-gray-500 mt-1 block">* 만약 목록이 비어있다면, 상단의 $CREATE_API_KEY_BTN$ 버튼을 눌러 새로 만들어주세요.</span></p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                    <div class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-600 font-bold text-xs shrink-0 border-2 border-white shadow-sm">4</div>
+                    <div class="pt-0.5 w-full">
+                        <h3 class="text-base font-bold text-gray-800 mb-1" data-i18n="step4_title">API 키 복사</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-3" data-i18n="step4_desc">API 키 세부정보 창이 나타나면, 우측 하단의 $COPY_BTN$ 버튼을 눌러 완료합니다.</p>
+                        <img src="2.png" alt="Copy API Key" class="w-full max-w-[500px] rounded-lg border border-gray-200 shadow-sm block bg-white">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-10 bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3">
+                <svg class="w-6 h-6 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <div>
+                    <h4 class="text-sm font-bold text-amber-800 mb-1" data-i18n="warning_title">보안 주의사항</h4>
+                    <p class="text-xs text-amber-700 leading-relaxed" data-i18n="warning_desc">API 키는 개인 비밀번호와 같습니다. 타인에게 공유하거나 깃허브(GitHub) 등 공개된 장소에 올리지 않도록 주의해 주세요.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+            <button class="px-5 py-2.5 bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium rounded-lg transition-colors shadow-sm" data-i18n="btn_confirm">
+                확인
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // 스타일이 포함된 공통 UI 컴포넌트 변수화
+        const UI_COMPONENTS = {
+            GET_API_KEY_BTN: '<span class="inline-block bg-gray-100 px-1.5 py-0.5 rounded text-gray-800 font-semibold border border-gray-200">Get API key</span>',
+            CREATE_API_KEY_BTN: '<span class="inline-block bg-blue-50 text-blue-700 px-1 py-0.5 rounded border border-blue-100">Create API key</span>',
+            COPY_BTN_WRAPPER: (text) => `<span class="inline-block bg-gray-100 px-1.5 py-0.5 rounded text-gray-800 font-semibold border border-gray-200">${text}</span>`,
+            BLUE_KEY_TEXT: (text) => `<span class="font-semibold text-blue-600">${text}</span>`,
+            HELPER_TEXT: (text) => `<span class="text-xs text-gray-500 mt-1 block">${text}</span>`
+        };
+
+        // 16개국 번역 데이터 (기존과 동일하여 생략 없이 유지)
+        const translations = {
+            "ko": {
+                modal_title: "Google AI Studio API 발급",
+                why_title: "왜 개별 API 키가 필요한가요?",
+                reason1: "<strong>안정적인 사용량 확보:</strong> 공용 키를 사용하면 다른 사람의 사용량과 합산되어 한도 초과(Rate Limit)로 서비스가 멈출 수 있습니다. 개인 키를 쓰면 무료 할당량을 온전히 사용할 수 있습니다.",
+                reason2: "<strong>개인정보 및 보안:</strong> 본인의 API 키를 사용하여 요청해야 데이터가 타인과 섞이지 않고 안전하게 처리됩니다.",
+                guide_desc: "Gemini API를 사용하기 위해 무료로 API 키를 발급받는 과정입니다. 그림을 보고 순서대로 따라해 주세요.",
+                btn_go: "Google AI Studio 바로가기",
+                step1_title: "구글 계정 로그인",
+                step1_desc: "위 버튼을 눌러 사이트에 접속한 후, 본인의 구글 계정으로 로그인합니다.",
+                step2_title: "API 키 메뉴 이동",
+                step2_desc: `화면 왼쪽 사이드바 하단에서 ${UI_COMPONENTS.GET_API_KEY_BTN} 메뉴를 클릭합니다.`,
+                step3_title: "API 키 선택",
+                step3_desc: `목록에 기본으로 생성되어 있는 ${UI_COMPONENTS.BLUE_KEY_TEXT("파란색 글씨의 API 키(예: ..._8gE)")}를 클릭합니다.<br>${UI_COMPONENTS.HELPER_TEXT(`* 만약 목록이 비어있다면, 상단의 ${UI_COMPONENTS.CREATE_API_KEY_BTN} 버튼을 눌러 새로 만들어주세요.`)}`,
+                step4_title: "API 키 복사",
+                step4_desc: `API 키 세부정보 창이 나타나면, 우측 하단의 ${UI_COMPONENTS.COPY_BTN_WRAPPER("키 복사")} 버튼을 눌러 완료합니다.`,
+                warning_title: "보안 주의사항",
+                warning_desc: "API 키는 개인 비밀번호와 같습니다. 타인에게 공유하거나 깃허브(GitHub) 등 공개된 장소에 올리지 않도록 주의해 주세요.",
+                btn_confirm: "확인"
+            },
+            "en": {
+                modal_title: "Get Google AI Studio API Key",
+                why_title: "Why do you need an individual API key?",
+                reason1: "<strong>Stable usage:</strong> Using a shared key can cause rate limit errors. A personal key ensures you can fully utilize your free quota.",
+                reason2: "<strong>Privacy & Security:</strong> Using your own API key ensures your data is processed safely and separately.",
+                guide_desc: "Follow the steps below to get your free API key for using Gemini API.",
+                btn_go: "Go to Google AI Studio",
+                step1_title: "Log in to Google",
+                step1_desc: "Click the button above and log in with your Google account.",
+                step2_title: "Go to API Key Menu",
+                step2_desc: `Click the ${UI_COMPONENTS.GET_API_KEY_BTN} menu at the bottom of the left sidebar.`,
+                step3_title: "Select API Key",
+                step3_desc: `Click the ${UI_COMPONENTS.BLUE_KEY_TEXT("blue API key (e.g., ..._8gE)")} from the list.<br>${UI_COMPONENTS.HELPER_TEXT(`* If the list is empty, click the ${UI_COMPONENTS.CREATE_API_KEY_BTN} button at the top.`)}`,
+                step4_title: "Copy API Key",
+                step4_desc: `In the details window, click the ${UI_COMPONENTS.COPY_BTN_WRAPPER("Copy")} button at the bottom right.`,
+                warning_title: "Security Warning",
+                warning_desc: "Treat your API key like a password. Do not share it or upload it to public places like GitHub.",
+                btn_confirm: "Confirm"
+            },
+            "ja": {
+                modal_title: "Google AI Studio APIキーの取得",
+                why_title: "なぜ個別のAPIキーが必要なのですか？",
+                reason1: "<strong>安定した利用:</strong> 共有キーを使用すると、制限(Rate Limit)を超えてサービスが停止する可能性があります。個人キーなら無料枠を安定して利用できます。",
+                reason2: "<strong>プライバシーとセキュリティ:</strong> 自分のAPIキーを使用することで、データが安全に処理されます。",
+                guide_desc: "Gemini APIを使用するための無料APIキーを取得する手順です。図を見て順に進めてください。",
+                btn_go: "Google AI Studioへ移動",
+                step1_title: "Googleアカウントでログイン",
+                step1_desc: "上のボタンをクリックし、ご自身のGoogleアカウントでログインします。",
+                step2_title: "APIキーメニューへ移動",
+                step2_desc: `画面左側のサイドバー下部にある ${UI_COMPONENTS.GET_API_KEY_BTN} メニューをクリックします。`,
+                step3_title: "APIキーの選択",
+                step3_desc: `リストにある ${UI_COMPONENTS.BLUE_KEY_TEXT("青色のAPIキー(例: ..._8gE)")} をクリックします。<br>${UI_COMPONENTS.HELPER_TEXT(`* リストが空の場合は、上部の ${UI_COMPONENTS.CREATE_API_KEY_BTN} を押して新規作成してください。`)}`,
+                step4_title: "APIキーをコピー",
+                step4_desc: `詳細ウィンドウが表示されたら、右下の ${UI_COMPONENTS.COPY_BTN_WRAPPER("コピー")} ボタンを押して完了です。`,
+                warning_title: "セキュリティ上の注意",
+                warning_desc: "APIキーはパスワードと同じです。他人に共有したり、GitHubなどの公開場所にアップロードしないでください。",
+                btn_confirm: "確認"
+            },
+            "zh": {
+                modal_title: "获取 Google AI Studio API 密钥",
+                why_title: "为什么需要个人 API 密钥？",
+                reason1: "<strong>确保稳定使用：</strong> 使用共享密钥可能会因超出速率限制(Rate Limit)而导致服务中断。使用个人密钥可确保您完全享有免费额度。",
+                reason2: "<strong>隐私与安全：</strong> 使用自己的 API 密钥进行请求，可确保数据被安全隔离处理。",
+                guide_desc: "这是获取免费 API 密钥以使用 Gemini API 的步骤。请按图示顺序操作。",
+                btn_go: "前往 Google AI Studio",
+                step1_title: "登录 Google 账号",
+                step1_desc: "点击上方按钮，使用您的 Google 账号登录。",
+                step2_title: "前往 API 密钥菜单",
+                step2_desc: `在屏幕左侧边栏底部，点击 ${UI_COMPONENTS.GET_API_KEY_BTN} 菜单。`,
+                step3_title: "选择 API 密钥",
+                step3_desc: `点击列表中默认生成的 ${UI_COMPONENTS.BLUE_KEY_TEXT("蓝色字体的 API 密钥 (例如: ..._8gE)")}。<br>${UI_COMPONENTS.HELPER_TEXT(`* 如果列表为空，请点击顶部的 ${UI_COMPONENTS.CREATE_API_KEY_BTN} 按钮进行创建。`)}`,
+                step4_title: "复制 API 密钥",
+                step4_desc: `弹出详细信息窗口后，点击右下角的 ${UI_COMPONENTS.COPY_BTN_WRAPPER("复制")} 按钮即可。`,
+                warning_title: "安全注意事项",
+                warning_desc: "API 密钥等同于个人密码。请勿将其分享给他人或上传至 GitHub 等公开场所。",
+                btn_confirm: "确定"
+            },
+            "es": {
+                modal_title: "Obtener clave API de Google AI Studio",
+                why_title: "¿Por qué necesitas una clave API individual?",
+                reason1: "<strong>Uso estable:</strong> El uso de una clave compartida puede provocar errores de límite de velocidad. Una clave personal garantiza que puedas utilizar tu cuota gratuita por completo.",
+                reason2: "<strong>Privacidad y seguridad:</strong> El uso de tu propia clave garantiza que tus datos se procesen de forma segura y separada.",
+                guide_desc: "Sigue estos pasos para obtener tu clave API gratuita para Gemini API.",
+                btn_go: "Ir a Google AI Studio",
+                step1_title: "Iniciar sesión en Google",
+                step1_desc: "Haz clic en el botón de arriba e inicia sesión con tu cuenta de Google.",
+                step2_title: "Ir al menú de claves API",
+                step2_desc: `Haz clic en el menú ${UI_COMPONENTS.GET_API_KEY_BTN} en la parte inferior de la barra lateral izquierda.`,
+                step3_title: "Seleccionar clave API",
+                step3_desc: `Haz clic en la ${UI_COMPONENTS.BLUE_KEY_TEXT("clave API azul (ej. ..._8gE)")} de la lista.<br>${UI_COMPONENTS.HELPER_TEXT(`* Si la lista está vacía, haz clic en el botón ${UI_COMPONENTS.CREATE_API_KEY_BTN} en la parte superior.`)}`,
+                step4_title: "Copiar clave API",
+                step4_desc: `En la ventana de detalles, haz clic en el botón ${UI_COMPONENTS.COPY_BTN_WRAPPER("Copiar")} en la parte inferior derecha.`,
+                warning_title: "Advertencia de seguridad",
+                warning_desc: "Trata tu clave API como una contraseña. No la compartas ni la subas a lugares públicos como GitHub.",
+                btn_confirm: "Confirmar"
+            },
+            "fr": {
+                modal_title: "Obtenir la clé API Google AI Studio",
+                why_title: "Pourquoi avez-vous besoin d'une clé API individuelle ?",
+                reason1: "<strong>Utilisation stable :</strong> L'utilisation d'une clé partagée peut entraîner des erreurs de limite de débit. Une clé personnelle garantit que vous pouvez utiliser pleinement votre quota gratuit.",
+                reason2: "<strong>Confidentialité et sécurité :</strong> L'utilisation de votre propre clé garantit que vos données sont traitées séparément et en toute sécurité.",
+                guide_desc: "Suivez les étapes ci-dessous pour obtenir votre clé API gratuite pour l'API Gemini.",
+                btn_go: "Aller sur Google AI Studio",
+                step1_title: "Connexion à Google",
+                step1_desc: "Cliquez sur le bouton ci-dessus et connectez-vous avec votre compte Google.",
+                step2_title: "Aller au menu Clé API",
+                step2_desc: `Cliquez sur le menu ${UI_COMPONENTS.GET_API_KEY_BTN} en bas de la barre latérale gauche.`,
+                step3_title: "Sélectionner la clé API",
+                step3_desc: `Cliquez sur la ${UI_COMPONENTS.BLUE_KEY_TEXT("clé API bleue (ex: ..._8gE)")} dans la liste.<br>${UI_COMPONENTS.HELPER_TEXT(`* Si la liste est vide, cliquez sur le bouton ${UI_COMPONENTS.CREATE_API_KEY_BTN} en haut.`)}`,
+                step4_title: "Copier la clé API",
+                step4_desc: `Dans la fenêtre des détails, cliquez sur le bouton ${UI_COMPONENTS.COPY_BTN_WRAPPER("Copier")} en bas à droite.`,
+                warning_title: "Avertissement de sécurité",
+                warning_desc: "Traitez votre clé API comme un mot de passe. Ne la partagez pas et ne la publiez pas sur des espaces publics comme GitHub.",
+                btn_confirm: "Confirmer"
+            },
+            "ru": {
+                modal_title: "Получить API-ключ Google AI Studio",
+                why_title: "Зачем нужен индивидуальный API-ключ?",
+                reason1: "<strong>Стабильная работа:</strong> Общий ключ может привести к превышению лимитов (Rate Limit). Свой ключ гарантирует полное использование бесплатной квоты.",
+                reason2: "<strong>Конфиденциальность:</strong> Использование собственного ключа обеспечивает безопасную обработку ваших данных.",
+                guide_desc: "Выполните эти шаги, чтобы получить бесплатный API-ключ для Gemini API.",
+                btn_go: "Перейти в Google AI Studio",
+                step1_title: "Войдите в Google",
+                step1_desc: "Нажмите кнопку выше и войдите в свой аккаунт Google.",
+                step2_title: "Меню API-ключей",
+                step2_desc: `Нажмите меню ${UI_COMPONENTS.GET_API_KEY_BTN} внизу левой боковой панели.`,
+                step3_title: "Выберите API-ключ",
+                step3_desc: `Нажмите на ${UI_COMPONENTS.BLUE_KEY_TEXT("синий API-ключ (напр. ..._8gE)")} в списке.<br>${UI_COMPONENTS.HELPER_TEXT(`* Если список пуст, нажмите кнопку ${UI_COMPONENTS.CREATE_API_KEY_BTN} вверху.`)}`,
+                step4_title: "Скопируйте API-ключ",
+                step4_desc: `В окне сведений нажмите кнопку ${UI_COMPONENTS.COPY_BTN_WRAPPER("Копировать")} в правом нижнем углу.`,
+                warning_title: "Предупреждение о безопасности",
+                warning_desc: "Относитесь к API-ключу как к паролю. Не делитесь им и не загружайте на публичные ресурсы, такие как GitHub.",
+                btn_confirm: "ОК"
+            },
+            "id": {
+                modal_title: "Dapatkan Kunci API Google AI Studio",
+                why_title: "Mengapa Anda membutuhkan kunci API individu?",
+                reason1: "<strong>Penggunaan stabil:</strong> Kunci bersama bisa terkena batas penggunaan (Rate Limit). Kunci pribadi memastikan Anda bisa memakai kuota gratis sepenuhnya.",
+                reason2: "<strong>Privasi & Keamanan:</strong> Kunci API Anda sendiri memastikan data diproses secara aman.",
+                guide_desc: "Ikuti langkah berikut untuk mendapatkan kunci API Gemini gratis.",
+                btn_go: "Pergi ke Google AI Studio",
+                step1_title: "Masuk ke Google",
+                step1_desc: "Klik tombol di atas dan masuk dengan akun Google Anda.",
+                step2_title: "Buka menu Kunci API",
+                step2_desc: `Klik menu ${UI_COMPONENTS.GET_API_KEY_BTN} di bagian bawah bilah sisi kiri.`,
+                step3_title: "Pilih Kunci API",
+                step3_desc: `Klik ${UI_COMPONENTS.BLUE_KEY_TEXT("kunci API berwarna biru (mis. ..._8gE)")} dari daftar.<br>${UI_COMPONENTS.HELPER_TEXT(`* Jika daftar kosong, klik tombol ${UI_COMPONENTS.CREATE_API_KEY_BTN} di bagian atas.`)}`,
+                step4_title: "Salin Kunci API",
+                step4_desc: `Di jendela detail, klik tombol ${UI_COMPONENTS.COPY_BTN_WRAPPER("Salin")} di kanan bawah.`,
+                warning_title: "Peringatan Keamanan",
+                warning_desc: "Perlakukan kunci API Anda seperti kata sandi. Jangan bagikan atau unggah ke tempat umum seperti GitHub.",
+                btn_confirm: "Konfirmasi"
+            },
+            "vi": {
+                modal_title: "Nhận Khóa API Google AI Studio",
+                why_title: "Tại sao bạn cần khóa API cá nhân?",
+                reason1: "<strong>Sử dụng ổn định:</strong> Dùng chung khóa có thể gây lỗi vượt quá giới hạn. Khóa cá nhân giúp bạn dùng trọn vẹn mức miễn phí.",
+                reason2: "<strong>Bảo mật:</strong> Sử dụng khóa riêng đảm bảo dữ liệu của bạn được xử lý an toàn.",
+                guide_desc: "Làm theo các bước sau để nhận khóa API Gemini miễn phí.",
+                btn_go: "Đến Google AI Studio",
+                step1_title: "Đăng nhập Google",
+                step1_desc: "Nhấn nút trên và đăng nhập bằng tài khoản Google của bạn.",
+                step2_title: "Mở menu Khóa API",
+                step2_desc: `Nhấp vào menu ${UI_COMPONENTS.GET_API_KEY_BTN} ở dưới cùng thanh bên trái.`,
+                step3_title: "Chọn Khóa API",
+                step3_desc: `Nhấp vào ${UI_COMPONENTS.BLUE_KEY_TEXT("khóa API màu xanh (VD: ..._8gE)")} trong danh sách.<br>${UI_COMPONENTS.HELPER_TEXT(`* Nếu danh sách trống, hãy nhấp vào nút ${UI_COMPONENTS.CREATE_API_KEY_BTN} ở trên cùng.`)}`,
+                step4_title: "Sao chép Khóa API",
+                step4_desc: `Trong cửa sổ chi tiết, nhấp vào nút ${UI_COMPONENTS.COPY_BTN_WRAPPER("Sao chép")} ở góc dưới bên phải.`,
+                warning_title: "Cảnh báo Bảo mật",
+                warning_desc: "Hãy bảo vệ khóa API như mật khẩu của bạn. Không chia sẻ hoặc tải lên những nơi công cộng như GitHub.",
+                btn_confirm: "Xác nhận"
+            },
+            "th": {
+                modal_title: "รับ API Key ของ Google AI Studio",
+                why_title: "ทำไมต้องมี API Key ส่วนตัว?",
+                reason1: "<strong>การใช้งานที่เสถียร:</strong> การใช้คีย์ร่วมกันอาจทำให้ติด Rate Limit คีย์ส่วนตัวช่วยให้คุณใช้โควต้าฟรีได้อย่างเต็มที่",
+                reason2: "<strong>ความเป็นส่วนตัวและความปลอดภัย:</strong> การใช้คีย์ของคุณเองช่วยให้มั่นใจได้ว่าข้อมูลของคุณจะถูกประมวลผลอย่างปลอดภัย",
+                guide_desc: "ทำตามขั้นตอนด้านล่างเพื่อรับ API Key สำหรับ Gemini API ฟรี",
+                btn_go: "ไปที่ Google AI Studio",
+                step1_title: "เข้าสู่ระบบ Google",
+                step1_desc: "คลิกปุ่มด้านบนและเข้าสู่ระบบด้วยบัญชี Google ของคุณ",
+                step2_title: "ไปที่เมนู API Key",
+                step2_desc: `คลิกเมนู ${UI_COMPONENTS.GET_API_KEY_BTN} ที่ด้านล่างซ้าย`,
+                step3_title: "เลือก API Key",
+                step3_desc: `คลิกที่ ${UI_COMPONENTS.BLUE_KEY_TEXT("API Key สีฟ้า (เช่น ..._8gE)")} จากรายการ<br>${UI_COMPONENTS.HELPER_TEXT(`* หากรายการว่างเปล่า ให้คลิกปุ่ม ${UI_COMPONENTS.CREATE_API_KEY_BTN} ที่ด้านบน`)}`,
+                step4_title: "คัดลอก API Key",
+                step4_desc: `ในหน้าต่างรายละเอียด คลิกปุ่ม ${UI_COMPONENTS.COPY_BTN_WRAPPER("คัดลอก")} ที่มุมขวาล่าง`,
+                warning_title: "คำเตือนด้านความปลอดภัย",
+                warning_desc: "ดูแล API Key เหมือนรหัสผ่านของคุณ ห้ามแบ่งปันหรืออัปโหลดไปยังสถานที่สาธารณะเช่น GitHub",
+                btn_confirm: "ตกลง"
+            },
+            "pt-br": {
+                modal_title: "Obter chave de API do Google AI Studio",
+                why_title: "Por que você precisa de uma chave de API individual?",
+                reason1: "<strong>Uso estável:</strong> Usar uma chave compartilhada pode causar limites de taxa. Uma chave pessoal garante que você possa usar toda a sua cota gratuita.",
+                reason2: "<strong>Privacidade e Segurança:</strong> O uso de sua própria chave garante que seus dados sejam processados com segurança.",
+                guide_desc: "Siga as etapas abaixo para obter sua chave de API gratuita do Gemini.",
+                btn_go: "Acessar Google AI Studio",
+                step1_title: "Faça login no Google",
+                step1_desc: "Clique no botão acima e faça login com sua conta do Google.",
+                step2_title: "Acessar o menu da chave de API",
+                step2_desc: `Clique no menu ${UI_COMPONENTS.GET_API_KEY_BTN} na parte inferior da barra lateral esquerda.`,
+                step3_title: "Selecione a chave de API",
+                step3_desc: `Clique na ${UI_COMPONENTS.BLUE_KEY_TEXT("chave de API azul (ex: ..._8gE)")} da lista.<br>${UI_COMPONENTS.HELPER_TEXT(`* Se a lista estiver vazia, clique no botão ${UI_COMPONENTS.CREATE_API_KEY_BTN} na parte superior.`)}`,
+                step4_title: "Copiar chave de API",
+                step4_desc: `Na janela de detalhes, clique no botão ${UI_COMPONENTS.COPY_BTN_WRAPPER("Copiar")} no canto inferior direito.`,
+                warning_title: "Aviso de segurança",
+                warning_desc: "Trate sua chave de API como uma senha. Não a compartilhe ou carregue em locais públicos como o GitHub.",
+                btn_confirm: "Confirmar"
+            },
+            "hi": {
+                modal_title: "Google AI Studio API कुंजी प्राप्त करें",
+                why_title: "आपको व्यक्तिगत API कुंजी की आवश्यकता क्यों है?",
+                reason1: "<strong>स्थिर उपयोग:</strong> साझा कुंजी का उपयोग करने से रेट लिमिट की समस्या हो सकती है। व्यक्तिगत कुंजी आपके मुफ्त कोटे का पूरा उपयोग सुनिश्चित करती है।",
+                reason2: "<strong>गोपनीयता और सुरक्षा:</strong> अपनी स्वयं की कुंजी का उपयोग करने से डेटा सुरक्षित रहता है।",
+                guide_desc: "मुफ़्त Gemini API कुंजी प्राप्त करने के लिए नीचे दिए गए चरणों का पालन करें।",
+                btn_go: "Google AI Studio पर जाएं",
+                step1_title: "Google में लॉग इन करें",
+                step1_desc: "ऊपर दिए गए बटन पर क्लिक करें और अपने Google खाते से लॉग इन करें।",
+                step2_title: "API कुंजी मेनू पर जाएं",
+                step2_desc: `बाएं साइडबार के नीचे ${UI_COMPONENTS.GET_API_KEY_BTN} मेनू पर क्लिक करें।`,
+                step3_title: "API कुंजी चुनें",
+                step3_desc: `सूची से ${UI_COMPONENTS.BLUE_KEY_TEXT("नीली API कुंजी (उदा. ..._8gE)")} पर क्लिक करें।<br>${UI_COMPONENTS.HELPER_TEXT(`* यदि सूची खाली है, तो शीर्ष पर ${UI_COMPONENTS.CREATE_API_KEY_BTN} बटन पर क्लिक करें।`)}`,
+                step4_title: "API कुंजी कॉपी करें",
+                step4_desc: `विवरण विंडो में, नीचे दाईं ओर ${UI_COMPONENTS.COPY_BTN_WRAPPER("कॉपी")} बटन पर क्लिक करें।`,
+                warning_title: "सुरक्षा चेतावनी",
+                warning_desc: "अपनी API कुंजी को पासवर्ड की तरह सुरक्षित रखें। इसे GitHub जैसी सार्वजनिक जगहों पर साझा न करें।",
+                btn_confirm: "पुष्टि करें"
+            },
+            "bn": {
+                modal_title: "Google AI Studio API Key পান",
+                why_title: "আপনার কেন একটি ব্যক্তিগত API Key প্রয়োজন?",
+                reason1: "<strong>স্থিতিশীল ব্যবহার:</strong> একটি শেয়ার করা কী ব্যবহার করলে রেট লিমিট সমস্যা হতে পারে। একটি ব্যক্তিগত কী নিশ্চিত করে যে আপনি আপনার ফ্রি কোটা পুরোপুরি ব্যবহার করতে পারবেন।",
+                reason2: "<strong>গোপনীয়তা এবং নিরাপত্তা:</strong> আপনার নিজের কী ব্যবহার করা নিশ্চিত করে যে আপনার ডেটা নিরাপদে প্রক্রিয়া করা হচ্ছে।",
+                guide_desc: "বিনামূল্যে Gemini API Key পেতে নিচের ধাপগুলো অনুসরণ করুন।",
+                btn_go: "Google AI Studio-তে যান",
+                step1_title: "Google এ লগ ইন করুন",
+                step1_desc: "উপরের বোতামে ক্লিক করুন এবং আপনার Google অ্যাকাউন্ট দিয়ে লগ ইন করুন।",
+                step2_title: "API Key মেনুতে যান",
+                step2_desc: `বাম সাইডবারের নিচে ${UI_COMPONENTS.GET_API_KEY_BTN} মেনুতে ক্লিক করুন।`,
+                step3_title: "API Key নির্বাচন করুন",
+                step3_desc: `তালিকা থেকে ${UI_COMPONENTS.BLUE_KEY_TEXT("নীল API Key (যেমন ..._8gE)")} ক্লিক করুন।<br>${UI_COMPONENTS.HELPER_TEXT(`* তালিকাটি খালি হলে, উপরের ${UI_COMPONENTS.CREATE_API_KEY_BTN} বোতামে ক্লিক করুন।`)}`,
+                step4_title: "API Key কপি করুন",
+                step4_desc: `বিস্তারিত উইন্ডোতে, ডানদিকের নিচে ${UI_COMPONENTS.COPY_BTN_WRAPPER("কপি করুন")} বোতামে ক্লিক করুন।`,
+                warning_title: "নিরাপত্তা সতর্কতা",
+                warning_desc: "আপনার API Key কে পাসওয়ার্ডের মতো মনে করুন। এটি শেয়ার করবেন মৃ বা GitHub এর মতো পাবলিক জায়গায় আপলোড করবেন না।",
+                btn_confirm: "নিশ্চিত করুন"
+            },
+            "tr": {
+                modal_title: "Google AI Studio API Anahtarı Alın",
+                why_title: "Neden bireysel bir API anahtarına ihtiyacınız var?",
+                reason1: "<strong>Kararlı kullanım:</strong> Ortak bir anahtar kullanmak hız sınırlarına (Rate Limit) takılmanıza neden olabilir. Kişisel bir anahtar ücretsiz kotanızı tam kullanmanızı sağlar.",
+                reason2: "<strong>Gizlilik ve Güvenlik:</strong> Kendi anahtarınızı kullanmak, verilerinizin güvenli bir şekilde işlenmesini sağlar.",
+                guide_desc: "Gemini API için ücretsiz API anahtarınızı almak için aşağıdaki adımları izleyin.",
+                btn_go: "Google AI Studio'ya Git",
+                step1_title: "Google'a giriş yapın",
+                step1_desc: "Yukarıdaki butona tıklayın ve Google hesabınızla giriş yapın.",
+                step2_title: "API Anahtarı menüsüne gidin",
+                step2_desc: `Sol kenar çubuğunun altındaki ${UI_COMPONENTS.GET_API_KEY_BTN} menüsüne tıklayın.`,
+                step3_title: "API Anahtarını Seçin",
+                step3_desc: `Listeden ${UI_COMPONENTS.BLUE_KEY_TEXT("mavi API anahtarına (örn. ..._8gE)")} tıklayın.<br>${UI_COMPONENTS.HELPER_TEXT(`* Liste boşsa, üstteki ${UI_COMPONENTS.CREATE_API_KEY_BTN} butonuna tıklayın.`)}`,
+                step4_title: "API Anahtarını Kopyala",
+                step4_desc: `Ayrıntılar penceresinde, sağ alttaki ${UI_COMPONENTS.COPY_BTN_WRAPPER("Kopyala")} butonuna tıklayın.`,
+                warning_title: "Güvenlik Uyarısı",
+                warning_desc: "API anahtarınıza bir şifre gibi davranın. Paylaşmayın veya GitHub gibi herkese açık yerlere yüklemeyin.",
+                btn_confirm: "Onayla"
+            },
+            "de": {
+                modal_title: "Google AI Studio API-Schlüssel erhalten",
+                why_title: "Warum benötigen Sie einen eigenen API-Schlüssel?",
+                reason1: "<strong>Stabile Nutzung:</strong> Ein gemeinsamer Schlüssel kann zu Ratenbegrenzungen führen. Ein privater Schlüssel stellt sicher, dass Sie Ihr kostenloses Kontingent nutzen können.",
+                reason2: "<strong>Datenschutz & Sicherheit:</strong> Die Verwendung eines eigenen Schlüssels gewährleistet die sichere Verarbeitung Ihrer Daten.",
+                guide_desc: "Befolgen Sie die Schritte, um Ihren kostenlosen Gemini-API-Schlüssel zu erhalten.",
+                btn_go: "Zu Google AI Studio gehen",
+                step1_title: "Bei Google anmelden",
+                step1_desc: "Klicken Sie oben auf die Schaltfläche und melden Sie sich mit Ihrem Google-Konto an.",
+                step2_title: "Zum API-Schlüssel-Menü gehen",
+                step2_desc: `Klicken Sie unten in der linken Seitenleiste auf das Menü ${UI_COMPONENTS.GET_API_KEY_BTN}.`,
+                step3_title: "API-Schlüssel auswählen",
+                step3_desc: `Klicken Sie in der Liste auf den ${UI_COMPONENTS.BLUE_KEY_TEXT("blauen API-Schlüssel (z.B. ..._8gE)")}.<br>${UI_COMPONENTS.HELPER_TEXT(`* Wenn die Liste leer ist, klicken Sie oben auf die Schaltfläche ${UI_COMPONENTS.CREATE_API_KEY_BTN}.`)}`,
+                step4_title: "API-Schlüssel kopieren",
+                step4_desc: `Klicken Sie im Detailfenster unten rechts auf die Schaltfläche ${UI_COMPONENTS.COPY_BTN_WRAPPER("Kopieren")}.`,
+                warning_title: "Sicherheitswarnung",
+                warning_desc: "Behandeln Sie Ihren API-Schlüssel wie ein Passwort. Teilen Sie ihn nicht an öffentlichen Orten wie GitHub.",
+                btn_confirm: "Bestätigen"
+            },
+            "it": {
+                modal_title: "Ottieni la chiave API di Google AI Studio",
+                why_title: "Perché hai bisogno di una chiave API individuale?",
+                reason1: "<strong>Uso stabile:</strong> L'uso di una chiave condivisa può causare limiti di velocità. Una chiave personale ti assicura di utilizzare l'intera quota gratuita.",
+                reason2: "<strong>Privacy e Sicurezza:</strong> L'uso della tua chiave garantisce che i tuoi dati vengano elaborati in modo sicuro.",
+                guide_desc: "Segui i passaggi per ottenere la tua chiave API gratuita per Gemini.",
+                btn_go: "Vai a Google AI Studio",
+                step1_title: "Accedi a Google",
+                step1_desc: "Fai clic sul pulsante in alto e accedi con il tuo account Google.",
+                step2_title: "Vai al menu Chiave API",
+                step2_desc: `Fai clic sul menu ${UI_COMPONENTS.GET_API_KEY_BTN} in basso nella barra laterale sinistra.`,
+                step3_title: "Seleziona la chiave API",
+                step3_desc: `Fai clic sulla ${UI_COMPONENTS.BLUE_KEY_TEXT("chiave API blu (es. ..._8gE)")} nell'elenco.<br>${UI_COMPONENTS.HELPER_TEXT(`* Se l'elenco è vuoto, fai clic sul pulsante ${UI_COMPONENTS.CREATE_API_KEY_BTN} in alto.`)}`,
+                step4_title: "Copia la chiave API",
+                step4_desc: `Nella finestra dei dettagli, fai clic sul pulsante ${UI_COMPONENTS.COPY_BTN_WRAPPER("Copia")} in basso a destra.`,
+                warning_title: "Avviso di sicurezza",
+                warning_desc: "Tratta la tua chiave API come una password. Non condividerla in luoghi pubblici come GitHub.",
+                btn_confirm: "Conferma"
+            }
+        };
+
+        function getLanguage() {
+            let lang = null;
+
+            // 1순위: URL 파라미터 확인 (?lang=de 등)
+            // 모달창이 iframe으로 쓰일 수 있으므로 부모창의 파라미터도 함께 고려
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                lang = urlParams.get('lang');
+                
+                if (!lang && window.parent !== window) {
+                    const parentUrlParams = new URLSearchParams(window.parent.location.search);
+                    lang = parentUrlParams.get('lang');
+                }
+            } catch (e) { /* CORS 오류 무시 */ }
+
+            // 2, 3순위: 브라우저 기본 언어 및 시스템/국가(OS) 언어 세팅
+            if (!lang) {
+                // navigator.languages 배열을 통해 사용자의 선호 언어를 순차적으로 확인
+                const userLangs = navigator.languages || [navigator.language || navigator.userLanguage];
+                for (let l of userLangs) {
+                    let tempLang = l.toLowerCase();
+                    if (tempLang.startsWith('pt')) tempLang = 'pt-br';
+                    else if (tempLang.startsWith('zh')) tempLang = 'zh';
+                    else tempLang = tempLang.substring(0, 2);
+
+                    if (translations[tempLang]) {
+                        lang = tempLang;
+                        break;
+                    }
+                }
+            } else {
+                // 파라미터로 넘어온 값 정제
+                lang = lang.toLowerCase();
+                if (lang.startsWith('pt')) lang = 'pt-br';
+                else if (lang.startsWith('zh')) lang = 'zh';
+                else lang = lang.substring(0, 2);
+            }
+
+            // 4순위: 매칭되는 언어가 없다면 영어를 기본값으로 반환 ('en')
+            return translations[lang] ? lang : 'en';
+        }
+
+        // 선택된 언어를 적용하는 함수
+        function applyTranslations(manualLang) {
+            const currentLang = manualLang || getLanguage();
+            const t = translations[currentLang];
+            
+            // html의 lang 속성 업데이트
+            document.documentElement.lang = currentLang;
+
+            // data-i18n 속성이 있는 모든 엘리먼트 순회
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) {
+                    el.innerHTML = t[key];
+                }
+            });
+
+            // 드롭다운 메뉴의 선택 값(UI) 동기화
+            const langSelect = document.getElementById('langSelect');
+            if (langSelect) {
+                langSelect.value = currentLang;
+            }
+        }
+
+        // DOM이 로드되면 번역 적용 및 이벤트 리스너 등록
+        document.addEventListener('DOMContentLoaded', () => {
+            // 초기 언어 설정 적용
+            applyTranslations();
+
+            // 우측 상단 언어 선택 드롭다운 변경 이벤트
+            const langSelect = document.getElementById('langSelect');
+            if (langSelect) {
+                langSelect.addEventListener('change', (e) => {
+                    applyTranslations(e.target.value);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

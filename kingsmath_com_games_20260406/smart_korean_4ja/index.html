@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5YW0T2C109');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>사자성어 킹 모바일 👑</title>
+    <meta name="description" id="meta-desc" content="1분 안에 최대한 많은 사자성어를 맞춰보세요!">
+    <meta name="theme-color" content="#faf8ef">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        tailwind = {
+            config: {
+                corePlugins: { preflight: false }
+            }
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Gowun+Batang:wght@400;700&family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+        :root {
+            --bg-color: #faf8ef;
+            --ui-base: #bbada0;
+            --primary-brown: #8d6e63;
+            --deep-brown: #5d4037;
+            --text-color: #776e65;
+            --accent-color: #FFD93D;
+        }
+
+        * { box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; }
+        
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            font-family: 'Jua', 'Noto Sans KR', sans-serif;
+            height: 100vh; height: 100dvh; 
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px; 
+            height: 100%;
+            background: var(--bg-color);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 25px rgba(141, 110, 99, 0.3);
+        }
+
+        .hidden { display: none !important; }
+        .center { text-align: center; }
+        button { cursor: pointer; border: none; font-family: inherit; transition: transform 0.1s; outline: none;}
+        button:active { transform: scale(0.95); }
+
+        /* --- 1. 시작 화면 --- */
+        #start-screen {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
+            padding-top: 2vh; padding-bottom: 5vh;
+            background: linear-gradient(180deg, #fdfbf7 0%, #fff 100%);
+            overflow-y: auto; -webkit-overflow-scrolling: touch; z-index: 10; touch-action: pan-y; 
+        }
+        #start-screen::-webkit-scrollbar { width: 8px; }
+        #start-screen::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        #start-screen::-webkit-scrollbar-thumb { background: #a1887f; border-radius: 4px; }
+        
+        #top-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; padding: 0 20px; margin-bottom: 1vh; flex-shrink: 0; z-index: 50;
+        }
+        
+        #kingsmath-link-btn {
+            font-size: 2.2vh; color: var(--deep-brown); text-decoration: none; font-weight: bold;
+            background: #fff; padding: 5px 15px; border: 2px dashed var(--primary-brown);
+            border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        /* 타이틀 */
+        .main-title { 
+            font-size: 7vh; color: var(--deep-brown); margin: 1vh 0; 
+            text-shadow: 3px 3px 0px #d7ccc8; line-height: 1.1; text-align: center;
+            flex-shrink: 0;
+        }
+        .title-mobile {
+            font-size: 40%; vertical-align: middle; color: #8d6e63;
+        }
+        
+        /* QR 코드 영역 */
+        #qr-area { margin: 2vh 0; display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+        #qrcode { padding: 10px; background: white; border: 2px dashed var(--primary-brown); cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .qr-help { font-size: 1.8vh; margin-top: 5px; color: #aaa; }
+
+        #qr-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; display: none; justify-content: center; align-items: center; }
+        #qr-modal img { width: 90vw; height: 90vw; max-width: 500px; max-height: 500px; border: 10px solid #fff; object-fit: contain; background: #fff; }
+
+        .input-guide { font-size: 2.5vh; color: #5d4037; margin-bottom: 1vh; font-weight: bold; animation: bounce 2s infinite; text-align: center; flex-shrink: 0; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-5px);} 60% {transform: translateY(-3px);} }
+
+        input#nickname { width: 85%; padding: 2vh; font-size: 5.5vh; text-align: center; border: 4px dashed var(--primary-brown); border-radius: 30px; font-family: inherit; margin-bottom: 2vh; color: var(--deep-brown); background-color: #fff; flex-shrink: 0; }
+        input#nickname:focus { outline: none; border-color: var(--deep-brown); border-style: solid; }
+
+        .btn-start { width: 85%; padding: 1.5vh; font-size: 4.5vh; background-color: var(--primary-brown); color: white; border: 3px dashed rgba(255,255,255,0.5); border-radius: 30px; box-shadow: 0 0.6vh #5d4037; margin-bottom: 1.5vh; flex-shrink: 0; }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 0.2vh #5d4037; }
+
+        .btn-link { width: 85%; padding: 1.2vh; font-size: 3vh; background-color: #a1887f; color: white; border: 2px dashed rgba(255,255,255,0.5); border-radius: 25px; box-shadow: 0 0.5vh #5d4037; margin-bottom: 2vh; text-decoration: none; display: inline-block; text-align: center; flex-shrink: 0; }
+        .btn-link:active { transform: translateY(4px); box-shadow: 0 0.2vh #5d4037; }
+
+        #ranking-board { margin-top: 1vh; width: 90%; background: #fff; border: 3px dashed #d7ccc8; border-radius: 15px; padding: 1vh; max-height: 30vh; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; flex-shrink: 0; margin-bottom: 2vh; }
+        #ranking-board * { touch-action: pan-y; }
+        .rank-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8vh 0.5vh; border-bottom: 1px dashed #eee; font-size: 2.2vh; }
+
+        /* --- 2. 게임 화면 --- */
+        #game-screen { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-color); position: relative; overflow: hidden; width: 100%; }
+        #game-header { background-color: #bbada0; display: flex; flex-direction: column; padding: 10px 15px; box-shadow: 0 4px 0 rgba(0,0,0,0.2); z-index: 20; gap: 8px; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .control-btn { font-size: 3vh; background: none; border: none; cursor: pointer; filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.2)); padding: 5px; }
+        .stat-box { background: #cdc1b4; padding: 5px 12px; border-radius: 8px; display: flex; align-items: center; border: 2px solid #a39489; width: 45%; justify-content: space-between; }
+        .stat-label { font-size: 2.5vh; color: #776e65; font-weight: bold; margin-right: 5px; }
+        .stat-val { font-size: 3.5vh; color: #fff; font-weight: bold; }
+        #timer-box { background: #333; border-color: #555; }
+        #timer-box .stat-label { color: #aaa; }
+        .timer-warning { color: #ff6b6b !important; animation: blink 0.5s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        /* --- 사자성어 게임 플레이 영역 --- */
+        #play-area {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            padding: 20px 10px; width: 100%; background: var(--bg-color);
+        }
+
+        #question-meaning {
+            font-size: clamp(3vh, 5.5vw, 4.8vh); color: var(--deep-brown); font-family: 'Noto Sans KR', sans-serif;
+            font-weight: 700; text-align: center; word-break: keep-all; line-height: 1.4;
+            min-height: 15vh; display: flex; align-items: center; justify-content: center;
+            width: 90%; margin-top: 2vh;
+        }
+
+        #scramble-grid {
+            display: flex; gap: 2vh; justify-content: center; flex-wrap: wrap; width: 90%; margin: auto 0;
+        }
+        
+        .char-btn {
+            width: 9vh; height: 9vh; max-width: 80px; max-height: 80px;
+            font-size: 4vh; background: #fff; border: 3px solid var(--primary-brown);
+            border-radius: 15px; color: var(--deep-brown); font-weight: bold;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 5px 0 var(--primary-brown); cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s, opacity 0.2s;
+            font-family: 'Gowun Batang', serif;
+        }
+        .char-btn:active { transform: translateY(5px); box-shadow: none; }
+        .char-btn.used { opacity: 0; pointer-events: none; transform: scale(0.5); }
+
+        #slot-container { display: flex; gap: 1.5vh; justify-content: center; margin-bottom: 2vh; }
+        .slot-box {
+            width: 9vh; height: 9vh; max-width: 80px; max-height: 80px;
+            border-bottom: 5px solid var(--ui-base); display: flex; align-items: center; justify-content: center;
+            font-size: 4vh; font-weight: bold; color: var(--deep-brown); transition: all 0.2s;
+            font-family: 'Gowun Batang', serif;
+        }
+        .slot-box.filled { border-bottom-color: var(--primary-brown); background: rgba(141, 110, 99, 0.1); border-radius: 10px 10px 0 0; }
+        .slot-box.active-cursor { border-bottom-color: var(--accent-color); animation: blinkCursor 1s infinite; }
+        
+        @keyframes blinkCursor {
+            0%, 100% { border-bottom-color: var(--accent-color); background: rgba(255, 217, 61, 0.15); border-radius: 10px 10px 0 0; }
+            50% { border-bottom-color: var(--ui-base); background: transparent; }
+        }
+
+        .shake { animation: shake 0.4s; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+        }
+
+        #undo-btn {
+            margin-bottom: 2vh; padding: 1.5vh 3vh; background: var(--ui-base); color: white;
+            border-radius: 50px; font-size: 2.5vh; font-weight: bold;
+            box-shadow: 0 4px 0 #a39489; transition: all 0.1s;
+        }
+        #undo-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        #game-footer { height: 8vh; background: #3e3e3e; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #eee; border-top: 2px solid #555; z-index: 20; gap: 5px; }
+        #ingame-guide { font-size: 2vh; color: var(--accent-color); animation: bounce 2s infinite; }
+        #ingame-nickname { font-size: 2.5vh; font-weight: bold; }
+
+        #levelup-overlay { position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; display: none; flex-direction: column; align-items: center; z-index: 50; }
+        #levelup-text { font-size: 8vh; color: var(--accent-color); text-shadow: 3px 3px 0 #000; animation: floatUp 0.8s ease-out forwards; font-family: 'Fredoka One', 'Jua', sans-serif;}
+        @keyframes floatUp { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 50% { transform: translateY(-20px) scale(1.2); opacity: 1; } 100% { transform: translateY(-50px) scale(1); opacity: 0; } }
+
+        #countdown-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; justify-content: center; align-items: center; }
+        #countdown-text { font-size: 15vh; font-weight: bold; color: var(--accent-color); text-shadow: 0 0 20px #ff6b6b; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* --- 3. 결과 화면 --- */
+        #result-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(250, 248, 239, 0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; padding-bottom: 5vh; }
+        .result-score { font-size: 8vh; color: var(--deep-brown); margin: 1vh 0; font-weight: bold; }
+        #result-ranking-board { margin-top: 2vh; width: 85%; background: #fff; border: 3px dashed #8d6e63; border-radius: 15px; padding: 1vh; flex-shrink: 0; max-height: 25vh; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
+        #result-ranking-board * { touch-action: pan-y; }
+    </style>
+</head>
+<body>
+
+<div id="qr-modal" onclick="this.style.display='none'">
+    <div id="qr-modal-content"></div>
+</div>
+
+<div id="game-container">
+    <div id="start-screen">
+        <div id="top-nav">
+            <a id="kingsmath-link-btn" href="/" target="_self">킹수학.com</a>
+        </div>
+
+        <div class="main-title">
+            <span>사자성어 킹</span>
+            <span class="title-mobile">모바일</span>
+        </div>
+
+        <div id="qr-area">
+            <div id="qrcode" onclick="showBigQR()"></div>
+            <div class="qr-help">QR을 눌러서 공유하세요!</div>
+        </div>
+        
+        <div class="input-guide">📜 뜻에 맞는 글자를 순서대로 누르세요!</div>
+
+        <input type="text" id="nickname" maxlength="8" placeholder="닉네임 입력" onfocus="this.select()">
+        
+        <button class="btn-start" onclick="checkNameAndStart()">🚀 게임 시작!</button>
+        <button class="btn-link" onclick="location.href='/'">🎮 다른 게임 고르기</button>
+        
+        <div id="ranking-board">
+            <div class="center">랭킹 로딩중... 🏃‍♂️</div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div id="game-header">
+            <div class="header-row">
+                <button class="control-btn" onclick="goHome()">🏠</button>
+                <button class="control-btn" onclick="restartGame()">🔄</button>
+            </div>
+            <div class="header-row">
+                <div class="stat-box" id="timer-box">
+                    <span class="stat-label">TIME</span>
+                    <span class="stat-val" id="timer-val">60</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">SCORE</span>
+                    <span class="stat-val" id="score-val">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="play-area">
+            <div id="question-meaning">로딩중...</div>
+            
+            <div id="slot-container">
+                <div class="slot-box active-cursor" data-idx="0"></div>
+                <div class="slot-box" data-idx="1"></div>
+                <div class="slot-box" data-idx="2"></div>
+                <div class="slot-box" data-idx="3"></div>
+            </div>
+
+            <div id="scramble-grid">
+                </div>
+
+            <button id="undo-btn" onpointerdown="event.preventDefault(); handleClearAll()"><i class="fa-solid fa-rotate-left"></i> 다시 입력</button>
+
+            <div id="levelup-overlay">
+                <div id="levelup-text">+10</div>
+            </div>
+        </div>
+        
+        <div id="game-footer">
+            <div id="ingame-guide">📜 순서대로 글자를 눌러 사자성어를 완성하세요!</div>
+            <span id="ingame-nickname">Player</span>
+        </div>
+
+        <div id="countdown-screen" class="hidden">
+            <div id="countdown-text">3</div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <h2 style="font-size: 5vh; margin:0; color:#8d6e63;">시간 종료! ⌛</h2>
+        <h3 id="res-nickname" style="font-size: 4vh; margin: 10px 0; color:var(--deep-brown);">Player</h3>
+        <div style="font-size:2vh; color:#888;">FINAL SCORE</div>
+        <div class="result-score"><span id="res-score">0</span></div>
+        <div id="res-rank" style="font-size: 3vh; margin-bottom:20px; color:#5d4037;">순위 확인 중... 🤔</div>
+        
+        <button class="btn-start" onclick="restartGame()" style="background:#8d6e63; box-shadow: 0 0.6vh #5d4037;">🔄 다시 하기</button>
+        <button class="btn-start" onclick="goHome()" style="background:#d7ccc8; color:#5d4037; box-shadow: 0 0.6vh #a1887f;">🏠 처음으로</button>
+        
+        <div id="result-ranking-board"></div>
+    </div>
+</div>
+
+<script>
+    // --- 설정 및 데이터 ---
+    const GAME_DURATION = 60;
+    const SCORE_PER_Q = 10;
+    const API_URL = "./ranking.php"; 
+
+    let idiomData = [];
+    let availableIdioms = [];
+    let currentProblem = null;
+    let inputChars = [];
+
+    // 기본 내장 더미 데이터 (JSON 없을 경우 대비)
+    const fallbackData = [
+        { word: "일취월장(日就月將)", chars: ["일", "취", "월", "장"], meaning: "나날이 다달이 자라거나 발전함." },
+        { word: "동문서답(東問西答)", chars: ["동", "문", "서", "답"], meaning: "묻는 말에 대하여 아주 딴소리로 대답함." },
+        { word: "다재다능(多才多能)", chars: ["다", "재", "다", "능"], meaning: "재주와 능력이 많음." },
+        { word: "우왕좌왕(右往左往)", chars: ["우", "왕", "좌", "왕"], meaning: "이리저리 왔다 갔다 하며 일의 갈피를 잡지 못함." },
+        { word: "금상첨화(錦上添花)", chars: ["금", "상", "첨", "화"], meaning: "좋은 일에 또 좋은 일이 더하여짐." },
+        { word: "설상가상(雪上加霜)", chars: ["설", "상", "가", "상"], meaning: "눈이 내리는 위에 서리까지 친다는 뜻으로, 어려운 일이 겹침." },
+        { word: "구사일생(九死一生)", chars: ["구", "사", "일", "생"], meaning: "아홉 번 죽을 뻔하다가 겨우 살아남." },
+        { word: "이심전심(以心傳心)", chars: ["이", "심", "전", "심"], meaning: "마음과 마음으로 서로 뜻이 통함." }
+    ];
+
+    async function loadData() {
+        try {
+            const response = await fetch('data.json');
+            if (!response.ok) throw new Error('Network error');
+            idiomData = await response.json();
+        } catch (error) {
+            console.warn('data.json 로드 실패, 기본 데이터를 사용합니다.', error);
+            idiomData = fallbackData;
+        }
+        document.querySelector('.btn-start').innerText = "🚀 게임 시작!";
+    }
+
+    let myNickname = "";
+    let score = 0;
+    let timeLeft = GAME_DURATION;
+    let timerInterval = null;
+    let isPlaying = false;
+    let isShowingAnswer = false; // 오답 표시 중 대기 상태
+    
+    // --- QR Code ---
+    let qrObject = null;
+    function initQR() {
+        const qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = ""; 
+        const url = window.location.href;
+        try {
+            qrObject = new QRCode(qrContainer, {
+                text: url, width: 128, height: 128, colorDark : "#5d4037", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
+            });
+        } catch(e) { console.error("QR Code 생성 실패", e); }
+    }
+
+    function showBigQR() {
+        const modal = document.getElementById("qr-modal");
+        const modalContent = document.getElementById("qr-modal-content");
+        modalContent.innerHTML = "";
+        const qrCanvas = document.querySelector("#qrcode canvas");
+        const qrImg = document.querySelector("#qrcode img");
+        let src = "";
+        if (qrCanvas) src = qrCanvas.toDataURL("image/png");
+        else if (qrImg) src = qrImg.src;
+        if (src) {
+            const newImg = new Image();
+            newImg.src = src;
+            modalContent.appendChild(newImg);
+            modal.style.display = "flex";
+        }
+    }
+
+    // --- Audio System ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+
+        if (type === 'click') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(1200, now);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+            osc.start(now); osc.stop(now + 0.05);
+        } else if (type === 'undo') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+            osc.start(now); osc.stop(now + 0.05);
+        } else if (type === 'correct') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+            gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0, now + 0.2);
+            osc.start(now); osc.stop(now + 0.2);
+        } else if (type === 'wrong') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+            gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'tick') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+            osc.start(now); osc.stop(now + 0.05);
+        } else if (type === 'start') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(400, now); osc.frequency.linearRampToValueAtTime(800, now+0.3);
+            gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'end') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now); osc.frequency.linearRampToValueAtTime(100, now+0.5);
+            gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0, now + 0.5);
+            osc.start(now); osc.stop(now + 0.5);
+        }
+    }
+
+    // --- Game Logic ---
+    function initGame() {
+        score = 0;
+        timeLeft = GAME_DURATION;
+        availableIdioms = [...idiomData]; // 모든 레벨 사용
+
+        document.getElementById('score-val').innerText = score;
+        document.getElementById('timer-val').innerText = timeLeft;
+        document.getElementById('timer-val').classList.remove('timer-warning');
+        document.getElementById('ingame-nickname').innerText = myNickname;
+        
+        isPlaying = true;
+        isShowingAnswer = false;
+        nextProblem();
+        startTimer();
+    }
+
+    function nextProblem() {
+        if (!isPlaying) return;
+        if (availableIdioms.length === 0) availableIdioms = [...idiomData];
+
+        let randIdx = Math.floor(Math.random() * availableIdioms.length);
+        currentProblem = availableIdioms.splice(randIdx, 1)[0];
+        
+        inputChars = [];
+        
+        // UI 갱신
+        document.getElementById('question-meaning').innerText = currentProblem.meaning;
+        
+        const scrambledGrid = document.getElementById('scramble-grid');
+        scrambledGrid.innerHTML = '';
+        
+        let scrambledChars = [...currentProblem.chars].map((char, i) => ({ char, idx: i }));
+        scrambledChars.sort(() => Math.random() - 0.5);
+        
+        scrambledChars.forEach((item, domIdx) => {
+            const btn = document.createElement('div');
+            btn.className = 'char-btn';
+            btn.innerText = item.char;
+            btn.dataset.char = item.char;
+            btn.onpointerdown = (e) => { e.preventDefault(); handleCharSelect(btn, domIdx); };
+            scrambledGrid.appendChild(btn);
+        });
+
+        updateSlotsUI();
+    }
+
+    function handleCharSelect(btnElem, btnDomIndex) {
+        if(!isPlaying || inputChars.length >= 4 || btnElem.classList.contains('used') || isShowingAnswer) return;
+
+        playSound('click');
+        inputChars.push({ char: btnElem.dataset.char, btnIdx: btnDomIndex });
+        btnElem.classList.add('used');
+
+        updateSlotsUI();
+
+        if(inputChars.length === 4) {
+            checkAnswer();
+        }
+    }
+
+    function handleClearAll() {
+        if(!isPlaying || inputChars.length === 0 || isShowingAnswer) return;
+
+        playSound('undo');
+        const scrambledGrid = document.getElementById('scramble-grid');
+        
+        inputChars.forEach(item => {
+            scrambledGrid.children[item.btnIdx].classList.remove('used');
+        });
+
+        inputChars = [];
+        updateSlotsUI();
+    }
+
+    function updateSlotsUI() {
+        const slots = document.getElementById('slot-container').children;
+        
+        for(let i=0; i<4; i++) {
+            slots[i].className = 'slot-box';
+            slots[i].style.color = ''; // 색상 초기화
+            slots[i].style.borderColor = ''; // 테두리 색상 초기화
+            
+            if(i < inputChars.length) {
+                slots[i].innerText = inputChars[i].char;
+                slots[i].classList.add('filled');
+            } else {
+                slots[i].innerText = '';
+            }
+        }
+        
+        if(inputChars.length < 4) {
+            slots[inputChars.length].classList.add('active-cursor');
+        }
+    }
+
+    function checkAnswer() {
+        const playerAnswer = inputChars.map(x => x.char).join('');
+        const correctAnswer = [...currentProblem.chars].join('');
+
+        if (playerAnswer === correctAnswer) {
+            playSound('correct');
+            score += SCORE_PER_Q;
+            document.getElementById('score-val').innerText = score;
+            showLevelUpEffect();
+            
+            setTimeout(() => {
+                if(isPlaying) nextProblem();
+            }, 300);
+        } else {
+            playSound('wrong');
+            isShowingAnswer = true;
+            const container = document.getElementById('slot-container');
+            container.classList.add('shake');
+            
+            // 정답을 슬롯에 표시하고 빨간색으로 변경
+            const slots = container.children;
+            for(let i=0; i<4; i++) {
+                slots[i].innerText = currentProblem.chars[i];
+                slots[i].style.color = '#ff6b6b';
+                slots[i].style.borderColor = '#ff6b6b';
+                slots[i].classList.add('filled');
+            }
+            
+            // 3초 후 다음 문제로 이동
+            setTimeout(() => {
+                container.classList.remove('shake');
+                isShowingAnswer = false;
+                if(isPlaying) nextProblem();
+            }, 3000);
+        }
+    }
+
+    function showLevelUpEffect() {
+        const el = document.getElementById('levelup-overlay');
+        const txt = document.getElementById('levelup-text');
+        
+        el.style.display = 'flex';
+        txt.style.animation = 'none';
+        el.offsetHeight; 
+        txt.style.animation = 'floatUp 0.8s ease-out forwards';
+        
+        setTimeout(() => { el.style.display = 'none'; }, 800);
+    }
+
+    function startTimer() {
+        if(timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if(!isPlaying) return;
+            timeLeft--;
+            const tVal = document.getElementById('timer-val');
+            tVal.innerText = timeLeft;
+            
+            if(timeLeft <= 10) tVal.classList.add('timer-warning');
+            if(timeLeft <= 5 && timeLeft > 0) playSound('tick');
+
+            if(timeLeft <= 0) endGame();
+        }, 1000);
+    }
+
+    function endGame() {
+        isPlaying = false;
+        clearInterval(timerInterval);
+        playSound('end');
+
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        
+        document.getElementById('res-nickname').innerText = myNickname;
+        document.getElementById('res-score').innerText = score;
+        
+        document.getElementById('result-ranking-board').innerHTML = "";
+        submitScore(myNickname, score);
+    }
+
+    // --- UI & Utils ---
+    function checkNameAndStart() {
+        const input = document.getElementById('nickname');
+        const val = input.value.trim();
+
+        if(val.length < 1) { alert("닉네임을 입력해주세요!"); return; }
+        const badWords = ["시발", "씨발", "개새끼", "fuck", "shit"];
+        if(badWords.some(w => val.includes(w))) { alert("바른 말을 사용해주세요!"); return; }
+
+        myNickname = val;
+        localStorage.setItem("kingsidiom_name", val);
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        
+        startCountdown();
+    }
+
+    function startCountdown() {
+        const screen = document.getElementById('countdown-screen');
+        const text = document.getElementById('countdown-text');
+        screen.classList.remove('hidden');
+        
+        let cnt = 3;
+        text.innerText = cnt;
+        playSound('tick');
+        
+        const intv = setInterval(() => {
+            cnt--;
+            if(cnt > 0) {
+                text.innerText = cnt;
+                text.style.animation = 'none';
+                text.offsetHeight; 
+                text.style.animation = 'pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                playSound('tick');
+            } else {
+                clearInterval(intv);
+                text.innerText = "GO!";
+                playSound('start');
+                setTimeout(() => {
+                    screen.classList.add('hidden');
+                    initGame();
+                }, 500);
+            }
+        }, 1000);
+    }
+
+    function restartGame() {
+        isPlaying = false;
+        clearInterval(timerInterval);
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        startCountdown();
+    }
+
+    function goHome() {
+        isPlaying = false;
+        clearInterval(timerInterval);
+        
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+        
+        if(window.playSound) window.playSound('tick');
+        loadRanking();
+    }
+
+    // --- Ranking System ---
+    function submitScore(name, score) {
+        const formData = new FormData();
+        formData.append('nickname', name);
+        formData.append('score', score);
+
+        fetch(API_URL + '?action=submit', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                document.getElementById("res-rank").innerText = `현재 ${data.rank}등 입니다!`;
+                loadResultRanking();
+            } else {
+                document.getElementById("res-rank").innerText = "Ranking Error";
+            }
+        })
+        .catch(e => console.error(e));
+    }
+
+    function loadRanking() {
+        const list = document.getElementById("ranking-board");
+        list.innerHTML = `<div class="center">랭킹 로딩중... 🏃‍♂️</div>`;
+
+        fetch(API_URL + '?action=list')
+        .then(res => res.json())
+        .then(data => {
+            if(data.length === 0) {
+                list.innerHTML = `<div class="center" style="margin-top:20px;">아직 1등이 없어요. 도전! 👑</div>`;
+                return;
+            }
+            let html = "";
+            data.forEach((item, idx) => {
+                let rankDisplay = (idx < 3) ? ["🥇","🥈","🥉"][idx] : (idx+1);
+                let style = (idx < 3) ? "font-size:1.5em;" : "color:#8d6e63; font-weight:bold;";
+                
+                html += `<div class="rank-item">
+                    <span style="width:15%; text-align:center; ${style}">${rankDisplay}</span>
+                    <span style="width:50%; padding-left:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.nickname}</span>
+                    <span style="width:35%; text-align:right; color:#888; font-weight:bold;">${item.score}</span>
+                </div>`;
+            });
+            list.innerHTML = html;
+        })
+        .catch(e => {
+            list.innerHTML = `<div class="center" style="color:red;">랭킹 오류 😭</div>`;
+        });
+    }
+
+    function loadResultRanking() {
+        const list = document.getElementById("result-ranking-board");
+        list.innerHTML = `<div class="center" style="font-size:1.8vh; color:#888;">TOP 3 Loading...</div>`;
+
+        fetch(API_URL + '?action=list')
+        .then(res => res.json())
+        .then(data => {
+            if(data.length === 0) {
+                list.innerHTML = `<div class="center" style="font-size:1.8vh;">아직 1등이 없어요. 도전! 👑</div>`;
+                return;
+            }
+            let html = "";
+            const limit = Math.min(data.length, 3);
+            for(let i=0; i<limit; i++) {
+                let item = data[i];
+                let rankIcon = ["🥇","🥈","🥉"][i];
+                html += `<div class="rank-item" style="font-size:2vh; padding:0.5vh;">
+                    <span style="width:15%; text-align:center;">${rankIcon}</span>
+                    <span style="width:50%; padding-left:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.nickname}</span>
+                    <span style="width:35%; text-align:right; font-weight:bold; color:#5d4037;">${item.score}</span>
+                </div>`;
+            }
+            list.innerHTML = html;
+        })
+        .catch(e => {
+            list.style.display = 'none'; 
+        });
+    }
+
+    // --- Init ---
+    window.onload = function() {
+        const savedName = localStorage.getItem("kingsidiom_name");
+        if(savedName) document.getElementById("nickname").value = savedName;
+        
+        initQR();
+        loadRanking();
+        loadData();
+    };
+
+</script>
+</body>
+</html>

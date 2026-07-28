@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5YW0T2C109');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="seo-title">전자칠판 킹피아노</title>
+    <meta name="description" id="seo-description" content="선생님이 만든 안전한 수학 놀이터, 킹수학의 음악 학습 도구입니다.">
+    <meta name="keywords" id="seo-keywords" content="킹수학, 피아노, 전자칠판, 음악교육, 조바꿈">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vexflow/3.0.9/vexflow-min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* [디자인 유지] 기존 스타일 코드 */
+        * { box-sizing: border-box; touch-action: none; }
+        body {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            background-color: #1e272e; color: #f1f2f6; margin: 0; padding: 0;
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+            user-select: none; -webkit-user-select: none;
+        }
+        #header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 30px; background-color: #2f3542; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 10;
+        }
+        h1 { margin: 0; font-size: 32px !important; color: #ff4757; }
+        .controls { display: flex; align-items: center; gap: 15px; }
+        select#instrument-selector {
+            padding: 12px 20px; font-size: 24px; font-weight: bold;
+            border-radius: 10px; border: none; cursor: pointer; background-color: white; color: black;
+        }
+        button.key-btn {
+            padding: 12px 25px; font-size: 26px; font-weight: bold;
+            background-color: #1e90ff; color: white; border: none; border-radius: 10px; cursor: pointer;
+        }
+        #current-key-name { font-size: 32px; font-weight: bold; min-width: 230px; text-align: center; color: #eccc68; }
+        #staff-container { flex: 0 0 240px; background-color: #fffdf5; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid #ccc; }
+        #piano-container { flex: 0 0 40vh; position: relative; background-color: #2f3542; padding: 0 10px 10px 10px; display: flex; }
+        .white-keys-container { display: flex; width: 100%; height: 100%; }
+        .white-key {
+            flex: 1; background-color: white; color: black; border: 2px solid #ccc;
+            border-radius: 0 0 10px 10px; display: flex; flex-direction: column;
+            justify-content: flex-end; align-items: center; padding-bottom: 15px; position: relative;
+        }
+        .white-key.pressed { background-color: #dfe4ea; border-top: 6px solid #a4b0be; }
+        .black-key {
+            position: absolute; top: 0; left: 100%; transform: translateX(-50%);
+            width: 65%; height: 60%; background-color: #2f3640; border-radius: 0 0 8px 8px; z-index: 5;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 10px;
+        }
+        .black-key.pressed { background-color: #000; border: 2px solid #ff4757; }
+        .label-stack { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; pointer-events: none; }
+        .eng-name { font-size: 18px; color: #2980b9; font-weight: bold; }
+        .kor-name { font-size: 18px; color: #27ae60; font-weight: bold; }
+        .solfege-text { font-size: 26px; font-weight: 900; color: #2c3e50; margin-top: 2px; }
+        .black-key .eng-name { color: #4db8ff; font-size: 15px; }
+        .black-key .kor-name { color: #55efc4; font-size: 13px; }
+        .black-key .solfege-text { color: #ffffff; font-size: 20px; }
+        .root-note { color: #ff4757 !important; font-size: 30px !important; text-shadow: 1px 1px 2px rgba(255,255,255,0.8); }
+        .black-key .root-note { text-shadow: 0px 0px 8px rgba(255, 71, 87, 0.8); }
+        #bottom-space { flex: 1; background-color: #1e272e; display: flex; justify-content: center; align-items: center; gap: 20px; border-top: 2px solid #2f3542; }
+        .option-btn { padding: 15px 30px; font-size: 20px; font-weight: bold; border-radius: 12px; border: 2px solid #57606f; background-color: #2f3542; color: #ced6e0; cursor: pointer; transition: all 0.2s; }
+        .option-btn.active { background-color: #ff4757; color: white; border-color: #ff6b81; box-shadow: 0 0 15px rgba(255, 71, 87, 0.4); }
+
+        /* [모달/Z-INDEX 최우선순위] */
+        #langModal, #langModal * { box-sizing: border-box !important; }
+        #langModal { font-family: sans-serif !important; }
+        #langModal i, #langTriggerBtn i { font-family: "Font Awesome 6 Free" !important; font-weight: 900 !important; }
+        .modal-overlay { opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { transform: scale(0.95) translateY(-10px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+        .floating-btn { position: fixed; bottom: 20px; left: 20px; width: 60px; height: 60px; background-color: #ff4757; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 50; }
+        .toast { transform: translateY(100%); opacity: 0; transition: all 0.3s ease; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <h1 id="ui-title">🎹 전자칠판 킹피아노</h1>
+        <div class="controls">
+            <button id="langTriggerBtn" class="flex items-center gap-2 bg-gray-700/50 hover:bg-gray-700 border border-gray-600 rounded-full px-4 py-2 transition-all duration-200 text-sm font-medium shadow-lg mr-2" style="z-index: 9999;">
+                <i class="fa-solid fa-globe text-gray-400"></i>
+                <img id="currentFlag" src="https://flagcdn.com/w40/kr.png" alt="KR" class="w-5 h-auto rounded-[2px] shadow-sm">
+                <span id="currentLangName" class="hidden sm:inline-block text-white">한국어</span>
+                <i class="fa-solid fa-chevron-down text-gray-400 ml-1 text-xs"></i>
+            </button>
+
+            <select id="instrument-selector">
+                <option value="epiano" id="opt-epiano">🎹 일렉 피아노</option>
+                <option value="marimba" id="opt-marimba">🪵 마림바</option>
+                <option value="organ" id="opt-organ">⛪ 오르간</option>
+                <option value="synth" id="opt-synth">🎛️ 신디사이저</option>
+                <option value="flute" id="opt-flute">🌬️ 플루트</option>
+            </select>
+            <button id="btn-down" class="key-btn">◀ b 내림</button>
+            <span id="current-key-name">다장조 (C)</span>
+            <button id="btn-up" class="key-btn"># 올림 ▶</button>
+        </div>
+    </div>
+
+    <div id="staff-container"></div>
+    <div id="piano-container"><div class="white-keys-container" id="white-keys"></div></div>
+
+    <div id="bottom-space">
+        <button id="toggle-eng" class="option-btn">영어 음이름</button>
+        <button id="toggle-kor" class="option-btn">한글 음이름</button>
+        <button id="toggle-sol" class="option-btn active">계이름</button>
+    </div>
+
+    <div id="btn-home" class="floating-btn" style="cursor:pointer;">🏠</div>
+
+    <div id="langModal" class="modal-overlay fixed inset-0 z-[99999] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm pt-16 sm:pt-0 px-4">
+        <div class="modal-content bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between p-5 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-language text-yellow-500"></i>
+                    <span>Language / 언어</span>
+                </h2>
+                <button id="closeModalBtn" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-5 pb-2 bg-gray-900">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="Search / 검색 ..." class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 block pl-11 p-3.5 outline-none transition-all">
+                </div>
+            </div>
+            <div class="p-5 overflow-y-auto custom-scrollbar flex-1"><div id="languageGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div></div>
+        </div>
+    </div>
+
+    <div id="toastNotification" class="toast fixed bottom-6 right-6 bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 flex items-center gap-3 z-[100000]">
+        <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400"><i class="fa-solid fa-check"></i></div>
+        <div><p id="ui-toast" class="text-sm font-medium text-white"></p><p id="toastLangName" class="text-xs text-gray-400"></p></div>
+    </div>
+
+<script>
+    /* -----------------------------------------------------------
+       1. 16개국 다국어 데이터 (계이름 현지화 포함)
+    ----------------------------------------------------------- */
+    const i18n = {
+        'ko': { title: '🎹 전자칠판 킹피아노', epiano: '🎹 일렉 피아노', marimba: '🪵 마림바', organ: '⛪ 오르간', synth: '🎛️ 신디사이저', flute: '🌬️ 플루트', flat: '◀ b 내림', sharp: '# 올림 ▶', engName: '영어 음이름', korName: '한글 음이름', solName: '계이름', major: '장조', toast: '언어가 변경되었습니다.', solfege: ['도', '레', '미', '파', '솔', '라', '시'], c: '다', d: '라', e: '마', f: '바', g: '사', a: '가', b: '나', up: '올림', down: '내림' },
+        'en': { title: '🎹 Math King Piano', epiano: '🎹 E-Piano', marimba: '🪵 Marimba', organ: '⛪ Organ', synth: '🎛️ Synthesizer', flute: '🌬️ Flute', flat: '◀ b Flat', sharp: '# Sharp ▶', engName: 'Letter Name', korName: 'Local Name', solName: 'Solfege', major: 'Major', toast: 'Language changed.', solfege: ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Ti'], c: 'C', d: 'D', e: 'E', f: 'F', g: 'G', a: 'A', b: 'B', up: '#', down: 'b' },
+        'zh': { title: '🎹 数学之王 钢琴', epiano: '🎹 电子琴', marimba: '🪵 马林巴', organ: '⛪ 风琴', synth: '🎛️ 合成器', flute: '🌬️ 长笛', flat: '◀ b 降', sharp: '# 升 ▶', engName: '英文音名', korName: '中文音名', solName: '唱名', major: '大调', toast: '语言已更改。', solfege: ['多', '来', '咪', '发', '梭', '拉', '西'], c: '多', d: '来', e: '咪', f: '发', g: '梭', a: '拉', b: '西', up: '升', down: '降' },
+        'ja': { title: '🎹 算数キング ピアノ', epiano: '🎹 エレクトリックピアノ', marimba: '🪵 マリンバ', organ: '⛪ オルガン', synth: '🎛️ シンセサイザー', flute: '🌬️ フルート', flat: '◀ b フラット', sharp: '# シャープ ▶', engName: '英語音名', korName: '日本語音名', solName: '階名', major: '長調', toast: '言語が変更されました。', solfege: ['ド', 'レ', 'ミ', 'ファ', 'ソ', 'ラ', 'シ'], c: 'ド', d: 'レ', e: 'ミ', f: 'ファ', g: 'ソ', a: 'ラ', b: 'シ', up: '嬰', down: '変' },
+        'es': { title: '🎹 Rey Matemático Piano', epiano: '🎹 Piano Eléctrico', marimba: '🪵 Marimba', organ: '⛪ Órgano', synth: '🎛️ Sintetizador', flute: '🌬️ Flauta', flat: '◀ b Bemol', sharp: '# Sostenido ▶', engName: 'Inglés', korName: 'Local', solName: 'Solféo', major: 'Mayor', toast: 'Idioma cambiado.', solfege: ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'], c: 'Do', d: 'Re', e: 'Mi', f: 'Fa', g: 'Sol', a: 'La', b: 'Si', up: 'Sost.', down: 'Bem.' },
+        'fr': { title: '🎹 Roi des Maths Piano', epiano: '🎹 Piano Électrique', marimba: '🪵 Marimba', organ: '⛪ Orgue', synth: '🎛️ Synthétiseur', flute: '🌬️ Flûte', flat: '◀ b Bémol', sharp: '# Dièse ▶', engName: 'Anglais', korName: 'Français', solName: 'Solfège', major: 'Majeur', toast: 'Langue modifiée.', solfege: ['Do', 'Ré', 'Mi', 'Fa', 'Sol', 'La', 'Si'], c: 'Do', d: 'Ré', e: 'Mi', f: 'Fa', g: 'Sol', a: 'La', b: 'Si', up: 'Dièse', down: 'Bém.' },
+        'ru': { title: '🎹 Король Математики Пианино', epiano: '🎹 Электропианино', marimba: '🪵 Маримба', organ: '⛪ Орган', synth: '🎛️ Синтезатор', flute: '🌬️ Флейта', flat: '◀ b Бемоль', sharp: '# Диез ▶', engName: 'Английский', korName: 'Русский', solName: 'Сольфеджио', major: 'Мажор', toast: 'Язык изменен.', solfege: ['До', 'Ре', 'Ми', 'Фа', 'Соль', 'Ля', 'Си'], c: 'До', d: 'Ре', e: 'Ми', f: 'Фа', g: 'Соль', a: 'Ля', b: 'Си', up: 'Диез', down: 'Бем.' },
+        'id': { title: '🎹 Raja Matematika Piano', epiano: '🎹 Piano Elektrik', marimba: '🪵 Marimba', organ: '⛪ Organ', synth: '🎛️ Sintetis', flute: '🌬️ Seruling', flat: '◀ b Mol', sharp: '# Kres ▶', engName: 'Inggris', korName: 'Lokal', solName: 'Solmisasi', major: 'Mayor', toast: 'Bahasa diubah.', solfege: ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'], c: 'Do', d: 'Re', e: 'Mi', f: 'Fa', g: 'Sol', a: 'La', b: 'Si', up: 'Kres', down: 'Mol' },
+        'vi': { title: '🎹 Vua Toán Học Piano', epiano: '🎹 Đàn Piano Điện', marimba: '🪵 Đàn Marimba', organ: '⛪ Đàn Organ', synth: '🎛️ Bộ Tổng Hợp', flute: '🌬️ Sáo', flat: '◀ b Giáng', sharp: '# Thăng ▶', engName: 'Tiếng Anh', korName: 'Tiếng Việt', solName: 'Xướng âm', major: 'Trưởng', toast: 'Đã đổi ngôn ngữ.', solfege: ['Đồ', 'Rê', 'Mi', 'Fa', 'Sol', 'La', 'Si'], c: 'Đồ', d: 'Rê', e: 'Mi', f: 'Fa', g: 'Sol', a: 'La', b: 'Si', up: 'Thăng', down: 'Giáng' },
+        'th': { title: '🎹 ราชาคณิตศาสตร์ เปียโน', epiano: '🎹 เปียโนไฟฟ้า', marimba: '🪵 มาริมบา', organ: '⛪ ออร์แกน', synth: '🎛️ ซินธิไซเซอร์', flute: '🌬️ ฟลูต', flat: '◀ b แฟลต', sharp: '# ชาร์ป ▶', engName: 'อังกฤษ', korName: 'ไทย', solName: 'ซอลเฟจ', major: 'เมเจอร์', toast: 'เปลี่ยนภาษาแล้ว', solfege: ['โด', 'เร', 'มี', 'ฟา', 'ซอล', 'ลา', 'ที'], c: 'โด', d: 'เร', e: 'มี', f: 'ฟา', g: 'ซอล', a: 'ลา', b: 'ที', up: 'ชาร์ป', down: 'แฟลต' },
+        'pt-br': { title: '🎹 Rei da Matemática Piano', epiano: '🎹 Piano Elétrico', marimba: '🪵 Marimba', organ: '⛪ Órgão', synth: '🎛️ Sintetizador', flute: '🌬️ Flauta', flat: '◀ b Bemol', sharp: '# Sustenido ▶', engName: 'Inglês', korName: 'Lokal', solName: 'Solfejo', major: 'Maior', toast: 'Idioma alterado.', solfege: ['Dó', 'Ré', 'Mi', 'Fá', 'Sol', 'Lá', 'Si'], c: 'Dó', d: 'Ré', e: 'Mi', f: 'Fá', g: 'Sol', a: 'Lá', b: 'Si', up: 'Sust.', down: 'Bem.' },
+        'hi': { title: '🎹 गणित किंग पियानो', epiano: '🎹 ई-पियानो', marimba: '🪵 मरिम्बा', organ: '⛪ ऑर्गन', synth: '🎛️ सिंथेसाइज़र', flute: '🌬️ बांसुरी', flat: '◀ b कोमल', sharp: '# तीव्र ▶', engName: 'अंग्रेज़ी', korName: 'हिन्दी', solName: 'सरगम', major: 'मेजर', toast: 'भाषा बदली गई।', solfege: ['सा', 'रे', 'ग', 'म', 'प', 'ध', 'नि'], c: 'सा', d: 'रे', e: 'ग', f: 'म', g: 'प', a: 'ध', b: 'नि', up: 'तीव्र', down: 'कोमल' },
+        'bn': { title: '🎹 গণিত রাজা পিয়ানো', epiano: '🎹 পিয়ানো', marimba: '🪵 মারিম্বা', organ: '⛪ অর্গান', synth: '🎛️ সিন্থেসাইজার', flute: '🌬️ বাঁশি', flat: '◀ b ফ্ল্যাট', sharp: '# শার্প ▶', engName: 'ইংরেজি', korName: 'বাংলা', solName: 'সরগম', major: 'মেজর', toast: 'ভাষা পরিবর্তন হয়েছে।', solfege: ['সা', 'রে', 'গা', 'মা', 'পা', 'ধা', 'নি'], c: 'সা', d: 'রে', e: 'গা', f: 'মা', g: 'পা', a: 'ধা', b: 'নি', up: 'শার্প', down: 'ফ্ল্যাট' },
+        'tr': { title: '🎹 Matematik Kralı Piyano', epiano: '🎹 E-Piyano', marimba: '🪵 Marimba', organ: '⛪ Org', synth: '🎛️ Sentezleyici', flute: '🌬️ Flüt', flat: '◀ b Bemol', sharp: '# Diyez ▶', engName: 'İngilizce', korName: 'Türkçe', solName: 'Solfej', major: 'Majör', toast: 'Dil değiştirildi.', solfege: ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'], c: 'Do', d: 'Re', e: 'Mi', f: 'Fa', g: 'Sol', a: 'La', b: 'Si', up: 'Diyez', down: 'Bem.' },
+        'de': { title: '🎹 Mathe-König Klavier', epiano: '🎹 E-Piano', marimba: '🪵 Marimba', organ: '⛪ Orgel', synth: '🎛️ Synthesizer', flute: '🌬️ Flöte', flat: '◀ b Be', sharp: '# Kreuz ▶', engName: 'Englisch', korName: 'Deutsch', solName: 'Solfège', major: 'Dur', toast: 'Sprache geändert.', solfege: ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'], c: 'C', d: 'D', e: 'E', f: 'F', g: 'G', a: 'A', b: 'H', up: 'is', down: 'es' },
+        'it': { title: '🎹 Re della Matematica Piano', epiano: '🎹 Piano Elettrico', marimba: '🪵 Marimba', organ: '⛪ Organo', synth: '🎛️ Sintetizzatore', flute: '🌬️ Flauto', flat: '◀ b Bemolle', sharp: '# Diesis ▶', engName: 'Inglese', korName: 'Italiano', solName: 'Solfeggio', major: 'Maggiore', toast: 'Lingua cambiata.', solfege: ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'], c: 'Do', d: 'Re', e: 'Mi', f: 'Fa', g: 'Sol', a: 'La', b: 'Si', up: 'Diesis', down: 'Bem.' }
+    };
+
+    const languages = [
+        { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+        { code: 'en', country: 'us', name: 'English', enName: 'English' },
+        { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)' },
+        { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+        { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+        { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+        { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+        { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+        { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+        { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+        { code: 'pt-br', country: 'br', name: 'Português', enName: 'Portuguese (Brazil)' },
+        { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+        { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+        { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' },
+        { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+        { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' }
+    ];
+
+    let currentLang = 'ko';
+
+    /* -----------------------------------------------------------
+       2. 오디오 및 게임 변수
+    ----------------------------------------------------------- */
+    let audioCtx;
+    const activeOscillators = {};
+    const noteFreqs = { 48: 130.81, 49: 138.59, 50: 146.83, 51: 155.56, 52: 164.81, 53: 174.61, 54: 185.00, 55: 196.00, 56: 207.65, 57: 220.00, 58: 233.08, 59: 246.94, 60: 261.63, 61: 277.18, 62: 293.66, 63: 311.13, 64: 329.63, 65: 349.23, 66: 369.99, 67: 392.00, 68: 415.30, 69: 440.00, 70: 466.16, 71: 493.88, 72: 523.25, 73: 554.37, 74: 587.33, 75: 622.25, 76: 659.25, 77: 698.46, 78: 739.99, 79: 783.99, 80: 830.61, 81: 880.00, 82: 932.33, 83: 987.77 };
+    let fixedNames = {};
+    const instruments = {
+        epiano: { type: 'sine', attack: 0.01, decay: 1.5, sustain: 0.2, release: 0.5, filterFreq: 1500 },
+        marimba: { type: 'sine', attack: 0.005, decay: 0.3, sustain: 0.0, release: 0.2, filterFreq: 1000 },
+        organ: { type: 'square', attack: 0.05, decay: 0.1, sustain: 0.6, release: 0.1, filterFreq: 800 },
+        synth: { type: 'sawtooth', attack: 0.05, decay: 0.2, sustain: 0.4, release: 0.3, filterFreq: 1200 },
+        flute: { type: 'triangle', attack: 0.15, decay: 0.1, sustain: 0.8, release: 0.4, filterFreq: 1500 }
+    };
+    let currentKeyIndex = 0;
+    let showEng = false, showKor = false, showSol = true;
+    const majorIntervals = [0, 2, 4, 5, 7, 9, 11];
+
+    /* -----------------------------------------------------------
+       3. 다국어 적용 로직 (계이름 포함)
+    ----------------------------------------------------------- */
+    function applyLanguage(langCode, updateUrl = true) {
+        currentLang = langCode;
+        localStorage.setItem('kingsmath_lang', langCode);
+        const data = i18n[langCode];
+
+        document.title = data.title;
+        document.getElementById('ui-title').innerText = data.title;
+        document.getElementById('opt-epiano').innerText = data.epiano;
+        document.getElementById('opt-marimba').innerText = data.marimba;
+        document.getElementById('opt-organ').innerText = data.organ;
+        document.getElementById('opt-synth').innerText = data.synth;
+        document.getElementById('opt-flute').innerText = data.flute;
+        document.getElementById('btn-down').innerText = data.flat;
+        document.getElementById('btn-up').innerText = data.sharp;
+        document.getElementById('toggle-eng').innerText = data.engName;
+        document.getElementById('toggle-kor').innerText = data.korName;
+        document.getElementById('toggle-sol').innerText = data.solName;
+
+        fixedNames = {
+            0: { eng: 'C', kor: data.c },
+            1: { eng: 'C#<br>Db', kor: `${data.up} ${data.c}<br>${data.down} ${data.d}` },
+            2: { eng: 'D', kor: data.d },
+            3: { eng: 'D#<br>Eb', kor: `${data.up} ${data.d}<br>${data.down} ${data.e}` },
+            4: { eng: 'E', kor: data.e },
+            5: { eng: 'F', kor: data.f },
+            6: { eng: 'F#<br>Gb', kor: `${data.up} ${data.f}<br>${data.down} ${data.g}` },
+            7: { eng: 'G', kor: data.g },
+            8: { eng: 'G#<br>Ab', kor: `${data.up} ${data.g}<br>${data.down} ${data.a}` },
+            9: { eng: 'A', kor: data.a },
+            10: { eng: 'A#<br>Bb', kor: `${data.up} ${data.a}<br>${data.down} ${data.b}` },
+            11: { eng: 'B', kor: data.b }
+        };
+
+        window.keys = [
+            { index: 0, name: `${data.c}${data.major} (C)`, sig: 'C', rootMidi: 60, scaleNotes: ['c/4', 'd/4', 'e/4', 'f/4', 'g/4', 'a/4', 'b/4', 'c/5'] },
+            { index: 1, name: `${data.down}${data.d}${data.major} (Db)`, sig: 'Db', rootMidi: 61, scaleNotes: ['db/4', 'eb/4', 'f/4', 'gb/4', 'ab/4', 'bb/4', 'c/5', 'db/5'] },
+            { index: 2, name: `${data.d}${data.major} (D)`, sig: 'D', rootMidi: 62, scaleNotes: ['d/4', 'e/4', 'f#/4', 'g/4', 'a/4', 'b/4', 'c#/5', 'd/5'] },
+            { index: 3, name: `${data.down}${data.e}${data.major} (Eb)`, sig: 'Eb', rootMidi: 63, scaleNotes: ['eb/4', 'f/4', 'g/4', 'ab/4', 'bb/4', 'c/5', 'd/5', 'eb/5'] },
+            { index: 4, name: `${data.e}${data.major} (E)`, sig: 'E', rootMidi: 64, scaleNotes: ['e/4', 'f#/4', 'g#/4', 'a/4', 'b/4', 'c#/5', 'd#/5', 'e/5'] },
+            { index: 5, name: `${data.f}${data.major} (F)`, sig: 'F', rootMidi: 65, scaleNotes: ['f/4', 'g/4', 'a/4', 'bb/4', 'c/5', 'd/5', 'e/5', 'f/5'] },
+            { index: 6, name: `${data.down}${data.g}${data.major} (Gb)`, sig: 'Gb', rootMidi: 66, scaleNotes: ['gb/4', 'ab/4', 'bb/4', 'cb/5', 'db/5', 'eb/5', 'f/5', 'gb/5'] },
+            { index: 7, name: `${data.g}${data.major} (G)`, sig: 'G', rootMidi: 67, scaleNotes: ['g/4', 'a/4', 'b/4', 'c/5', 'd/5', 'e/5', 'f#/5', 'g/5'] },
+            { index: 8, name: `${data.down}${data.a}${data.major} (Ab)`, sig: 'Ab', rootMidi: 68, scaleNotes: ['ab/4', 'bb/4', 'c/5', 'db/5', 'eb/5', 'f/5', 'g/5', 'ab/5'] },
+            { index: 9, name: `${data.a}${data.major} (A)`, sig: 'A', rootMidi: 69, scaleNotes: ['a/4', 'b/4', 'c#/5', 'd/5', 'e/5', 'f#/5', 'g#/5', 'a/5'] },
+            { index: 10, name: `${data.down}${data.b}${data.major} (Bb)`, sig: 'Bb', rootMidi: 70, scaleNotes: ['bb/4', 'c/5', 'd/5', 'eb/5', 'f/5', 'g/5', 'a/5', 'bb/5'] },
+            { index: 11, name: `${data.b}${data.major} (B)`, sig: 'B', rootMidi: 71, scaleNotes: ['b/4', 'c#/5', 'd#/5', 'e/5', 'f#/5', 'g#/5', 'a#/5', 'b/5'] }
+        ];
+
+        const currentLangInfo = languages.find(l => l.code === langCode);
+        document.getElementById('currentFlag').src = `https://flagcdn.com/w40/${currentLangInfo.country}.png`;
+        document.getElementById('currentLangName').textContent = currentLangInfo.name;
+
+        if (updateUrl) {
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?lang=' + langCode;
+            window.history.pushState({ path: newUrl }, '', newUrl);
+        }
+        updateApp();
+    }
+
+    /* -----------------------------------------------------------
+       4. 악보 및 건반 렌더링 (계이름 현지화 반영)
+    ----------------------------------------------------------- */
+    function drawStaff(keyData) {
+        const div = document.getElementById('staff-container');
+        div.innerHTML = '';
+        const renderer = new Vex.Flow.Renderer(div, Vex.Flow.Renderer.Backends.SVG);
+        renderer.resize(1200, 240);
+        const context = renderer.getContext();
+        context.scale(1.7, 1.7);
+        const stave = new Vex.Flow.Stave(20, 20, 650);
+        stave.addClef('treble').addKeySignature(keyData.sig);
+        stave.setContext(context).draw();
+        
+        // 현재 언어의 계이름 배열 가져오기
+        const localSolfege = i18n[currentLang].solfege;
+
+        const notes = keyData.scaleNotes.map((noteStr, i) => {
+            const note = new Vex.Flow.StaveNote({ clef: "treble", keys: [noteStr], duration: "q" });
+            // i가 7인 경우(옥타브) 첫 번째 계이름 사용
+            const label = i === 7 ? localSolfege[0] : localSolfege[i];
+            const textAnno = new Vex.Flow.Annotation(label)
+                .setVerticalJustification(Vex.Flow.Annotation.VerticalJustify.BOTTOM) 
+                .setFont("Malgun Gothic", 16, "bold");
+            note.addModifier(0, textAnno); 
+            return note;
+        });
+        Vex.Flow.Formatter.FormatAndDraw(context, stave, notes);
+    }
+
+    function renderPiano() {
+        const container = document.getElementById('white-keys');
+        container.innerHTML = '';
+        const currentKey = window.keys[currentKeyIndex];
+        const localSolfege = i18n[currentLang].solfege;
+
+        for (let midi = 48; midi <= 83; midi++) {
+            const pitchClass = midi % 12;
+            const isBlack = [1, 3, 6, 8, 10].includes(pitchClass);
+            let solfegeText = '', isRoot = false;
+            const distanceFromRoot = (midi - currentKey.rootMidi + 120) % 12; 
+            const scaleIndex = majorIntervals.indexOf(distanceFromRoot);
+            
+            if (scaleIndex !== -1) { 
+                solfegeText = localSolfege[scaleIndex]; 
+                if (scaleIndex === 0) isRoot = true; 
+            }
+
+            const keyDiv = document.createElement('div');
+            keyDiv.dataset.midi = midi;
+            let labelsHtml = `<div class="label-stack">`;
+            if (showEng) labelsHtml += `<span class="eng-name">${fixedNames[pitchClass].eng}</span>`;
+            if (showKor) labelsHtml += `<span class="kor-name">${fixedNames[pitchClass].kor}</span>`;
+            if (showSol) labelsHtml += `<span class="solfege-text ${isRoot ? 'root-note' : ''}">${solfegeText}</span>`;
+            labelsHtml += `</div>`;
+            keyDiv.innerHTML = labelsHtml;
+
+            if (!isBlack) { keyDiv.className = 'white-key'; container.appendChild(keyDiv); }
+            else { keyDiv.className = 'black-key'; container.lastChild.appendChild(keyDiv); }
+        }
+        setupEvents();
+    }
+
+    /* [이하 로직은 기존과 동일 - 오디오, 이벤트, 모달 제어 등] */
+    function initLanguage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramLang = urlParams.get('lang');
+        const storedLang = localStorage.getItem('kingsmath_lang');
+        const browserLang = navigator.language.split('-')[0];
+        if (paramLang && i18n[paramLang]) currentLang = paramLang;
+        else if (storedLang && i18n[storedLang]) currentLang = storedLang;
+        else if (i18n[browserLang]) currentLang = browserLang;
+        else currentLang = 'en';
+        applyLanguage(currentLang, false);
+    }
+
+    function renderLanguages(filterText = '') {
+        const grid = document.getElementById('languageGrid');
+        grid.innerHTML = '';
+        const lowerFilter = filterText.toLowerCase();
+        const filteredLangs = languages.filter(lang => lang.name.toLowerCase().includes(lowerFilter) || lang.enName.toLowerCase().includes(lowerFilter));
+        filteredLangs.forEach(lang => {
+            const isSelected = lang.code === currentLang;
+            const btn = document.createElement('div');
+            btn.className = `flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 group relative overflow-hidden ${isSelected ? 'bg-gray-800 border-yellow-500 ring-1 ring-yellow-500/50' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-700 hover:border-gray-500'}`;
+            btn.innerHTML = `
+                <div class="shrink-0 w-8 h-6 rounded overflow-hidden shadow-sm border border-gray-700/50"><img src="https://flagcdn.com/w40/${lang.country}.png" class="w-full h-full object-cover"></div>
+                <div class="flex-1 min-w-0 flex flex-col items-start">
+                    <span class="text-sm font-medium text-white truncate w-full ${isSelected ? 'text-yellow-400' : ''}">${lang.name}</span>
+                    <span class="text-xs text-gray-400 truncate w-full">${lang.enName}</span>
+                </div>
+                ${isSelected ? '<i class="fa-solid fa-circle-check text-yellow-500 text-lg ml-2"></i>' : ''}`;
+            btn.onclick = () => { applyLanguage(lang.code); showToast(lang.name, lang.code); closeModal(); };
+            grid.appendChild(btn);
+        });
+    }
+
+    function openModal() { document.getElementById('langModal').classList.add('active'); renderLanguages(); }
+    function closeModal() { document.getElementById('langModal').classList.remove('active'); }
+    function showToast(langName, langCode) {
+        document.getElementById('ui-toast').textContent = i18n[langCode].toast;
+        document.getElementById('toastLangName').textContent = langName;
+        const toast = document.getElementById('toastNotification');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
+    function playNote(midi, id) {
+        if (!audioCtx || !noteFreqs[midi] || activeOscillators[id]) return;
+        const inst = instruments[document.getElementById('instrument-selector').value];
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const filter = audioCtx.createBiquadFilter();
+        osc.type = inst.type; osc.frequency.setValueAtTime(noteFreqs[midi], audioCtx.currentTime);
+        filter.type = 'lowpass'; filter.frequency.value = inst.filterFreq;
+        const now = audioCtx.currentTime;
+        gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.8, now + inst.attack); gain.gain.linearRampToValueAtTime(0.8 * inst.sustain, now + inst.attack + inst.decay);
+        osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination); osc.start();
+        activeOscillators[id] = { osc, gain, inst };
+    }
+    function stopNote(id) {
+        if (activeOscillators[id]) {
+            const { osc, gain, inst } = activeOscillators[id]; const now = audioCtx.currentTime;
+            gain.gain.cancelScheduledValues(now); gain.gain.setValueAtTime(gain.gain.value, now); gain.gain.linearRampToValueAtTime(0, now + inst.release);
+            osc.stop(now + inst.release); delete activeOscillators[id];
+        }
+    }
+    function setupEvents() {
+        const pianoContainer = document.getElementById('piano-container');
+        const handleStart = (e) => { if(e.target.closest('.option-btn, #langTriggerBtn, #langModal')) return; e.preventDefault(); initAudio(); const touches = e.changedTouches || [e]; for (let t of touches) { const el = document.elementFromPoint(t.clientX, t.clientY); const target = el ? el.closest('.black-key, .white-key') : null; if (target) { const id = t.identifier || 'mouse'; target.classList.add('pressed'); playNote(target.dataset.midi, id); } } };
+        const handleEnd = (e) => { const touches = e.changedTouches || [e]; for (let t of touches) stopNote(t.identifier || 'mouse'); document.querySelectorAll('.pressed').forEach(k => k.classList.remove('pressed')); };
+        pianoContainer.onpointerdown = handleStart; pianoContainer.onpointerup = handleEnd; pianoContainer.onpointerleave = handleEnd;
+    }
+    function updateApp() { const currentKey = window.keys[currentKeyIndex]; document.getElementById('current-key-name').innerText = currentKey.name; drawStaff(currentKey); renderPiano(); }
+
+    document.getElementById('btn-home').addEventListener('click', () => { if (document.fullscreenElement) { currentKeyIndex = 0; applyLanguage(currentLang, false); } else { location.reload(); } });
+    document.getElementById('langTriggerBtn').onclick = openModal;
+    document.getElementById('closeModalBtn').onclick = closeModal;
+    document.getElementById('searchInput').oninput = (e) => renderLanguages(e.target.value);
+    document.getElementById('toggle-eng').onclick = function() { showEng = !showEng; this.classList.toggle('active'); renderPiano(); };
+    document.getElementById('toggle-kor').onclick = function() { showKor = !showKor; this.classList.toggle('active'); renderPiano(); };
+    document.getElementById('toggle-sol').onclick = function() { showSol = !showSol; this.classList.toggle('active'); renderPiano(); };
+    document.getElementById('btn-up').onclick = () => { currentKeyIndex = (currentKeyIndex + 1) % 12; updateApp(); };
+    document.getElementById('btn-down').onclick = () => { currentKeyIndex = (currentKeyIndex - 1 + 12) % 12; updateApp(); };
+
+    window.onload = initLanguage;
+</script>
+</body>
+</html>

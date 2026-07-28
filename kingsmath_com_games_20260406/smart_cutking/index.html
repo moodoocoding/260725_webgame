@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5YW0T2C109');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>컷킹 모바일 - 킹수학</title>
+    <meta name="description" content="60초 동안 미션에 맞춰 도형을 잘라라! 컷킹 모바일 게임." id="meta-desc">
+    <meta name="keywords" content="도형자르기, 수학게임, 킹수학, 초등수학" id="meta-keywords">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        /* --- [1] 기본 설정 (핑크 톤 테마 유지) --- */
+        :root {
+            --bg-color: #FFF0F5;        
+            --bg-pattern: #FFB7B2;       
+            --main-accent: #FF69B4;     
+            --soft-pink: #FFC0CB;        
+            --neon-pink: #FF6B6B;        
+            --neon-blue: #4D96FF;        
+            --neon-green: #00D26A;       
+            --text-color: #5D4037;       
+            --stitch-border: 3px dashed #fff; 
+            --box-shadow: 0 4px 10px rgba(255, 105, 180, 0.3);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--bg-pattern) 2px, transparent 2px);
+            background-size: 20px 20px;
+            color: var(--text-color);
+            font-family: 'Jua', sans-serif;
+            overflow-y: auto;
+            overflow-x: hidden;
+            touch-action: pan-y;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* 공통 유틸리티 */
+        .hidden { display: none !important; }
+        .flex-center { display: flex; justify-content: center; align-items: center; }
+        button { font-family: inherit; cursor: pointer; border: none; outline: none; }
+        
+        /* 다국어 동적 폰트 조절용 클래스 */
+        .dynamic-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            display: block;
+        }
+
+        /* 모바일 컨테이너 */
+        #app-container {
+            width: 100%;
+            max-width: 500px;
+            min-height: 100vh;
+            margin: 0 auto;
+            position: relative;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 20px rgba(255, 182, 193, 0.5);
+            display: flex;
+            flex-direction: column;
+            border-left: 5px solid #FFC0CB;
+            border-right: 5px solid #FFC0CB;
+        }
+
+        /* --- [2] 시작 화면 --- */
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            padding-top: 60px;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* 좌측 상단 링크 버튼 */
+        .top-link {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            color: var(--main-accent);
+            text-decoration: none;
+            font-size: 16px;
+            z-index: 100;
+            border-bottom: 2px dashed var(--main-accent);
+            padding-bottom: 2px;
+            font-family: 'Jua', sans-serif;
+        }
+
+        /* [요구사항 13] 좌측 링크와 디자인 대칭을 이루는 우측 상단 다국어 버튼 */
+        #langTriggerBtn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: var(--main-accent);
+            font-size: 16px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px dashed var(--main-accent);
+            padding: 0 0 2px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            z-index: 99999;
+            font-family: 'Jua', sans-serif;
+        }
+
+        .main-title {
+            font-size: 45px!important; color: var(--main-accent);
+            text-shadow: 3px 3px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff;
+            margin-bottom: 5px; width: 100%; line-height: 1.2; letter-spacing: -1px;
+            padding: 0 10px;
+        }
+        .small-title { font-size: 32px !important; } 
+
+        .sub-desc {
+            font-size: 18px; color: #888; background: #fff;
+            padding: 5px 15px; border-radius: 20px; border: 2px dashed #FFB7B2;
+            margin-bottom: 15px; display: inline-block;
+        }
+        .small-text { font-size: 14px !important; }
+
+        /* QR 섹션 */
+        .qr-section {
+            display: flex; flex-direction: column; align-items: center;
+            margin-bottom: 25px; cursor: pointer;
+        }
+        #qr-small {
+            width: 80px; height: 80px; border-radius: 15px;
+            border: 4px dashed var(--main-accent);
+            transition: transform 0.2s; background: white; padding: 5px;
+        }
+        #qr-small:hover { transform: scale(1.1) rotate(5deg); }
+        .qr-hint { font-size: 12px; color: var(--main-accent); margin-top: 5px; font-weight: bold; }
+
+        #qr-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 240, 245, 0.9); z-index: 9999; cursor: pointer;
+        }
+        #qr-large { width: 80vw; max-width: 300px; border-radius: 10px; }
+        
+        .input-group {
+            width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px;
+        }
+        input#nickname {
+            width: 90%; padding: 15px; font-size: 22px; text-align: center;
+            border-radius: 25px; border: 3px dashed var(--main-accent);
+            background: #fff; color: var(--text-color); font-family: inherit;
+            box-shadow: 0 4px 0 rgba(255, 105, 180, 0.2);
+            outline: none;
+        }
+        input#nickname::placeholder { color: #FFB7B2; }
+        
+        .btn-start {
+            width: 90%; padding: 15px; font-size: 26px; border-radius: 50px;
+            background: var(--main-accent); color: white; border: 2px dashed #fff;
+            box-shadow: 0 5px 0 #D04F90; transition: transform 0.1s;
+        }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 1px 0 #D04F90; }
+
+        #ranking-area {
+            width: 95%; margin-top: 30px; background: #fff;
+            border-radius: 20px; border: 3px solid #FFC0CB; padding: 15px;
+            box-shadow: var(--box-shadow); position: relative;
+            margin-bottom: 30px;
+        }
+        #ranking-area::before {
+            content: ''; position: absolute; top: -10px; left: 50%;
+            transform: translateX(-50%) rotate(-2deg); width: 100px; height: 25px;
+            background: rgba(255,255,255,0.6); border: 1px dotted #ccc;
+        }
+
+        .rank-header { 
+            font-size: 20px; color: var(--main-accent); margin-bottom: 10px; 
+            border-bottom: 2px dashed #FFEFF4; padding-bottom: 5px;
+        }
+        
+        #ranking-list {
+            height: 300px; overflow-y: auto; text-align: left;
+        }
+        #ranking-list::-webkit-scrollbar { width: 5px; }
+        #ranking-list::-webkit-scrollbar-thumb { background: #FFC0CB; border-radius: 10px; }
+        
+        .rank-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 10px; border-bottom: 1px dashed #eee; font-size: 16px;
+        }
+        .rank-num {
+            display: inline-block; width: 24px; height: 24px; line-height: 24px;
+            text-align: center; font-size: 13px; color: white;
+            background: #FFC0CB; border-radius: 50%; font-weight: bold;
+        }
+
+        /* --- [3] 게임 화면 --- */
+        #game-screen {
+            flex: 1; position: relative; display: flex; flex-direction: column;
+            overflow: hidden; height: 100vh;
+        }
+
+        /* 상단 HUD */
+        .top-hud {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px; background: rgba(255,255,255,0.8);
+            border-bottom: 2px dashed #FFB7B2; z-index: 50; font-size: 20px;
+        }
+        .hud-item { display: flex; align-items: center; gap: 5px; font-weight: bold; }
+        .btn-home-emoji { font-size: 24px; background: none; border: none; padding: 0; cursor: pointer; }
+        .val-time { color: var(--neon-pink); }
+        .val-score { color: var(--neon-green); }
+
+        /* 미션 박스 */
+        .mission-wide-box {
+            width: 96%; margin: 10px auto 5px auto; background: #FFF0F5;
+            border-radius: 15px; padding: 10px; text-align: center;
+            border: 3px dashed #FFB7B2; white-space: nowrap; 
+        }
+        .mission-label { font-size: 14px; color: #888; margin-right: 10px;}
+        .target-val {
+            font-size: 32px; color: var(--main-accent); display: inline-block;
+            text-shadow: 2px 2px 0 #fff; font-weight: bold; line-height: 1;
+        }
+        
+        /* 분수 스타일 */
+        .fraction { display: inline-block; vertical-align: middle; text-align: center; font-size: 0.8em; }
+        .fraction sup { display: block; border-bottom: 2px solid currentColor; padding-bottom: 2px; }
+        .fraction sub { display: block; padding-top: 2px; }
+
+        /* 캔버스 영역 */
+        #canvas-container {
+            position: relative; width: 96%; margin: 5px auto;
+            height: 50vh; 
+            background-image: linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 20px 20px; background-color: #fff;
+            border-radius: 30px; border: 4px solid #FFC0CB;
+            overflow: hidden; touch-action: none; cursor: crosshair;
+        }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* 하단 설명 텍스트 */
+        #bottom-instruction {
+            position: absolute; bottom: 20px; width: 90%; left: 5%;
+            text-align: center; background: rgba(255, 240, 245, 0.9);
+            padding: 10px; border-radius: 20px; border: 2px dashed var(--main-accent);
+            color: var(--text-color); font-weight: bold; pointer-events: none;
+            animation: float 2s ease-in-out infinite;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        /* 피드백 오버레이 */
+        #feedback-overlay {
+            position: absolute; top: 10%; left: 50%;
+            transform: translateX(-50%) scale(0);
+            text-align: center; pointer-events: none; z-index: 100;
+            opacity: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .fb-angle { 
+            font-size: 40px; color: var(--text-color); margin-bottom: 5px; 
+            font-weight: bold; background: rgba(255,255,255,0.8);
+            padding: 0 10px; border-radius: 10px;
+        }
+        .fb-diff { 
+            font-size: 20px; font-weight: bold; padding: 8px 20px; 
+            border-radius: 20px; background: white; display: inline-block;
+            border: 2px solid #ddd; box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+        }
+        .fb-score {
+            font-size: 24px; font-weight: bold; margin-top: 8px;
+            color: var(--main-accent); background: rgba(255, 255, 255, 0.95);
+            padding: 5px 15px; border-radius: 15px; border: 2px solid #FFC0CB;
+        }
+        .fb-good { color: var(--neon-green); border-color: var(--neon-green); background: #E8F5E9; }
+        .fb-bad { color: var(--neon-pink); border-color: var(--neon-pink); background: #FFEBEE; }
+        
+        .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .pop-out { animation: popOut 0.3s ease-in forwards; }
+
+        @keyframes popIn {
+            0% { transform: translateX(-50%) scale(0); opacity: 0; }
+            80% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+            100% { transform: translateX(-50%) scale(1.0); opacity: 1; }
+        }
+        @keyframes popOut {
+            0% { transform: translateX(-50%) scale(1.0); opacity: 1; }
+            100% { transform: translateX(-50%) scale(0); opacity: 0; }
+        }
+
+        #countdown-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9); z-index: 300;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            color: var(--main-accent);
+            font-size: 100px; font-weight: bold;
+            text-shadow: 4px 4px 0 #fff, 0 0 20px rgba(255,105,180,0.5);
+        }
+
+        /* --- [4] 결과 화면 --- */
+        #result-screen {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(255, 240, 245, 0.95); z-index: 200;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .res-title { font-size: 36px; margin-bottom: 10px; color: var(--text-color); }
+        .res-score { font-size: 70px; color: var(--main-accent); font-weight: bold; margin-bottom: 20px; text-shadow: 3px 3px 0 #fff; }
+        .res-msg { 
+            font-size: 18px; color: #888; margin-bottom: 40px; 
+            background: white; padding: 10px 20px; border-radius: 15px; border: 2px dashed #FFB7B2;
+        }
+        .btn-group { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+
+
+        /* =========================================================
+           [다국어 언어 모달 전용 독립 CSS - 절대 게임 CSS와 충돌 방지]
+           ========================================================= */
+        #langModal, #langModal * { box-sizing: border-box !important; }
+        
+        /* 폰트어썸 깨짐 방지 예외처리 */
+        .fa, .fas, .fa-solid, .fa-regular { 
+            font-family: "Font Awesome 6 Free" !important; 
+            font-weight: 900 !important; 
+        }
+
+        .gl-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            z-index: 99999;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: all 0.3s ease;
+        }
+        .gl-modal-overlay.active { opacity: 1; visibility: visible; }
+        
+        .gl-modal-content {
+            background: #1f2937; border: 1px solid #374151; border-radius: 16px;
+            width: 90%; max-width: 800px; max-height: 85vh; display: flex; flex-direction: column;
+            transform: scale(0.95) translateY(-10px); opacity: 0; transition: all 0.3s ease;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            font-family: sans-serif; /* 모달 내부는 기본 폰트 적용 */
+        }
+        .gl-modal-overlay.active .gl-modal-content { transform: scale(1) translateY(0); opacity: 1; }
+
+        .gl-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px; border-bottom: 1px solid #374151; background: #1f2937;
+            border-top-left-radius: 16px; border-top-right-radius: 16px;
+        }
+        .gl-modal-header h2 { margin: 0; font-size: 20px; color: #fff; display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        .gl-modal-close-btn {
+            background: #374151; border: none; width: 36px; height: 36px; border-radius: 50%;
+            color: #9ca3af; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .gl-modal-close-btn:hover { background: #4b5563; color: #fff; }
+
+        .gl-modal-search { padding: 20px; background: #1f2937; position: relative; }
+        .gl-modal-search input {
+            width: 100%; padding: 14px 14px 14px 44px; background: #374151; border: 1px solid #4b5563;
+            color: #fff; border-radius: 12px; font-size: 15px; outline: none; transition: border 0.2s;
+            box-shadow: none; font-family: sans-serif;
+        }
+        .gl-modal-search input:focus { border-color: #eab308; }
+        .gl-modal-search i { position: absolute; left: 36px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+
+        .gl-modal-body {
+            padding: 0 20px 20px 20px; overflow-y: auto; flex: 1;
+        }
+        .gl-modal-body::-webkit-scrollbar { width: 8px; }
+        .gl-modal-body::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        .gl-modal-body::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+
+        .gl-lang-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px;
+        }
+        .gl-lang-card {
+            display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(55, 65, 81, 0.4);
+            border: 1px solid #374151; border-radius: 12px; cursor: pointer; transition: all 0.2s;
+        }
+        .gl-lang-card:hover { background: #374151; border-color: #6b7280; }
+        .gl-lang-card.selected { background: #1f2937; border-color: #eab308; box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.5); }
+        .gl-lang-card img { width: 32px; height: 24px; border-radius: 4px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); }
+        .gl-lang-info { display: flex; flex-direction: column; overflow: hidden; }
+        .gl-lang-name { color: #fff; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gl-lang-card.selected .gl-lang-name { color: #fde047; }
+        .gl-lang-en-name { color: #9ca3af; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gl-lang-check { margin-left: auto; color: #eab308; font-size: 16px; }
+
+        .gl-toast-noti {
+            position: fixed; bottom: 24px; right: 24px; background: #1f2937; border: 1px solid #374151;
+            padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); z-index: 99999;
+            transform: translateY(150%); opacity: 0; transition: all 0.3s ease;
+            font-family: sans-serif;
+        }
+        .gl-toast-noti.show { transform: translateY(0); opacity: 1; }
+        .gl-toast-icon { width: 32px; height: 32px; border-radius: 50%; background: rgba(34, 197, 94, 0.2); color: #4ade80; display: flex; align-items: center; justify-content: center; }
+        .gl-toast-text p { margin: 0; color: #fff; font-size: 14px; font-weight: 500; }
+        .gl-toast-text span { color: #9ca3af; font-size: 12px; }
+        
+        #gl-noResultMsg { display: none; flex-direction: column; align-items: center; padding: 40px 0; color: #6b7280; font-family: sans-serif; }
+        #gl-noResultMsg i { font-size: 36px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+
+<div id="langModal" class="gl-modal-overlay">
+    <div class="gl-modal-content">
+        <div class="gl-modal-header">
+            <h2><i class="fa-solid fa-language" style="color:#eab308;"></i> Language / 언어</h2>
+            <button class="gl-modal-close-btn" onclick="closeLangModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="gl-modal-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="langSearchInput" placeholder="Search / 검색 ...">
+        </div>
+        <div class="gl-modal-body">
+            <div id="langGrid" class="gl-lang-grid"></div>
+            <div id="gl-noResultMsg">
+                <i class="fa-regular fa-face-frown-open"></i>
+                <p>No results / 검색 결과 없음</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="langToast" class="gl-toast-noti">
+    <div class="gl-toast-icon"><i class="fa-solid fa-check"></i></div>
+    <div class="gl-toast-text">
+        <p id="toastMsg">언어가 변경되었습니다.</p>
+        <span id="toastSub">Korean</span>
+    </div>
+</div>
+
+
+<div id="qr-modal" class="hidden flex-center" onclick="closeQrModal()">
+    <div class="qr-modal-content">
+        <img id="qr-large" src="" alt="QR Code Large">
+        <div id="modal-close-hint" style="color:var(--text-color); margin-top:20px; font-size:20px;">터치하면 닫힙니다 🐰</div>
+    </div>
+</div>
+
+<div id="app-container">
+
+    <div id="start-screen">
+        <a href="/" target="_self" id="top-link-anchor" class="top-link">킹수학.com</a>
+        
+        <button id="langTriggerBtn" onclick="openLangModal()">
+            <img id="currentFlag" src="https://flagcdn.com/w40/kr.png" alt="KR" style="width: 18px; height: 13px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.1);">
+            <span id="currentLangName">한국어</span>
+            <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+        </button>
+
+        <div style="margin-top: 20px;">
+            <div class="main-title dynamic-text" id="main-title" data-lang-key="title">✂️컷킹 <span style="font-size:0.6em;">모바일</span></div>
+            <div class="sub-desc dynamic-text" id="sub-desc" data-lang-key="desc">60초 동안 미션만큼 잘라내!</div>
+            
+            <div class="qr-section" onclick="openQrModal()">
+                <img id="qr-small" src="" alt="QR Code">
+                <div class="qr-hint dynamic-text" id="qr-hint" data-lang-key="invite">QR 코드로 친구 초대하기 🎀</div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="nickname" maxlength="8" placeholder="닉네임 입력">
+            <button class="btn-start dynamic-text" onclick="startGame()" id="btn-start" data-lang-key="start">💖 게임 시작</button>
+            <a href="/" target="_self" id="btn-other" data-lang-key="other_games" style="font-size: 14px; color: #888; text-decoration: none; background: white; padding: 8px 16px; border-radius: 20px; border: 1px solid #ddd;">🎮 다른 게임 고르기</a>
+        </div>
+
+        <div id="ranking-area">
+            <div class="rank-header dynamic-text" id="rank-header" data-lang-key="ranking">🏆 명예의 전당 (Top 100)</div>
+            <div id="ranking-list">
+                <div style="padding:20px; color:#aaa;" id="loading-text" data-lang-key="loading">랭킹을 불러오고 있어요...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div id="countdown-overlay" class="hidden">3</div>
+
+        <div class="top-hud">
+            <button class="btn-home-emoji" onclick="goHome()" id="btn-home">🏠</button>
+            <div class="hud-item">⏰ <span class="val-time" id="ui-timer">60</span></div>
+            <div class="hud-item">🏆 <span class="val-score" id="ui-score">0</span></div>
+        </div>
+
+        <div class="mission-wide-box">
+            <span class="mission-label dynamic-text" id="lbl-target" data-lang-key="target_lbl">남길 목표</span>
+            <div class="target-val" id="ui-target">50%</div>
+        </div>
+
+        <div id="canvas-container">
+            <canvas id="game-canvas"></canvas>
+            <div id="feedback-overlay">
+                <div class="fb-angle" id="fb-angle-text">50%</div>
+                <div class="fb-diff" id="fb-diff-text">1% 차이</div>
+                <div class="fb-score" id="fb-score-text">+500점</div>
+            </div>
+        </div>
+        <div id="bottom-instruction" class="dynamic-text" data-lang-key="instruction">✂️ 테두리를 그려서 잘라내세요!</div>
+    </div>
+
+    <div id="result-screen" class="hidden flex-center">
+        <div class="res-title dynamic-text" id="res-title" data-lang-key="time_up">⏰ 시간이 다 됐어!</div>
+        <div class="res-score" id="res-final-score">0</div>
+        <div class="res-msg dynamic-text" id="res-msg" data-lang-key="saving">기록 저장 중...</div>
+
+        <div class="btn-group">
+            <button class="btn-start dynamic-text" style="background:var(--neon-green); color:white;" onclick="resetGame()" id="res-btn-retry" data-lang-key="retry">🔄 다시 도전하기</button>
+            <button class="btn-start dynamic-text" style="background:#aaa;" onclick="goHome()" id="res-btn-home" data-lang-key="home_move">🏠 홈으로 이동</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /* =========================================================
+       [다국어 16개국 데이터 및 기초 수학 교육과정 기반 로직]
+       ========================================================= */
+    const languages = [
+        { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+        { code: 'en', country: 'us', name: 'English', enName: 'English' },
+        { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)' },
+        { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+        { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+        { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+        { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+        { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+        { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+        { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+        { code: 'pt-br', country: 'br', name: 'Português (BR)', enName: 'Portuguese (Brazil)' },
+        { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+        { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+        { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' },
+        { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+        { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' }
+    ];
+
+    const toastTranslations = {
+        'ko': '언어가 변경되었습니다.', 'en': 'Language changed.', 'zh': '语言已更改。', 'ja': '言語が変更されました。',
+        'es': 'Idioma cambiado.', 'fr': 'Langue modifiée.', 'ru': 'Язык изменен.', 'id': 'Bahasa telah diubah.',
+        'vi': 'Ngôn ngữ đã được thay đổi.', 'th': 'เปลี่ยนภาษาเรียบร้อยแล้ว', 'pt-br': 'Idioma alterado.',
+        'hi': 'भाषा बदल दी गई है।', 'bn': 'ভাষা পরিবর্তন করা হয়েছে।', 'tr': 'Dil değiştirildi.', 'de': 'Sprache geändert.', 'it': 'Lingua cambiata.'
+    };
+
+    const I18N = {
+        ko: { flag: "🇰🇷", title: "✂️컷킹 <span style='font-size:0.6em'>모바일</span>", desc: "60초 동안 정확한 비율로 잘라줘!", invite: "QR 코드로 초대하기 🎀", placeholder: "닉네임 입력", start: "💖 게임 시작", other_games: "🎮 다른 게임 고르기", ranking: "🏆 명예의 전당 (Top 100)", loading: "랭킹을 불러오고 있어요...", home: "🏠", restart: "🔄 다시하기", score_lbl: "SCORE", target_lbl: "목표", time_lbl: "TIME", time_up: "⏰ 시간이 다 됐어!", saving: "기록 저장 중...", saved: "점수가 저장되었어요.", rank_fmt: "현재 <span style='color:#FF69B4; font-weight:bold;'>{rank}등</span> 이에요!", retry: "🔄 다시 도전하기", home_move: "🏠 홈으로 이동", diff_fmt: "{val}% 차이", pt_fmt: "+{val}점", alert_nick: "닉네임을 입력해주세요!", alert_bad: "바르고 고운 말을 써주세요! 🚫", modal_close: "터치하면 닫힙니다 🐰", no_rank: "1등에 도전해봐요!", left_txt: "남기기", cut_txt: "자르기", instruction: "✂️ 테두리를 그려서 잘라내세요!", metaTitle: "컷킹 모바일 - 킹수학", metaDesc: "60초 동안 미션에 맞춰 도형을 잘라라! 컷킹 게임." },
+        en: { flag: "🇺🇸", title: "✂️Cut King <span style='font-size:0.6em'>Mobile</span>", desc: "Cut the shape to the exact ratio in 60s!", invite: "Invite friends via QR 🎀", placeholder: "Nickname", start: "💖 Start Game", other_games: "🎮 More Games", ranking: "🏆 Hall of Fame (Top 100)", loading: "Loading rankings...", home: "🏠", restart: "🔄 Restart", score_lbl: "SCORE", target_lbl: "Target", time_lbl: "TIME", time_up: "⏰ Time's Up!", saving: "Saving score...", saved: "Score saved.", rank_fmt: "You are <span style='color:#FF69B4; font-weight:bold;'>Rank {rank}</span>!", retry: "🔄 Try Again", home_move: "🏠 Go Home", diff_fmt: "{val}% Diff", pt_fmt: "+{val}pts", alert_nick: "Please enter a nickname!", alert_bad: "Please use nice words! 🚫", modal_close: "Touch to close 🐰", no_rank: "Be the first challenger!", left_txt: "Keep", cut_txt: "Cut", instruction: "✂️ Draw a line to cut the shape!", metaTitle: "Cut King Mobile - KingsMath", metaDesc: "Cut shapes accurately in this math game!" },
+        zh: { flag: "🇨🇳", title: "✂️剪切王者 <span style='font-size:0.6em'>移动版</span>", desc: "60秒内按比例剪切！", invite: "扫码邀请朋友 🎀", placeholder: "输入昵称", start: "💖 开始游戏", other_games: "🎮 更多游戏", ranking: "🏆 名人堂 (前100名)", loading: "加载排名中...", home: "🏠", restart: "🔄 重玩", score_lbl: "分数", target_lbl: "目标", time_lbl: "时间", time_up: "⏰ 时间到！", saving: "保存分数中...", saved: "分数已保存。", rank_fmt: "当前排名 <span style='color:#FF69B4; font-weight:bold;'>第{rank}名</span>！", retry: "🔄 再试一次", home_move: "🏠 返回主页", diff_fmt: "误差 {val}%", pt_fmt: "+{val}分", alert_nick: "请输入昵称！", alert_bad: "请使用文明用语！🚫", modal_close: "点击关闭 🐰", no_rank: "挑战第一名！", left_txt: "保留", cut_txt: "剪切", instruction: "✂️ 画出边界进行裁剪！", metaTitle: "剪切王者 移动版 - KingsMath", metaDesc: "互动数学剪切游戏的移动版本！" },
+        ja: { flag: "🇯🇵", title: "✂️カットキング <span style='font-size:0.6em'>モバイル</span>", desc: "60秒で正確な割合で切ろう！", invite: "QRで友達を招待 🎀", placeholder: "ニックネーム", start: "💖 ゲーム開始", other_games: "🎮 他のゲーム", ranking: "🏆 殿堂入り (Top 100)", loading: "ランキング読込中...", home: "🏠", restart: "🔄 リスタート", score_lbl: "スコア", target_lbl: "目標", time_lbl: "タイム", time_up: "⏰ タイムアップ！", saving: "記録保存中...", saved: "保存されました。", rank_fmt: "現在 <span style='color:#FF69B4; font-weight:bold;'>{rank}位</span> です！", retry: "🔄 もう一度", home_move: "🏠 ホームへ", diff_fmt: "誤差 {val}%", pt_fmt: "+{val}点", alert_nick: "名前を入力してね！", alert_bad: "きれいな言葉を使ってね！🚫", modal_close: "タッチして閉じる 🐰", no_rank: "1位を目指そう！", left_txt: "残す", cut_txt: "カット", instruction: "✂️ 線を描いて切り取ろう！", metaTitle: "カットキング モバイル - KingsMath", metaDesc: "形を正確に切り取る数学ゲーム！" },
+        es: { flag: "🇪🇸", title: "✂️Rey del Corte <span style='font-size:0.6em'>Móvil</span>", desc: "¡Corta en la proporción exacta en 60s!", invite: "Invitar amigos 🎀", placeholder: "Tu Nombre", start: "💖 Empezar", other_games: "🎮 Más Juegos", ranking: "🏆 Salón de la Fama", loading: "Cargando...", home: "🏠", restart: "🔄 Reiniciar", score_lbl: "PUNTOS", target_lbl: "Meta", time_lbl: "TIEMPO", time_up: "⏰ ¡Tiempo!", saving: "Guardando...", saved: "Puntuación guardada.", rank_fmt: "¡Eres el <span style='color:#FF69B4; font-weight:bold;'>Rango {rank}</span>!", retry: "🔄 Reintentar", home_move: "🏠 Ir a Inicio", diff_fmt: "{val}% Dif", pt_fmt: "+{val}pts", alert_nick: "¡Introduce un nombre!", alert_bad: "¡Usa palabras amables! 🚫", modal_close: "Toque para cerrar 🐰", no_rank: "¡Sé el primero!", left_txt: "Mantener", cut_txt: "Cortar", instruction: "✂️ ¡Dibuja para cortar la figura!", metaTitle: "Rey del Corte Móvil - KingsMath", metaDesc: "¡Juego interactivo de matemáticas y cortes!" },
+        fr: { flag: "🇫🇷", title: "✂️Roi de Coupe <span style='font-size:0.6em'>Mobile</span>", desc: "Coupez à la proportion exacte en 60s!", invite: "Inviter des amis 🎀", placeholder: "Surnom", start: "💖 Commencer", other_games: "🎮 Plus de jeux", ranking: "🏆 Panthéon", loading: "Chargement...", home: "🏠", restart: "🔄 Redémarrer", score_lbl: "SCORE", target_lbl: "Cible", time_lbl: "TEMPS", time_up: "⏰ Temps écoulé!", saving: "Sauvegarde...", saved: "Score enregistré.", rank_fmt: "Vous êtes <span style='color:#FF69B4; font-weight:bold;'>Rang {rank}</span>!", retry: "🔄 Réessayer", home_move: "🏠 Accueil", diff_fmt: "{val}% Diff", pt_fmt: "+{val}pts", alert_nick: "Entrez un surnom!", alert_bad: "Mots gentils seulement! 🚫", modal_close: "Touchez pour fermer 🐰", no_rank: "Soyez le premier!", left_txt: "Garder", cut_txt: "Couper", instruction: "✂️ Dessinez pour couper la forme!", metaTitle: "Roi de la Coupe Mobile - KingsMath", metaDesc: "Jeu mathématique interactif de coupe!" },
+        ru: { flag: "🇷🇺", title: "✂️Король Резки <span style='font-size:0.6em'>Мобайл</span>", desc: "Обрежь по пропорции за 60с!", invite: "Пригласить 🎀", placeholder: "Ваше Имя", start: "💖 Играть", other_games: "🎮 Другие игры", ranking: "🏆 Зал славы", loading: "Загрузка...", home: "🏠", restart: "🔄 Рестарт", score_lbl: "СЧЕТ", target_lbl: "Цель", time_lbl: "ВРЕМЯ", time_up: "⏰ Время вышло!", saving: "Сохранение...", saved: "Счет сохранен.", rank_fmt: "Вы <span style='color:#FF69B4; font-weight:bold;'>Ранг {rank}</span>!", retry: "🔄 Еще раз", home_move: "🏠 Домой", diff_fmt: "Разн. {val}%", pt_fmt: "+{val}очк.", alert_nick: "Введите имя!", alert_bad: "Только вежливые слова! 🚫", modal_close: "Нажмите, чтобы закрыть 🐰", no_rank: "Будьте первым!", left_txt: "Оставить", cut_txt: "Обрезать", instruction: "✂️ Нарисуйте линию для резки!", metaTitle: "Король Резки Мобильный - KingsMath", metaDesc: "Математическая игра на разрезание!" },
+        id: { flag: "🇮🇩", title: "✂️Raja Potong <span style='font-size:0.6em'>Seluler</span>", desc: "Potong rasio tepat dalam 60 detik!", invite: "Undang teman 🎀", placeholder: "Nama", start: "💖 MULAI", other_games: "🎮 Game Lain", ranking: "🏆 Papan Peringkat", loading: "Memuat...", home: "🏠", restart: "🔄 Ulangi", score_lbl: "SKOR", target_lbl: "Target", time_lbl: "WAKTU", time_up: "⏰ Waktu Habis!", saving: "Menyimpan...", saved: "Skor disimpan.", rank_fmt: "Peringkat Anda <span style='color:#FF69B4; font-weight:bold;'>{rank}</span>!", retry: "🔄 Coba Lagi", home_move: "🏠 Beranda", diff_fmt: "Selisih {val}%", pt_fmt: "+{val}poin", alert_nick: "Masukkan nama!", alert_bad: "Gunakan kata yang baik! 🚫", modal_close: "Sentuh tutup 🐰", no_rank: "Jadilah yang pertama!", left_txt: "Simpan", cut_txt: "Potong", instruction: "✂️ Gambar garis untuk memotong!", metaTitle: "Raja Potong Seluler - KingsMath", metaDesc: "Game potong matematika interaktif!" },
+        vi: { flag: "🇻🇳", title: "✂️Vua Cắt <span style='font-size:0.6em'>Di động</span>", desc: "Cắt tỷ lệ chính xác trong 60 giây!", invite: "Mời bạn bè 🎀", placeholder: "Tên", start: "💖 BẮT ĐẦU", other_games: "🎮 Game khác", ranking: "🏆 Bảng xếp hạng", loading: "Đang tải...", home: "🏠", restart: "🔄 Chơi lại", score_lbl: "ĐIỂM", target_lbl: "Mục tiêu", time_lbl: "THỜI GIAN", time_up: "⏰ Hết giờ!", saving: "Đang lưu...", saved: "Đã lưu điểm.", rank_fmt: "Hạng của bạn: <span style='color:#FF69B4; font-weight:bold;'>{rank}</span>!", retry: "🔄 Thử lại", home_move: "🏠 Trang chủ", diff_fmt: "Lệch {val}%", pt_fmt: "+{val}đ", alert_nick: "Vui lòng nhập tên!", alert_bad: "Không dùng từ xấu! 🚫", modal_close: "Chạm để đóng 🐰", no_rank: "Hãy là người đầu tiên!", left_txt: "Giữ", cut_txt: "Cắt", instruction: "✂️ Vẽ đường để cắt!", metaTitle: "Vua Cắt Di động - KingsMath", metaDesc: "Trò chơi cắt toán học vui nhộn!" },
+        th: { flag: "🇹🇭", title: "✂️ราชาตัด <span style='font-size:0.6em'>มือถือ</span>", desc: "ตัดตามสัดส่วนใน 60 วินาที!", invite: "เชิญเพื่อน 🎀", placeholder: "ชื่อ", start: "💖 เริ่มเกม", other_games: "🎮 เกมอื่น", ranking: "🏆 อันดับ", loading: "กำลังโหลด...", home: "🏠", restart: "🔄 เริ่มใหม่", score_lbl: "คะแนน", target_lbl: "เป้าหมาย", time_lbl: "เวลา", time_up: "⏰ หมดเวลา!", saving: "กำลังบันทึก...", saved: "บันทึกแล้ว", rank_fmt: "คุณอยู่อันดับ <span style='color:#FF69B4; font-weight:bold;'>{rank}</span>!", retry: "🔄 ลองอีกครั้ง", home_move: "🏠 หน้าแรก", diff_fmt: "ต่าง {val}%", pt_fmt: "+{val}แต้ม", alert_nick: "กรุณาใส่ชื่อ!", alert_bad: "ใช้คำสุภาพนะ! 🚫", modal_close: "แตะเพื่อปิด 🐰", no_rank: "เป็นคนแรกสิ!", left_txt: "เหลือ", cut_txt: "ตัด", instruction: "✂️ วาดเส้นเพื่อตัด!", metaTitle: "ราชาตัด มือถือ - KingsMath", metaDesc: "เกมคณิตศาสตร์การตัดสัดส่วน!" },
+        'pt-br': { flag: "🇧🇷", title: "✂️Rei do Corte <span style='font-size:0.6em'>Mobile</span>", desc: "Corte na proporção exata em 60s!", invite: "Convidar amigos 🎀", placeholder: "Nome", start: "💖 INICIAR", other_games: "🎮 Outros Jogos", ranking: "🏆 Placar", loading: "Carregando...", home: "🏠", restart: "🔄 Reiniciar", score_lbl: "PONTOS", target_lbl: "Meta", time_lbl: "TEMPO", time_up: "⏰ Tempo Esgotado!", saving: "Salvando...", saved: "Pontuação salva.", rank_fmt: "Você é o <span style='color:#FF69B4; font-weight:bold;'>Rank {rank}</span>!", retry: "🔄 Tentar Novamente", home_move: "🏠 Início", diff_fmt: "{val}% Dif", pt_fmt: "+{val}pts", alert_nick: "Digite seu nome!", alert_bad: "Use palavras boas! 🚫", modal_close: "Toque para fechar 🐰", no_rank: "Seja o primeiro!", left_txt: "Manter", cut_txt: "Cortar", instruction: "✂️ Desenhe para cortar!", metaTitle: "Rei do Corte Mobile - KingsMath", metaDesc: "Jogo de cortar formas interativo!" },
+        hi: { flag: "🇮🇳", title: "✂️कट किंग <span style='font-size:0.6em'>मोबाइल</span>", desc: "60 सेकंड में सटीक अनुपात काटें!", invite: "मित्रों को आमंत्रित करें 🎀", placeholder: "नाम", start: "💖 शुरू करें", other_games: "🎮 अन्य खेल", ranking: "🏆 रैंकिंग", loading: "लोड हो रहा है...", home: "🏠", restart: "🔄 फिर से", score_lbl: "स्कोर", target_lbl: "लक्ष्य", time_lbl: "समय", time_up: "⏰ समय समाप्त!", saving: "सेव कर रहा है...", saved: "सेव हो गया।", rank_fmt: "आपकी रैंक <span style='color:#FF69B4; font-weight:bold;'>{rank}</span> है!", retry: "🔄 पुनः प्रयास", home_move: "🏠 होम", diff_fmt: "{val}% अंतर", pt_fmt: "+{val}अंक", alert_nick: "नाम दर्ज करें!", alert_bad: "अच्छे शब्दों का प्रयोग करें! 🚫", modal_close: "बंद करने के लिए छुएं 🐰", no_rank: "पहले बनें!", left_txt: "रखें", cut_txt: "काटें", instruction: "✂️ काटने के लिए रेखा खींचें!", metaTitle: "कट किंग मोबाइल - KingsMath", metaDesc: "आकार काटने का गणित खेल!" },
+        bn: { flag: "🇧🇩", title: "✂️কাট কিং <span style='font-size:0.6em'>মোবাইল</span>", desc: "৬০ সেকেন্ডে সঠিক অনুপাতে কাটুন!", invite: "বন্ধুদের আমন্ত্রণ 🎀", placeholder: "নাম", start: "💖 শুরু করুন", other_games: "🎮 অন্যান্য গেম", ranking: "🏆 র‍্যাঙ্কিং", loading: "লোড হচ্ছে...", home: "🏠", restart: "🔄 রিস্টার্ট", score_lbl: "স্কোর", target_lbl: "লক্ষ্য", time_lbl: "সময়", time_up: "⏰ সময় শেষ!", saving: "সংরক্ষণ হচ্ছে...", saved: "সংরক্ষিত হয়েছে।", rank_fmt: "আপনার র‍্যাঙ্ক <span style='color:#FF69B4; font-weight:bold;'>{rank}</span>!", retry: "🔄 আবার চেষ্টা করুন", home_move: "🏠 হোম", diff_fmt: "{val}% পার্থক্য", pt_fmt: "+{val}পয়েন্ট", alert_nick: "নাম লিখুন!", alert_bad: "ভালো কথা লিখুন! 🚫", modal_close: "বন্ধ করতে স্পর্শ করুন 🐰", no_rank: "প্রথম হন!", left_txt: "রাখুন", cut_txt: "কাটুন", instruction: "✂️ কাটার জন্য লাইন আঁকুন!", metaTitle: "কাট কিং মোবাইল - KingsMath", metaDesc: "গণিতের কাটার খেলা!" },
+        tr: { flag: "🇹🇷", title: "✂️Kesme Kralı <span style='font-size:0.6em'>Mobil</span>", desc: "60 saniyede tam oranda kes!", invite: "Arkadaş Davet Et 🎀", placeholder: "Adın", start: "💖 BAŞLA", other_games: "🎮 Diğer Oyunlar", ranking: "🏆 Sıralama", loading: "Yükleniyor...", home: "🏠", restart: "🔄 Yeniden Başla", score_lbl: "SKOR", target_lbl: "Hedef", time_lbl: "SÜRE", time_up: "⏰ Süre Bitti!", saving: "Kaydediliyor...", saved: "Kaydedildi.", rank_fmt: "Sıranız: <span style='color:#FF69B4; font-weight:bold;'>{rank}</span>!", retry: "🔄 Tekrar Dene", home_move: "🏠 Ana Sayfa", diff_fmt: "%{val} Fark", pt_fmt: "+{val}p", alert_nick: "Adını gir!", alert_bad: "Güzel kelimeler kullan! 🚫", modal_close: "Kapatmak için dokun 🐰", no_rank: "İlk sen ol!", left_txt: "Tut", cut_txt: "Kes", instruction: "✂️ Kesmek için çizgi çiz!", metaTitle: "Kesme Kralı Mobil - KingsMath", metaDesc: "Matematiksel kesme oyunu!" },
+        de: { flag: "🇩🇪", title: "✂️Schneidekönig <span style='font-size:0.6em'>Mobil</span>", desc: "Schneide die Form im richtigen Verhältnis!", invite: "Freunde einladen 🎀", placeholder: "Name", start: "💖 STARTEN", other_games: "🎮 Weitere Spiele", ranking: "🏆 Rangliste", loading: "Wird geladen...", home: "🏠", restart: "🔄 Neustart", score_lbl: "PUNKTE", target_lbl: "Ziel", time_lbl: "ZEIT", time_up: "⏰ Zeit abgelaufen!", saving: "Speichern...", saved: "Gespeichert.", rank_fmt: "Du bist auf Platz <span style='color:#FF69B4; font-weight:bold;'>{rank}</span>!", retry: "🔄 Nochmal", home_move: "🏠 Start", diff_fmt: "{val}% Diff", pt_fmt: "+{val}Pkt", alert_nick: "Namen eingeben!", alert_bad: "Nur nette Worte! 🚫", modal_close: "Zum Schließen tippen 🐰", no_rank: "Sei der Erste!", left_txt: "Behalten", cut_txt: "Schneiden", instruction: "✂️ Zeichne, um zu schneiden!", metaTitle: "Schneidekönig Mobil - KingsMath", metaDesc: "Mathematik-Schneidespiel!" },
+        it: { flag: "🇮🇹", title: "✂️Re del Taglio <span style='font-size:0.6em'>Mobile</span>", desc: "Taglia nella proporzione esatta!", invite: "Invita amici 🎀", placeholder: "Nome", start: "💖 INIZIA", other_games: "🎮 Altri Giochi", ranking: "🏆 Classifica", loading: "Caricamento...", home: "🏠", restart: "🔄 Riavvia", score_lbl: "PUNTI", target_lbl: "Meta", time_lbl: "TEMPO", time_up: "⏰ Tempo Scaduto!", saving: "Salvataggio...", saved: "Salvato.", rank_fmt: "Sei al rango <span style='color:#FF69B4; font-weight:bold;'>{rank}</span>!", retry: "🔄 Riprova", home_move: "🏠 Home", diff_fmt: "{val}% Diff", pt_fmt: "+{val}pti", alert_nick: "Inserisci il nome!", alert_bad: "Usa belle parole! 🚫", modal_close: "Tocca per chiudere 🐰", no_rank: "Sii il primo!", left_txt: "Tieni", cut_txt: "Taglia", instruction: "✂️ Disegna per tagliare!", metaTitle: "Re del Taglio Mobile - KingsMath", metaDesc: "Gioco matematico interattivo!" }
+    };
+
+    let currentLang = 'en';
+    
+    // 모달 및 토스트 변수
+    const langModal = document.getElementById('langModal');
+    const langGrid = document.getElementById('langGrid');
+    const langSearchInput = document.getElementById('langSearchInput');
+    const noResultMsg = document.getElementById('gl-noResultMsg');
+    const langToast = document.getElementById('langToast');
+    let toastTimer;
+
+    // 언어 감지 및 초기화 (우선순위: URL -> LocalStorage -> Browser)
+    function initLanguage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlLang = urlParams.get('lang');
+        const storedLang = localStorage.getItem('kingsmath_lang');
+        const navLang = navigator.language.substring(0, 2);
+
+        if (urlLang && I18N[urlLang]) currentLang = urlLang;
+        else if (storedLang && I18N[storedLang]) currentLang = storedLang;
+        else if (['ko','en','zh','ja','es','fr','ru','id','vi','th','pt','hi','bn','tr','de','it'].includes(navLang)) {
+            if (navLang === 'zh') currentLang = 'zh';
+            else if (navLang === 'ja') currentLang = 'ja';
+            else if (navLang === 'pt') currentLang = 'pt-br';
+            else currentLang = navLang;
+        } else currentLang = 'en';
+
+        applyLanguage(currentLang);
+    }
+
+    // 모달에 언어 리스트 렌더링
+    function renderLanguages(filterText = '') {
+        langGrid.innerHTML = '';
+        const lowerFilter = filterText.toLowerCase();
+        
+        const filteredLangs = languages.filter(lang => 
+            lang.name.toLowerCase().includes(lowerFilter) || 
+            lang.enName.toLowerCase().includes(lowerFilter) ||
+            lang.code.toLowerCase().includes(lowerFilter)
+        );
+
+        if (filteredLangs.length === 0) {
+            langGrid.style.display = 'none';
+            noResultMsg.style.display = 'flex';
+        } else {
+            langGrid.style.display = 'grid';
+            noResultMsg.style.display = 'none';
+
+            filteredLangs.forEach(lang => {
+                const isSelected = lang.code === currentLang;
+                const flagUrl = `https://flagcdn.com/w40/${lang.country}.png`;
+                
+                const card = document.createElement('div');
+                card.className = `gl-lang-card ${isSelected ? 'selected' : ''}`;
+                card.innerHTML = `
+                    <img src="${flagUrl}" alt="${lang.country}">
+                    <div class="gl-lang-info">
+                        <span class="gl-lang-name">${lang.name}</span>
+                        <span class="gl-lang-en-name">${lang.enName}</span>
+                    </div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check gl-lang-check"></i>' : ''}
+                `;
+                card.onclick = () => selectLanguage(lang.code, lang.name, flagUrl);
+                langGrid.appendChild(card);
+            });
+        }
+    }
+
+    function selectLanguage(langCode, langName, flagUrl) {
+        changeLang(langCode, flagUrl, langName);
+        closeLangModal();
+        
+        // 토스트 알림 띄우기
+        const toastMsg = toastTranslations[langCode] || toastTranslations['en'];
+        document.getElementById('toastMsg').innerText = toastMsg;
+        document.getElementById('toastSub').innerText = langName;
+        
+        langToast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => langToast.classList.remove('show'), 3000);
+    }
+
+    function changeLang(lang, flagUrl = null, langName = null) {
+        if(!I18N[lang]) return;
+        currentLang = lang;
+        
+        // State 유지 & URL 업데이트
+        localStorage.setItem('kingsmath_lang', lang);
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.set('lang', lang);
+        window.history.pushState({}, '', newUrl);
+        
+        applyLanguage(lang, flagUrl, langName);
+    }
+
+    function applyLanguage(lang, flagUrl = null, langName = null) {
+        const data = I18N[lang];
+        
+        // 메인 텍스트 번역 적용
+        const elements = document.querySelectorAll('[data-lang-key]');
+        elements.forEach(el => {
+            const key = el.getAttribute('data-lang-key');
+            if (data[key]) {
+                el.innerHTML = data[key];
+                if (data[key].length > 50) el.classList.add('small-text');
+                else el.classList.remove('small-text');
+            }
+        });
+        
+        const mainTitle = document.getElementById('main-title');
+        if (data.title.length > 60) mainTitle.classList.add('small-title');
+        else mainTitle.classList.remove('small-title');
+
+        document.getElementById('nickname').placeholder = data.placeholder;
+        document.getElementById('modal-close-hint').innerText = data.modal_close;
+        
+        // 버튼 업데이트 (좌측 버튼과 대칭)
+        if(flagUrl && langName) {
+            document.getElementById("currentFlag").src = flagUrl;
+            document.getElementById("currentLangName").innerText = langName;
+        } else {
+            const langObj = languages.find(l => l.code === lang);
+            document.getElementById("currentFlag").src = `https://flagcdn.com/w40/${langObj.country}.png`;
+            document.getElementById("currentLangName").innerText = langObj.name;
+        }
+
+        // 링크/도메인 하드코딩 업데이트 (_self 적용)
+        const linkBtn = document.getElementById("top-link-anchor");
+        if(lang === 'ko') { 
+            linkBtn.innerText = "킹수학.com"; 
+            document.body.style.fontFamily = "'Jua', sans-serif"; // 기존 한국어 폰트
+        } else { 
+            linkBtn.innerText = "KingsMath.com"; 
+            document.body.style.fontFamily = "sans-serif"; // 타언어 기본 폰트
+        }
+        
+        // SEO 메타 태그 업데이트
+        document.documentElement.lang = lang; 
+        document.title = data.metaTitle; 
+        document.getElementById('meta-desc').setAttribute('content', data.metaDesc);
+
+        adjustFontSize();
+        generateQRCode();
+        if(!isGameRunning) loadRanking();
+    }
+
+    // 동적 폰트 크기 조절 기능
+    function adjustFontSize() {
+        document.querySelectorAll('.dynamic-text').forEach(el => {
+            el.style.fontSize = ''; 
+            setTimeout(() => {
+                let parentWidth = el.parentElement.clientWidth;
+                if(parentWidth === 0) return;
+                let fontSize = parseFloat(window.getComputedStyle(el).fontSize);
+                while (el.scrollWidth > parentWidth - 20 && fontSize > 10) {
+                    fontSize -= 1;
+                    el.style.fontSize = fontSize + 'px';
+                }
+            }, 50);
+        });
+    }
+
+    // 언어 모달 제어
+    function openLangModal() {
+        langModal.classList.add('active');
+        document.body.style.overflow = 'hidden'; 
+        renderLanguages();
+        // setTimeout(() => langSearchInput.focus(), 100);
+    }
+    function closeLangModal() {
+        langModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    langSearchInput.addEventListener('input', (e) => { renderLanguages(e.target.value); });
+    langModal.addEventListener('click', (e) => { if (e.target === langModal) closeLangModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && langModal.classList.contains('active')) closeLangModal(); });
+
+    /* --- [게임 전역 변수 및 캔버스] --- */
+    const GAME_TIME_LIMIT = 60; 
+    let timer = GAME_TIME_LIMIT;
+    let score = 0;
+    
+    // 컷킹 전용 변수
+    let targetRatio = 0.5;
+    let shapeType = 'rect';
+    let totalPixels = 0;
+    
+    let isGameRunning = false;
+    let isDrawing = false;
+    let path = [];
+    let gameInterval = null;
+    let waitingNext = false;
+    let lastDrawSoundTime = 0; 
+    
+    let fbTimeout1 = null;
+    let fbTimeout2 = null;
+
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const ghostCanvas = document.createElement('canvas');
+    const ghostCtx = ghostCanvas.getContext('2d', { willReadFrequently: true });
+
+    let cx, cy, baseSize; 
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+
+    window.onload = function() {
+        initLanguage();
+        const savedName = localStorage.getItem("kingsmath_nickname");
+        if(savedName) document.getElementById("nickname").value = savedName;
+        window.addEventListener('resize', initCanvasSize);
+
+        canvas.addEventListener('pointerdown', handleStart);
+        canvas.addEventListener('pointermove', handleMove);
+        canvas.addEventListener('pointerup', handleEnd);
+        canvas.addEventListener('pointerleave', handleEnd);
+    };
+
+    function generateQRCode() {
+        const currentUrl = window.location.href;
+        const encodedUrl = encodeURIComponent(currentUrl);
+        const qrBaseUrl = "https://api.qrserver.com/v1/create-qr-code/?color=000000&bgcolor=ffffff&data=" + encodedUrl;        
+        document.getElementById('qr-small').src = qrBaseUrl + "&size=100x100";
+        document.getElementById('qr-large').src = qrBaseUrl + "&size=500x500";
+    }
+
+    function openQrModal() { document.getElementById('qr-modal').classList.remove('hidden'); }
+    function closeQrModal() { document.getElementById('qr-modal').classList.add('hidden'); }
+
+    function initCanvasSize() {
+        const container = document.getElementById('canvas-container');
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        
+        canvas.width = w; canvas.height = h;
+        ghostCanvas.width = w; ghostCanvas.height = h;
+        
+        cx = w / 2;
+        cy = h / 2;
+        baseSize = Math.min(w, h) * 0.7;
+        
+        if(isGameRunning && !waitingNext) redrawGame();
+    }
+
+    function initAudio() {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    
+    function playTone(freq, type, duration) {
+        if(!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+    
+    function playCutSound() { playTone(400, 'sawtooth', 0.1); setTimeout(()=>playTone(200, 'sawtooth', 0.1), 50); }
+
+    function startGame() {
+        const nameInput = document.getElementById("nickname").value.trim();
+        const langData = I18N[currentLang];
+
+        if(nameInput.length < 1) { alert(langData.alert_nick); return; }
+
+        const forbiddenWords = ["시발","씨발","병신","지랄","개새끼","섹스","자위","보지","자지","fuck","shit","sex"];
+        const cleanNickname = nameInput.replace(/[^a-zA-Z0-9가-힣]/g, "").toLowerCase();
+        for (let word of forbiddenWords) {
+            if (cleanNickname.includes(word)) {
+                alert(langData.alert_bad);
+                document.getElementById("nickname").value = "";
+                return;
+            }
+        }
+
+        localStorage.setItem("kingsmath_nickname", nameInput);
+        initAudio();
+
+        // 게임 시작 시 몰입을 위해 언어 선택 모달 트리거 버튼 숨김
+        document.getElementById('langTriggerBtn').style.display = 'none';
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+
+        startCountdown(); 
+    }
+
+    function resetGame() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        startCountdown();
+    }
+
+    function startCountdown() {
+        const cntEl = document.getElementById('countdown-overlay');
+        cntEl.classList.remove('hidden');
+        let count = 3;
+        cntEl.innerText = count;
+
+        isGameRunning = false;
+        clearInterval(gameInterval);
+
+        const timerId = setInterval(() => {
+            count--;
+            if(count > 0) {
+                cntEl.innerText = count;
+                playTone(800, 'square', 0.1); 
+            } else if (count === 0) {
+                cntEl.innerText = "CUT!✂️";
+                playTone(1200, 'square', 0.2);
+            } else {
+                clearInterval(timerId);
+                cntEl.classList.add('hidden');
+                resetGameLogic(); 
+            }
+        }, 1000);
+    }
+
+    // [전체화면 홈 버튼 요구사항 적용]
+    function goHome() {
+        // 1. 만약 전체 화면 모드라면
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+            // 새로고침 대신 화면 초기화 로직 실행 (전체 화면 유지)
+            isGameRunning = false;
+            clearInterval(gameInterval);
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            
+            // 화면 전환 및 버튼 원상 복구
+            document.getElementById('langTriggerBtn').style.display = 'flex';
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('countdown-overlay').classList.add('hidden'); 
+            
+            loadRanking();
+            if (window.playSound) window.playSound('click'); // 효과음 호환성 유지
+        } else {
+            // 2. 전체 화면이 아니라면 그냥 새로고침
+            location.reload();
+        }
+    }
+
+    function resetGameLogic() {
+        if(fbTimeout1) clearTimeout(fbTimeout1);
+        if(fbTimeout2) clearTimeout(fbTimeout2);
+        
+        const fbOverlay = document.getElementById('feedback-overlay');
+        fbOverlay.classList.remove('pop-in', 'pop-out');
+        fbOverlay.style.opacity = 0;
+
+        score = 0;
+        timer = GAME_TIME_LIMIT;
+        isGameRunning = true;
+        waitingNext = false;
+        
+        updateUI();
+        initCanvasSize();
+        nextProblem();
+        
+        if(gameInterval) clearInterval(gameInterval);
+        gameInterval = setInterval(gameLoop, 1000);
+    }
+
+    function gameLoop() {
+        if(!isGameRunning) return;
+        timer--;
+        if(timer <= 5) playTone(800, 'square', 0.05);
+        updateUI();
+
+        if(timer <= 0) {
+            finishGame();
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('ui-score').innerText = score;
+        document.getElementById('ui-timer').innerText = timer;
+        const timerEl = document.getElementById('ui-timer');
+        if(timer <= 5) timerEl.style.color = "var(--neon-pink)";
+        else timerEl.style.color = "var(--main-accent)";
+    }
+
+    function nextProblem() {
+        const langData = I18N[currentLang];
+        
+        const isKeepMode = Math.random() < 0.5;
+        const modeText = isKeepMode ? langData.left_txt : langData.cut_txt;
+
+        const types = ['percent', 'fraction'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        let labelText = "";
+        let valRatio = 0; 
+
+        if (type === 'percent') {
+            const p = [20, 30, 40, 50, 60, 70, 80];
+            const val = p[Math.floor(Math.random() * p.length)];
+            valRatio = val / 100;
+            labelText = `${val}% ${modeText}`;
+        } else {
+            const denoms = [2, 3, 4, 5];
+            const d = denoms[Math.floor(Math.random() * denoms.length)];
+            valRatio = 1 / d;
+            labelText = `<span class="fraction"><sup>1</sup><sub>${d}</sub></span> ${modeText}`;
+        }
+
+        if (isKeepMode) {
+            targetRatio = valRatio;
+        } else {
+            targetRatio = 1 - valRatio;
+        }
+
+        document.getElementById('ui-target').innerHTML = labelText;
+
+        const shapes = ['rect', 'circle', 'triangle', 'star', 'heart'];
+        shapeType = shapes[Math.floor(Math.random() * shapes.length)];
+        
+        resetCanvasForNewRound();
+    }
+
+    function resetCanvasForNewRound() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ghostCtx.clearRect(0,0,ghostCanvas.width,ghostCanvas.height);
+        
+        drawBaseShape(ctx, "#FF69B4"); 
+        drawBaseShape(ghostCtx, "#FFFFFF"); 
+        
+        totalPixels = countPixels(ghostCtx);
+    }
+    
+    function drawBaseShape(c, color) {
+        c.fillStyle = color;
+        c.beginPath();
+        
+        if(shapeType === 'rect') {
+            c.rect(cx - baseSize/2, cy - baseSize/2, baseSize, baseSize);
+        } else if(shapeType === 'circle') {
+            c.arc(cx, cy, baseSize/2, 0, Math.PI*2);
+        } else if(shapeType === 'triangle') {
+            const r = baseSize/2 + 20;
+            const yOffset = r * 0.2; 
+            c.moveTo(cx, cy - r + yOffset);
+            c.lineTo(cx + r * Math.cos(Math.PI/6), cy + r * Math.sin(Math.PI/6) + yOffset);
+            c.lineTo(cx - r * Math.cos(Math.PI/6), cy + r * Math.sin(Math.PI/6) + yOffset);
+            c.closePath();
+        } else if(shapeType === 'star') {
+             const outerRadius = baseSize / 2;
+             const innerRadius = baseSize / 4;
+             let rot = Math.PI / 2 * 3;
+             let x = cx; let y = cy;
+             let step = Math.PI / 5;
+             c.moveTo(cx, cy - outerRadius);
+             for (let i = 0; i < 5; i++) {
+                 x = cx + Math.cos(rot) * outerRadius;
+                 y = cy + Math.sin(rot) * outerRadius;
+                 c.lineTo(x, y);
+                 rot += step;
+                 x = cx + Math.cos(rot) * innerRadius;
+                 y = cy + Math.sin(rot) * innerRadius;
+                 c.lineTo(x, y);
+                 rot += step;
+             }
+             c.closePath();
+        } else if(shapeType === 'heart') {
+            const r = baseSize / 4;
+            const startY = cy - 2.5 * r;
+            c.moveTo(cx, startY + r);
+            c.bezierCurveTo(cx, startY, cx - 2*r, startY, cx - 2*r, startY + 1.5*r);
+            c.bezierCurveTo(cx - 2*r, startY + 3*r, cx, startY + 4*r, cx, startY + 5*r);
+            c.bezierCurveTo(cx, startY + 4*r, cx + 2*r, startY + 3*r, cx + 2*r, startY + 1.5*r);
+            c.bezierCurveTo(cx + 2*r, startY, cx, startY, cx, startY + r);
+            c.closePath();
+        }
+        c.fill();
+    }
+
+    function countPixels(c) {
+        const imgData = c.getImageData(0, 0, ghostCanvas.width, ghostCanvas.height);
+        let count = 0;
+        for(let i=3; i<imgData.data.length; i+=16) { 
+            if(imgData.data[i] > 0) count++;
+        }
+        return count;
+    }
+    
+    function handleStart(e) {
+        if(!isGameRunning || waitingNext) return;
+        e.preventDefault();
+        isDrawing = true;
+        path = [];
+        addPoint(e);
+        playDrawFeedback();
+    }
+
+    function handleMove(e) {
+        if(!isGameRunning || !isDrawing || waitingNext) return;
+        e.preventDefault();
+        addPoint(e);
+        drawTrace(); 
+        playDrawFeedback();
+    }
+
+    function handleEnd(e) {
+        if(!isGameRunning || !isDrawing || waitingNext) return;
+        isDrawing = false;
+        
+        if(path.length > 5) {
+            playCutSound();
+            applyCut();
+            evaluateAnswer();
+        } else {
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            redrawGame(); 
+        }
+    }
+
+    function addPoint(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        if(clientX) {
+            path.push({x: clientX - rect.left, y: clientY - rect.top});
+        }
+    }
+    
+    function drawTrace() {
+        redrawGame(); 
+        ctx.beginPath();
+        ctx.strokeStyle = "#FF9EAA"; 
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        if(path.length > 0) {
+            ctx.moveTo(path[0].x, path[0].y);
+            for(let i=1; i<path.length; i++) {
+                ctx.lineTo(path[i].x, path[i].y);
+            }
+            ctx.stroke();
+        }
+    }
+    
+    function redrawGame() {
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.drawImage(ghostCanvas, 0, 0); 
+        ctx.globalCompositeOperation = 'source-in';
+        ctx.fillStyle = "#FF69B4";
+        ctx.fillRect(0,0,canvas.width, canvas.height); 
+        ctx.restore();
+    }
+
+    function applyCut() {
+        [ctx, ghostCtx].forEach(c => {
+            c.save();
+            c.globalCompositeOperation = 'destination-out';
+            c.beginPath();
+            c.moveTo(path[0].x, path[0].y);
+            for(let i=1; i<path.length; i++) {
+                c.lineTo(path[i].x, path[i].y);
+            }
+            c.closePath(); 
+            c.fill();      
+            c.restore();
+        });
+    }
+
+    function playDrawFeedback() {
+        const now = Date.now();
+        if (now - lastDrawSoundTime > 80) {
+            playTone(300 + Math.random()*100, 'sine', 0.05); 
+            lastDrawSoundTime = now;
+        }
+    }
+
+    function evaluateAnswer() {
+        waitingNext = true;
+        
+        const currentPixels = countPixels(ghostCtx);
+        const currentRatio = currentPixels / totalPixels;
+        
+        const diffPercent = Math.abs(targetRatio - currentRatio) * 100;
+        
+        const fbOverlay = document.getElementById('feedback-overlay');
+        const fbAngle = document.getElementById('fb-angle-text');
+        const fbDiff = document.getElementById('fb-diff-text');
+        const fbScore = document.getElementById('fb-score-text'); 
+        
+        const langData = I18N[currentLang]; 
+
+        let earned = 0;
+        let isSuccess = false;
+
+        if (diffPercent <= 5) { earned = 500; isSuccess = true; }
+        else if (diffPercent <= 10) { earned = 300; isSuccess = true; }
+        else if (diffPercent <= 20) { earned = 100; isSuccess = true; }
+        else { earned = 0; }
+
+        if(earned > 0) score += earned;
+
+        if(isSuccess) playTone(600 + earned, 'sine', 0.2);
+        else playTone(150, 'sawtooth', 0.3);
+
+        fbAngle.innerText = (currentRatio * 100).toFixed(1) + "%";
+        fbDiff.innerText = langData.diff_fmt.replace("{val}", diffPercent.toFixed(1));
+        fbDiff.className = "fb-diff " + (isSuccess ? "fb-good" : "fb-bad");
+        
+        if(earned > 0) {
+            fbScore.innerText = langData.pt_fmt.replace("{val}", earned);
+            fbScore.style.color = "var(--neon-green)";
+        } else {
+            fbScore.innerText = langData.pt_fmt.replace("{val}", 0);
+            fbScore.style.color = "#aaa";
+        }
+        
+        fbOverlay.classList.remove('pop-in', 'pop-out');
+        fbOverlay.style.opacity = 1; 
+        void fbOverlay.offsetWidth; 
+        fbOverlay.classList.add('pop-in');
+
+        fbTimeout1 = setTimeout(() => {
+            fbOverlay.classList.remove('pop-in');
+            fbOverlay.classList.add('pop-out');
+            
+            fbTimeout2 = setTimeout(() => {
+                if(isGameRunning) {
+                    waitingNext = false;
+                    nextProblem();
+                    updateUI();
+                    
+                    fbOverlay.style.opacity = 0;
+                    fbOverlay.classList.remove('pop-out');
+                }
+            }, 300); 
+        }, 800); 
+    }
+
+    function finishGame() {
+        isGameRunning = false;
+        clearInterval(gameInterval);
+        playTone(300, 'triangle', 0.5);
+
+        document.getElementById('res-final-score').innerText = score;
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        submitScore(localStorage.getItem("kingsmath_nickname"), score);
+    }
+
+    const API_URL = "./ranking.php";
+
+    function submitScore(name, score) {
+        const langData = I18N[currentLang];
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=submit&nickname=${encodeURIComponent(name)}&score=${score}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            const msgEl = document.getElementById("res-msg");
+            if(data.rank) {
+                msgEl.innerHTML = langData.rank_fmt.replace("{rank}", data.rank);
+            } else {
+                msgEl.innerText = langData.saved;
+            }
+        })
+        .catch(e => {
+            document.getElementById("res-msg").innerText = "Success!";
+        });
+    }
+
+    function loadRanking() {
+        const list = document.getElementById("ranking-list");
+        const langData = I18N[currentLang];
+        
+        fetch(API_URL + "?action=list")
+        .then(res => res.json())
+        .then(data => {
+            let html = "";
+            if(data.length === 0) {
+                html = `<div style='padding:20px; color:#aaa; text-align:center;'>${langData.no_rank}</div>`;
+            } else {
+                data.forEach((item, index) => {
+                    let medal = "";
+                    let style = "";
+                    
+                    if(index===0) { medal="🥇"; style="width:15%; font-weight:bold;"; }
+                    else if(index===1) { medal="🥈"; style="width:15%; font-weight:bold;"; }
+                    else if(index===2) { medal="🥉"; style="width:15%; font-weight:bold;"; }
+                    else { 
+                        medal = `<span class="rank-num">${index+1}</span>`;
+                        style="width:15%;";
+                    }
+                    
+                    html += `
+                    <div class="rank-row">
+                        <span style="${style}">${medal}</span>
+                        <span style="width:50%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; color:#555;">${item.nickname}</span>
+                        <span style="width:35%; text-align:right; color:var(--main-accent); font-weight:bold;">${item.score}</span>
+                    </div>`;
+                });
+            }
+            list.innerHTML = html;
+        })
+        .catch(err => {});
+    }
+
+</script>
+</body>
+</html>

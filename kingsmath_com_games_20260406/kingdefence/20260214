@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5YW0T2C109');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>킹수학 디펜스</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #050505;
+            color: white;
+            font-family: 'Jua', sans-serif;
+            touch-action: none;
+            user-select: none;
+        }
+
+        #gameCanvas { display: block; }
+
+        /* UI 레이어 */
+        #ui-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .hud-text {
+            font-family: 'Jua', sans-serif;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        }
+
+        /* 카드 스타일 */
+        .card-container {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 20px;
+            pointer-events: auto;
+            z-index: 50;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .card-container {
+                flex-direction: column;
+                gap: 10px;
+                width: 90%;
+            }
+            .card {
+                width: 100% !important;
+                height: 100px !important;
+                flex-direction: row !important;
+                padding: 10px 15px !important;
+                text-align: left !important;
+                justify-content: space-between !important;
+            }
+            .card-desc { font-size: 14px !important; white-space: pre-wrap; }
+            .card-math { font-size: 20px !important; margin: 0 10px !important; }
+        }
+
+        .card {
+            background: rgba(30, 30, 50, 0.95);
+            border: 3px solid #666;
+            border-radius: 15px;
+            width: 220px;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            padding: 15px;
+            text-align: center;
+        }
+        .card:hover {
+            transform: scale(1.05);
+            border-color: #ffd700;
+            background-color: rgba(60, 60, 100, 1);
+        }
+        .card:active { transform: scale(0.95); }
+        .card-title { font-size: 24px; font-weight: bold; color: #ffcc00; margin-bottom: 8px; word-break: keep-all; }
+        .card-desc { font-size: 18px; color: #eee; line-height: 1.4; word-break: keep-all; }
+        .card-math { font-size: 32px; font-weight: bold; color: #00ffff; margin: 15px 0; }
+
+        /* 화면 공통 스타일 */
+        #start-screen, #game-over-screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: auto;
+            z-index: 100;
+            text-align: center;
+        }
+
+        #start-screen {
+            justify-content: flex-start;
+            padding-top: 80px; /* 상단 헤더 공간 확보 */
+            padding-bottom: 2vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        button { pointer-events: auto; font-family: 'Jua', sans-serif; }
+        input { pointer-events: auto; font-family: 'Jua', sans-serif; }
+        select { pointer-events: auto; font-family: 'Jua', sans-serif; }
+        .hidden { display: none !important; }
+
+        /* 랭킹 리스트 스크롤바 커스텀 */
+        #ranking-list::-webkit-scrollbar { width: 6px; }
+        #ranking-list::-webkit-scrollbar-track { background: #222; border-radius: 4px; }
+        #ranking-list::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+
+        /* QR코드 스타일 */
+        #qrcode {
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        #qrcode img {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="ui-layer">
+        <div class="absolute top-0 left-0 w-full h-8 bg-gray-900 border-b-2 border-gray-500 overflow-hidden shadow-lg z-20">
+            <div id="xpBar" class="h-full bg-gradient-to-r from-blue-600 to-purple-600 w-0 transition-all duration-200"></div>
+            <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center text-lg font-bold text-white pt-1 drop-shadow-md z-30">
+                LEVEL <span id="levelVal" class="ml-2 text-yellow-300">1</span>
+            </div>
+        </div>
+        <div class="absolute top-12 left-4 flex flex-col gap-4 items-start select-none pointer-events-none z-20">
+            <div class="flex flex-col gap-1">
+                <div class="text-3xl text-yellow-400 hud-text"><span data-i18n="score">점수</span>: <span id="scoreVal">0</span></div>
+                <div class="text-2xl text-cyan-400 hud-text"><span data-i18n="attack">공격력</span>: <span id="dmgVal">1</span></div>
+            </div>
+            <div id="bonusStats" class="flex flex-col gap-1 text-lg text-green-400 hud-text font-bold text-left shadow-black drop-shadow-md"></div>
+        </div>
+    </div>
+
+    <div id="start-screen" class="w-full h-full px-4">
+        <div class="absolute top-0 left-0 w-full p-4 flex justify-between items-center z-50">
+            <a href="https://킹수학.com" target="_blank" class="text-xl md:text-2xl text-yellow-400 hover:text-white font-bold transition-colors drop-shadow-md decoration-none border-b-2 border-yellow-400 pb-1">
+                킹수학.com
+            </a>
+            
+            <select id="langSelect" class="bg-gray-800 text-white border-2 border-gray-500 rounded-lg px-2 py-1 text-sm md:text-base outline-none focus:border-yellow-400">
+                <option value="ko">🇰🇷 한국어</option>
+                <option value="en">🇺🇸 English</option>
+                <option value="zh">🇨🇳 中文</option>
+                <option value="ja">🇯🇵 日本語</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="ru">🇷🇺 Русский</option>
+            </select>
+        </div>
+
+        <div class="flex flex-col items-center mb-2 shrink-0">
+            <h1 class="text-5xl md:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-red-500 font-black mb-1 hud-text drop-shadow-lg" style="-webkit-text-stroke: 1px white;" data-i18n="gameTitle">
+                킹수학 디펜스
+            </h1>
+            <p class="text-gray-300 text-lg md:text-xl font-bold mb-2 break-keep" data-i18n="subtitle">
+                게임의 규칙을 찾고 최고 점수를 기록하세요
+            </p>
+            <div id="qrcode"></div>
+        </div>
+
+        <div class="flex flex-col gap-3 w-full max-w-sm mb-6 shrink-0">
+            <input type="text" id="startNickname" placeholder="닉네임 입력 (자동저장)" maxlength="8"
+                   class="w-full px-4 py-3 rounded-xl text-black text-xl font-bold text-center outline-none border-4 border-gray-400 focus:border-yellow-400 bg-gray-100 placeholder-gray-500 shadow-lg">
+            
+            <button id="startBtn" class="w-full px-8 py-4 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-xl text-2xl shadow-[0_0_15px_rgba(255,215,0,0.5)] transition-all transform hover:scale-105 border-4 border-yellow-300">
+                <span data-i18n="startBtn">게임 시작!</span>
+            </button>
+            <p class="text-gray-400 text-sm">* <span data-i18n="autoSaveMsg">게임 종료 시 점수가 자동 등록됩니다.</span></p>
+
+            <a href="/" class="block text-center mt-2 text-xl text-green-400 font-bold hover:text-white underline decoration-2 underline-offset-4 transition-transform hover:scale-105">
+                🎮 다른 게임 고르기
+            </a>
+        </div>
+
+        <div class="w-full max-w-xl flex flex-col h-96 shrink-0 mb-10 bg-gray-800/80 rounded-t-xl border-x-4 border-t-4 border-gray-600 overflow-hidden shadow-2xl">
+            <div class="bg-gray-900 text-yellow-400 font-bold p-3 text-lg border-b-2 border-gray-600 flex justify-between items-center px-6">
+                <span>🏆 <span data-i18n="rankingTitle">명예의 전당 (Top 100)</span></span>
+                <span class="text-xs text-gray-400" data-i18n="recent24">최근 24시간</span>
+            </div>
+            <div id="ranking-list" class="overflow-y-auto flex-1 p-2 space-y-1">
+                <div class="text-center text-gray-500 mt-10" data-i18n="loading">랭킹 불러오는 중...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="levelup-screen" class="hidden absolute top-0 left-0 w-full h-full bg-black/80 z-100 flex flex-col items-center justify-center" style="z-index: 90;">
+        <h2 class="text-6xl text-yellow-400 mb-8 font-bold hud-text animate-pulse drop-shadow-[0_0_10px_rgba(255,255,0,0.8)]" data-i18n="levelUp">레벨 업!</h2>
+        <div class="text-2xl text-white mb-4 font-bold" data-i18n="selectAbility">능력을 선택하세요!</div>
+        <div id="cards-container" class="card-container">
+            </div>
+    </div>
+
+    <div id="game-over-screen" class="hidden">
+        <h2 class="text-7xl text-gray-400 font-bold mb-4 hud-text drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" data-i18n="defeat">패배...</h2>
+        <p class="text-3xl text-white mb-2 font-bold"><span data-i18n="finalScore">최종 점수</span>: <span id="finalScore" class="text-yellow-400">0</span></p>
+        
+        <div id="auto-save-msg" class="text-2xl font-bold mb-8 h-8 flex items-center justify-center">
+            <span class="text-gray-400" data-i18n="saving">점수 저장 중...</span>
+        </div>
+
+        <button id="restartBtn" class="hidden px-10 py-5 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded-2xl text-3xl shadow-[0_0_20px_rgba(200,200,200,0.5)] transition-all transform hover:scale-105 border-4 border-gray-400">
+            <span data-i18n="retry">다시 도전</span>
+        </button>
+    </div>
+
+<script>
+// --- 다국어 번역 데이터 및 로직 ---
+const i18nData = {
+    ko: {
+        gameTitle: "킹수학 디펜스",
+        subtitle: "게임의 규칙을 찾고 최고 점수를 기록하세요",
+        score: "점수", attack: "공격력", startBtn: "게임 시작!", autoSaveMsg: "게임 종료 시 점수가 자동 등록됩니다.",
+        rankingTitle: "명예의 전당 (Top 100)", recent24: "최근 24시간", loading: "랭킹 불러오는 중...",
+        noRank: "아직 기록이 없습니다.<br>첫 랭커가 되어보세요!", levelUp: "레벨 업!", selectAbility: "능력을 선택하세요!",
+        defeat: "패배...", finalScore: "최종 점수", saving: "점수 저장 중...", retry: "다시 도전",
+        saved: "저장 완료! 현재 순위:", rankUnit: "위", badWord: "비속어가 포함되어 저장되지 않았습니다.",
+        saveFail: "저장 실패 (오류 발생)", nickPlaceholder: "닉네임 입력 (자동저장)",
+        c_add1_t: "공격력 더하기", c_add1_d: "내 공격 숫자가\n1 커져요!", c_add1_m: "+1",
+        c_add2_t: "슈퍼 더하기", c_add2_d: "내 공격 숫자가\n2나 커져요!", c_add2_m: "+2",
+        c_mult_t: "곱하기 파워", c_mult_d: "내 공격 숫자가\n1.5배 뻥튀기!", c_mult_m: "×1.5",
+        c_proj_t: "화살 추가", c_proj_d: "한 번에 쏘는 개수가\n늘어나요!", c_proj_m: "한발 더!",
+        c_rate_t: "스피드 업", c_rate_d: "공격하는 속도가\n빨라져요!", c_rate_m: "빠르게!",
+        c_b2_t: "2의 배수 강화", c_b2_d: "2, 4, 6... 적에게\n50% 더 쎈 공격!", c_b2_m: "2의 배수",
+        c_b3_t: "3의 배수 강화", c_b3_d: "3, 6, 9... 적에게\n50% 더 쎈 공격!", c_b3_m: "3의 배수",
+        c_b5_t: "5의 배수 강화", c_b5_d: "5, 10, 15... 적에게\n50% 더 쎈 공격!", c_b5_m: "5의 배수",
+        c_tri_t: "삼각형 사냥꾼", c_tri_d: "세모난 적에게\n50% 더 쎈 공격!", c_tri_m: "삼각형킬러",
+        c_squ_t: "사각형 파괴자", c_squ_d: "네모난 적에게\n50% 더 쎈 공격!", c_squ_m: "사각형킬러",
+        c_pen_t: "오각형 분쇄기", c_pen_d: "오각형 이상 적에게\n50% 더 쎈 공격!", c_pen_m: "오각형킬러",
+        c_crit_t: "2배 공격 확률", c_crit_d: "20% 확률로\n숫자가 2배로 펑!", c_crit_m: "확률 20%↑",
+        c_div12_t: "12의 약수", c_div12_d: "HP가 1,2,3,4,6,12인\n적에게 100% 쎈 공격!", c_div12_m: "12의 약수",
+        c_div24_t: "24의 약수", c_div24_d: "HP가 24의 약수인\n적에게 100% 쎈 공격!", c_div24_m: "24의 약수",
+        c_div48_t: "48의 약수", c_div48_d: "HP가 48의 약수인\n적에게 100% 쎈 공격!", c_div48_m: "48의 약수",
+        c_div96_t: "96의 약수", c_div96_d: "HP가 96의 약수인\n적에게 100% 쎈 공격!", c_div96_m: "96의 약수",
+        c_wake_t: "각성킹", c_wake_d: "5초간: 무적+즉사\n공격/속도/화살 5배!", c_wake_m: "5초간 모두 5배",
+        
+        // 아이템 7개국어 [수정됨: 바이러스 및 폭탄 범위]
+        item_odd_t: "홀수 바이러스! (1️⃣)", item_odd_d: "홀수 적의 체력이 1이 됩니다!",
+        item_even_t: "짝수 바이러스! (2️⃣)", item_even_d: "짝수 적의 체력이 2가 됩니다!",
+        item_freeze_t: "얼음! (❄️)", item_freeze_d: "잠시 동안 시간이 멈춥니다!",
+        item_magnet_t: "자석 발동! (🧲)", item_magnet_d: "모든 경험치를 끌어당깁니다!",
+        item_bomb_t: "주변 폭탄! (💣)", item_bomb_d: "주변 적들을 날려버립니다!",
+        item_shield_t: "방어막 획득! (🛡️)", item_shield_d: "적의 공격을 1회 막아줍니다!",
+        msg_shield_break: "방어막 파괴!", msg_shield_break_d: "위기를 모면했습니다!"
+    },
+    en: {
+        gameTitle: "King Math Defense", subtitle: "Find the rules and record your best score",
+        score: "Score", attack: "Atk", startBtn: "Start Game", autoSaveMsg: "Score is saved automatically on game over.",
+        rankingTitle: "Hall of Fame (Top 100)", recent24: "Last 24h", loading: "Loading rankings...",
+        noRank: "No records yet.<br>Be the first ranker!", levelUp: "Level Up!", selectAbility: "Choose an ability!",
+        defeat: "Defeat...", finalScore: "Final Score", saving: "Saving score...", retry: "Try Again",
+        saved: "Saved! Rank:", rankUnit: "", badWord: "Name contains filtered words.", saveFail: "Save failed.",
+        nickPlaceholder: "Nickname (Auto-saved)",
+        c_add1_t: "Add Attack", c_add1_d: "Increase attack\nnumber by 1!", c_add1_m: "+1",
+        c_add2_t: "Super Add", c_add2_d: "Increase attack\nnumber by 2!", c_add2_m: "+2",
+        c_mult_t: "Multiply Power", c_mult_d: "Attack number\nmultiplied by 1.5!", c_mult_m: "×1.5",
+        c_proj_t: "Multi Shot", c_proj_d: "Fire one more\nprojectile!", c_proj_m: "+1 Proj",
+        c_rate_t: "Speed Up", c_rate_d: "Attack speed\nincreases!", c_rate_m: "Faster!",
+        c_b2_t: "Multiple of 2", c_b2_d: "+50% DMG to\n2, 4, 6... enemies!", c_b2_m: "Mod 2",
+        c_b3_t: "Multiple of 3", c_b3_d: "+50% DMG to\n3, 6, 9... enemies!", c_b3_m: "Mod 3",
+        c_b5_t: "Multiple of 5", c_b5_d: "+50% DMG to\n5, 10, 15... enemies!", c_b5_m: "Mod 5",
+        c_tri_t: "Triangle Hunter", c_tri_d: "+50% DMG to\ntriangle enemies!", c_tri_m: "Triangle",
+        c_squ_t: "Square Breaker", c_squ_d: "+50% DMG to\nsquare enemies!", c_squ_m: "Square",
+        c_pen_t: "Pentagon Crusher", c_pen_d: "+50% DMG to\npentagon+ enemies!", c_pen_m: "Pentagon+",
+        c_crit_t: "Crit Chance", c_crit_d: "20% chance to\ndo double damage!", c_crit_m: "20% Chance",
+        c_div12_t: "Divisor of 12", c_div12_d: "+100% DMG to\ndivisors of 12!", c_div12_m: "Div 12",
+        c_div24_t: "Divisor of 24", c_div24_d: "+100% DMG to\ndivisors of 24!", c_div24_m: "Div 24",
+        c_div48_t: "Divisor of 48", c_div48_d: "+100% DMG to\ndivisors of 48!", c_div48_m: "Div 48",
+        c_div96_t: "Divisor of 96", c_div96_d: "+100% DMG to\ndivisors of 96!", c_div96_m: "Div 96",
+        c_wake_t: "Awakening King", c_wake_d: "5s: Invincible+Kill\nx5 Dmg/Spd/Proj!", c_wake_m: "KING MODE",
+
+        // Items
+        item_odd_t: "Odd Virus! (1️⃣)", item_odd_d: "Odd HP enemies become 1 HP!",
+        item_even_t: "Even Virus! (2️⃣)", item_even_d: "Even HP enemies become 2 HP!",
+        item_freeze_t: "Freeze! (❄️)", item_freeze_d: "Enemies stopped for calculation!",
+        item_magnet_t: "Magnet! (🧲)", item_magnet_d: "Attracted all XP orbs!",
+        item_bomb_t: "Area Bomb! (💣)", item_bomb_d: "Huge explosion nearby!",
+        item_shield_t: "Shield! (🛡️)", item_shield_d: "Blocks 1 hit from enemies!",
+        msg_shield_break: "Shield Broken!", msg_shield_break_d: "You survived a hit!"
+    },
+    zh: {
+        gameTitle: "数学之王防御", subtitle: "寻找游戏规则并记录最高分",
+        score: "分数", attack: "攻击力", startBtn: "开始游戏", autoSaveMsg: "游戏结束时自动保存分数。",
+        rankingTitle: "名人堂 (Top 100)", recent24: "最近24小时", loading: "加载排名中...",
+        noRank: "暂无记录。<br>成为第一个上榜者！", levelUp: "升级！", selectAbility: "选择一项能力！",
+        defeat: "失败...", finalScore: "最终分数", saving: "保存分数中...", retry: "再试一次",
+        saved: "保存成功！排名：", rankUnit: "名", badWord: "名称包含敏感词。", saveFail: "保存失败。",
+        nickPlaceholder: "输入昵称 (自动保存)",
+        c_add1_t: "增加攻击", c_add1_d: "攻击数字\n增加 1！", c_add1_m: "+1",
+        c_add2_t: "超级增加", c_add2_d: "攻击数字\n增加 2！", c_add2_m: "+2",
+        c_mult_t: "倍增力量", c_mult_d: "攻击数字\n变为 1.5 倍！", c_mult_m: "×1.5",
+        c_proj_t: "额外射击", c_proj_d: "每次发射\n增加一发！", c_proj_m: "+1 发",
+        c_rate_t: "加速", c_rate_d: "攻击速度\n变快！", c_rate_m: "加速!",
+        c_b2_t: "2的倍数强化", c_b2_d: "对 2, 4, 6... 敌人\n伤害 +50%！", c_b2_m: "2的倍数",
+        c_b3_t: "3的倍数强化", c_b3_d: "对 3, 6, 9... 敌人\n伤害 +50%！", c_b3_m: "3的倍数",
+        c_b5_t: "5的倍数强化", c_b5_d: "对 5, 10, 15... 敌人\n伤害 +50%！", c_b5_m: "5的倍数",
+        c_tri_t: "三角形猎人", c_tri_d: "对三角形敌人\n伤害 +50%！", c_tri_m: "三角形",
+        c_squ_t: "正方形破坏者", c_squ_d: "对正方形敌人\n伤害 +50%！", c_squ_m: "正方形",
+        c_pen_t: "五边形粉碎机", c_pen_d: "对五边形以上敌人\n伤害 +50%！", c_pen_m: "五边形+",
+        c_crit_t: "暴击概率", c_crit_d: "20% 概率\n造成双倍伤害！", c_crit_m: "概率 20%↑",
+        c_wake_t: "觉醒之王", c_wake_d: "5秒: 无敌+秒杀\n攻击/速度/飞弹 5倍!", c_wake_m: "神模式",
+
+        // Items
+        item_odd_t: "奇数病毒! (1️⃣)", item_odd_d: "奇数敌人生命值变为1!",
+        item_even_t: "偶数病毒! (2️⃣)", item_even_d: "偶数敌人生命值变为2!",
+        item_freeze_t: "冰冻! (❄️)", item_freeze_d: "暂时停止敌人行动!",
+        item_magnet_t: "磁铁! (🧲)", item_magnet_d: "吸取所有经验值!",
+        item_bomb_t: "区域炸弹! (💣)", item_bomb_d: "炸飞大范围的敌人!",
+        item_shield_t: "防护罩! (🛡️)", item_shield_d: "抵挡一次敌人攻击!",
+        msg_shield_break: "防护罩破碎!", msg_shield_break_d: "抵挡了攻击!"
+    },
+    ja: {
+        gameTitle: "キング数学ディフェンス", subtitle: "ゲームのルールを見つけて最高得点を記録しよう",
+        score: "スコア", attack: "攻撃力", startBtn: "ゲーム開始", autoSaveMsg: "ゲーム終了時にスコアが自動保存されます。",
+        rankingTitle: "名誉の殿堂 (Top 100)", recent24: "最近24時間", loading: "ランキング読込中...",
+        noRank: "記録がありません。<br>最初のランカーになろう！", levelUp: "レベルアップ！", selectAbility: "能力を選択してください！",
+        defeat: "敗北...", finalScore: "最終スコア", saving: "スコア保存中...", retry: "もう一度挑戦",
+        saved: "保存完了！順位:", rankUnit: "位", badWord: "不適切な単語が含まれています。", saveFail: "保存失敗。",
+        nickPlaceholder: "ニックネーム (自動保存)",
+        c_add1_t: "攻撃力追加", c_add1_d: "攻撃の数字が\n1 増えます！", c_add1_m: "+1",
+        c_add2_t: "スーパー追加", c_add2_d: "攻撃の数字が\n2 増えます！", c_add2_m: "+2",
+        c_mult_t: "倍率パワー", c_mult_d: "攻撃の数字が\n1.5倍になります！", c_mult_m: "×1.5",
+        c_proj_t: "矢の追加", c_proj_d: "一度に撃つ数が\n増えます！", c_proj_m: "+1 本",
+        c_rate_t: "スピードアップ", c_rate_d: "攻撃速度が\n速くなります！", c_rate_m: "速く!",
+        c_b2_t: "2の倍数強化", c_b2_d: "2, 4, 6... の敵に\nダメージ50%UP！", c_b2_m: "2の倍数",
+        c_b3_t: "3の倍数強化", c_b3_d: "3, 6, 9... の敵に\nダメージ50%UP！", c_b3_m: "3の倍数",
+        c_b5_t: "5の倍数強化", c_b5_d: "5, 10, 15... の敵に\nダメージ50%UP！", c_b5_m: "5の倍数",
+        c_tri_t: "三角形ハンター", c_tri_d: "三角形の敵に\nダメージ50%UP！", c_tri_m: "三角形",
+        c_squ_t: "四角形ブレイカー", c_squ_d: "四角形の敵に\nダメージ50%UP！", c_squ_m: "四角形",
+        c_pen_t: "五角形クラッシャー", c_pen_d: "五角形以上の敵に\nダメージ50%UP！", c_pen_m: "五角形+",
+        c_crit_t: "2倍クリティカル", c_crit_d: "20%の確率で\n数字が2倍に！", c_crit_m: "確率 20%↑",
+        c_wake_t: "覚醒キング", c_wake_d: "5秒間: 無敵+即死\n攻撃/速度/矢 5倍!", c_wake_m: "KING MODE",
+
+        // Items
+        item_odd_t: "奇数ウイルス! (1️⃣)", item_odd_d: "奇数HPの敵がHP1に!",
+        item_even_t: "偶数ウイルス! (2️⃣)", item_even_d: "偶数HPの敵がHP2に!",
+        item_freeze_t: "氷結! (❄️)", item_freeze_d: "敵の動きを止めます!",
+        item_magnet_t: "磁石発動! (🧲)", item_magnet_d: "経験値を全て回収!",
+        item_bomb_t: "周辺爆弾! (💣)", item_bomb_d: "広範囲の敵を吹き飛ばす!",
+        item_shield_t: "バリア獲得! (🛡️)", item_shield_d: "攻撃を1回防ぎます!",
+        msg_shield_break: "バリア破壊!", msg_shield_break_d: "攻撃を防ぎました!"
+    },
+    es: {
+        gameTitle: "Defensa Matemáticas", subtitle: "Encuentra las reglas y registra tu mejor puntuación",
+        score: "Puntos", attack: "Ataque", startBtn: "Empezar", autoSaveMsg: "Puntuación guardada automáticamente.",
+        rankingTitle: "Salón de la Fama", recent24: "Últimas 24h", loading: "Cargando ranking...",
+        noRank: "Sin registros.<br>¡Sé el primero!", levelUp: "¡Nivel Superado!", selectAbility: "¡Elige una habilidad!",
+        defeat: "Derrota...", finalScore: "Puntuación Final", saving: "Guardando...", retry: "Intentar de nuevo",
+        saved: "¡Guardado! Rango:", rankUnit: "º", badWord: "Nombre no permitido.", saveFail: "Error al guardar.",
+        nickPlaceholder: "Apodo (Auto-guardado)",
+        c_add1_t: "Más Ataque", c_add1_d: "¡Número de ataque\naumenta en 1!", c_add1_m: "+1",
+        c_add2_t: "Súper Ataque", c_add2_d: "¡Número de ataque\naumenta en 2!", c_add2_m: "+2",
+        c_mult_t: "Poder Multiplicar", c_mult_d: "¡Ataque multiplicado\npor 1.5!", c_mult_m: "×1.5",
+        c_proj_t: "Disparo Extra", c_proj_d: "¡Dispara un\nproyectil más!", c_proj_m: "+1 Disparo",
+        c_rate_t: "Velocidad", c_rate_d: "¡Ataca más\nrápido!", c_rate_m: "¡Rápido!",
+        c_b2_t: "Múltiplo de 2", c_b2_d: "+50% daño a\n2, 4, 6... enemigos!", c_b2_m: "Mód 2",
+        c_b3_t: "Múltiplo de 3", c_b3_d: "+50% daño a\n3, 6, 9... enemigos!", c_b3_m: "Mód 3",
+        c_b5_t: "Múltiplo de 5", c_b5_d: "+50% daño a\n5, 10, 15... enemigos!", c_b5_m: "Mód 5",
+        c_tri_t: "Caza Triángulos", c_tri_d: "+50% daño a\ntriángulos!", c_tri_m: "Triángulo",
+        c_squ_t: "Rompe Cuadrados", c_squ_d: "+50% daño a\ncuadrados!", c_squ_m: "Cuadrado",
+        c_pen_t: "Tritura Pentágonos", c_pen_d: "+50% daño a\npentágonos+!", c_pen_m: "Pentágono+",
+        c_crit_t: "Crítico", c_crit_d: "¡20% prob. de\ndaño doble!", c_crit_m: "20% Prob.",
+        c_wake_t: "Rey Despertado", c_wake_d: "5s: Invencible\nx5 Daño/Vel/Proy!", c_wake_m: "MODO DIOS",
+
+        // Items
+        item_odd_t: "¡Virus Impar! (1️⃣)", item_odd_d: "¡HP impar se convierte en 1!",
+        item_even_t: "¡Virus Par! (2️⃣)", item_even_d: "¡HP par se convierte en 2!",
+        item_freeze_t: "¡Congelar! (❄️)", item_freeze_d: "¡Enemigos detenidos!",
+        item_magnet_t: "¡Imán! (🧲)", item_magnet_d: "¡Recoge toda la experiencia!",
+        item_bomb_t: "¡Bomba de Área! (💣)", item_bomb_d: "¡Gran explosión!",
+        item_shield_t: "¡Escudo! (🛡️)", item_shield_d: "¡Bloquea 1 golpe!",
+        msg_shield_break: "¡Escudo Roto!", msg_shield_break_d: "¡Sobreviviste al golpe!"
+    },
+    fr: {
+        gameTitle: "Défense Roi Math", subtitle: "Trouvez les règles et enregistrez votre meilleur score",
+        score: "Score", attack: "Atq", startBtn: "Commencer", autoSaveMsg: "Score sauvegardé automatiquement.",
+        rankingTitle: "Hall of Fame", recent24: "Dernières 24h", loading: "Chargement...",
+        noRank: "Aucun enregistrement.<br>Soyez le premier !", levelUp: "Niveau Supérieur !", selectAbility: "Choisissez une capacité !",
+        defeat: "Défaite...", finalScore: "Score Final", saving: "Sauvegarde...", retry: "Réessayer",
+        saved: "Sauvegardé ! Rang :", rankUnit: "e", badWord: "Nom interdit.", saveFail: "Échec sauvegarde.",
+        nickPlaceholder: "Pseudo (Auto-save)",
+        c_add1_t: "Plus d'Attaque", c_add1_d: "Nombre d'attaque\naugmente de 1 !", c_add1_m: "+1",
+        c_add2_t: "Super Attaque", c_add2_d: "Nombre d'attaque\naugmente de 2 !", c_add2_m: "+2",
+        c_mult_t: "Multiplicateur", c_mult_d: "Attaque multipliée\npar 1.5 !", c_mult_m: "×1.5",
+        c_proj_t: "Tir Extra", c_proj_d: "Tirez un projectile\nde plus !", c_proj_m: "+1 Tir",
+        c_rate_t: "Vitesse", c_rate_d: "Attaquez plus\nvite !", c_rate_m: "Vite !",
+        c_b2_t: "Multiple de 2", c_b2_d: "+50% dégâts aux\nennemis 2, 4, 6... !", c_b2_m: "Mod 2",
+        c_b3_t: "Multiple de 3", c_b3_d: "+50% dégâts aux\nennemis 3, 6, 9... !", c_b3_m: "Mod 3",
+        c_b5_t: "Multiple de 5", c_b5_d: "+50% dégâts aux\nennemis 5, 10, 15... !", c_b5_m: "Mod 5",
+        c_tri_t: "Chasseur Triangle", c_tri_d: "+50% dégâts aux\ntriangles !", c_tri_m: "Triangle",
+        c_squ_t: "Briseur Carré", c_squ_d: "+50% dégâts aux\ncarrés !", c_squ_m: "Carré",
+        c_pen_t: "Broyeur Pentagone", c_pen_d: "+50% dégâts aux\npentagones+ !", c_pen_m: "Pentagone+",
+        c_crit_t: "Critique", c_crit_d: "20% chance de\ndoubler les dégâts !", c_crit_m: "20% Chance",
+        c_wake_t: "Roi Éveillé", c_wake_d: "5s: Invincible\nx5 Dég/Vit/Proj!", c_wake_m: "MODE DIEU",
+
+        // Items
+        item_odd_t: "Virus Impaire! (1️⃣)", item_odd_d: "HP impair devient 1!",
+        item_even_t: "Virus Paire! (2️⃣)", item_even_d: "HP pair devient 2!",
+        item_freeze_t: "Gel! (❄️)", item_freeze_d: "Ennemis arrêtés!",
+        item_magnet_t: "Aimant! (🧲)", item_magnet_d: "Attire toute l'XP!",
+        item_bomb_t: "Bombe de Zone! (💣)", item_bomb_d: "Grande explosion!",
+        item_shield_t: "Bouclier! (🛡️)", item_shield_d: "Bloque 1 coup!",
+        msg_shield_break: "Bouclier Brisé!", msg_shield_break_d: "Coup bloqué!"
+    },
+    ru: {
+        gameTitle: "Король Математики", subtitle: "Найдите правила и запишите свой лучший результат",
+        score: "Счет", attack: "Атака", startBtn: "Начать", autoSaveMsg: "Счет сохраняется автоматически.",
+        rankingTitle: "Зал славы", recent24: "24 часа", loading: "Загрузка...",
+        noRank: "Нет записей.<br>Будьте первым!", levelUp: "Уровень повышен!", selectAbility: "Выберите способность!",
+        defeat: "Поражение...", finalScore: "Итоговый счет", saving: "Сохранение...", retry: "Повторить",
+        saved: "Сохранено! Место:", rankUnit: "", badWord: "Недопустимое имя.", saveFail: "Ошибка сохранения.",
+        nickPlaceholder: "Никнейм (Авто)",
+        c_add1_t: "Атака +1", c_add1_d: "Число атаки\nувеличено на 1!", c_add1_m: "+1",
+        c_add2_t: "Супер Атака", c_add2_d: "Число атаки\nувеличено на 2!", c_add2_m: "+2",
+        c_mult_t: "Умножение", c_mult_d: "Атака умножается\nна 1.5!", c_mult_m: "×1.5",
+        c_proj_t: "Мультивыстрел", c_proj_d: "Дополнительный\nснаряд!", c_proj_m: "+1 Снаряд",
+        c_rate_t: "Скорость", c_rate_d: "Скорость атаки\nувеличена!", c_rate_m: "Быстро!",
+        c_b2_t: "Кратность 2", c_b2_d: "+50% урон по\n2, 4, 6... врагам!", c_b2_m: "Крат 2",
+        c_b3_t: "Кратность 3", c_b3_d: "+50% урон по\n3, 6, 9... врагам!", c_b3_m: "Крат 3",
+        c_b5_t: "Кратность 5", c_b5_d: "+50% урон по\n5, 10, 15... врагам!", c_b5_m: "Крат 5",
+        c_tri_t: "Охотник на треугольники", c_tri_d: "+50% урон по\nтреугольникам!", c_tri_m: "Треугольник",
+        c_squ_t: "Разрушитель квадратов", c_squ_d: "+50% урон по\nквадратам!", c_squ_m: "Квадрат",
+        c_pen_t: "Крушитель пятиугольников", c_pen_d: "+50% урон по\nпятиугольникам+!", c_pen_m: "Пятиугольник+",
+        c_crit_t: "Крит. шанс", c_crit_d: "20% шанс\nдвойного урона!", c_crit_m: "20% Шанс",
+        c_wake_t: "Король Пробуждения", c_wake_d: "5сек: Неуязвимость\nx5 Урон/Скор/Снаряд!", c_wake_m: "БОГ",
+
+        // Items
+        item_odd_t: "Вирус нечетных! (1️⃣)", item_odd_d: "HP нечетных становится 1!",
+        item_even_t: "Вирус четных! (2️⃣)", item_even_d: "HP четных становится 2!",
+        item_freeze_t: "Заморозка! (❄️)", item_freeze_d: "Враги остановлены!",
+        item_magnet_t: "Магнит! (🧲)", item_magnet_d: "Сбор всего опыта!",
+        item_bomb_t: "Бомба зоны! (💣)", item_bomb_d: "Огромный взрыв!",
+        item_shield_t: "Щит! (🛡️)", item_shield_d: "Блокирует 1 удар!",
+        msg_shield_break: "Щит сломан!", msg_shield_break_d: "Удар заблокирован!"
+    }
+};
+
+let currentLang = 'ko';
+
+function setLanguage(lang) {
+    currentLang = lang;
+    const data = i18nData[lang];
+    if (!data) return;
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (data[key]) {
+            if (el.tagName === 'INPUT' && el.getAttribute('placeholder')) {
+            } else {
+                el.innerText = data[key];
+            }
+        }
+    });
+
+    document.getElementById('startNickname').placeholder = data.nickPlaceholder;
+    updateUi();
+}
+
+document.getElementById('langSelect').addEventListener('change', (e) => {
+    setLanguage(e.target.value);
+});
+
+const qrcode = new QRCode(document.getElementById("qrcode"), {
+    text: window.location.href,
+    width: 128,
+    height: 128,
+    colorDark : "#000000",
+    colorLight : "#ffffff",
+    correctLevel : QRCode.CorrectLevel.H
+});
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let playerNickname = "";
+let isScoreSaved = false;
+let inputLockUntil = 0;
+
+let score = 0;
+let _securityCode = 0;
+const _salt = 521;
+const _base = 999;
+let lastBossLevel = 0;
+
+// --- [추가] 아이템 및 효과 관련 변수 ---
+let items = [];         // 떨어진 아이템 목록
+let freezeTimer = 0;    // 얼음 효과 남은 시간 (프레임)
+let announcement = { text: "", subText: "", timer: 0, color: "" }; // 중앙 안내 메시지
+
+function addScore(amount) {
+    score += amount;
+    _securityCode += amount * _salt;
+}
+
+function resetScore() {
+    score = 0;
+    _securityCode = _base;
+}
+
+function verifyScore() {
+    return _securityCode === (score * _salt) + _base;
+}
+
+let gameState = 'START';
+let frameId;
+let level = 1;
+let xp = 0;
+let xpToNextLevel = 10;
+let gameTime = 0;
+
+const player = {
+    x: 0, y: 0,
+    radius: 24, baseRadius: 24,
+    speed: 4, color: '#FFD700',
+    damage: 1, fireRate: 10, fireTimer: 0, projectiles: 1,
+    bonuses: { two: 0, three: 0, five: 0, triangle: 0, square: 0, pentagon: 0, divisors: { 12: 0, 24: 0, 48: 0, 96: 0 } },
+    critChance: 0,
+    awakenedTime: 0,
+    hasShield: false // [추가] 방어막 보유 여부
+};
+
+const mouse = { x: 0, y: 0 };
+let bullets = [];
+let enemies = [];
+let particles = [];
+let damageTexts = [];
+let xpOrbs = [];
+
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+const bufferSize = audioCtx.sampleRate * 2;
+const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+const noiseOutput = noiseBuffer.getChannelData(0);
+for (let i = 0; i < bufferSize; i++) { noiseOutput[i] = Math.random() * 2 - 1; }
+
+function playSound(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const now = audioCtx.currentTime;
+
+    if (type === 'shoot') {
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+        gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc.start(now); osc.stop(now + 0.15);
+    } else if (type === 'hit') {
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = 'square'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.05);
+        gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        osc.start(now); osc.stop(now + 0.05);
+    } else if (type === 'explode') {
+        const src = audioCtx.createBufferSource(); src.buffer = noiseBuffer;
+        const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; const gain = audioCtx.createGain();
+        src.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+        filter.frequency.setValueAtTime(1000, now); filter.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+        gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        src.start(now); src.stop(now + 0.3);
+    } else if (type === 'crit') {
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(1600, now + 0.15); 
+        gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc.start(now); osc.stop(now + 0.2);
+    } else if (type === 'levelup') {
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            const t = now + i * 0.1; osc.type = 'triangle'; osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.1, t + 0.05); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+            osc.start(t); osc.stop(t + 0.5);
+        });
+    } else if (type === 'gameover_music') {
+        const notes = [{f: 440, d: 1.0}, {f: 392, d: 1.0}, {f: 349, d: 1.0}, {f: 329, d: 2.0}, {f: 293, d: 1.0}, {f: 261, d: 1.0}, {f: 220, d: 3.0}];
+        let currentTime = now;
+        notes.forEach(n => {
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'sine'; osc.frequency.value = n.f;
+            gain.gain.setValueAtTime(0, currentTime); gain.gain.linearRampToValueAtTime(0.2, currentTime + 0.1); gain.gain.linearRampToValueAtTime(0, currentTime + n.d);
+            osc.start(currentTime); osc.stop(currentTime + n.d);
+            currentTime += n.d;
+        });
+    } 
+    // [추가] 아이템별 효과음
+    else if (type === 's_magnet') {
+        // 자석: 웅~ 하는 소리 (주파수 상승)
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.5);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.5);
+        osc.start(now); osc.stop(now + 0.5);
+    } else if (type === 's_freeze') {
+        // 얼음: 띵~ 하는 고주파 소리
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, now);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
+        osc.start(now); osc.stop(now + 1.0);
+    } else if (type === 's_shield') {
+        // 방어막: 챙! 하는 금속성 소리
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.start(now); osc.stop(now + 0.3);
+    } else if (type === 's_bomb_item') {
+        // 아이템 폭탄: 퓨즈 타는 소리 느낌 + 펑
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(100, now);
+        osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.start(now); osc.stop(now + 0.3);
+    }
+}
+
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resize);
+resize();
+
+function handleInput(e) {
+    if (e.target.closest('.card') || e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'A') return;
+    e.preventDefault();
+    let clientX, clientY;
+    if (e.touches && e.touches.length > 0) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+    else { clientX = e.clientX; clientY = e.clientY; }
+    mouse.x = clientX; mouse.y = clientY;
+}
+window.addEventListener('touchstart', handleInput, { passive: false });
+window.addEventListener('touchmove', handleInput, { passive: false });
+window.addEventListener('mousemove', (e) => { 
+    mouse.x = e.clientX; mouse.y = e.clientY; 
+});
+
+function randomRange(min, max) { return Math.random() * (max - min) + min; }
+function getDistance(x1, y1, x2, y2) { return Math.hypot(x1 - x2, y1 - y2); }
+
+// --- [추가] 중앙 안내 메시지 표시 함수 ---
+function showAnnouncement(main, sub, color) {
+    announcement.text = main;
+    announcement.subText = sub;
+    announcement.color = color;
+    announcement.timer = 120; // 2초간 표시
+}
+
+class Bullet {
+    constructor(x, y, angle, damage) {
+        this.x = x; this.y = y; this.speed = 12;
+        this.vx = Math.cos(angle) * this.speed; this.vy = Math.sin(angle) * this.speed;
+        this.damage = damage; this.radius = 6; this.life = 80; this.color = '#ffff00';
+    }
+    update() { this.x += this.vx; this.y += this.vy; this.life--; }
+    draw() {
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color; ctx.fill();
+        ctx.fillStyle = 'black'; ctx.font = 'bold 10px Jua';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(Math.floor(this.damage), this.x, this.y);
+    }
+}
+
+class Enemy {
+    constructor(isBoss = false) {
+        this.isBoss = isBoss;
+        if (Math.random() < 0.5) { this.x = Math.random() < 0.5 ? -50 : canvas.width + 50; this.y = Math.random() * canvas.height; }
+        else { this.x = Math.random() * canvas.width; this.y = Math.random() < 0.5 ? -50 : canvas.height + 50; }
+
+        if (this.isBoss) {
+            // 20레벨부터 등장하는 무한대 체력 + 점진적 속도증가 보스
+            if (level >= 20) {
+                this.hp = Infinity;
+                this.maxHp = 10000; // 각성 킬시 점수 폭발 방지용 수치
+                this.speed = 0.6 + ((level - 20) * 0.2); // 초기엔 느리게, 레벨업마다 점점 빨라짐
+            } else {
+                this.hp = Math.floor(level * 100 * (level / 4) * 0.5); 
+                this.maxHp = this.hp;
+                this.speed = 0.5 + (level * 0.03); 
+            }
+            this.radius = 60 + (level * 1.5); 
+            if (this.radius > 120) this.radius = 120;
+            this.sides = 12; this.spinSpeed = 0.01; 
+            this.color = `hsl(${Math.floor(Math.random() * 360)}, 100%, 50%)`; // 보스도 다양한 색상 부여
+        } else {
+            let hpMin = 3 + level * 2; let hpMax = 8 + level * 5;
+            if (level >= 3 && level <= 5) { hpMin = Math.floor(hpMin * 1.5); hpMax = Math.floor(hpMax * 1.5); }
+            
+            // 10레벨부터 1레벨 상승시 체력 10%씩 복리 증가
+            if (level >= 10) {
+                const multiplier = Math.pow(1.1, level - 9);
+                hpMin = Math.floor(hpMin * multiplier);
+                hpMax = Math.floor(hpMax * multiplier);
+            }
+
+            this.hp = Math.floor(randomRange(hpMin, hpMax)); this.maxHp = this.hp;
+            let baseSpeed = randomRange(0.6, 1.4); let speedMultiplier = level * 0.08;
+            if (level >= 3) speedMultiplier += 0.5;
+            this.speed = baseSpeed + speedMultiplier;
+            this.radius = 20 + (this.hp * 1.2); if (this.radius > 55) this.radius = 55;
+            this.sides = Math.floor(randomRange(3, 7)); this.spinSpeed = randomRange(-0.03, 0.03);
+            this.color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`; // 일반 적도 다양한 색상 부여
+        }
+        this.angle = 0;
+    }
+    update() {
+        // [수정] 얼음 효과: 타이머가 작동 중이면 움직임 정지
+        if (freezeTimer > 0) return;
+
+        const angle = Math.atan2(player.y - this.y, player.x - this.x);
+        this.x += Math.cos(angle) * this.speed; this.y += Math.sin(angle) * this.speed; this.angle += this.spinSpeed;
+    }
+    draw() {
+        ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle);
+        ctx.beginPath();
+        for (let i = 0; i < this.sides; i++) {
+            const rot = (i * 2 * Math.PI) / this.sides;
+            const px = Math.cos(rot) * this.radius; const py = Math.sin(rot) * this.radius;
+            if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        
+        if (this.isBoss) {
+            ctx.fillStyle = 'rgba(20, 20, 20, 0.95)'; // 무채색 짙은 배경으로 수정하여 테두리 색상이 돋보이게 함
+            ctx.strokeStyle = this.color; 
+            ctx.lineWidth = 5; ctx.shadowBlur = 20; ctx.shadowColor = this.color;
+        } else {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.9)'; 
+            ctx.strokeStyle = this.color; 
+            ctx.lineWidth = 3; ctx.shadowBlur = 0;
+        }
+        
+        ctx.fill(); ctx.stroke(); ctx.restore();
+
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        
+        if (this.isBoss) {
+            ctx.font = 'bold 24px Jua'; ctx.fillStyle = this.color; ctx.fillText("BOSS", this.x, this.y - this.radius - 20);
+            ctx.font = `bold ${this.radius * 0.4}px 'Jua', sans-serif`;
+        } else {
+            ctx.font = `bold ${this.radius * 0.8}px 'Jua', sans-serif`;
+        }
+
+        ctx.lineWidth = 4; ctx.strokeStyle = 'black'; ctx.lineJoin = 'round';
+        // 무한대 체력 시 시각적 표현 처리
+        const displayHp = this.hp === Infinity ? '∞' : Math.ceil(this.hp);
+        ctx.strokeText(displayHp, this.x, this.y); ctx.fillStyle = '#fff'; ctx.fillText(displayHp, this.x, this.y);
+    }
+}
+
+// --- [추가] 아이템 클래스 ---
+class Item {
+    constructor(x, y, type) {
+        this.x = x; 
+        this.y = y; 
+        this.type = type; 
+        this.life = 600;  // 10초
+        this.bobOffset = Math.random() * Math.PI * 2;
+        
+        switch (type) {
+            case 'odd':    this.icon = '1️⃣'; this.color = '#FFA500'; break;
+            case 'even':   this.icon = '2️⃣'; this.color = '#4444FF'; break;
+            case 'freeze': this.icon = '❄️'; this.color = '#00FFFF'; break;
+            case 'magnet': this.icon = '🧲'; this.color = '#FF00FF'; break;
+            case 'bomb':   this.icon = '💣'; this.color = '#FF0000'; break;
+            case 'shield': this.icon = '🛡️'; this.color = '#00FF00'; break;
+        }
+    }
+
+    update() {
+        this.life--;
+    }
+
+    draw() {
+        const bobY = Math.sin(Date.now() / 200 + this.bobOffset) * 5;
+        
+        ctx.save();
+        ctx.translate(this.x, this.y + bobY);
+        
+        // [수정] 사라질 때 점점 빨리 깜빡이는 효과 로직
+        if (this.life < 120) {
+            const flickerInterval = Math.max(5, Math.floor(this.life / 6));
+            if (this.life % flickerInterval < flickerInterval / 2) {
+                ctx.globalAlpha = 0.2;
+            } else {
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        // [수정] 숫자 시인성 개선: 그림자 번짐 제거, 외곽선 추가
+        ctx.shadowBlur = 0; 
+        // ctx.shadowColor = this.color; 
+        
+        ctx.font = '45px Arial'; // 폰트 크기 증가
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // 외곽선 그리기
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = this.color; 
+        ctx.strokeText(this.icon, 0, 0);
+
+        // 내부 채우기 (흰색으로 더 명확하게 하거나 그대로 이모지 출력)
+        ctx.fillText(this.icon, 0, 0);
+        
+        ctx.restore();
+        ctx.globalAlpha = 1;
+    }
+}
+
+class Particle {
+    constructor(x, y, color) {
+        this.x = x; this.y = y; this.vx = randomRange(-5, 5); this.vy = randomRange(-5, 5);
+        this.life = randomRange(15, 30); this.color = color; this.size = randomRange(2, 5);
+    }
+    update() { this.x += this.vx; this.y += this.vy; this.life--; this.size *= 0.9; }
+    draw() { ctx.globalAlpha = this.life / 30; ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.size, this.size); ctx.globalAlpha = 1; }
+}
+
+class FloatingText {
+    constructor(x, y, text, color, size = 20) {
+        this.x = x + randomRange(-15, 15); this.y = y + randomRange(-15, 15); this.text = text; this.color = color; this.life = 35;
+        this.vy = -3.5; this.vx = randomRange(-1.5, 1.5); this.size = size;
+    }
+    update() { this.x += this.vx; this.y += this.vy; this.life--; }
+    draw() {
+        ctx.globalAlpha = this.life / 35; ctx.fillStyle = this.color; ctx.strokeStyle = 'black'; ctx.lineWidth = 2;
+        ctx.font = `bold ${this.size}px Jua`; ctx.strokeText(this.text, this.x, this.y); ctx.fillText(this.text, this.x, this.y); ctx.globalAlpha = 1;
+    }
+}
+
+class XpOrb {
+    constructor(x, y, val) { this.x = x; this.y = y; this.val = val; this.radius = 5; this.attracted = false; }
+    update() {
+        const d = getDistance(this.x, this.y, player.x, player.y);
+        if (d < 150) this.attracted = true;
+        if (this.attracted) {
+            const angle = Math.atan2(player.y - this.y, player.x - this.x);
+            this.x += Math.cos(angle) * 8; this.y += Math.sin(angle) * 8;
+        }
+        return d < player.radius + 10;
+    }
+    draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2); ctx.fillStyle = '#00ff00'; ctx.fill(); }
+}
+
+function init() {
+    resetScore();
+    level = 1; xp = 0; xpToNextLevel = 10; gameTime = 0;
+    lastBossLevel = 0;
+
+    player.x = canvas.width / 2; player.y = canvas.height / 2;
+    player.damage = 1; player.projectiles = 1; player.fireRate = 10; player.radius = player.baseRadius;
+    player.awakenedTime = 0;
+    player.hasShield = false; // [추가] 초기화
+
+    player.bonuses = { 
+        two: 0, three: 0, five: 0, 
+        triangle: 0, square: 0, pentagon: 0,
+        divisors: { 12: 0, 24: 0, 48: 0, 96: 0 } 
+    };
+    
+    player.critChance = 0;
+    bullets = []; enemies = []; particles = []; damageTexts = []; xpOrbs = [];
+    
+    // [추가] 아이템 초기화
+    items = [];
+    freezeTimer = 0;
+    announcement = { text: "", subText: "", timer: 0, color: "" };
+
+    isScoreSaved = false;
+    updateUi();
+}
+
+function updateUi() {
+    const t = i18nData[currentLang] || i18nData['en'];
+    document.getElementById('scoreVal').innerText = score;
+    document.getElementById('dmgVal').innerText = player.damage;
+    document.getElementById('levelVal').innerText = level;
+    
+    const statsContainer = document.getElementById('bonusStats');
+    statsContainer.innerHTML = '';
+    
+    const addStat = (text, color) => {
+        const div = document.createElement('div');
+        div.innerText = text; div.className = color; 
+        statsContainer.appendChild(div);
+    };
+
+    if (player.critChance > 0) 
+        addStat(`2배 공격 확률 ${Math.floor(player.critChance * 100)}%`, "text-yellow-400");
+
+    if (player.bonuses.two > 0) addStat(`2의 배수 +${Math.round(player.bonuses.two * 100)}%`, "text-white");
+    if (player.bonuses.three > 0) addStat(`3의 배수 +${Math.round(player.bonuses.three * 100)}%`, "text-green-400");
+    if (player.bonuses.five > 0) addStat(`5의 배수 +${Math.round(player.bonuses.five * 100)}%`, "text-purple-400");
+    
+    [12, 24, 48, 96].forEach(num => {
+        if (player.bonuses.divisors[num] > 0) {
+            addStat(`${num}의 약수 +${Math.round(player.bonuses.divisors[num] * 100)}%`, "text-pink-400");
+        }
+    });
+
+    if (player.bonuses.triangle > 0) addStat(`🔺 +${Math.round(player.bonuses.triangle * 100)}%`, "text-red-400");
+    if (player.bonuses.square > 0) addStat(`🟥 +${Math.round(player.bonuses.square * 100)}%`, "text-blue-400");
+    if (player.bonuses.pentagon > 0) addStat(`⬠ +${Math.round(player.bonuses.pentagon * 100)}%`, "text-orange-400");
+    
+    updateXpBar();
+}
+
+function spawnEnemy() {
+    // 20레벨 이상부터는 매 레벨 무조건 보스 스폰되도록 수정
+    if ((level % 5 === 0 || level >= 20) && lastBossLevel !== level) {
+        enemies.push(new Enemy(true));
+        lastBossLevel = level;
+        damageTexts.push(new FloatingText(player.x, player.y - 120, "⚠️ WARNING ⚠️", '#ff0000', 40));
+        damageTexts.push(new FloatingText(player.x, player.y - 80, "BOSS APPEARED!", '#ff0000', 30));
+        playSound('levelup');
+        return;
+    }
+
+    const spawnRate = Math.max(15, 70 - (level * 3) - Math.floor(gameTime / 300));
+    if (gameTime % spawnRate === 0) enemies.push(new Enemy(false));
+}
+
+function findNearestEnemy() {
+    let nearest = null; let minDist = Infinity;
+    for (const e of enemies) {
+        const d = getDistance(player.x, player.y, e.x, e.y);
+        if (d < minDist && d < 400) { minDist = d; nearest = e; }
+    }
+    return nearest;
+}
+
+function levelUp() {
+    gameState = 'LEVELUP';
+    document.getElementById('levelup-screen').classList.remove('hidden');
+    document.getElementById('cards-container').style.display = 'flex';
+    playSound('levelup');
+    const container = document.getElementById('cards-container');
+    container.innerHTML = '';
+    
+    const t = i18nData[currentLang] || i18nData['ko'];
+
+    const upgrades = [
+        { type: 'add', val: 1, title: t.c_add1_t, desc: t.c_add1_d, math: t.c_add1_m },
+        { type: 'add', val: 2, title: t.c_add2_t, desc: t.c_add2_d, math: t.c_add2_m }, 
+        { type: 'mult', val: 1.5, title: t.c_mult_t, desc: t.c_mult_d, math: t.c_mult_m },
+        { type: 'proj', val: 1, title: t.c_proj_t, desc: t.c_proj_d, math: t.c_proj_m },
+        { type: 'rate', val: 0.85, title: t.c_rate_t, desc: t.c_rate_d, math: t.c_rate_m },
+        { type: 'bonus_two', val: 0.5, title: t.c_b2_t, desc: t.c_b2_d, math: t.c_b2_m },
+        { type: 'bonus_three', val: 0.5, title: t.c_b3_t, desc: t.c_b3_d, math: t.c_b3_m },
+        { type: 'bonus_five', val: 0.5, title: t.c_b5_t, desc: t.c_b5_d, math: t.c_b5_m },
+        { type: 'bonus_div', num: 12, val: 1.0, title: t.c_div12_t, desc: t.c_div12_d, math: t.c_div12_m },
+        { type: 'bonus_div', num: 24, val: 1.0, title: t.c_div24_t, desc: t.c_div24_d, math: t.c_div24_m },
+        { type: 'bonus_div', num: 48, val: 1.0, title: t.c_div48_t, desc: t.c_div48_d, math: t.c_div48_m },
+        { type: 'bonus_div', num: 96, val: 1.0, title: t.c_div96_t, desc: t.c_div96_d, math: t.c_div96_m },
+        { type: 'bonus_shape', sides: 3, val: 0.5, title: t.c_tri_t, desc: t.c_tri_d, math: t.c_tri_m },
+        { type: 'bonus_shape', sides: 4, val: 0.5, title: t.c_squ_t, desc: t.c_squ_d, math: t.c_squ_m },
+        { type: 'bonus_shape', sides: 5, val: 0.5, title: t.c_pen_t, desc: t.c_pen_d, math: t.c_pen_m },
+        { type: 'crit', val: 0.2, title: t.c_crit_t, desc: t.c_crit_d, math: t.c_crit_m },
+        { type: 'awakening', title: t.c_wake_t, desc: t.c_wake_d, math: t.c_wake_m }
+    ];
+
+    let picks = [];
+
+    if (level <= 5) {
+        const mandatories = upgrades.filter(u => 
+            (u.type === 'add' && u.val === 2) || 
+            u.type === 'proj' || 
+            u.type === 'rate'
+        );
+        const guaranteed = mandatories[Math.floor(Math.random() * mandatories.length)];
+        picks.push(guaranteed);
+        
+        let others = upgrades.filter(u => u !== guaranteed);
+        others.sort(() => Math.random() - 0.4); 
+        picks.push(...others.slice(0, 2));
+    } else {
+        upgrades.sort(() => Math.random() - 0.5);
+        picks = upgrades.slice(0, 3);
+    }
+
+    picks.forEach(up => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <div class="card-title">${up.title}</div>
+            <div class="card-math text-center">${up.math}</div>
+            <div class="card-desc">${up.desc}</div>
+        `;
+        card.onclick = (e) => { e.stopPropagation(); applyUpgrade(up); };
+        container.appendChild(card);
+    });
+}
+
+function applyUpgrade(up) {
+    if (up.type === 'add') player.damage += up.val;
+    else if (up.type === 'mult') player.damage = Math.floor(player.damage * up.val) || 1;
+    else if (up.type === 'proj') player.projectiles += up.val;
+    else if (up.type === 'rate') player.fireRate = Math.max(5, Math.floor(player.fireRate * up.val));
+    else if (up.type === 'bonus_two') player.bonuses.two += up.val;
+    else if (up.type === 'bonus_three') player.bonuses.three += up.val;
+    else if (up.type === 'bonus_five') player.bonuses.five += up.val;
+    else if (up.type === 'bonus_div') {
+        if (player.bonuses.divisors[up.num] !== undefined) {
+            player.bonuses.divisors[up.num] += up.val;
+        }
+    }
+    else if (up.type === 'crit') player.critChance = Math.min(1.0, player.critChance + up.val);
+    else if (up.type === 'bonus_shape') {
+        if (up.sides === 3) player.bonuses.triangle += up.val;
+        else if (up.sides === 4) player.bonuses.square += up.val;
+        else if (up.sides >= 5) player.bonuses.pentagon += up.val;
+    }
+    else if (up.type === 'awakening') {
+        player.awakenedTime = 300;
+        damageTexts.push(new FloatingText(player.x, player.y - 40, "AWAKENING!", '#FFD700', 40));
+    }
+
+    updateUi();
+    inputLockUntil = Date.now() + 500; 
+
+    gameState = 'PLAYING';
+    document.getElementById('levelup-screen').classList.add('hidden');
+    requestAnimationFrame(loop);
+}
+
+function addXp(amount) {
+    xp += amount;
+    if (xp >= xpToNextLevel) {
+        xp = 0; xpToNextLevel = Math.floor(xpToNextLevel * 1.3); level++;
+        player.radius = player.baseRadius + Math.min(26, (level - 1) * 2); levelUp();
+    }
+    updateXpBar();
+}
+function updateXpBar() { const pct = (xp / xpToNextLevel) * 100; document.getElementById('xpBar').style.width = `${pct}%`; }
+
+function update() {
+    if (gameState !== 'PLAYING') return;
+    gameTime++;
+
+    if (player.awakenedTime > 0) player.awakenedTime--;
+    if (freezeTimer > 0) freezeTimer--;
+
+    if (Date.now() >= inputLockUntil) {
+        const dx = mouse.x - player.x; const dy = mouse.y - player.y;
+        if (Math.hypot(dx, dy) > 5) { player.x += dx * 0.05; player.y += dy * 0.05; }
+        if (player.awakenedTime > 0 && frameId % 5 === 0) {
+            particles.push(new Particle(player.x, player.y, `hsl(${Math.random()*360}, 100%, 70%)`));
+        }
+        player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+        player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+    }
+
+    player.fireTimer += (player.awakenedTime > 0 ? 5 : 1);
+    
+    if (player.fireTimer >= player.fireRate) {
+        const target = findNearestEnemy();
+        if (target) {
+            player.fireTimer = 0;
+            const angle = Math.atan2(target.y - player.y, target.x - player.x);
+            const currentProjectiles = player.projectiles + (player.awakenedTime > 0 ? 5 : 0);
+            
+            for(let i=0; i < currentProjectiles; i++) {
+                const spread = (i - (currentProjectiles-1)/2) * 0.2;
+                const dmgMultiplier = (player.awakenedTime > 0 ? 5 : 1);
+                bullets.push(new Bullet(player.x, player.y, angle + spread, player.damage * dmgMultiplier));
+            }
+            playSound('shoot');
+        }
+    }
+    spawnEnemy();
+
+    // [추가] 아이템 업데이트 및 충돌 처리
+    const t = i18nData[currentLang] || i18nData['en'];
+    items.forEach((item, index) => {
+        item.update();
+        if (item.life <= 0) {
+            items.splice(index, 1);
+            return;
+        }
+        
+        const dist = getDistance(player.x, player.y, item.x, item.y);
+        if (dist < player.radius + 20) {
+            
+            if (item.type === 'odd') {
+                playSound('s_bomb_item'); 
+                enemies.forEach((e) => {
+                    // [수정] 홀수 바이러스: 홀수 체력 -> 1로 변경
+                    if (Math.ceil(e.hp) % 2 !== 0 && !e.isBoss) {
+                        e.hp = 1; 
+                        e.radius = 20 + (1 * 1.2); // 크기도 줄임
+                        damageTexts.push(new FloatingText(e.x, e.y, "HP=1", '#FFA500', 30));
+                        for(let k=0; k<5; k++) particles.push(new Particle(e.x, e.y, '#FFA500'));
+                    }
+                });
+                showAnnouncement(t.item_odd_t, t.item_odd_d, "#FFA500");
+                
+            } else if (item.type === 'even') {
+                playSound('s_bomb_item'); 
+                enemies.forEach((e) => {
+                    // [수정] 짝수 바이러스: 짝수 체력 -> 2로 변경
+                    if (Math.ceil(e.hp) % 2 === 0 && !e.isBoss) {
+                        e.hp = 2; 
+                        e.radius = 20 + (2 * 1.2); // 크기도 줄임
+                        damageTexts.push(new FloatingText(e.x, e.y, "HP=2", '#4444FF', 30));
+                        for(let k=0; k<5; k++) particles.push(new Particle(e.x, e.y, '#4444FF'));
+                    }
+                });
+                showAnnouncement(t.item_even_t, t.item_even_d, "#4444FF");
+                
+            } else if (item.type === 'freeze') {
+                playSound('s_freeze'); 
+                freezeTimer = 300; 
+                showAnnouncement(t.item_freeze_t, t.item_freeze_d, "#00FFFF");
+
+            } else if (item.type === 'magnet') {
+                playSound('s_magnet'); 
+                xpOrbs.forEach(orb => orb.attracted = true);
+                showAnnouncement(t.item_magnet_t, t.item_magnet_d, "#FF00FF");
+
+            } else if (item.type === 'bomb') {
+                playSound('s_bomb_item'); 
+                const blastRadius = 750; // [수정] 범위 3배 (250 -> 750)
+                particles.push(new Particle(player.x, player.y, '#FF0000')); 
+                enemies.forEach(e => {
+                    if (getDistance(player.x, player.y, e.x, e.y) < blastRadius && !e.isBoss) {
+                        e.hp = 1;
+                        damageTexts.push(new FloatingText(e.x, e.y, "BOOM!", '#FF0000', 40));
+                        for(let k=0; k<8; k++) particles.push(new Particle(e.x, e.y, '#FF4500'));
+                    }
+                });
+                playSound('explode');
+                showAnnouncement(t.item_bomb_t, t.item_bomb_d, "#FF0000");
+
+            } else if (item.type === 'shield') {
+                playSound('s_shield'); 
+                player.hasShield = true;
+                showAnnouncement(t.item_shield_t, t.item_shield_d, "#00FF00");
+            }
+            
+            items.splice(index, 1);
+        }
+    });
+
+    bullets.forEach((b, i) => {
+        b.update();
+        if (b.life <= 0 || b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) bullets.splice(i, 1);
+    });
+
+    enemies.forEach((e, i) => {
+        e.update();
+        if (getDistance(player.x, player.y, e.x, e.y) < player.radius + e.radius) {
+            if (player.awakenedTime > 0) {
+                addScore(Math.floor(e.maxHp * 10));
+                updateUi();
+                enemies.splice(i, 1);
+                xpOrbs.push(new XpOrb(e.x, e.y, 1));
+                for(let k=0; k<15; k++) particles.push(new Particle(e.x, e.y, e.color));
+                damageTexts.push(new FloatingText(e.x, e.y, "KILL!", '#ff0000', 35));
+                playSound('explode');
+                
+                // [수정] 적 처치 시 아이템 드롭 (각성 중에도 드롭)
+                if (Math.random() < 0.05) {
+                    const rand = Math.random();
+                    let type = 'odd';
+                    if (rand < 0.2) type = 'odd';
+                    else if (rand < 0.4) type = 'even';
+                    else if (rand < 0.55) type = 'magnet';
+                    else if (rand < 0.7) type = 'bomb';
+                    else if (rand < 0.85) type = 'freeze';
+                    else type = 'shield';
+                    items.push(new Item(e.x, e.y, type));
+                }
+                return;
+            }
+
+            // [추가] 방어막 체크
+            if (player.hasShield) {
+                player.hasShield = false;
+                e.x += (e.x - player.x) * 2;
+                e.y += (e.y - player.y) * 2;
+                playSound('hit');
+                damageTexts.push(new FloatingText(player.x, player.y, "BLOCK!", '#00FF00', 40));
+                for(let k=0; k<10; k++) particles.push(new Particle(player.x, player.y, '#00FF00'));
+                showAnnouncement(t.msg_shield_break, t.msg_shield_break_d, "#00FF00");
+                return;
+            }
+            
+            // GAME OVER
+            gameState = 'GAMEOVER';
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('game-over-screen').classList.remove('hidden');
+            const restartBtn = document.getElementById('restartBtn');
+            restartBtn.classList.add('hidden');
+            playSound('explode');
+            playSound('gameover_music');
+            
+            if (!isScoreSaved) {
+                autoSubmitScore();
+            }
+        }
+
+        bullets.forEach((b, bi) => {
+            if (getDistance(b.x, b.y, e.x, e.y) < e.radius + b.radius) {
+                let finalDmg = b.damage; let isCrit = false;
+                const currentHpVal = Math.ceil(e.hp);
+                if (player.bonuses.two > 0 && currentHpVal % 2 === 0) { finalDmg *= (1 + player.bonuses.two); isCrit = true; }
+                if (player.bonuses.three > 0 && currentHpVal % 3 === 0) { finalDmg *= (1 + player.bonuses.three); isCrit = true; }
+                if (player.bonuses.five > 0 && currentHpVal % 5 === 0) { finalDmg *= (1 + player.bonuses.five); isCrit = true; }
+
+                if (player.bonuses.divisors[12] > 0 && 12 % currentHpVal === 0) { finalDmg *= (1 + player.bonuses.divisors[12]); isCrit = true; }
+                if (player.bonuses.divisors[24] > 0 && 24 % currentHpVal === 0) { finalDmg *= (1 + player.bonuses.divisors[24]); isCrit = true; }
+                if (player.bonuses.divisors[48] > 0 && 48 % currentHpVal === 0) { finalDmg *= (1 + player.bonuses.divisors[48]); isCrit = true; }
+                if (player.bonuses.divisors[96] > 0 && 96 % currentHpVal === 0) { finalDmg *= (1 + player.bonuses.divisors[96]); isCrit = true; }
+                
+                if (player.bonuses.triangle > 0 && e.sides === 3) { finalDmg *= (1 + player.bonuses.triangle); isCrit = true; }
+                if (player.bonuses.square > 0 && e.sides === 4) { finalDmg *= (1 + player.bonuses.square); isCrit = true; }
+                if (player.bonuses.pentagon > 0 && e.sides >= 5) { finalDmg *= (1 + player.bonuses.pentagon); isCrit = true; }
+                
+                if (Math.random() < player.critChance) { finalDmg *= 2; isCrit = true; damageTexts.push(new FloatingText(e.x, e.y - 30, `2x!`, '#ff5555', 30)); }
+                
+                e.hp -= finalDmg;
+                let newRadius = 20 + (Math.max(0, e.hp) * 1.2); if (newRadius > 55) newRadius = 55; e.radius = newRadius;
+                if (isCrit) { damageTexts.push(new FloatingText(e.x, e.y - 10, `-${Math.floor(finalDmg)}`, '#ffcc00', 30)); playSound('crit'); }
+                else { damageTexts.push(new FloatingText(e.x, e.y, `-${Math.floor(finalDmg)}`, '#fff', 20)); playSound('hit'); }
+                bullets.splice(bi, 1);
+                for(let k=0; k<3; k++) particles.push(new Particle(b.x, b.y, e.color));
+                if (e.hp <= 0) {
+                    addScore(Math.floor(e.maxHp * 10));
+                    updateUi();
+                    enemies.splice(i, 1);
+                    xpOrbs.push(new XpOrb(e.x, e.y, 1));
+                    for(let k=0; k<10; k++) particles.push(new Particle(e.x, e.y, e.color));
+                    playSound('explode');
+
+                    // [추가] 적 처치 시 아이템 드롭
+                    if (Math.random() < 0.05) { // 5% 확률
+                        const rand = Math.random();
+                        let type = 'odd';
+                        // 확률 분포
+                        if (rand < 0.2) type = 'odd';           // 20%
+                        else if (rand < 0.4) type = 'even';     // 20%
+                        else if (rand < 0.55) type = 'magnet'; // 15%
+                        else if (rand < 0.7) type = 'bomb';    // 15%
+                        else if (rand < 0.85) type = 'freeze'; // 15%
+                        else type = 'shield';                  // 15%
+                        items.push(new Item(e.x, e.y, type));
+                    }
+                }
+            }
+        });
+    });
+
+    xpOrbs.forEach((orb, i) => { if (orb.update()) { addXp(orb.val); xpOrbs.splice(i, 1); playSound('exp'); } });
+    particles.forEach((p, i) => { p.update(); if (p.life <= 0) particles.splice(i, 1); });
+    damageTexts.forEach((t, i) => { t.update(); if (t.life <= 0) damageTexts.splice(i, 1); });
+}
+
+function draw() {
+    ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#1a1a2e'; ctx.lineWidth = 1; ctx.beginPath();
+    for (let x = 0; x < canvas.width; x += 50) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
+    for (let y = 0; y < canvas.height; y += 50) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
+    ctx.stroke();
+    ctx.globalCompositeOperation = 'lighter';
+    xpOrbs.forEach(orb => orb.draw()); bullets.forEach(b => b.draw()); enemies.forEach(e => e.draw()); particles.forEach(p => p.draw());
+    
+    // [추가] 아이템 그리기
+    items.forEach(item => item.draw());
+
+    ctx.save(); ctx.translate(player.x, player.y);
+    if (player.awakenedTime > 0) {
+        ctx.shadowBlur = 40 + Math.random() * 20;
+        ctx.shadowColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        ctx.fillStyle = '#fff';
+    } else {
+        ctx.shadowBlur = 20; 
+        ctx.shadowColor = '#FFD700'; 
+    }
+    
+    // [추가] 방어막 그리기
+    if (player.hasShield) {
+        ctx.beginPath();
+        ctx.arc(0, 0, player.radius + 10, 0, Math.PI * 2);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = `rgba(0, 255, 0, ${0.5 + Math.sin(Date.now() / 200) * 0.3})`;
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(0, 255, 0, 0.1)';
+        ctx.fill();
+    }
+
+    ctx.font = `${player.radius * 1.8}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('👑', 0, 0); ctx.restore();
+    ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = 'white'; ctx.font = 'bold 12px Jua'; ctx.textAlign = 'center'; ctx.fillText(Math.floor(player.damage), player.x, player.y - player.radius - 10);
+    damageTexts.forEach(t => t.draw());
+
+    // [수정] 중앙 안내 메시지 상단 배치 + 배경 제거
+    if (announcement.timer > 0) {
+        announcement.timer--;
+        ctx.save();
+        // 배경 박스 제거 (fillRect 주석 처리)
+        // ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        // ctx.fillRect(0, canvas.height/2 - 60, canvas.width, 120);
+        
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // 메인 텍스트 (위치 상단으로 이동: canvas.height * 0.15)
+        ctx.font = 'bold 50px Jua';
+        ctx.fillStyle = announcement.color;
+        // 외곽선 추가로 시인성 확보
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'black';
+        ctx.strokeText(announcement.text, canvas.width/2, canvas.height * 0.15);
+        ctx.fillText(announcement.text, canvas.width/2, canvas.height * 0.15);
+        
+        // 서브 텍스트
+        ctx.font = '30px Jua';
+        ctx.fillStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'black';
+        ctx.strokeText(announcement.subText, canvas.width/2, canvas.height * 0.15 + 50);
+        ctx.fillText(announcement.subText, canvas.width/2, canvas.height * 0.15 + 50);
+        
+        ctx.restore();
+    }
+}
+
+function loop() {
+    if (gameState === 'PLAYING') { update(); draw(); frameId = requestAnimationFrame(loop); }
+    else if (gameState === 'LEVELUP') draw();
+}
+
+window.addEventListener('load', () => {
+    const savedName = localStorage.getItem('kingMathNickname');
+    if (savedName) {
+        document.getElementById('startNickname').value = savedName;
+    }
+    loadRankings(); 
+});
+
+document.getElementById('startBtn').addEventListener('click', () => {
+    const nameInput = document.getElementById('startNickname');
+    const name = nameInput.value.trim();
+
+    if (name.length < 1) {
+        alert("닉네임을 입력해주세요!");
+        nameInput.focus();
+        return;
+    }
+
+    localStorage.setItem('kingMathNickname', name);
+    playerNickname = name;
+
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('ui-layer').style.display = 'block';
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    gameState = 'PLAYING'; init(); player.x = mouse.x; player.y = mouse.y; loop();
+});
+
+document.getElementById('restartBtn').addEventListener('click', () => {
+    document.getElementById('game-over-screen').classList.add('hidden');
+    loadRankings(); 
+    document.getElementById('start-screen').classList.remove('hidden');
+    document.getElementById('ui-layer').style.display = 'none';
+});
+
+const rankingList = document.getElementById('ranking-list');
+
+async function loadRankings() {
+    const t = i18nData[currentLang];
+    rankingList.innerHTML = `<div class="text-center text-gray-500 mt-10">${t.loading}</div>`;
+    
+    try {
+        const res = await fetch('ranking.php?action=list');
+        if(!res.ok) throw new Error('Network error');
+        const data = await res.json();
+        
+        rankingList.innerHTML = '';
+
+        if (data.length === 0) {
+            rankingList.innerHTML = `<div class="text-center text-gray-500 mt-10 text-lg">${t.noRank}</div>`;
+            return;
+        }
+
+        data.forEach((item, index) => {
+            const rank = index + 1;
+            let rowClass = 'bg-gray-700/50 border-b border-gray-600';
+            let rankColor = 'text-gray-300';
+            let icon = `<span class="inline-block w-6 text-center text-gray-500 font-bold">${rank}</span>`;
+
+            if (rank === 1) { 
+                rowClass = 'bg-yellow-900/30 border-b border-yellow-600/50'; 
+                rankColor = 'text-yellow-400 font-bold'; 
+                icon = '🥇';
+            } else if (rank === 2) {
+                rowClass = 'bg-gray-600/40 border-b border-gray-400/50';
+                rankColor = 'text-gray-200 font-bold';
+                icon = '🥈';
+            } else if (rank === 3) {
+                rowClass = 'bg-orange-900/30 border-b border-orange-500/50';
+                rankColor = 'text-orange-400 font-bold';
+                icon = '🥉';
+            }
+
+            const div = document.createElement('div');
+            div.className = `flex items-center p-2 text-sm md:text-base ${rowClass}`;
+            div.innerHTML = `
+                <div class="w-12 text-center text-xl">${icon}</div>
+                <div class="flex-1 text-left px-2 truncate text-white">${item.nickname}</div>
+                <div class="w-20 text-right text-yellow-300 font-mono font-bold">${item.score}</div>
+            `;
+            rankingList.appendChild(div);
+        });
+
+    } catch (e) {
+        console.error(e);
+        rankingList.innerHTML = '<div class="text-center text-red-400 mt-10 text-sm">랭킹 로드 실패<br>(서버 확인 필요)</div>';
+    }
+}
+
+async function autoSubmitScore() {
+    const t = i18nData[currentLang];
+    
+    if (!verifyScore()) {
+        alert('비정상적인 점수 조작이 감지되었습니다.');
+        resetScore(); 
+        document.getElementById('finalScore').innerText = 0;
+        return;
+    }
+
+    isScoreSaved = true; 
+    const msgDiv = document.getElementById('auto-save-msg');
+    const restartBtn = document.getElementById('restartBtn');
+    
+    msgDiv.innerHTML = `<span class="text-blue-400 animate-pulse">${t.saving}</span>`;
+
+    try {
+        const formData = new FormData();
+        formData.append('action', 'submit');
+        formData.append('nickname', playerNickname);
+        formData.append('score', score);
+        formData.append('check_key', _securityCode);
+        const res = await fetch('ranking.php', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+            msgDiv.innerHTML = `<span class="text-green-400">${t.saved} <span class="text-yellow-300 text-3xl mx-2">${data.rank}</span>${t.rankUnit}</span>`;
+        } else if (data.message === 'bad_word') {
+            msgDiv.innerHTML = `<span class="text-red-400">${t.badWord}</span>`;
+        } else {
+            msgDiv.innerHTML = `<span class="text-red-400">${t.saveFail}</span>`;
+        }
+
+    } catch (e) {
+        console.error(e);
+        msgDiv.innerHTML = '<span class="text-red-400">서버 연결 실패</span>';
+    } finally {
+        restartBtn.classList.remove('hidden');
+    }
+}
+</script>
+</body>
+</html>

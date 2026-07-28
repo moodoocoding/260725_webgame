@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>전자칠판 조바꿈 피아노</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vexflow/3.0.9/vexflow-min.js"></script>
+    <style>
+        * { box-sizing: border-box; touch-action: none; }
+        body {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            background-color: #1e272e;
+            color: #f1f2f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 30px;
+            background-color: #2f3542;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        h1 { margin: 0; font-size: 32px; color: #ff4757; }
+
+        .controls { display: flex; align-items: center; gap: 15px; }
+
+        select#instrument-selector {
+            padding: 12px 20px; font-size: 24px; font-weight: bold;
+            border-radius: 10px; border: none; cursor: pointer;
+        }
+
+        button.key-btn {
+            padding: 12px 25px; font-size: 26px; font-weight: bold;
+            background-color: #1e90ff; color: white; border: none;
+            border-radius: 10px; cursor: pointer;
+        }
+
+        #current-key-name { font-size: 32px; font-weight: bold; min-width: 230px; text-align: center; color: #eccc68; }
+
+        #staff-container {
+            flex: 0 0 240px;
+            background-color: #fffdf5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 2px solid #ccc;
+        }
+
+        #piano-container {
+            flex: 0 0 40vh;
+            position: relative;
+            background-color: #2f3542;
+            padding: 0 10px 10px 10px;
+            display: flex;
+        }
+
+        .white-keys-container { display: flex; width: 100%; height: 100%; }
+
+        .white-key {
+            flex: 1; background-color: white; color: black; border: 2px solid #ccc;
+            border-radius: 0 0 10px 10px; display: flex; flex-direction: column;
+            justify-content: flex-end; align-items: center; padding-bottom: 15px; position: relative;
+        }
+
+        .white-key.pressed { background-color: #dfe4ea; border-top: 6px solid #a4b0be; }
+
+        .black-key {
+            position: absolute; top: 0; left: 100%; transform: translateX(-50%);
+            width: 65%; height: 60%; background-color: #2f3640;
+            border-radius: 0 0 8px 8px; z-index: 5;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5); display: flex;
+            flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 10px;
+        }
+
+        .black-key.pressed { background-color: #000; border: 2px solid #ff4757; }
+
+        /* 레이블 스타일링 */
+        .label-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .eng-name { font-size: 14px; color: #7f8c8d; font-weight: normal; }
+        .kor-name { font-size: 14px; color: #34495e; font-weight: bold; }
+        .solfege-text { font-size: 22px; font-weight: bold; color: #2c3e50; }
+
+        .black-key .eng-name { color: #bdc3c7; font-size: 11px; }
+        .black-key .kor-name { color: #ecf0f1; font-size: 11px; }
+        .black-key .solfege-text { color: white; font-size: 16px; }
+
+        .root-note { color: #ff4757 !important; font-size: 26px !important; text-shadow: 1px 1px 1px rgba(0,0,0,0.1); }
+        .black-key .root-note { text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+
+        /* 하단 옵션 바 */
+        #bottom-space {
+            flex: 1;
+            background-color: #1e272e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            border-top: 2px solid #2f3542;
+        }
+
+        .option-btn {
+            padding: 15px 30px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 12px;
+            border: 2px solid #57606f;
+            background-color: #2f3542;
+            color: #ced6e0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn.active {
+            background-color: #ff4757;
+            color: white;
+            border-color: #ff6b81;
+            box-shadow: 0 0 15px rgba(255, 71, 87, 0.4);
+        }
+
+
+
+/* 레이블 스타일링 수정 */
+.label-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px; /* 간격을 조금 더 넓힘 */
+    width: 100%;
+    pointer-events: none;
+}
+
+/* 1. 영어 음이름 스타일 (파란색 계열) */
+.eng-name { 
+    font-size: 18px; /* 기존 14px -> 18px */
+    color: #2980b9;  /* 진한 파란색 */
+    font-weight: bold; 
+}
+
+/* 2. 한글 음이름 스타일 (초록색 계열) */
+.kor-name { 
+    font-size: 18px; /* 기존 14px -> 18px */
+    color: #27ae60;  /* 진한 초록색 */
+    font-weight: bold; 
+}
+
+/* 3. 계이름 (기존 유지하되 크기 조절) */
+.solfege-text { 
+    font-size: 26px; 
+    font-weight: 900; 
+    color: #2c3e50; 
+    margin-top: 2px;
+}
+
+/* 검은 건반 내부 레이블 스타일 (배경이 어두우므로 더 밝은 색상 적용) */
+.black-key .eng-name { 
+    color: #4db8ff; /* 밝은 하늘색 */
+    font-size: 15px; 
+}
+.black-key .kor-name { 
+    color: #55efc4; /* 밝은 민트색 */
+    font-size: 13px; 
+}
+.black-key .solfege-text { 
+    color: #ffffff; 
+    font-size: 20px; 
+}
+
+/* 으뜸음(도) 강조색 (빨간색 유지) */
+.root-note { 
+    color: #ff4757 !important; 
+    font-size: 30px !important; 
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.8); 
+}
+
+.black-key .root-note { 
+    text-shadow: 0px 0px 8px rgba(255, 71, 87, 0.8); 
+}
+
+
+
+
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <h1>🎹 전자칠판 킹피아노</h1>
+        <div class="controls">
+            <select id="instrument-selector">
+                <option value="epiano">🎹 일렉 피아노</option>
+                <option value="marimba">🪵 마림바</option>
+                <option value="organ">⛪ 오르간</option>
+                <option value="synth">🎛️ 신디사이저</option>
+                <option value="flute">🌬️ 플루트</option>
+            </select>
+            <button id="btn-down" class="key-btn">◀ b 내림</button>
+            <span id="current-key-name">다장조 (C)</span>
+            <button id="btn-up" class="key-btn"># 올림 ▶</button>
+        </div>
+    </div>
+
+    <div id="staff-container"></div>
+    <div id="piano-container">
+        <div class="white-keys-container" id="white-keys"></div>
+    </div>
+
+    <div id="bottom-space">
+        <button id="toggle-eng" class="option-btn">영어 음이름</button>
+        <button id="toggle-kor" class="option-btn">한글 음이름</button>
+        <button id="toggle-sol" class="option-btn active">계이름</button>
+    </div>
+
+<script>
+    let audioCtx;
+    const activeOscillators = {};
+    const noteFreqs = {
+        48: 130.81, 49: 138.59, 50: 146.83, 51: 155.56, 52: 164.81, 53: 174.61, 54: 185.00, 55: 196.00, 56: 207.65, 57: 220.00, 58: 233.08, 59: 246.94,
+        60: 261.63, 61: 277.18, 62: 293.66, 63: 311.13, 64: 329.63, 65: 349.23, 66: 369.99, 67: 392.00, 68: 415.30, 69: 440.00, 70: 466.16, 71: 493.88,
+        72: 523.25, 73: 554.37, 74: 587.33, 75: 622.25, 76: 659.25, 77: 698.46, 78: 739.99, 79: 783.99, 80: 830.61, 81: 880.00, 82: 932.33, 83: 987.77
+    };
+
+    // 고정 음이름 데이터
+    const fixedNames = {
+        0: { eng: 'C', kor: '다' },
+        1: { eng: 'C#<br>Db', kor: '올림 다<br>내림 라' },
+        2: { eng: 'D', kor: '라' },
+        3: { eng: 'D#<br>Eb', kor: '올림 라<br>내림 마' },
+        4: { eng: 'E', kor: '마' },
+        5: { eng: 'F', kor: '바' },
+        6: { eng: 'F#<br>Gb', kor: '올림 바<br>내림 사' },
+        7: { eng: 'G', kor: '사' },
+        8: { eng: 'G#<br>Ab', kor: '올림 사<br>내림 가' },
+        9: { eng: 'A', kor: '가' },
+        10: { eng: 'A#<br>Bb', kor: '올림 가<br>내림 나' },
+        11: { eng: 'B', kor: '나' }
+    };
+
+    const instruments = {
+        epiano: { type: 'sine', attack: 0.01, decay: 1.5, sustain: 0.2, release: 0.5, filterFreq: 1500 },
+        marimba: { type: 'sine', attack: 0.005, decay: 0.3, sustain: 0.0, release: 0.2, filterFreq: 1000 },
+        organ: { type: 'square', attack: 0.05, decay: 0.1, sustain: 0.6, release: 0.1, filterFreq: 800 },
+        synth: { type: 'sawtooth', attack: 0.05, decay: 0.2, sustain: 0.4, release: 0.3, filterFreq: 1200 },
+        flute: { type: 'triangle', attack: 0.15, decay: 0.1, sustain: 0.8, release: 0.4, filterFreq: 1500 }
+    };
+
+    const keys = [
+        { index: 0, name: '다장조 (C)', sig: 'C', rootMidi: 60, scaleNotes: ['c/4', 'd/4', 'e/4', 'f/4', 'g/4', 'a/4', 'b/4', 'c/5'] },
+        { index: 1, name: '내림라장조 (Db)', sig: 'Db', rootMidi: 61, scaleNotes: ['db/4', 'eb/4', 'f/4', 'gb/4', 'ab/4', 'bb/4', 'c/5', 'db/5'] },
+        { index: 2, name: '라장조 (D)', sig: 'D', rootMidi: 62, scaleNotes: ['d/4', 'e/4', 'f#/4', 'g/4', 'a/4', 'b/4', 'c#/5', 'd/5'] },
+        { index: 3, name: '내림마장조 (Eb)', sig: 'Eb', rootMidi: 63, scaleNotes: ['eb/4', 'f/4', 'g/4', 'ab/4', 'bb/4', 'c/5', 'd/5', 'eb/5'] },
+        { index: 4, name: '마장조 (E)', sig: 'E', rootMidi: 64, scaleNotes: ['e/4', 'f#/4', 'g#/4', 'a/4', 'b/4', 'c#/5', 'd#/5', 'e/5'] },
+        { index: 5, name: '바장조 (F)', sig: 'F', rootMidi: 65, scaleNotes: ['f/4', 'g/4', 'a/4', 'bb/4', 'c/5', 'd/5', 'e/5', 'f/5'] },
+        { index: 6, name: '내림사장조 (Gb)', sig: 'Gb', rootMidi: 66, scaleNotes: ['gb/4', 'ab/4', 'bb/4', 'cb/5', 'db/5', 'eb/5', 'f/5', 'gb/5'] },
+        { index: 7, name: '사장조 (G)', sig: 'G', rootMidi: 67, scaleNotes: ['g/4', 'a/4', 'b/4', 'c/5', 'd/5', 'e/5', 'f#/5', 'g/5'] },
+        { index: 8, name: '내림가장조 (Ab)', sig: 'Ab', rootMidi: 68, scaleNotes: ['ab/4', 'bb/4', 'c/5', 'db/5', 'eb/5', 'f/5', 'g/5', 'ab/5'] },
+        { index: 9, name: '가장조 (A)', sig: 'A', rootMidi: 69, scaleNotes: ['a/4', 'b/4', 'c#/5', 'd/5', 'e/5', 'f#/5', 'g#/5', 'a/5'] },
+        { index: 10, name: '내림나장조 (Bb)', sig: 'Bb', rootMidi: 70, scaleNotes: ['bb/4', 'c/5', 'd/5', 'eb/5', 'f/5', 'g/5', 'a/5', 'bb/5'] },
+        { index: 11, name: '나장조 (B)', sig: 'B', rootMidi: 71, scaleNotes: ['b/4', 'c#/5', 'd#/5', 'e/5', 'f#/5', 'g#/5', 'a#/5', 'b/5'] }
+    ];
+
+    let currentKeyIndex = 0;
+    let showEng = false, showKor = false, showSol = true; // 옵션 상태
+
+    const majorIntervals = [0, 2, 4, 5, 7, 9, 11];
+    const solfegeNames = ['도', '레', '미', '파', '솔', '라', '시'];
+
+    function drawStaff(keyData) {
+        const div = document.getElementById('staff-container');
+        div.innerHTML = '';
+        const renderer = new Vex.Flow.Renderer(div, Vex.Flow.Renderer.Backends.SVG);
+        renderer.resize(1200, 240);
+        const context = renderer.getContext();
+        context.scale(1.7, 1.7);
+        const stave = new Vex.Flow.Stave(20, 20, 650);
+        stave.addClef('treble').addKeySignature(keyData.sig);
+        stave.setContext(context).draw();
+        const notes = keyData.scaleNotes.map((noteStr, i) => {
+            const note = new Vex.Flow.StaveNote({ clef: "treble", keys: [noteStr], duration: "q" });
+            const textAnno = new Vex.Flow.Annotation(i === 7 ? '도' : solfegeNames[i])
+                .setVerticalJustification(Vex.Flow.Annotation.VerticalJustify.BOTTOM) 
+                .setFont("Malgun Gothic", 16, "bold");
+            note.addModifier(0, textAnno); 
+            return note;
+        });
+        Vex.Flow.Formatter.FormatAndDraw(context, stave, notes);
+    }
+
+    function renderPiano() {
+        const container = document.getElementById('white-keys');
+        container.innerHTML = '';
+        const currentKey = keys[currentKeyIndex];
+
+        for (let midi = 48; midi <= 83; midi++) {
+            const pitchClass = midi % 12;
+            const isBlack = [1, 3, 6, 8, 10].includes(pitchClass);
+            
+            // 계이름 계산
+            let solfege = '', isRoot = false;
+            const distanceFromRoot = (midi - currentKey.rootMidi + 120) % 12; 
+            const scaleIndex = majorIntervals.indexOf(distanceFromRoot);
+            if (scaleIndex !== -1) { 
+                solfege = solfegeNames[scaleIndex]; 
+                if (scaleIndex === 0) isRoot = true; 
+            }
+
+            const keyDiv = document.createElement('div');
+            keyDiv.dataset.midi = midi;
+
+            // 레이블 묶음 생성
+            let labelsHtml = `<div class="label-stack">`;
+            if (showEng) labelsHtml += `<span class="eng-name">${fixedNames[pitchClass].eng}</span>`;
+            if (showKor) labelsHtml += `<span class="kor-name">${fixedNames[pitchClass].kor}</span>`;
+            if (showSol) labelsHtml += `<span class="solfege-text ${isRoot ? 'root-note' : ''}">${solfege}</span>`;
+            labelsHtml += `</div>`;
+
+            keyDiv.innerHTML = labelsHtml;
+
+            if (!isBlack) {
+                keyDiv.className = 'white-key';
+                container.appendChild(keyDiv);
+            } else {
+                keyDiv.className = 'black-key';
+                container.lastChild.appendChild(keyDiv);
+            }
+        }
+        setupEvents();
+    }
+
+    function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
+
+    function playNote(midi, id) {
+        if (!audioCtx || !noteFreqs[midi] || activeOscillators[id]) return;
+        const inst = instruments[document.getElementById('instrument-selector').value];
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        osc.type = inst.type;
+        osc.frequency.setValueAtTime(noteFreqs[midi], audioCtx.currentTime);
+        filter.type = 'lowpass'; filter.frequency.value = inst.filterFreq;
+        const now = audioCtx.currentTime;
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.8, now + inst.attack);
+        gain.gain.linearRampToValueAtTime(0.8 * inst.sustain, now + inst.attack + inst.decay);
+        osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+        osc.start();
+        activeOscillators[id] = { osc, gain, inst };
+    }
+
+    function stopNote(id) {
+        if (activeOscillators[id]) {
+            const { osc, gain, inst } = activeOscillators[id];
+            const now = audioCtx.currentTime;
+            gain.gain.cancelScheduledValues(now);
+            gain.gain.setValueAtTime(gain.gain.value, now);
+            gain.gain.linearRampToValueAtTime(0, now + inst.release);
+            osc.stop(now + inst.release);
+            delete activeOscillators[id];
+        }
+    }
+
+    function setupEvents() {
+        const pianoContainer = document.getElementById('piano-container');
+        const handleStart = (e) => {
+            e.preventDefault(); initAudio();
+            const touches = e.changedTouches || [e];
+            for (let t of touches) {
+                const el = document.elementFromPoint(t.clientX, t.clientY);
+                const target = el ? el.closest('.black-key, .white-key') : null;
+                if (target) {
+                    const id = t.identifier || 'mouse';
+                    target.classList.add('pressed');
+                    playNote(target.dataset.midi, id);
+                }
+            }
+        };
+        const handleEnd = (e) => {
+            const touches = e.changedTouches || [e];
+            for (let t of touches) stopNote(t.identifier || 'mouse');
+            document.querySelectorAll('.pressed').forEach(k => k.classList.remove('pressed'));
+        };
+        pianoContainer.onpointerdown = handleStart;
+        pianoContainer.onpointerup = handleEnd;
+        pianoContainer.onpointerleave = handleEnd;
+    }
+
+    function updateApp() {
+        const currentKey = keys[currentKeyIndex];
+        document.getElementById('current-key-name').innerText = currentKey.name;
+        drawStaff(currentKey);
+        renderPiano();
+    }
+
+    // 옵션 버튼 이벤트
+    document.getElementById('toggle-eng').onclick = function() {
+        showEng = !showEng;
+        this.classList.toggle('active');
+        renderPiano();
+    };
+    document.getElementById('toggle-kor').onclick = function() {
+        showKor = !showKor;
+        this.classList.toggle('active');
+        renderPiano();
+    };
+    document.getElementById('toggle-sol').onclick = function() {
+        showSol = !showSol;
+        this.classList.toggle('active');
+        renderPiano();
+    };
+
+    document.getElementById('btn-up').onclick = () => { currentKeyIndex = (currentKeyIndex + 1) % 12; updateApp(); };
+    document.getElementById('btn-down').onclick = () => { currentKeyIndex = (currentKeyIndex - 1 + 12) % 12; updateApp(); };
+
+    window.onload = updateApp;
+</script>
+</body>
+</html>

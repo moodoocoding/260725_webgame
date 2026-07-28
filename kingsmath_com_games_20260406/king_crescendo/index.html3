@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crescendo King</title>
+<style>
+    /* ================= CSS 스타일 (다크톤 테마) ================= */
+    :root {
+        --primary: #5C9DFF; 
+        --bg: #121212;
+        --panel-bg: #1E1E1E;
+        --panel-alt: #252525;
+        --border: #333333;
+        --border-light: #444444;
+        --joker-color: #FF6B6B;
+        --text: #E0E0E0;
+        --text-muted: #999999;
+        
+        --c-dog: #FF6B6B;     
+        --c-rabbit: #339AF0;  
+        --c-cat: #FCC419;     
+        --c-hamster: #51CF66; 
+        --c-monkey: #FF922B;  
+        --c-panda: #B197FC;   
+    }
+    
+    * { box-sizing: border-box; user-select: none; font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; }
+    body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* --- 시작 화면 --- */
+    #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); background-size: 400% 400%; animation: gradientBG 10s ease infinite; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; overflow-y: auto; padding: 20px 0; }
+    @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    .title-box { text-align: center; margin-bottom: 0px; animation: floatTitle 3s ease-in-out infinite; }
+    @keyframes floatTitle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    
+    .crescendo-mark { font-size: 2.5rem; color: var(--primary); font-weight: 900; letter-spacing: -3px; margin-bottom: -15px; text-shadow: 0 0 15px var(--primary); transform: scaleY(1.5); }
+    .title-box h1 { font-size: 4.5rem; color: #ffffff; margin: 0; text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 10px #00e6e6, 0 0 20px #00e6e6, 0 0 40px #00e6e6, 0 0 80px #00e6e6; }
+    .title-box p { font-size: 1.5rem; color: #a8e6cf; text-shadow: 1px 1px 5px rgba(0,0,0,0.8); margin-top: 10px; }
+    
+    .rules-card { background: var(--panel-bg); border: 2px solid var(--primary); border-radius: 15px; padding: 30px; width: 90%; max-width: 1200px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 10px; }
+    .rules-card h2 { margin-top: 0; color: var(--primary); text-align: center; font-size: 2rem; margin-bottom: 10px;}
+    .rules-card ul { font-size: 1.1rem; line-height: 1.6; color: var(--text); padding-left: 20px;}
+    .rules-card li { margin-bottom: 8px; }
+    
+    .rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+    .rule-box { padding: 10px; border-radius: 12px; background: var(--bg); }
+    .rule-box.basic { border: 2px solid var(--primary); box-shadow: inset 0 0 15px rgba(92,157,255,0.1); }
+    .rule-box.item { border: 2px solid var(--c-dog); box-shadow: inset 0 0 15px rgba(255,107,107,0.1); }
+    .rule-box h3 { margin-top: 0; font-size: 1.4rem; text-align: center; }
+
+.settings-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+    background: var(--panel-alt);
+    padding: 16px 39px;
+    border-radius: 44px;
+    border: 1px solid var(--border);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+    .settings-group select { font-size: 1.3rem; padding: 8px 15px; cursor: pointer; background: var(--bg); color: var(--text); border: 2px solid var(--border-light); border-radius: 8px; font-weight: bold;}
+    
+    .btn-large { background: var(--primary); color: #121212; border: none; padding: 15px 50px; font-size: 1.8rem; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(92,157,255,0.3); transition: transform 0.1s, background 0.2s; }
+    .btn-large:active { transform: scale(0.95); }
+    .btn-large:hover { background: #74AFFF; }
+    
+    .btn-link { display: inline-block; color: var(--text-muted); text-decoration: none; font-size: 1.2rem; border: 2px solid var(--border-light); padding: 10px 30px; border-radius: 30px; transition: all 0.2s; font-weight: bold; }
+    .btn-link:hover { background: rgba(255,255,255,0.1); color: #FFF; border-color: #FFF; }
+
+    /* --- 메인 게임 화면 --- */
+    #game-screen { display: none; width: 100%; height: 100%; flex-direction: column; }
+    
+    #top-half { flex: 0 0 58vh; display: flex; padding: 20px; gap: 20px; border-bottom: 3px solid var(--border); background: linear-gradient(180deg, #1A1A1A 0%, #121212 100%); }
+    
+    #score-wrapper { display: flex; gap: 15px; flex: 0 0 380px; }
+    #score-panel { flex: 1; background: var(--panel-bg); border: 2px solid var(--border-light); border-radius: 15px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+    .panel-header { display: flex; justify-content: center; align-items: center; background: #2A2A2A; padding: 10px 15px; border-bottom: 2px solid var(--border); }
+    .panel-title { color: var(--text); font-weight: bold; font-size: 1.5rem; margin: 0; }
+    
+    .score-table { width: 100%; border-collapse: collapse; text-align: center; flex-grow: 1; display: flex; flex-direction: column; }
+    .score-row { display: flex; border-bottom: 1px solid var(--border); flex: 1; align-items: center; font-size: 1.4rem; }
+    .score-row.trap { background-color: #3A1C1C; font-weight: bold; color: #FF6B6B; }
+    .score-col-len { flex: 1; border-right: 1px solid var(--border); background: rgba(0,0,0,0.2); font-weight: bold; color: var(--text-muted); }
+    .score-col-pts { flex: 1; color: var(--primary); font-weight: bold; }
+
+    .sys-controls { display: flex; flex-direction: column; gap: 20px; justify-content: center; align-items: center; font-size: 2.2rem; background: var(--panel-bg); border: 2px solid var(--border-light); border-radius: 15px; padding: 15px 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+    .sys-controls span, .sys-controls a { cursor: pointer; transition: transform 0.1s; display: inline-block; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5)); text-decoration: none; color: inherit; }
+    .sys-controls span:active, .sys-controls a:active { transform: scale(0.9); }
+
+    #center-panel { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; gap: 40px; flex-direction: column; }
+    .center-top-row { display: flex; gap: 40px; align-items: center; justify-content: center; width: 100%; }
+    
+    #tile-info-modern { background: rgba(30, 30, 30, 0.6); border: 1px solid var(--border-light); border-radius: 15px; padding: 20px; width: 220px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 12px; }
+    #tile-info-modern h4 { margin: 0; color: var(--primary); font-size: 1.4rem; text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; color: var(--text); }
+    .info-row .num-range { font-weight: bold; background: #111; padding: 4px 10px; border-radius: 8px; border: 1px solid #444; }
+    .info-row .count { color: var(--text-muted); }
+
+    /* 시크릿 미션 패널 */
+    #mission-panel { display: none; background: rgba(81, 207, 102, 0.1); border: 2px dashed #51CF66; border-radius: 10px; padding: 10px 15px; width: 100%; max-width: 500px; text-align: center; margin-top: -15px; box-shadow: 0 0 15px rgba(81, 207, 102, 0.2); }
+    .mission-title { color: #51CF66; font-weight: bold; font-size: 1.2rem; margin-bottom: 5px; }
+    .mission-desc { color: #FFF; font-size: 1.1rem; }
+
+    #lotto-machine { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10; }
+    .info-badge { font-size: 1.5rem; font-weight: bold; background: #000; color: #F1C40F; padding: 8px 25px; border-radius: 30px; margin-bottom: 15px; border: 2px solid #F1C40F; box-shadow: 0 0 15px rgba(241,196,15,0.4); z-index: 2; }
+    
+    #item-announcement { color: #FF6B6B; font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; height: 1.5rem; animation: pulse-text 1s infinite alternate; }
+    @keyframes pulse-text { from { opacity: 0.7; transform: scale(0.98); } to { opacity: 1; transform: scale(1.05); } }
+
+    #drum-container { position: relative; width: 250px; height: 250px; margin-bottom: 10px; }
+    #lotto-drum { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1), rgba(0,0,0,0.8)); border: 5px solid #555; box-shadow: inset 0 0 30px #000, 0 10px 20px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 5px; padding: 20px; }
+    
+    .mini-ball { width: 25px; height: 25px; border-radius: 50%; background: #FFEAA7; box-shadow: inset -5px -5px 10px rgba(0,0,0,0.5); font-size: 0.7rem; font-weight: bold; display: flex; justify-content: center; align-items: center; color: #333; position: absolute; transition: all 0.1s; opacity: 0.8; }
+    .mini-ball.joker { background: #FF9F9F; color: #fff; }
+    .mini-ball.item { background: #B197FC; color: #fff; }
+    
+    #lotto-ball { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #FFEAA7, #F39C12); border: 8px solid #D35400; display: flex; align-items: center; justify-content: center; font-size: 6rem; font-weight: 900; color: #8E44AD; text-shadow: 2px 2px 5px rgba(255,255,255,0.6); box-shadow: inset -10px -10px 30px rgba(0,0,0,0.6), 0 15px 40px rgba(0,0,0,0.9); z-index: 5; opacity: 0; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s; }
+    #lotto-ball.joker { background: radial-gradient(circle at 30% 30%, #FF9F9F, #E74C3C); border-color: #C0392B; color: white; text-shadow: none; font-size: 5rem; }
+    #lotto-ball.item { background: radial-gradient(circle at 30% 30%, #B197FC, #845EF7); border-color: #6741D9; color: white; text-shadow: none; font-size: 5rem; }
+    #lotto-ball.show { transform: translate(-50%, -50%) scale(1); opacity: 1; box-shadow: 0 0 50px 20px rgba(243,156,18,0.5); }
+
+    #results-board { display: none; width: 100%; max-width: 600px; background: rgba(30, 30, 30, 0.95); border: 4px solid #F1C40F; border-radius: 20px; padding: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.9); text-align: center; z-index: 50; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+    #results-board h2 { margin: 0 0 15px 0; color: #F1C40F; font-size: 2.5rem; text-shadow: 0 0 10px rgba(241,196,15,0.5); }
+    .ranking-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .rank-item { background: #121212; padding: 15px; border-radius: 12px; font-size: 1.5rem; font-weight: bold; border: 2px solid var(--border-light); color: var(--text); }
+    .rank-item.gold { border-color: #F1C40F; box-shadow: 0 0 15px rgba(241,196,15,0.4); }
+
+    #history-panel { flex: 0 0 360px; background: var(--panel-bg); border: 2px solid var(--border-light); border-radius: 15px; display: flex; flex-direction: column; padding: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); overflow-y: auto; }
+    .history-title { text-align: center; color: var(--text-muted); font-weight: bold; margin-top: 0; margin-bottom: 10px; font-size: 1.4rem; }
+    .history-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; align-content: start; }
+    .hist-slot { background: #1A1A1A; border: 2px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.7rem; font-weight: bold; color: #444; min-height: 55px; }
+    .hist-slot.filled { background: #2C3E50; color: #FFF; border-color: var(--primary); box-shadow: 0 0 8px rgba(92,157,255,0.5); text-shadow: 1px 1px 2px #000; }
+    .hist-slot.filled.joker { background: #641E16; border-color: #E74C3C; color: #F1C40F; }
+    .hist-slot.filled.item { background: #4B0082; border-color: #8A2BE2; color: #E6E6FA; }
+
+    #bottom-half { flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: minmax(11vh, 1fr); gap: 15px; padding: 15px 20px; background: var(--bg); overflow-y: auto; }
+    
+    .player-row { position: relative; display: flex; align-items: stretch; background: var(--panel-bg); border-radius: 12px; border: 2px solid var(--p-color); padding: 8px 8px 16px 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+    .player-row.inactive { display: none; }
+    
+    .player-info { width: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 2px dashed var(--border-light); padding-right: 10px; margin-right: 10px; }
+    .p-name { font-weight: 900; font-size: 1.8rem; color: var(--text); text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin-bottom: 0; }
+    .p-score { font-size: 1.2rem; font-weight: 900; color: var(--p-color); text-shadow: 1px 1px 2px #000; }
+    
+    .action-area { height: auto; display: flex; flex-direction: column; gap: 5px; align-items: center; justify-content: center; width: 100%; margin-top: 5px; }
+    .btn-undo { background: #E74C3C; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; width: 90%; z-index: 10; display: none; }
+    .btn-pass { background: #95A5A6; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; width: 90%; z-index: 10; display: none; }
+    .btn-pass:hover { background: #7F8C8D; }
+    
+    .slots-container { flex: 1; display: grid; grid-template-columns: repeat(20, 1fr); grid-template-rows: 1fr; gap: 4px; position: relative; }
+    
+    .p-slot { background: #111; border: 2px solid #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: clamp(1rem, 1.2vw, 1.5rem); font-weight: bold; color: var(--text-muted); grid-row: 1; z-index: 1; position: relative; }
+    .p-slot.special { border: 2px dashed #FCC419; background: rgba(252, 196, 25, 0.05); }
+    .p-slot.special::before { content: attr(data-cond); position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: #FCC419; color: #000; font-size: 0.65rem; padding: 1px 4px; border-radius: 3px; white-space: nowrap; z-index: 5; font-weight: 900; }
+    
+    .p-slot.placeable { cursor: pointer; color: transparent; border-color: var(--p-color); background: rgba(255,255,255,0.05); box-shadow: inset 0 0 10px var(--p-color); animation: pulse-p 0.8s infinite alternate; }
+    .p-slot.item-target { cursor: pointer; border-color: #B197FC; box-shadow: inset 0 0 15px #B197FC; animation: pulse-p 0.5s infinite alternate; }
+    
+    @keyframes pulse-p { from { opacity: 0.6; } to { opacity: 1; background: rgba(255,255,255,0.1); } }
+    
+    .p-slot.filled { background: rgba(0,0,0,0.8); border-color: #555; color: #FFF; text-shadow: 1px 1px 2px #000; }
+    .p-slot.filled.joker { color: var(--joker-color); }
+
+    .segment-box { grid-row: 1; border: 3px solid; border-radius: 8px; z-index: 2; pointer-events: none; display: flex; justify-content: center; background: rgba(255,255,255,0.15); box-shadow: 0 0 10px rgba(0,0,0,0.5) inset; position: relative; }
+    .segment-score-badge { position: absolute; top: -18px; background: #000; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.8); border: 1px solid #555; }
+
+    .p-timer-track { position: absolute; bottom: 0; left: 0; width: 100%; height: 6px; background: rgba(0,0,0,0.6); border-radius: 0 0 10px 10px; overflow: hidden; }
+    .p-timer-fill { height: 100%; width: 100%; background: var(--p-color); box-shadow: 0 0 10px var(--p-color); transition: width 1s linear, background 0.3s; transform-origin: left; }
+
+</style>
+</head>
+<body>
+
+<div id="start-screen">
+    <div class="title-box">
+        <div class="crescendo-mark">&lt;───────────</div>
+        <h1>Crescendo King</h1>
+        <p>Kingsmath.com</p>
+    </div>
+
+    <div class="rules-card">
+        <h2>📜 크레센도 킹 규칙 안내 📜</h2>
+        <p style="text-align: center; font-size: 1.2rem; color: #a8e6cf; margin-bottom: 25px;">
+            매 라운드 무작위로 뽑힌 숫자를 내 보드판(20칸)에 배치하여,<br>
+            왼쪽에서 오른쪽으로 <strong>숫자가 점점 커지도록(같은 수 인정)</strong> 길게 연결하세요!
+        </p>
+
+        <div class="rules-grid">
+            <div class="rule-box basic">
+                <h3 style="color: var(--primary);">🟢 기본전 (오리지널)</h3>
+                <ul>
+                    <li><strong>기본 타일:</strong> 1~30의 숫자와 조커(★) 1개가 기계에 들어있습니다.</li>
+                    <li><strong>배치 규칙:</strong> 뽑힌 숫자는 20개의 빈칸 중 <strong>원하는 곳</strong>에 자유롭게 넣습니다.</li>
+                    <li><strong>점수 획득:</strong> 숫자가 오름차순으로 길게 이어질수록 점수가 폭발적으로 높아집니다!</li>
+                    <li><strong>조커(★):</strong> 어떤 숫자로든 변신할 수 있는 만능 기호입니다.</li>
+                </ul>
+            </div>
+            <div class="rule-box item">
+                <h3 style="color: var(--c-dog);">🔥 아이템전 (익스트림)</h3>
+                <ul>
+                    <li>기본전 규칙에 <strong>특수 칸, 미션, 아이템</strong>이 추가되어 역전의 재미가 있습니다!</li>
+                    <li><strong>노란색 특수 칸:</strong> 보드판에 나타난 '짝수', '5의 배수' 등의 조건을 만족하는 숫자를 넣으면 <strong>+10점</strong>의 추가 보너스를 받습니다.</li>
+                    <li><strong>패턴 미션:</strong> 연속된 홀수/짝수, 2배수/3배수 인접 등 매 판 주어지는 특수 미션을 달성하면 보너스 점수를 얻습니다.</li>
+                    <li><strong>뽑기 아이템:</strong> 기계에서 숫자가 아닌 아이템이 나올 수 있습니다.
+                        <br>&nbsp;&nbsp;👉 🧽 <strong>지우개:</strong> 이미 배치한 숫자를 지웁니다.
+                        <br>&nbsp;&nbsp;👉 🃏 <strong>체인지 조커:</strong> 배치된 숫자를 조커로 바꿉니다.
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-group">
+        <label>모드 선택: 
+            <select id="sel-mode">
+                <option value="no-item" selected>🟢 기본전 (노템전)</option>
+                <option value="item">🔥 아이템전 (미션 + 아이템)</option>
+            </select>
+        </label>
+        <label>참여 인원: 
+            <select id="sel-players">
+                <option value="0">번호만 뽑기</option>
+                <option value="1">1P</option><option value="2">2P</option>
+                <option value="3">3P</option><option value="4">4P</option>
+                <option value="5">5P</option><option value="6" selected>6P (최대)</option>
+            </select>
+        </label>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin-bottom: 20px;">
+        <button class="btn-large" id="btn-start" onclick="startGame()">▶ 게임 시작</button>
+        <a href="/" class="btn-link">🔄 다른 게임 고르기</a>
+    </div>
+</div>
+
+<div id="game-screen">
+    <div id="top-half">
+        <div id="score-wrapper">
+            <div id="score-panel">
+                <div class="panel-header"><h3 class="panel-title" id="score-title">📊 점수판</h3></div>
+                <div class="score-table" id="score-table-body"></div>
+            </div>
+            <div class="sys-controls">
+                <span title="HOME" onclick="location.reload()">🏠</span>
+                <span title="FULLSCREEN" onclick="toggleFullScreen()">🔲</span>
+                <a href="/" title="OTHER GAME" style="font-size: 1.8rem; margin-top: 10px;">🎮</a>
+            </div>
+        </div>
+
+        <div id="center-panel">
+            <div class="center-top-row">
+                <div id="tile-info-modern">
+                    <h4>🔢 타일 구성</h4>
+                    <div class="info-row"><span class="num-range">1 ~ 10</span><span class="count">x1</span></div>
+                    <div class="info-row"><span class="num-range">11 ~ 19</span><span class="count">x2</span></div>
+                    <div class="info-row"><span class="num-range">20 ~ 30</span><span class="count">x1</span></div>
+                    <div class="info-row joker-row"><span class="num-range">조커 (★)</span><span class="count" id="info-joker-cnt">x1</span></div>
+                </div>
+
+                <div id="lotto-machine">
+                    <div class="info-badge">DRAW <span id="round-text">0</span></div>
+                    <div id="item-announcement"></div>
+                    <div id="drum-container">
+                        <div id="lotto-drum"></div>
+                        <div id="lotto-ball">?</div>
+                    </div>
+                    <button class="btn-large" id="btn-draw" style="padding: 10px 40px; font-size: 1.5rem;" onclick="drawNumber()">🎰 뽑기</button>
+                </div>
+            </div>
+            
+            <div id="mission-panel">
+                <div class="mission-title">🎯 이번 판 특수 미션</div>
+                <div class="mission-desc" id="mission-text">-</div>
+            </div>
+
+            <div id="results-board">
+                <h2>🏆 최종 순위 🏆</h2>
+                <div class="ranking-list" id="ranking-list"></div>
+                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 20px;">
+                    <button class="btn-large" style="font-size:1.2rem; padding:10px 30px;" onclick="location.reload()">🏠 처음으로</button>
+                    <a href="/" class="btn-link" style="margin: 0; padding: 10px 30px; line-height: 1.5;">🎮 다른 게임 고르기</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="history-panel">
+            <p class="history-title">📝 히스토리</p>
+            <div class="history-grid" id="history-grid"></div>
+        </div>
+    </div>
+
+    <div id="bottom-half"></div>
+</div>
+
+<script>
+    /* ----- 헬퍼 함수 (패턴 미션용) ----- */
+    // 특정 조건을 만족하는 연속된 길이 확인
+    function hasConsecutive(arr, minCount, conditionFn) {
+        let max = 0, curr = 0;
+        for (let v of arr) {
+            if (conditionFn(v)) { curr++; max = Math.max(max, curr); }
+            else curr = 0;
+        }
+        return max >= minCount;
+    }
+    // 인접한 두 숫자가 특정 조건을 만족하는지 확인
+    function hasAdjacent(arr, conditionFn) {
+        for (let i = 0; i < arr.length - 1; i++) {
+            if (conditionFn(arr[i], arr[i+1])) return true;
+        }
+        return false;
+    }
+
+    /* ----- 게임 데이터 및 미션 ----- */
+    const MISSIONS = [
+        { desc: "홀수 징검다리: 홀수(조커 포함)가 4칸 이상 연속으로 이어지면! (+20점)", 
+          check: (b) => hasConsecutive(b, 4, v => v === '★' || (v !== null && v % 2 !== 0)), pts: 20 },
+        { desc: "짝수 징검다리: 짝수(조커 포함)가 4칸 이상 연속으로 이어지면! (+20점)", 
+          check: (b) => hasConsecutive(b, 4, v => v === '★' || (v !== null && v % 2 === 0)), pts: 20 },
+        { desc: "두 배의 마법: 바로 옆칸에 2배 차이나는 숫자가 나란히 있으면! (예: 4, 8) (+20점)", 
+          check: (b) => hasAdjacent(b, (v1, v2) => v1 !== null && v2 !== null && v1 !== '★' && v2 !== '★' && (v1 * 2 === v2 || v2 * 2 === v1)), pts: 20 },
+        { desc: "세 배의 마법: 바로 옆칸에 3배 차이나는 숫자가 나란히 있으면! (예: 2, 6) (+20점)", 
+          check: (b) => hasAdjacent(b, (v1, v2) => v1 !== null && v2 !== null && v1 !== '★' && v2 !== '★' && (v1 * 3 === v2 || v2 * 3 === v1)), pts: 20 }
+    ];
+
+    const SPECIAL_CONDS = [
+        { label: '짝수', check: (v) => v === '★' || (typeof v === 'number' && v % 2 === 0) },
+        { label: '홀수', check: (v) => v === '★' || (typeof v === 'number' && v % 2 !== 0) },
+        { label: '5의배수', check: (v) => v === '★' || (typeof v === 'number' && v % 5 === 0) },
+        { label: '10이상', check: (v) => v === '★' || (typeof v === 'number' && v >= 10) }
+    ];
+
+    const CHARACTERS = [
+        { name: '1P', hex: 'var(--c-dog)' }, { name: '2P', hex: 'var(--c-rabbit)' }, 
+        { name: '3P', hex: 'var(--c-cat)' }, { name: '4P', hex: 'var(--c-hamster)' }, 
+        { name: '5P', hex: 'var(--c-monkey)' }, { name: '6P', hex: 'var(--c-panda)' }
+    ];
+    const SEGMENT_COLORS = ['#FF6B6B', '#339AF0', '#FCC419', '#51CF66', '#B197FC', '#FF922B', '#20C997'];
+    
+    // 점수표를 이지 모드로 통일
+    const SCORES = [0, 0, 1, 3, 5, 7, 9, 11, 15, 20, 25, 30, 35, 40, 50, 60, 70, 85, 100, 150, 300];
+
+    let gameState = {
+        mode: 'no-item', playerCount: 6, jokerCount: 1, difficulty: 'beginner',
+        deck: [], round: 0, currentNumber: null, currentPhase: 'place', // 'place', 'item_eraser', 'item_cjoker'
+        isDrawing: false, players: [], isGameOver: false, activeMission: null
+    };
+
+    let timerInterval = null; let timeRemaining = 30; let drumAnimationInterval = null;
+
+    /* ----- UI 요소 참조 ----- */
+    const UI = {
+        startScreen: document.getElementById('start-screen'), gameScreen: document.getElementById('game-screen'),
+        scoreTable: document.getElementById('score-table-body'), lottoDrum: document.getElementById('lotto-drum'),
+        lottoBall: document.getElementById('lotto-ball'), btnDraw: document.getElementById('btn-draw'),
+        roundText: document.getElementById('round-text'), historyGrid: document.getElementById('history-grid'),
+        bottomHalf: document.getElementById('bottom-half'), infoJoker: document.getElementById('info-joker-cnt'),
+        resultsBoard: document.getElementById('results-board'), rankingList: document.getElementById('ranking-list'),
+        missionPanel: document.getElementById('mission-panel'), missionText: document.getElementById('mission-text'),
+        itemAnnouncement: document.getElementById('item-announcement')
+    };
+
+    /* ----- 오디오 설정 ----- */
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+    function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
+    function playTone(freq, type, duration, vol=0.1) {
+        if(!audioCtx) return;
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+    function playDrawTick() { playTone(700 + Math.random()*300, 'square', 0.03, 0.05); }
+    function playDrawResult() { playTone(880, 'sine', 0.4, 0.2); playTone(1108, 'sine', 0.5, 0.2); }
+    function playTimerTick() { playTone(1000, 'sine', 0.1, 0.1); }
+    function playTimeOut() { playTone(300, 'sawtooth', 0.5, 0.2); }
+    function playPlace() { playTone(500, 'triangle', 0.1, 0.1); }
+    function playItem() { playTone(1200, 'sine', 0.2, 0.1); playTone(1500, 'sine', 0.3, 0.1); } // 아이템 발동 소리
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(err => console.log(err));
+        else if (document.exitFullscreen) document.exitFullscreen();
+    }
+
+    /* ----- 게임 초기화 ----- */
+    function startGame() {
+        initAudio();
+        gameState.mode = document.getElementById('sel-mode').value;
+        gameState.playerCount = parseInt(document.getElementById('sel-players').value);
+        gameState.jokerCount = 1; // 1개 고정
+        gameState.difficulty = 'beginner'; // 이지 고정
+        UI.infoJoker.innerText = 'x' + gameState.jokerCount;
+
+        buildDeck(); buildScoreTable(); initDrumBalls();
+
+        if (gameState.mode === 'item') {
+            gameState.activeMission = MISSIONS[Math.floor(Math.random() * MISSIONS.length)];
+            UI.missionText.innerText = gameState.activeMission.desc;
+            UI.missionPanel.style.display = 'block';
+        } else {
+            UI.missionPanel.style.display = 'none';
+        }
+
+        UI.historyGrid.innerHTML = ''; // 동적으로 추가되도록 초기화
+
+        buildPlayerBoards();
+
+        // 0인 모드 (번호만 뽑기) 레이아웃 설정
+        if (gameState.playerCount === 0) {
+            UI.bottomHalf.style.display = 'none';
+            document.getElementById('top-half').style.flex = '1';
+        } else {
+            UI.bottomHalf.style.display = 'grid';
+            document.getElementById('top-half').style.flex = '0 0 58vh';
+        }
+
+        UI.startScreen.style.display = 'none'; UI.gameScreen.style.display = 'flex';
+    }
+
+    function buildDeck() {
+        let cards = [];
+        for(let i=1; i<=10; i++) cards.push(i);
+        for(let i=11; i<=19; i++) { cards.push(i); cards.push(i); }
+        for(let i=20; i<=30; i++) cards.push(i);
+        for(let i=0; i<gameState.jokerCount; i++) cards.push('★');
+        
+        // 아이템전에만 기계 안에 지우개와 체인지 조커를 2개씩 넣음
+        if (gameState.mode === 'item') {
+            cards.push('🧽', '🧽', '🃏', '🃏');
+        }
+
+        for (let i = cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [cards[i], cards[j]] = [cards[j], cards[i]];
+        }
+        gameState.deck = cards;
+    }
+
+    function buildScoreTable() {
+        UI.scoreTable.innerHTML = ''; const pts = SCORES;
+        let html = '<div style="display:flex; height:100%;"><div style="flex:1; display:flex; flex-direction:column; border-right:2px solid var(--border);">';
+        for(let i=1; i<=10; i++) {
+            html += `<div class="score-row"><div class="score-col-len">${i} 🔲</div><div class="score-col-pts">+${pts[i]}</div></div>`;
+        }
+        html += '</div><div style="flex:1; display:flex; flex-direction:column;">';
+        for(let i=11; i<=20; i++) {
+            html += `<div class="score-row"><div class="score-col-len">${i} 🔲</div><div class="score-col-pts">+${pts[i]}</div></div>`;
+        }
+        html += '</div></div>';
+        UI.scoreTable.innerHTML = html;
+    }
+
+    function initDrumBalls() {
+        UI.lottoDrum.innerHTML = '';
+        for(let i=0; i<35; i++) {
+            let b = document.createElement('div'); b.className = 'mini-ball';
+            let r = Math.random();
+            if (r > 0.95 && gameState.mode === 'item') { b.classList.add('item'); b.innerText = r > 0.97 ? '🧽' : '🃏'; }
+            else if (r > 0.85) { b.classList.add('joker'); b.innerText = '★'; }
+            else b.innerText = Math.floor(Math.random()*30)+1;
+            b.style.left = `${Math.random() * 80 + 10}%`; b.style.top = `${Math.random() * 80 + 10}%`;
+            UI.lottoDrum.appendChild(b);
+        }
+    }
+
+    function animateDrum() {
+        let balls = UI.lottoDrum.querySelectorAll('.mini-ball');
+        balls.forEach(b => {
+            let rx = (Math.random() * 160) - 80; let ry = (Math.random() * 160) - 80;
+            b.style.transform = `translate(${rx}px, ${ry}px) scale(${Math.random() * 0.5 + 0.8})`;
+        });
+    }
+
+    function buildPlayerBoards() {
+        UI.bottomHalf.innerHTML = ''; gameState.players = [];
+        
+        let globalSpecSlots = {};
+        if (gameState.mode === 'item') {
+            let slotIndices = [];
+            while(slotIndices.length < 3) {
+                let r = Math.floor(Math.random() * 20);
+                if(!slotIndices.includes(r)) slotIndices.push(r);
+            }
+            slotIndices.forEach(idx => { globalSpecSlots[idx] = SPECIAL_CONDS[Math.floor(Math.random() * SPECIAL_CONDS.length)]; });
+        }
+
+        for(let p=0; p<6; p++) {
+            let isActive = p < gameState.playerCount; let char = CHARACTERS[p];
+
+            gameState.players.push({
+                id: p, active: isActive, board: Array(20).fill(null), score: 0, actionCompleted: false,
+                specialSlots: globalSpecSlots, undoData: null
+            });
+
+            if(!isActive) continue;
+
+            let row = document.createElement('div'); row.style.setProperty('--p-color', char.hex);
+            row.className = `player-row`; row.id = `player-row-${p}`;
+
+            let html = `
+                <div class="player-info">
+                    <div style="display:flex; align-items:baseline; justify-content:center; gap:10px; width:100%;">
+                        <div class="p-name">${char.name}</div>
+                        <div class="p-score" id="score-${p}">0</div>
+                    </div>
+                    <div class="action-area">
+                        <button class="btn-undo" id="undo-${p}" onclick="undoAction(${p})">⏪ 취소</button>
+                        <button class="btn-pass" id="btn-pass-${p}" onclick="passAction(${p})">PASS</button>
+                    </div>
+                </div>
+                <div class="slots-container" id="board-${p}">
+            `;
+            
+            for(let i=0; i<20; i++) {
+                let isSpec = globalSpecSlots[i];
+                html += `<div class="p-slot ${isSpec ? 'special' : ''}" id="slot-${p}-${i}" style="grid-column: ${i+1};" data-cond="${isSpec ? isSpec.label : ''}" onclick="handleSlotClick(${p}, ${i})"></div>`;
+            }
+            html += `</div><div class="p-timer-track"><div class="p-timer-fill" id="p-timer-${p}"></div></div>`;
+            
+            row.innerHTML = html; UI.bottomHalf.appendChild(row);
+        }
+    }
+
+    /* ----- 타이머 로직 ----- */
+    function startTimer() {
+        clearInterval(timerInterval); timeRemaining = 30; updateTimerVisuals();
+        timerInterval = setInterval(() => {
+            timeRemaining--; updateTimerVisuals();
+            if (timeRemaining <= 5 && timeRemaining > 0) playTimerTick();
+            if (timeRemaining <= 0) { clearInterval(timerInterval); playTimeOut(); autoCompleteActions(); }
+        }, 1000);
+    }
+    
+    function updateTimerVisuals() {
+        let pct = (timeRemaining / 30) * 100;
+        gameState.players.forEach(p => {
+            if (p.active) {
+                let bar = document.getElementById(`p-timer-${p.id}`);
+                if (bar) {
+                    if (p.actionCompleted) {
+                        bar.style.width = '100%'; bar.style.background = 'var(--p-color)'; bar.style.boxShadow = '0 0 10px var(--p-color)';
+                    } else {
+                        bar.style.width = pct + '%';
+                        if (timeRemaining <= 5 && timeRemaining > 0) { bar.style.background = '#FF6B6B'; bar.style.boxShadow = '0 0 15px #FF6B6B'; } 
+                        else { bar.style.background = 'var(--p-color)'; bar.style.boxShadow = '0 0 10px var(--p-color)'; }
+                    }
+                }
+            }
+        });
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        gameState.players.forEach(p => {
+            if (p.active) {
+                let bar = document.getElementById(`p-timer-${p.id}`);
+                if (bar) { bar.style.background = 'var(--p-color)'; bar.style.boxShadow = '0 0 10px var(--p-color)'; }
+            }
+        });
+    }
+
+    /* ----- 뽑기 및 진행 로직 ----- */
+    function drawNumber() {
+        if (gameState.isDrawing || gameState.isGameOver) return;
+        
+        gameState.isDrawing = true; UI.btnDraw.disabled = true; UI.btnDraw.style.background = '#444'; UI.btnDraw.style.color = '#888';
+        UI.lottoBall.classList.remove('show');
+        UI.itemAnnouncement.innerText = '';
+
+        gameState.players.forEach(p => {
+            if(p.active) {
+                document.getElementById(`undo-${p.id}`).style.display = 'none';
+                document.getElementById(`btn-pass-${p.id}`).style.display = 'none';
+            }
+        });
+
+        drumAnimationInterval = setInterval(animateDrum, 100);
+
+        let rolls = 0;
+        let rollInterval = setInterval(() => {
+            playDrawTick(); rolls++;
+            if (rolls > 15) { clearInterval(rollInterval); clearInterval(drumAnimationInterval); finishDraw(); }
+        }, 80);
+    }
+
+    function finishDraw() {
+        gameState.round++;
+        let drawn = gameState.deck.pop(); gameState.currentNumber = drawn;
+        
+        UI.lottoBall.innerText = drawn;
+        UI.lottoBall.className = '';
+        
+        // 아이템 여부 판별
+        if (drawn === '🧽') {
+            gameState.currentPhase = 'item_eraser';
+            UI.lottoBall.classList.add('item');
+            UI.itemAnnouncement.innerText = '🧽 지우개 등장! 지우고 싶은 숫자를 선택하세요!';
+            playItem();
+        } else if (drawn === '🃏') {
+            gameState.currentPhase = 'item_cjoker';
+            UI.lottoBall.classList.add('item');
+            UI.itemAnnouncement.innerText = '🃏 체인지 조커 등장! 기존 숫자를 조커로 만드세요!';
+            playItem();
+        } else {
+            gameState.currentPhase = 'place';
+            if (drawn === '★') UI.lottoBall.classList.add('joker');
+            playDrawResult();
+        }
+        
+        UI.lottoBall.classList.add('show');
+        UI.roundText.innerText = gameState.round;
+
+        // 히스토리에 추가
+        let d = document.createElement('div'); d.className = 'hist-slot filled';
+        d.innerText = drawn;
+        if (drawn === '★') d.classList.add('joker');
+        else if (drawn === '🧽' || drawn === '🃏') d.classList.add('item');
+        UI.historyGrid.appendChild(d);
+        UI.historyGrid.scrollTop = UI.historyGrid.scrollHeight; // 자동 스크롤
+
+        // 플레이어 상태 초기화 및 유효성 검사
+        gameState.players.forEach(p => {
+            if (p.active) {
+                p.actionCompleted = false; p.undoData = null;
+                
+                // 아이템 페이즈일 때 타겟이 아예 없다면 자동 PASS 처리
+                if (gameState.currentPhase === 'item_eraser') {
+                    if (p.board.filter(x => x !== null).length === 0) p.actionCompleted = true;
+                } else if (gameState.currentPhase === 'item_cjoker') {
+                    if (p.board.filter(x => x !== null && x !== '★').length === 0) p.actionCompleted = true;
+                }
+                
+                updateSlotVisuals(p.id);
+                // PASS 버튼 활성화 (아이템 페이즈)
+                if (!p.actionCompleted && gameState.currentPhase !== 'place') {
+                    document.getElementById(`btn-pass-${p.id}`).style.display = 'block';
+                }
+            }
+        });
+
+        gameState.isDrawing = false;
+
+        // 번호만 뽑기(0인 모드)일 경우 타이머 대신 바로 버튼 활성화
+        if (gameState.playerCount === 0) {
+            UI.btnDraw.disabled = false;
+            UI.btnDraw.style.background = "var(--primary)";
+            UI.btnDraw.style.color = "#121212";
+        } else {
+            startTimer();
+        }
+    }
+
+    /* ----- 액션 핸들러 ----- */
+    function handleSlotClick(pid, slotIdx) {
+        let p = gameState.players[pid];
+        let val = p.board[slotIdx];
+        if (!p.active || p.actionCompleted || gameState.isDrawing) return;
+
+        if (gameState.currentPhase === 'place') {
+            if (val !== null) return; // 빈칸만 클릭 가능
+            p.undoData = { type: 'place', slotIdx: slotIdx };
+            p.board[slotIdx] = gameState.currentNumber;
+            playPlace();
+            
+        } else if (gameState.currentPhase === 'item_eraser') {
+            if (val === null) return; // 채워진 칸만 클릭 가능
+            p.undoData = { type: 'eraser', slotIdx: slotIdx, oldVal: val };
+            p.board[slotIdx] = null;
+            playPlace();
+            
+        } else if (gameState.currentPhase === 'item_cjoker') {
+            if (val === null || val === '★') return; // 채워져 있고 조커가 아닌 칸만
+            p.undoData = { type: 'cjoker', slotIdx: slotIdx, oldVal: val };
+            p.board[slotIdx] = '★';
+            playPlace();
+        }
+
+        p.actionCompleted = true;
+        document.getElementById(`undo-${pid}`).style.display = 'block';
+        document.getElementById(`btn-pass-${pid}`).style.display = 'none';
+
+        updateSlotVisuals(pid); updatePlayerVisuals(pid); updateTimerVisuals();
+        checkAllCompleted();
+    }
+
+    function undoAction(pid) {
+        let p = gameState.players[pid];
+        if(!p.active || !p.actionCompleted || gameState.isDrawing || !p.undoData) return;
+        
+        let data = p.undoData;
+        if (data.type === 'place') p.board[data.slotIdx] = null;
+        else if (data.type === 'eraser') p.board[data.slotIdx] = data.oldVal;
+        else if (data.type === 'cjoker') p.board[data.slotIdx] = data.oldVal;
+
+        p.actionCompleted = false; p.undoData = null;
+        
+        document.getElementById(`undo-${pid}`).style.display = 'none';
+        if (gameState.currentPhase !== 'place') {
+            document.getElementById(`btn-pass-${pid}`).style.display = 'block';
+        }
+        
+        UI.btnDraw.disabled = true; UI.btnDraw.style.background = '#444'; UI.btnDraw.style.color = '#888';
+
+        updateSlotVisuals(pid); updatePlayerVisuals(pid); updateTimerVisuals();
+    }
+
+    function passAction(pid) {
+        let p = gameState.players[pid];
+        if (!p.active || p.actionCompleted || gameState.currentPhase === 'place') return;
+        p.actionCompleted = true; p.undoData = null;
+        document.getElementById(`btn-pass-${pid}`).style.display = 'none';
+        document.getElementById(`undo-${pid}`).style.display = 'none';
+        updateSlotVisuals(pid); updateTimerVisuals();
+        checkAllCompleted();
+    }
+
+    function autoCompleteActions() {
+        gameState.players.forEach(p => {
+            if (p.active && !p.actionCompleted) {
+                if (gameState.currentPhase === 'place') {
+                    let empties = [];
+                    for(let i=0; i<20; i++) if (p.board[i] === null) empties.push(i);
+                    if (empties.length > 0) {
+                        let rnd = empties[Math.floor(Math.random() * empties.length)];
+                        handleSlotClick(p.id, rnd); // 자동 배치
+                    }
+                } else {
+                    passAction(p.id); // 아이템은 시간초과시 자동 패스
+                }
+            }
+        });
+    }
+
+    function checkAllCompleted() {
+        let allDone = gameState.players.filter(p => p.active).every(p => p.actionCompleted);
+        if (allDone) {
+            stopTimer();
+            UI.btnDraw.disabled = false; UI.btnDraw.style.background = "var(--primary)"; UI.btnDraw.style.color = "#121212";
+            
+            // 게임 종료 체크: 모든 활성 플레이어의 보드 빈칸이 0개인지 확인
+            let allBoardsFull = gameState.players.filter(p => p.active).every(p => !p.board.includes(null));
+            if (allBoardsFull) endGame();
+        }
+    }
+
+    /* ----- 시각적 갱신 ----- */
+    function updateSlotVisuals(pid) {
+        let p = gameState.players[pid];
+        for (let i=0; i<20; i++) {
+            let slotEle = document.getElementById(`slot-${pid}-${i}`);
+            let val = p.board[i];
+            
+            // 초기화
+            slotEle.className = 'p-slot';
+            if(p.specialSlots[i]) slotEle.classList.add('special');
+            slotEle.style.borderColor = '';
+            
+            if (val !== null) {
+                slotEle.innerText = val;
+                slotEle.classList.add('filled');
+                if (val === '★') slotEle.classList.add('joker');
+            } else {
+                slotEle.innerText = '';
+            }
+
+            // 하이라이트(애니메이션) 처리
+            if (!p.actionCompleted) {
+                let isTarget = false;
+                if (gameState.currentPhase === 'place' && val === null) isTarget = true;
+                else if (gameState.currentPhase === 'item_eraser' && val !== null) isTarget = true;
+                else if (gameState.currentPhase === 'item_cjoker' && val !== null && val !== '★') isTarget = true;
+
+                if (isTarget) {
+                    slotEle.classList.add(gameState.currentPhase === 'place' ? 'placeable' : 'item-target');
+                }
+            }
+        }
+    }
+
+    /* ----- 점수 계산 로직 ----- */
+    function isValidSegment(arr) {
+        let last = -1;
+        for(let x of arr) {
+            if (x !== '★' && x !== null) { if (x < last) return false; last = x; }
+        }
+        return true;
+    }
+
+    function getOptimalSegments(board, ptsTable) {
+        let allSegments = []; let i = 0;
+        while (i < 20) {
+            if (board[i] === null) { i++; continue; }
+            let start = i; while (i < 20 && board[i] !== null) i++; let end = i - 1; 
+            
+            let chunk = board.slice(start, end + 1); let n = chunk.length;
+            let dp = new Array(n).fill(0); let parent = new Array(n).fill(-1);
+            
+            for (let k = 0; k < n; k++) {
+                for (let m = 0; m <= k; m++) {
+                    let sub = chunk.slice(m, k + 1);
+                    if (isValidSegment(sub)) {
+                        let len = sub.length; let score = ptsTable[len] || 0;
+                        let prevScore = (m > 0) ? dp[m - 1] : 0;
+                        if (prevScore + score >= dp[k]) { dp[k] = prevScore + score; parent[k] = m; }
+                    }
+                }
+            }
+            
+            let curr = n - 1; let localSegs = [];
+            while (curr >= 0) {
+                let m = parent[curr];
+                localSegs.unshift({ start: start + m, end: start + curr, score: ptsTable[curr - m + 1] || 0 });
+                curr = m - 1;
+            }
+            allSegments.push(...localSegs);
+        }
+        return allSegments;
+    }
+
+    function updatePlayerVisuals(pid) {
+        let p = gameState.players[pid];
+        let container = document.getElementById(`board-${pid}`);
+        container.querySelectorAll('.segment-box').forEach(el => el.remove());
+
+        let ptsTable = SCORES;
+        let segments = getOptimalSegments(p.board, ptsTable);
+        let totalScore = 0; let colorIdx = 0;
+
+        segments.forEach(seg => {
+            totalScore += seg.score;
+            if (seg.score === 0 && seg.start === seg.end) return; 
+
+            let box = document.createElement('div'); let color = SEGMENT_COLORS[colorIdx % SEGMENT_COLORS.length]; colorIdx++;
+            box.className = 'segment-box'; box.style.borderColor = color; box.style.boxShadow = `inset 0 0 10px ${color}80, 0 0 5px ${color}80`;
+            box.style.gridColumn = `${seg.start + 1} / ${seg.end + 2}`;
+            
+            let badge = document.createElement('div'); badge.className = 'segment-score-badge'; badge.style.borderColor = color; badge.style.color = color;
+            badge.innerText = `+${seg.score}`; box.appendChild(badge);
+            container.appendChild(box);
+        });
+
+        let bonus = 0;
+        if (gameState.mode === 'item') {
+            for (let i = 0; i < 20; i++) {
+                if (p.specialSlots[i] && p.board[i] !== null) {
+                    if (p.specialSlots[i].check(p.board[i])) bonus += 10;
+                }
+            }
+        }
+
+        p.score = totalScore + bonus;
+        document.getElementById(`score-${pid}`).innerHTML = `${p.score} PTS ${bonus > 0 ? `<span style="font-size:0.8rem;color:#FCC419;">(+${bonus})</span>` : ''}`;
+    }
+
+    function endGame() {
+        gameState.isGameOver = true;
+        
+        // 시크릿 미션 정산 (패턴 미션)
+        if (gameState.mode === 'item' && gameState.activeMission) {
+            gameState.players.forEach(p => {
+                if (p.active && gameState.activeMission.check(p.board)) {
+                    p.score += gameState.activeMission.pts;
+                }
+            });
+        }
+
+        gameState.players.forEach(p => { 
+            if (p.active) {
+                document.getElementById(`undo-${p.id}`).style.display = 'none'; 
+                document.getElementById(`btn-pass-${p.id}`).style.display = 'none'; 
+            }
+        });
+        document.getElementById('drum-container').style.visibility = 'hidden'; 
+        UI.itemAnnouncement.innerText = '게임 종료! 결과를 확인하세요.';
+        UI.resultsBoard.style.display = 'block'; UI.rankingList.innerHTML = '';
+
+        let ranked = gameState.players.filter(p => p.active).sort((a,b) => b.score - a.score);
+        let medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣'];
+
+        ranked.forEach((r, idx) => {
+            let item = document.createElement('div'); item.className = `rank-item ${idx===0 ? 'gold' : ''}`;
+            item.innerHTML = `${medals[idx]} ${CHARACTERS[r.id].name}<br><span style="color:var(--primary); font-size:1.8rem;">${r.score} PTS</span>`;
+            UI.rankingList.appendChild(item);
+        });
+    }
+
+</script>
+</body>
+</html>

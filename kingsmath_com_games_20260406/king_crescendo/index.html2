@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>전자칠판 수학 게임: 스트림스 (오름차순 킹)</title>
+<style>
+    /* ================= CSS 스타일 (다크톤 테마) ================= */
+    :root {
+        --primary: #5C9DFF; 
+        --bg: #121212;
+        --panel-bg: #1E1E1E;
+        --panel-alt: #252525;
+        --border: #333333;
+        --border-light: #444444;
+        --joker-color: #FF6B6B;
+        --text: #E0E0E0;
+        --text-muted: #999999;
+        
+        --c-dog: #FF6B6B;     
+        --c-rabbit: #339AF0;  
+        --c-cat: #FCC419;     
+        --c-hamster: #51CF66; 
+        --c-monkey: #FF922B;  
+        --c-panda: #B197FC;   
+    }
+    
+    * { box-sizing: border-box; user-select: none; font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; }
+    body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* --- 시작 화면 --- */
+    #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18, 18, 18, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+    .title-box { text-align: center; margin-bottom: 20px; }
+    .title-box h1 { font-size: 3.5rem; color: var(--primary); margin: 0; text-shadow: 2px 2px 10px rgba(92, 157, 255, 0.3); }
+    .title-box p { font-size: 1.3rem; color: var(--text-muted); }
+    
+    .rules-card { background: var(--panel-bg); border: 2px solid var(--primary); border-radius: 15px; padding: 20px 40px; width: 80%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 30px; }
+    .rules-card h2 { margin-top: 0; color: var(--primary); text-align: center; }
+    .rules-card ul { font-size: 1.2rem; line-height: 1.6; color: var(--text); }
+    .rules-card li { margin-bottom: 10px; }
+
+    .settings-group { display: flex; gap: 30px; margin-bottom: 30px; font-size: 1.3rem; align-items: center; background: var(--panel-alt); padding: 20px; border-radius: 10px; border: 1px solid var(--border); }
+    .settings-group select, .settings-group input[type="radio"] { font-size: 1.2rem; padding: 5px; cursor: pointer; background: var(--bg); color: var(--text); border: 1px solid var(--border-light); border-radius: 5px;}
+    
+    .btn-large { background: var(--primary); color: #121212; border: none; padding: 15px 50px; font-size: 1.8rem; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(92,157,255,0.3); transition: transform 0.1s, background 0.2s; }
+    .btn-large:active { transform: scale(0.95); }
+    .btn-large:hover { background: #74AFFF; }
+
+    /* --- 메인 게임 화면 --- */
+    #game-screen { display: none; width: 100%; height: 100%; flex-direction: column; }
+    
+    /* 상단 영역 (약 45vh) */
+    #top-half { flex: 1; display: flex; padding: 15px 20px; gap: 20px; border-bottom: 3px solid var(--border); background: linear-gradient(180deg, #1A1A1A 0%, #121212 100%); }
+    
+    /* 상단 좌측: 점수표 & 타이머 */
+    #score-panel { flex: 0 0 280px; background: var(--panel-bg); border: 2px solid var(--border-light); border-radius: 15px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; background: #2A2A2A; padding: 10px 15px; border-bottom: 2px solid var(--border); }
+    .panel-title { color: var(--text); font-weight: bold; font-size: 1.2rem; margin: 0; }
+    .timer-badge { background: #000; color: #FF6B6B; font-size: 1.4rem; font-weight: 900; padding: 4px 12px; border-radius: 8px; border: 2px solid #FF6B6B; box-shadow: 0 0 10px rgba(255,107,107,0.3); }
+    .timer-badge.warning { animation: flash-timer 0.5s infinite alternate; }
+    @keyframes flash-timer { from { background: #000; color: #FF6B6B; } to { background: #FF6B6B; color: #000; } }
+    
+    .score-table { width: 100%; border-collapse: collapse; text-align: center; flex-grow: 1; display: flex; flex-direction: column; }
+    .score-row { display: flex; border-bottom: 1px solid var(--border); flex: 1; align-items: center; font-size: 1.1rem; }
+    .score-row.trap { background-color: #3A1C1C; font-weight: bold; color: #FF6B6B; }
+    .score-col-len { flex: 1; border-right: 1px solid var(--border); background: rgba(0,0,0,0.2); font-weight: bold; color: var(--text-muted); }
+    .score-col-pts { flex: 1; color: var(--primary); font-weight: bold; }
+
+    /* 상단 중앙: 로또 뽑기 및 결과창 */
+    #center-panel { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+    
+    #lotto-machine { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+    #lotto-ball { width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #FFEAA7, #F39C12); border: 10px solid #D35400; display: flex; align-items: center; justify-content: center; font-size: 7rem; font-weight: 900; color: #8E44AD; text-shadow: 3px 3px 6px rgba(255,255,255,0.6); box-shadow: inset -10px -10px 30px rgba(0,0,0,0.6), 0 15px 40px rgba(0,0,0,0.9); margin-bottom: 20px; z-index: 2; transition: transform 0.1s; }
+    #lotto-ball.joker { background: radial-gradient(circle at 30% 30%, #FF9F9F, #E74C3C); border-color: #C0392B; color: white; text-shadow: none; font-size: 6rem; }
+    
+    /* 뽑기 화려한 효과 */
+    @keyframes rollFast { 0% { transform: scale(1) rotate(0deg); } 25% { transform: scale(1.15) rotate(15deg); } 50% { transform: scale(0.9) rotate(-15deg); } 75% { transform: scale(1.1) rotate(10deg); } 100% { transform: scale(1) rotate(0deg); } }
+    .rolling { animation: rollFast 0.1s infinite; filter: blur(2px) hue-rotate(90deg); }
+    
+    @keyframes popBurst { 0% { transform: scale(0.5); opacity: 1; } 50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 50px 20px rgba(243,156,18,0.8); } 100% { transform: scale(1); opacity: 1; box-shadow: inset -10px -10px 30px rgba(0,0,0,0.6), 0 15px 40px rgba(0,0,0,0.9); } }
+    .burst { animation: popBurst 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+    .info-badge { font-size: 1.5rem; font-weight: bold; background: #000; color: #F1C40F; padding: 8px 25px; border-radius: 30px; margin-bottom: 20px; border: 2px solid #F1C40F; box-shadow: 0 0 15px rgba(241,196,15,0.4); }
+    
+    /* 최종 결과창 */
+    #results-board { display: none; width: 100%; max-width: 600px; background: rgba(30, 30, 30, 0.95); border: 4px solid #F1C40F; border-radius: 20px; padding: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.9); text-align: center; z-index: 50; position: absolute; }
+    #results-board h2 { margin: 0 0 15px 0; color: #F1C40F; font-size: 2.5rem; text-shadow: 0 0 10px rgba(241,196,15,0.5); }
+    .ranking-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .rank-item { background: #121212; padding: 15px; border-radius: 12px; font-size: 1.5rem; font-weight: bold; border: 2px solid var(--border-light); color: var(--text); }
+    .rank-item.gold { border-color: #F1C40F; box-shadow: 0 0 15px rgba(241,196,15,0.4); }
+
+    /* 상단 우측: 기록 및 타일 정보 */
+    #history-panel { flex: 0 0 350px; background: var(--panel-bg); border: 2px solid var(--border-light); border-radius: 15px; display: flex; flex-direction: column; padding: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+    .tile-info { background: #000; padding: 12px; border-radius: 10px; font-size: 1rem; margin-bottom: 15px; text-align: center; border: 1px solid var(--border-light); color: var(--text-muted); line-height: 1.5; }
+    .tile-info span { font-weight: bold; color: var(--primary); }
+    
+    .history-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; flex-grow: 1; }
+    .hist-slot { background: #1A1A1A; border: 2px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; color: #444; }
+    .hist-slot.filled { background: #2C3E50; color: #FFF; border-color: var(--primary); box-shadow: 0 0 8px rgba(92,157,255,0.5); text-shadow: 1px 1px 2px #000; }
+    .hist-slot.filled.joker { background: #641E16; border-color: #E74C3C; color: #F1C40F; }
+
+    /* 하단 영역 (학생 영역) - 높이 13vh 보장 */
+    #bottom-half { 
+        display: grid; 
+        grid-template-columns: repeat(2, 1fr); 
+        grid-auto-rows: 13vh; /* 한 줄당 13vh로 고정 */
+        gap: 15px; 
+        padding: 15px 20px; 
+        background: var(--bg); 
+        overflow-y: auto;
+    }
+    
+    .player-row { 
+        display: flex; 
+        align-items: stretch; 
+        background: var(--panel-bg); 
+        border-radius: 12px; 
+        border: 2px solid var(--p-color); 
+        padding: 8px; 
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4); 
+    }
+    .player-row.inactive { display: none; }
+    
+    /* 캐릭터 정보 및 다시놓기/최종점수 */
+    .player-info { 
+        width: 120px; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        border-right: 2px dashed var(--border-light); 
+        padding-right: 10px; 
+        margin-right: 10px; 
+        position: relative;
+    }
+    .char-icon { font-size: clamp(1.8rem, 2.5vw, 2.5rem); margin-bottom: 2px; }
+    .p-name { font-weight: bold; font-size: clamp(0.9rem, 1vw, 1.1rem); color: var(--text-muted); margin-bottom: 5px; }
+    
+    /* 버튼 및 점수 오버레이 */
+    .action-area { height: 35px; display: flex; align-items: center; justify-content: center; width: 100%; }
+    .btn-undo { background: #E74C3C; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(231,76,60,0.4); width: 90%; }
+    .btn-undo:hover { background: #C0392B; }
+    .p-score { font-size: 1.6rem; font-weight: 900; color: var(--p-color); text-shadow: 1px 1px 3px #000; display: none; } /* 게임 중에 숨김 */
+
+    /* 20개 빈칸 영역 */
+    .slots-container { flex: 1; display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; position: relative; align-items: stretch; }
+    .p-slot { 
+        background: #111; 
+        border: 2px solid #333; 
+        border-radius: 6px; 
+        display: flex; align-items: center; justify-content: center; 
+        font-size: clamp(1rem, 1.4vw, 1.6rem); 
+        font-weight: bold; position: relative; cursor: default; 
+        color: var(--text-muted);
+        z-index: 1;
+    }
+    
+    .p-slot.placeable { 
+        cursor: pointer; 
+        color: transparent; 
+        border-color: var(--p-color); 
+        background: rgba(255,255,255,0.05);
+        box-shadow: inset 0 0 10px var(--p-color); 
+        animation: pulse-p 0.8s infinite alternate; 
+    }
+    @keyframes pulse-p { from { opacity: 0.6; } to { opacity: 1; background: rgba(255,255,255,0.1); } }
+    
+    .p-slot.filled { background: rgba(0,0,0,0.8); border-color: #555; color: #FFF; text-shadow: 1px 1px 2px #000; }
+    .p-slot.filled.joker { color: var(--joker-color); }
+
+    /* 결과 채점 시 박스 묶음 효과 (다양한 파스텔 네온 색상) */
+    .segment-box { position: absolute; top: -2px; bottom: -2px; border: 3px solid; border-radius: 8px; z-index: 1; pointer-events: none; display: flex; justify-content: center; background: rgba(255,255,255,0.1); box-shadow: 0 0 10px rgba(0,0,0,0.5) inset; transition: all 0.3s ease; }
+    .segment-score-badge { position: absolute; top: -15px; background: #000; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.8); border: 1px solid #555; z-index: 5; }
+
+</style>
+</head>
+<body>
+
+<div id="start-screen">
+    <div class="title-box">
+        <h1>스트림스 (오름차순 킹)</h1>
+        <p>전자칠판용 협동/경쟁 수학 놀이</p>
+    </div>
+
+    <div class="rules-card">
+        <h2>📜 게임 방법 📜</h2>
+        <ul>
+            <li>총 20번 숫자가 무작위로 뽑힙니다. (조커 ★는 어느 숫자든 유리하게 대체)</li>
+            <li>뽑힌 숫자를 자신의 20개 빈칸 중 <strong>원하는 곳을 터치</strong>하여 넣습니다.</li>
+            <li><strong>30초 타이머</strong>가 종료되기 전에 넣지 않으면 빈칸 중 랜덤으로 들어갑니다.</li>
+            <li>실수했다면 라운드가 넘어가기 전 <strong>'다시 놓기'</strong> 버튼으로 수정할 수 있습니다.</li>
+            <li>목표: 왼쪽에서 오른쪽으로 <strong>숫자가 커지도록(오름차순)</strong> 길게 연결하세요!</li>
+        </ul>
+    </div>
+
+    <div class="settings-group">
+        <label>👥 인원: 
+            <select id="sel-players">
+                <option value="1">1명</option><option value="2">2명</option>
+                <option value="3">3명</option><option value="4">4명</option>
+                <option value="5">5명</option><option value="6" selected>6명 (최대)</option>
+            </select>
+        </label>
+        <label>🃏 조커(★): 
+            <select id="sel-jokers">
+                <option value="0">0개</option><option value="1" selected>1개 (기본)</option>
+                <option value="2">2개</option><option value="3">3개</option>
+            </select>
+        </label>
+        <label>📊 점수표: 
+            <input type="radio" name="difficulty" value="beginner" id="diff-beg" checked><label for="diff-beg">초급(기본)</label>
+            <input type="radio" name="difficulty" value="advanced" id="diff-adv"><label for="diff-adv">고급(함정)</label>
+        </label>
+    </div>
+
+    <button class="btn-large" id="btn-start" onclick="startGame()">게임 시작하기!</button>
+</div>
+
+<div id="game-screen">
+    
+    <div id="top-half">
+        <div id="score-panel">
+            <div class="panel-header">
+                <h3 class="panel-title" id="score-title">점수표</h3>
+                <div class="timer-badge" id="timer-display">30</div>
+            </div>
+            <div class="score-table" id="score-table-body"></div>
+        </div>
+
+        <div id="center-panel">
+            <div id="results-board">
+                <h2>🏆 최종 순위 🏆</h2>
+                <div class="ranking-list" id="ranking-list"></div>
+                <button class="btn-large" style="margin-top:20px; font-size:1.2rem; padding:10px 30px;" onclick="location.reload()">처음으로 돌아가기</button>
+            </div>
+
+            <div id="lotto-machine">
+                <div class="info-badge">ROUND <span id="round-text">0</span> / 20</div>
+                <div id="lotto-ball">?</div>
+                <button class="btn-large" id="btn-draw" onclick="drawNumber()">번호 뽑기!</button>
+            </div>
+        </div>
+
+        <div id="history-panel">
+            <div class="tile-info">
+                [타일 정보] 1~10: <span>각 1개</span> | 11~19: <span>각 2개</span><br>
+                20~30: <span>각 1개</span> | 조커(★): <span id="info-joker-cnt">1개</span>
+            </div>
+            <div class="history-grid" id="history-grid"></div>
+        </div>
+    </div>
+
+    <div id="bottom-half"></div>
+
+</div>
+
+<script>
+    /* ----- 오디오 설정 (Web Audio API) ----- */
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+
+    function initAudio() {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playTone(freq, type, duration, vol=0.1) {
+        if(!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function playDrawTick() { playTone(600 + Math.random()*200, 'square', 0.05, 0.05); }
+    function playDrawResult() { playTone(880, 'sine', 0.4, 0.2); playTone(1108, 'sine', 0.5, 0.2); }
+    function playTimerTick() { playTone(1000, 'sine', 0.1, 0.1); }
+    function playTimeOut() { playTone(300, 'sawtooth', 0.5, 0.2); }
+    function playPlace() { playTone(500, 'triangle', 0.1, 0.1); }
+
+    /* ----- 게임 데이터 ----- */
+    const CHARACTERS = [
+        { icon: '🐶', name: '강아지', hex: 'var(--c-dog)' }, 
+        { icon: '🐰', name: '토끼', hex: 'var(--c-rabbit)' }, 
+        { icon: '🐱', name: '고양이', hex: 'var(--c-cat)' },
+        { icon: '🐹', name: '햄스터', hex: 'var(--c-hamster)' }, 
+        { icon: '🐵', name: '원숭이', hex: 'var(--c-monkey)' }, 
+        { icon: '🐼', name: '판다', hex: 'var(--c-panda)' }
+    ];
+
+    const SEGMENT_COLORS = [
+        '#FF6B6B', '#339AF0', '#FCC419', '#51CF66', '#B197FC', 
+        '#FF922B', '#20C997', '#F06595', '#845EF7', '#12B886'
+    ];
+
+    const SCORES = {
+        beginner: [0, 0, 1, 3, 5, 7, 9, 11, 15, 20, 25, 30, 35, 40, 50, 60, 70, 85, 100, 150, 300],
+        advanced: [0, 0, 1, 3, 5, 7, 3, 11, 15, 20, 25, 30, 20, 40, 50, 60, 70, 50, 100, 150, 300]
+    };
+
+    let gameState = {
+        playerCount: 6, jokerCount: 1, difficulty: 'beginner',
+        deck: [], round: 0, currentNumber: null, isDrawing: false,
+        players: [], isGameOver: false
+    };
+
+    let timerInterval = null;
+    let timeRemaining = 30;
+
+    const UI = {
+        startScreen: document.getElementById('start-screen'),
+        gameScreen: document.getElementById('game-screen'),
+        scoreTable: document.getElementById('score-table-body'),
+        scoreTitle: document.getElementById('score-title'),
+        lottoBall: document.getElementById('lotto-ball'),
+        btnDraw: document.getElementById('btn-draw'),
+        roundText: document.getElementById('round-text'),
+        historyGrid: document.getElementById('history-grid'),
+        bottomHalf: document.getElementById('bottom-half'),
+        infoJoker: document.getElementById('info-joker-cnt'),
+        lottoMachine: document.getElementById('lotto-machine'),
+        resultsBoard: document.getElementById('results-board'),
+        rankingList: document.getElementById('ranking-list'),
+        timerDisplay: document.getElementById('timer-display')
+    };
+
+    function startGame() {
+        initAudio(); // 오디오 권한 획득
+        gameState.playerCount = parseInt(document.getElementById('sel-players').value);
+        gameState.jokerCount = parseInt(document.getElementById('sel-jokers').value);
+        gameState.difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+        
+        UI.infoJoker.innerText = gameState.jokerCount + '개';
+
+        buildDeck();
+        buildScoreTable();
+
+        UI.historyGrid.innerHTML = '';
+        for(let i=0; i<20; i++) {
+            let d = document.createElement('div');
+            d.className = 'hist-slot'; d.id = `hist-${i}`;
+            UI.historyGrid.appendChild(d);
+        }
+
+        buildPlayerBoards();
+
+        UI.startScreen.style.display = 'none';
+        UI.gameScreen.style.display = 'flex';
+    }
+
+    function buildDeck() {
+        let cards = [];
+        for(let i=1; i<=10; i++) cards.push(i);
+        for(let i=11; i<=19; i++) { cards.push(i); cards.push(i); }
+        for(let i=20; i<=30; i++) cards.push(i);
+        for(let i=0; i<gameState.jokerCount; i++) cards.push('★');
+        
+        for (let i = cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [cards[i], cards[j]] = [cards[j], cards[i]];
+        }
+        gameState.deck = cards;
+    }
+
+    function buildScoreTable() {
+        UI.scoreTitle.innerText = `점수표 (${gameState.difficulty === 'advanced' ? '고급-함정주의' : '초급'})`;
+        UI.scoreTable.innerHTML = '';
+        const pts = SCORES[gameState.difficulty];
+        
+        let html = '<div style="display:flex; height:100%;"><div style="flex:1; display:flex; flex-direction:column; border-right:2px solid var(--border);">';
+        for(let i=1; i<=10; i++) {
+            let isTrap = (gameState.difficulty === 'advanced' && i===6);
+            html += `<div class="score-row ${isTrap ? 'trap' : ''}"><div class="score-col-len">${i}칸</div><div class="score-col-pts">+${pts[i]}</div></div>`;
+        }
+        html += '</div><div style="flex:1; display:flex; flex-direction:column;">';
+        for(let i=11; i<=20; i++) {
+            let isTrap = (gameState.difficulty === 'advanced' && (i===12 || i===17));
+            html += `<div class="score-row ${isTrap ? 'trap' : ''}"><div class="score-col-len">${i}칸</div><div class="score-col-pts">+${pts[i]}</div></div>`;
+        }
+        html += '</div></div>';
+        UI.scoreTable.innerHTML = html;
+    }
+
+    function buildPlayerBoards() {
+        UI.bottomHalf.innerHTML = '';
+        gameState.players = [];
+
+        for(let p=0; p<6; p++) {
+            let isActive = p < gameState.playerCount;
+            let char = CHARACTERS[p];
+            
+            gameState.players.push({
+                id: p, active: isActive, board: Array(20).fill(null), score: 0, placedThisRound: false
+            });
+
+            let row = document.createElement('div');
+            row.style.setProperty('--p-color', char.hex);
+            row.className = `player-row ${isActive ? '' : 'inactive'}`;
+            row.id = `player-row-${p}`;
+
+            let html = `
+                <div class="player-info">
+                    <div class="char-icon">${char.icon}</div>
+                    <div class="p-name">${char.name}</div>
+                    <div class="action-area">
+                        <button class="btn-undo" id="undo-${p}" onclick="undoNumber(${p})" style="display:none;">다시 놓기</button>
+                        <div class="p-score" id="score-${p}">0점</div>
+                    </div>
+                </div>
+                <div class="slots-container" id="board-${p}">
+            `;
+            
+            for(let i=0; i<20; i++) {
+                html += `<div class="p-slot" id="slot-${p}-${i}" onclick="placeNumber(${p}, ${i})"></div>`;
+            }
+            html += `</div>`;
+            row.innerHTML = html;
+            UI.bottomHalf.appendChild(row);
+        }
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timeRemaining = 30;
+        UI.timerDisplay.innerText = timeRemaining;
+        UI.timerDisplay.classList.remove('warning');
+        
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+            UI.timerDisplay.innerText = timeRemaining;
+            
+            if (timeRemaining <= 5 && timeRemaining > 0) {
+                UI.timerDisplay.classList.add('warning');
+                playTimerTick();
+            }
+            
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                UI.timerDisplay.classList.remove('warning');
+                playTimeOut();
+                autoPlaceRemaining();
+            }
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        UI.timerDisplay.classList.remove('warning');
+    }
+
+    function drawNumber() {
+        if (gameState.isDrawing || gameState.isGameOver) return;
+        
+        let allPlaced = gameState.players.filter(p => p.active).every(p => p.placedThisRound || gameState.round === 0);
+        if (!allPlaced && gameState.round > 0) return;
+
+        gameState.isDrawing = true;
+        UI.btnDraw.disabled = true;
+        UI.btnDraw.style.background = '#444';
+        UI.btnDraw.style.color = '#888';
+        
+        UI.lottoBall.classList.remove('burst');
+        UI.lottoBall.classList.add('rolling');
+
+        // 이전 라운드의 '다시 놓기' 버튼 숨기기
+        gameState.players.forEach(p => {
+            document.getElementById(`undo-${p.id}`).style.display = 'none';
+        });
+
+        let rolls = 0;
+        let rollInterval = setInterval(() => {
+            playDrawTick();
+            let temp = Math.floor(Math.random() * 30) + 1;
+            UI.lottoBall.innerText = Math.random() > 0.9 ? '★' : temp;
+            UI.lottoBall.classList.remove('joker');
+            if(UI.lottoBall.innerText === '★') UI.lottoBall.classList.add('joker');
+            
+            rolls++;
+            if (rolls > 15) { 
+                clearInterval(rollInterval);
+                finishDraw();
+            }
+        }, 80);
+    }
+
+    function finishDraw() {
+        playDrawResult();
+        gameState.round++;
+        let drawn = gameState.deck.pop();
+        gameState.currentNumber = drawn;
+        
+        UI.lottoBall.classList.remove('rolling');
+        UI.lottoBall.classList.add('burst'); // 터지는 효과
+        
+        UI.lottoBall.innerText = drawn;
+        if (drawn === '★') UI.lottoBall.classList.add('joker');
+        else UI.lottoBall.classList.remove('joker');
+
+        UI.roundText.innerText = gameState.round;
+
+        let histSlot = document.getElementById(`hist-${gameState.round-1}`);
+        histSlot.innerText = drawn;
+        histSlot.classList.add('filled');
+        if (drawn === '★') histSlot.classList.add('joker');
+
+        gameState.players.forEach(p => {
+            if (p.active) {
+                p.placedThisRound = false;
+                for(let i=0; i<20; i++) {
+                    if (p.board[i] === null) {
+                        document.getElementById(`slot-${p.id}-${i}`).classList.add('placeable');
+                    }
+                }
+            }
+        });
+
+        gameState.isDrawing = false;
+        startTimer();
+    }
+
+    function placeNumber(pid, slotIdx, isAuto = false) {
+        let p = gameState.players[pid];
+        if (!p.active || p.placedThisRound || p.board[slotIdx] !== null || gameState.currentNumber === null) return;
+
+        if(!isAuto) playPlace();
+
+        p.board[slotIdx] = gameState.currentNumber;
+        p.placedThisRound = true;
+
+        let slotEle = document.getElementById(`slot-${pid}-${slotIdx}`);
+        slotEle.innerText = gameState.currentNumber;
+        slotEle.className = 'p-slot filled'; 
+        if (gameState.currentNumber === '★') slotEle.classList.add('joker');
+
+        // 빈칸 선택 효과 제거
+        for(let i=0; i<20; i++) {
+            document.getElementById(`slot-${pid}-${i}`).classList.remove('placeable');
+        }
+
+        // '다시 놓기' 버튼 표시
+        document.getElementById(`undo-${pid}`).style.display = 'block';
+
+        // 실시간 점수 및 세그먼트 시각화 업데이트
+        updatePlayerVisuals(pid);
+        checkAllPlaced();
+    }
+
+    function undoNumber(pid) {
+        let p = gameState.players[pid];
+        if(!p.active || !p.placedThisRound || gameState.isDrawing) return;
+        
+        // 마지막 놓은 위치 찾기 (currentNumber와 같은 값 하나 지우기)
+        let slotIdx = -1;
+        for(let i=0; i<20; i++) {
+            if(p.board[i] === gameState.currentNumber) {
+                // 이번 턴에 놓은 것인지 확인
+                slotIdx = i; break;
+            }
+        }
+        if(slotIdx === -1) return;
+
+        p.board[slotIdx] = null;
+        p.placedThisRound = false;
+
+        let slotEle = document.getElementById(`slot-${pid}-${slotIdx}`);
+        slotEle.innerText = '';
+        slotEle.className = 'p-slot';
+
+        // 다시 빈칸 활성화
+        for(let i=0; i<20; i++) {
+            if(p.board[i] === null) {
+                document.getElementById(`slot-${pid}-${i}`).classList.add('placeable');
+            }
+        }
+
+        document.getElementById(`undo-${pid}`).style.display = 'none';
+        
+        // 버튼 상태 롤백
+        UI.btnDraw.disabled = true;
+        UI.btnDraw.style.background = '#444';
+        UI.btnDraw.style.color = '#888';
+
+        updatePlayerVisuals(pid);
+    }
+
+    function autoPlaceRemaining() {
+        gameState.players.forEach(p => {
+            if (p.active && !p.placedThisRound) {
+                let empties = [];
+                for(let i=0; i<20; i++) if (p.board[i] === null) empties.push(i);
+                if (empties.length > 0) {
+                    let rnd = empties[Math.floor(Math.random() * empties.length)];
+                    placeNumber(p.id, rnd, true);
+                }
+            }
+        });
+    }
+
+    function checkAllPlaced() {
+        let allPlaced = gameState.players.filter(p => p.active).every(p => p.placedThisRound);
+        if (allPlaced) {
+            stopTimer();
+            if (gameState.round < 20) {
+                UI.btnDraw.disabled = false;
+                UI.btnDraw.style.background = "var(--primary)";
+                UI.btnDraw.style.color = "#121212";
+            } else {
+                endGame();
+            }
+        }
+    }
+
+    // --- 동적 계획법(DP)을 이용한 최적의 조커/오름차순 구간 계산 ---
+    function isValidSegment(arr) {
+        let last = -1;
+        for(let x of arr) {
+            if (x !== '★' && x !== null) {
+                if (x < last) return false;
+                last = x;
+            }
+        }
+        return true;
+    }
+
+    function getOptimalSegments(board, ptsTable) {
+        let allSegments = [];
+        let i = 0;
+        
+        // 빈칸(null)으로 끊어진 "연속된 타일 묶음"들을 각각 처리
+        while (i < 20) {
+            if (board[i] === null) { i++; continue; }
+            let start = i;
+            while (i < 20 && board[i] !== null) i++;
+            let end = i - 1; 
+            
+            let chunk = board.slice(start, end + 1);
+            let n = chunk.length;
+            let dp = new Array(n).fill(0);
+            let parent = new Array(n).fill(-1);
+            
+            for (let k = 0; k < n; k++) {
+                for (let m = 0; m <= k; m++) {
+                    let sub = chunk.slice(m, k + 1);
+                    if (isValidSegment(sub)) {
+                        let len = sub.length;
+                        let score = ptsTable[len] || 0;
+                        let prevScore = (m > 0) ? dp[m - 1] : 0;
+                        if (prevScore + score >= dp[k]) { // >= 로 더 긴 묶음을 선호
+                            dp[k] = prevScore + score;
+                            parent[k] = m;
+                        }
+                    }
+                }
+            }
+            
+            // 역추적하여 구간 생성
+            let curr = n - 1;
+            let localSegs = [];
+            while (curr >= 0) {
+                let m = parent[curr];
+                localSegs.unshift({
+                    start: start + m,
+                    end: start + curr,
+                    score: ptsTable[curr - m + 1] || 0
+                });
+                curr = m - 1;
+            }
+            allSegments.push(...localSegs);
+        }
+        return allSegments;
+    }
+
+    function updatePlayerVisuals(pid) {
+        let p = gameState.players[pid];
+        let container = document.getElementById(`board-${pid}`);
+        
+        // 기존 박스 제거
+        container.querySelectorAll('.segment-box').forEach(el => el.remove());
+
+        let ptsTable = SCORES[gameState.difficulty];
+        let segments = getOptimalSegments(p.board, ptsTable);
+        
+        let totalScore = 0;
+        let colorIdx = 0;
+
+        segments.forEach(seg => {
+            totalScore += seg.score;
+            if (seg.score === 0 && seg.start === seg.end) return; // 길이가 1인데 0점이면 표시 X
+
+            let box = document.createElement('div');
+            let color = SEGMENT_COLORS[colorIdx % SEGMENT_COLORS.length];
+            colorIdx++;
+            
+            box.className = 'segment-box';
+            box.style.borderColor = color;
+            box.style.boxShadow = `inset 0 0 10px ${color}80, 0 0 5px ${color}80`;
+            
+            let widthPerSlot = 100 / 20;
+            box.style.left = `calc(${seg.start * widthPerSlot}%)`;
+            box.style.width = `calc(${(seg.end - seg.start + 1) * widthPerSlot}% - 4px)`; 
+            
+            let badge = document.createElement('div');
+            badge.className = 'segment-score-badge';
+            badge.style.borderColor = color;
+            badge.style.color = color;
+            badge.innerText = `+${seg.score}`;
+            box.appendChild(badge);
+            
+            container.appendChild(box);
+        });
+
+        p.score = totalScore;
+        document.getElementById(`score-${pid}`).innerText = totalScore + '점';
+    }
+
+    function endGame() {
+        gameState.isGameOver = true;
+        
+        // 최종 결과 노출
+        gameState.players.forEach(p => {
+            if (p.active) {
+                document.getElementById(`undo-${p.id}`).style.display = 'none'; // 다시놓기 숨김
+                document.getElementById(`score-${p.id}`).style.display = 'block'; // 점수 노출
+            }
+        });
+
+        UI.lottoMachine.style.visibility = 'hidden'; 
+        UI.resultsBoard.style.display = 'block';
+        UI.rankingList.innerHTML = '';
+
+        let ranked = gameState.players.filter(p => p.active).sort((a,b) => b.score - a.score);
+        let medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣'];
+
+        ranked.forEach((r, idx) => {
+            let item = document.createElement('div');
+            item.className = `rank-item ${idx===0 ? 'gold' : ''}`;
+            item.innerHTML = `${medals[idx]} ${CHARACTERS[r.id].name}<br><span style="color:var(--primary); font-size:1.8rem;">${r.score}점</span>`;
+            UI.rankingList.appendChild(item);
+        });
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-5YW0T2C109');
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>낱말킹 - WORD BATTLE</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --bg-color: #0f172a;
+        --card-bg: #1e293b;
+        --accent: #fbbf24;
+        --p1-color: #f43f5e;
+        --p2-color: #3b82f6;
+    }
+
+    body {
+        margin: 0; padding: 0; overflow: hidden;
+        background-color: var(--bg-color);
+        color: #f8fafc;
+        font-family: 'Pretendard', sans-serif;
+        width: 100%; height: 100vh;
+        touch-action: none; -webkit-user-select: none; user-select: none;
+    }
+
+    .bg-gradient {
+        position: fixed; inset: 0;
+        background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+        z-index: -1;
+    }
+
+    .float-btn {
+        position: fixed; top: 80px; width: 45px; height: 45px;
+        background: rgba(255,255,255,0.05); border-radius: 12px;
+        display: flex; justify-content: center; align-items: center;
+        color: #fff; z-index: 1000; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(5px);
+    }
+
+    #overlay {
+        position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9);
+        display: flex; justify-content: center; align-items: center; z-index: 2000;
+        backdrop-filter: blur(10px);
+    }
+
+    #countdown-overlay {
+        display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9);
+        justify-content: center; align-items: center; z-index: 3000;
+        font-size: 150px; font-weight: 900; color: #fbbf24; text-shadow: 0 0 40px #f59e0b;
+        backdrop-filter: blur(10px);
+    }
+
+    .intro-card {
+        background: var(--card-bg); padding: 50px; border-radius: 40px;
+        border: 1px solid rgba(255,255,255,0.1); text-align: center; 
+        width: 90%; max-width: 800px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .instruction-grid {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 30px 0;
+    }
+    .inst-item {
+        background: rgba(255,255,255,0.05); padding: 15px; border-radius: 20px; font-size: 14px;
+    }
+
+    .start-btn {
+        padding: 18px 60px; font-size: 26px; font-weight: 900;
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: #000; border-radius: 50px; cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+    }
+    .start-btn:hover { transform: scale(1.05); }
+    .start-btn:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+
+    #top-bar {
+        height: 100px; display: flex; align-items: center; justify-content: space-between;
+        background: rgba(30, 41, 59, 0.8); padding: 0 40px;
+        backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    #time-display { font-size: 48px; color: var(--accent); font-weight: 900; text-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+
+    #game-main { height: calc(100vh - 100px); display: flex; padding: 20px; gap: 20px; }
+    
+    /* 기존에 있던 고정된 배경색/테두리를 제거하여 캔버스에서 가변적으로 그리도록 변경 */
+    .board-container {
+        flex: 1; position: relative; padding: 10px;
+    }
+    
+    #list-panel {
+        width: 320px; background: rgba(30, 41, 59, 0.5);
+        border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);
+        padding: 12px;
+        overflow-y: hidden;
+        display: flex; flex-direction: column;
+        justify-content: start;
+    }
+    
+    .word-item {
+        background: #1e293b; 
+        padding: 8px 10px;
+        border-radius: 12px; 
+        margin-bottom: 6px;
+        text-align: center; 
+        border: 2px solid transparent; 
+        transition: all 0.3s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        min-height: 54px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .word-item .word-text { 
+        font-size: 19px;
+        font-weight: 900; 
+        color: var(--accent); 
+        margin-bottom: 2px;
+        line-height: 1.1;
+    }
+
+    .word-item .meaning { 
+        font-size: 13px;
+        color: #94a3b8; 
+        line-height: 1.2;
+        word-break: keep-all;
+    }
+    .word-item.hidden-word .word-text { display: none; }
+    .word-item.revealed .word-text { display: block; animation: fadeIn 0.5s; }
+    .word-item.found { border-color: #10b981; background: #064e3b; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+    canvas { position: absolute; inset: 10px; width: calc(100% - 20px); height: calc(100% - 20px); z-index: 10; cursor: crosshair; }
+</style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="float-btn" style="left:15px;" onclick="location.reload()">🏠</div>
+    <div class="float-btn" style="right:15px;" onclick="toggleFullscreen()">⛶</div>
+
+    <div id="overlay">
+        <div id="intro-content" class="intro-card">
+            <div class="text-6xl font-black text-amber-500 mb-4 tracking-tighter">낱말킹 : BATTLE</div>
+            <div class="text-xl text-slate-400 font-medium mb-8">상대보다 빠르게 숨겨진 단어를 찾아내세요!</div>
+            
+            <div class="instruction-grid">
+                <div class="inst-item">
+                    <div class="text-2xl mb-2">🔍</div>
+                    <b>가로, 세로, 대각선</b><br>어느 방향이든<br>단어가 숨어있습니다.
+                </div>
+                <div class="inst-item">
+                    <div class="text-2xl mb-2">💡</div>
+                    <b>처음엔 5개만 공개</b><br>나머지는 뜻만 보고<br>추측해야 합니다.
+                </div>
+                <div class="inst-item">
+                    <div class="text-2xl mb-2">⏱️</div>
+                    <b>30초 남으면</b><br>숨겨진 모든 단어가<br>동시에 공개됩니다.
+                </div>
+            </div>
+
+            <div class="flex justify-center gap-4 mb-10">
+                <div class="flex flex-col items-start">
+                    <label class="text-xs text-slate-500 ml-2 mb-1">난이도</label>
+                    <select id="diff-select" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 font-bold w-64 outline-none focus:ring-2 ring-amber-500 text-sm">
+                        <option value="grade5_6">상 (초등학교 5~6학년 추천)</option>
+                        <option value="grade3_4" selected>중 (초등학교 3~4학년 추천)</option>
+                        <option value="grade1_2">하 (초등학교 1~2학년 추천)</option>
+                    </select>
+                </div>
+                <div class="flex flex-col items-start">
+                    <label class="text-xs text-slate-500 ml-2 mb-1">크기</label>
+                    <select id="size-select" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 font-bold w-40 outline-none focus:ring-2 ring-amber-500">
+                        <option value="8">작게 (8x8)</option>
+                        <option value="12" selected>보통 (12x12)</option>
+                        <option value="16">크게 (16x16)</option>
+                    </select>
+                </div>
+            </div>
+            <button class="start-btn" id="btn-start" onclick="startCountdown()" disabled>데이터 로딩 중...</button>
+        </div>
+
+        <div id="result-content" class="intro-card" style="display:none;">
+            <div id="result-msg" class="text-7xl font-black mb-10 text-amber-500">GAME OVER</div>
+            <div class="flex justify-center gap-12 mb-12">
+                <div class="bg-red-500/10 p-6 rounded-3xl border border-red-500/50 w-40">
+                    <div class="text-red-500 text-sm font-bold mb-2">왼쪽팀</div>
+                    <div id="final-p1" class="text-6xl font-black text-red-500">0</div>
+                </div>
+                <div class="bg-blue-500/10 p-6 rounded-3xl border border-blue-500/50 w-40">
+                    <div class="text-blue-500 text-sm font-bold mb-2">오른쪽팀</div>
+                    <div id="final-p2" class="text-6xl font-black text-blue-500">0</div>
+                </div>
+            </div>
+            <button class="start-btn" onclick="location.reload()">다시 도전하기</button>
+        </div>
+    </div>
+
+    <div id="countdown-overlay">3</div>
+
+    <div id="top-bar">
+        <div class="flex items-center gap-4">
+            <div class="bg-red-600 text-white text-2xl font-black px-4 py-2 rounded">왼쪽팀</div>
+            <div class="text-red-500 text-5xl font-black" id="score-p1">0</div>
+        </div>
+        <div id="time-display">100</div>
+        <div class="flex items-center gap-4">
+            <div class="text-blue-500 text-5xl font-black" id="score-p2">0</div>
+            <div class="bg-blue-600 text-white text-2xl font-black px-4 py-2 rounded">오른쪽팀</div>
+        </div>
+    </div>
+
+    <div id="game-main">
+        <div class="board-container"><canvas id="canvas-p1"></canvas></div>
+        <div id="list-panel">
+            <div class="text-center font-black text-slate-400 mb-4 text-xs tracking-widest uppercase">Word List</div>
+            <div id="word-list-container"></div>
+        </div>
+        <div class="board-container"><canvas id="canvas-p2"></canvas></div>
+    </div>
+
+<script>
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+
+    const Sfx = {
+        playTone(freq, type, duration, vol, delay = 0) {
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = type;
+            osc.frequency.value = freq;
+            
+            const startTime = audioCtx.currentTime + delay;
+            gain.gain.setValueAtTime(0, startTime);
+            gain.gain.linearRampToValueAtTime(vol, startTime + 0.02);
+            gain.gain.setValueAtTime(vol, startTime + duration - 0.05);
+            gain.gain.linearRampToValueAtTime(0, startTime + duration);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(startTime);
+            osc.stop(startTime + duration);
+        },
+        correct() {
+            this.playTone(659.25, 'sine', 0.4, 0.3, 0);       
+            this.playTone(880.00, 'sine', 0.6, 0.3, 0.15);    
+        },
+        wrong() {
+            this.playTone(150, 'triangle', 0.15, 0.4, 0);
+            this.playTone(120, 'triangle', 0.15, 0.4, 0.1);
+            this.playTone(90,  'triangle', 0.2,  0.4, 0.2);
+        },
+        start() {
+            this.playTone(523.25,  'sine', 0.3, 0.2, 0);      
+            this.playTone(659.25,  'sine', 0.3, 0.2, 0.08);   
+            this.playTone(783.99,  'sine', 0.3, 0.2, 0.16);   
+            this.playTone(1046.50, 'sine', 0.6, 0.2, 0.24);   
+        },
+        beep() {
+            this.playTone(880, 'sine', 0.1, 0.1, 0);
+        },
+        end() {
+            this.playTone(523.25, 'square', 0.2, 0.05, 0);
+            this.playTone(659.25, 'square', 0.2, 0.05, 0.2);
+            this.playTone(783.99, 'square', 0.4, 0.05, 0.4);
+        }
+    };
+
+    let wordData = null, charPool = [], isPlaying = false, timerInterval = null;
+    let GRID_SIZE = 12, cellSize = 0, grid = [], placedWords = [], roundScores = {p1:0, p2:0};
+    let timeLeft = 100, penaltyTime = {p1:0, p2:0};
+
+    const cvs1 = document.getElementById('canvas-p1');
+    const ctx1 = cvs1.getContext('2d');
+    const cvs2 = document.getElementById('canvas-p2');
+    const ctx2 = cvs2.getContext('2d');
+
+    fetch('data.json')
+        .then((res) => { return res.json(); })
+        .then((data) => {
+            wordData = data;
+            Object.values(data).flat().forEach((item) => {
+                item.word.split('').forEach((c) => {
+                    charPool.push(c);
+                });
+            });
+            const btn = document.getElementById('btn-start');
+            btn.disabled = false; 
+            btn.innerText = "배틀 시작하기";
+        });
+
+    function resize() {
+        [cvs1, cvs2].forEach((c) => {
+            c.width = c.parentElement.clientWidth - 20;
+            c.height = c.parentElement.clientHeight - 20;
+        });
+        // 테두리 박스 여백을 위해 12픽셀 뺌
+        const margin = 12; 
+        cellSize = Math.min((cvs1.width - margin * 2) / 16, (cvs1.height - margin * 2) / 16);
+    }
+
+    function generateGrid(words) {
+        grid = Array(GRID_SIZE).fill().map(() => { return Array(GRID_SIZE).fill(''); });
+        placedWords = [];
+        
+        words.forEach((w, index) => {
+            let placed = false;
+            let attempts = 0;
+            const s = w.word.replace(/ /g, '');
+            
+            while (!placed && attempts < 150) {
+                let r = Math.floor(Math.random() * GRID_SIZE);
+                let c = Math.floor(Math.random() * GRID_SIZE);
+                let directions = [[0,1], [1,0], [1,1], [-1,1]];
+                let [dr, dc] = directions[Math.floor(Math.random() * directions.length)];
+                
+                if (r + dr * s.length <= GRID_SIZE && r + dr * s.length >= -1 && c + dc * s.length <= GRID_SIZE && c + dc * s.length >= -1) {
+                    let can = true;
+                    for (let j = 0; j < s.length; j++) {
+                        let nr = r + dr * j;
+                        let nc = c + dc * j;
+                        if (grid[nr][nc] !== '' && grid[nr][nc] !== s[j]) { 
+                            can = false; 
+                            break; 
+                        }
+                    }
+                    if (can) {
+                        let cells = [];
+                        for (let j = 0; j < s.length; j++) { 
+                            grid[r + dr * j][c + dc * j] = s[j]; 
+                            cells.push({r: r + dr * j, c: c + dc * j}); 
+                        }
+                        placedWords.push({...w, cells: cells, foundBy: null, revealed: (index < 5)}); 
+                        placed = true;
+                    }
+                }
+                attempts++;
+            }
+        });
+        
+        for (let r = 0; r < GRID_SIZE; r++) {
+            for (let c = 0; c < GRID_SIZE; c++) {
+                if (!grid[r][c]) {
+                    grid[r][c] = charPool[Math.floor(Math.random() * charPool.length)];
+                }
+            }
+        }
+    }
+
+    // 부드러운 둥근 사각형을 그리기 위한 경로 도우미
+    function roundRectPath(ctx, x, y, width, height, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+    }
+
+    function draw() {
+        if (!isPlaying) { return; }
+        
+        [ctx1, ctx2].forEach((ctx, i) => {
+            const pt = (i === 0) ? penaltyTime.p1 : penaltyTime.p2;
+            ctx.clearRect(0, 0, cvs1.width, cvs1.height);
+            
+            const margin = 12; // 글자들을 감싸는 여백
+            // 현재 배열 크기(GRID_SIZE)에 맞춰 정확히 위치 계산
+            const offsetX = (cvs1.width - (GRID_SIZE * cellSize)) / 2;
+            const offsetY = cvs1.height - (GRID_SIZE * cellSize) - margin; 
+
+            // 1. 선택한 크기(8x8, 12x12, 16x16)에 딱 맞춰 크기가 변하는 회색 둥근 배경 박스 그리기
+            roundRectPath(ctx, offsetX - margin, offsetY - margin, (GRID_SIZE * cellSize) + margin * 2, (GRID_SIZE * cellSize) + margin * 2, 24);
+            ctx.fillStyle = "#0f172a"; // 다크 배경
+            ctx.fill();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#334155"; // 테두리 선
+            ctx.stroke();
+
+            ctx.textAlign = 'center'; 
+            ctx.textBaseline = 'middle';
+            
+            // 2. 글자 그리기
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    ctx.fillStyle = "#cbd5e1"; // 밝은 텍스트 색상
+                    ctx.font = `900 ${cellSize * 0.6}px Pretendard`;
+                    ctx.fillText(grid[r][c], offsetX + c * cellSize + cellSize / 2, offsetY + r * cellSize + cellSize / 2);
+                }
+            }
+            
+            // 3. 찾은 단어 표시줄 긋기
+            placedWords.forEach((w) => {
+                if (w.foundBy) {
+                    ctx.strokeStyle = (w.foundBy === 'p1') ? '#ef4444' : '#3b82f6';
+                    ctx.lineWidth = cellSize * 0.7; 
+                    ctx.lineCap = 'round'; 
+                    ctx.globalAlpha = 0.4;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(offsetX + w.cells[0].c * cellSize + cellSize / 2, offsetY + w.cells[0].r * cellSize + cellSize / 2);
+                    ctx.lineTo(offsetX + w.cells[w.cells.length - 1].c * cellSize + cellSize / 2, offsetY + w.cells[w.cells.length - 1].r * cellSize + cellSize / 2);
+                    ctx.stroke(); 
+                    ctx.globalAlpha = 1;
+                }
+            });
+            
+            // 4. 오답 페널티 화면 (마찬가지로 해당 박스 크기에만 맞게 렌더링)
+            if (Date.now() < pt) {
+                roundRectPath(ctx, offsetX - margin, offsetY - margin, (GRID_SIZE * cellSize) + margin * 2, (GRID_SIZE * cellSize) + margin * 2, 24);
+                ctx.fillStyle = "rgba(15, 23, 42, 0.8)";
+                ctx.fill();
+                
+                ctx.fillStyle = "#f43f5e"; 
+                ctx.font = `900 ${cellSize * 0.8}px Pretendard`;
+                ctx.fillText("오답", offsetX + (GRID_SIZE * cellSize) / 2, offsetY + (GRID_SIZE * cellSize) / 2);
+            }
+        });
+        
+        requestAnimationFrame(draw);
+    }
+
+    function startCountdown() {
+        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+        
+        document.getElementById('overlay').style.display = 'none';
+        const countdownEl = document.getElementById('countdown-overlay');
+        countdownEl.style.display = 'flex';
+        
+        let count = 3;
+        countdownEl.innerText = count;
+        Sfx.beep();
+
+        const countInt = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countdownEl.innerText = count;
+                Sfx.beep();
+            } else if (count === 0) {
+                countdownEl.innerText = "시작!";
+                Sfx.start(); 
+            } else {
+                clearInterval(countInt);
+                countdownEl.style.display = 'none';
+                initGameData();
+            }
+        }, 1000);
+    }
+
+    function initGameData() {
+        isPlaying = true; 
+        GRID_SIZE = parseInt(document.getElementById('size-select').value);
+        resize();
+        
+        const diff = document.getElementById('diff-select').value;
+        const selectedWords = [...wordData[diff]].sort(() => { return 0.5 - Math.random(); }).slice(0, 10);
+        generateGrid(selectedWords);
+        
+        const cont = document.getElementById('word-list-container'); 
+        cont.innerHTML = '';
+        
+        placedWords.forEach((w, i) => {
+            const d = document.createElement('div'); 
+            d.className = `word-item ${w.revealed ? '' : 'hidden-word'}`; 
+            d.id = `wi-${i}`;
+            d.innerHTML = `<span class="word-text">${w.word}</span><span class="meaning">${w.meaning}</span>`;
+            cont.appendChild(d);
+        });
+
+        timeLeft = 100; 
+        roundScores = {p1: 0, p2: 0};
+        document.getElementById('score-p1').innerText = '0';
+        document.getElementById('score-p2').innerText = '0';
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('time-display').innerText = timeLeft;
+            
+            if (timeLeft === 30) {
+                placedWords.forEach((w, idx) => {
+                    if (!w.revealed) {
+                        w.revealed = true;
+                        const el = document.getElementById(`wi-${idx}`);
+                        if (el) {
+                            el.classList.remove('hidden-word');
+                            el.classList.add('revealed');
+                        }
+                    }
+                });
+            }
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }, 1000);
+        
+        draw();
+    }
+
+    function endGame() {
+        isPlaying = false; 
+        clearInterval(timerInterval); 
+        Sfx.end();
+        
+        document.getElementById('overlay').style.display = 'flex';
+        document.getElementById('intro-content').style.display = 'none';
+        document.getElementById('result-content').style.display = 'block';
+        document.getElementById('final-p1').innerText = roundScores.p1;
+        document.getElementById('final-p2').innerText = roundScores.p2;
+    }
+
+    function handleInput(e, p) {
+        if (!isPlaying || Date.now() < penaltyTime[p]) { return; }
+        if (audioCtx.state === 'suspended') { audioCtx.resume(); } 
+        
+        const rect = e.target.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        const margin = 12;
+        const offsetX = (cvs1.width - (GRID_SIZE * cellSize)) / 2;
+        const offsetY = cvs1.height - (GRID_SIZE * cellSize) - margin; 
+
+        const c = Math.floor((x - offsetX) / cellSize);
+        const r = Math.floor((y - offsetY) / cellSize);
+
+        if (c >= 0 && c < GRID_SIZE && r >= 0 && r < GRID_SIZE) {
+            let found = placedWords.find((w) => {
+                return !w.foundBy && w.cells.some((cell) => { return cell.r === r && cell.c === c; });
+            });
+            
+            if (found) {
+                Sfx.correct(); 
+                found.foundBy = p; 
+                roundScores[p]++;
+                document.getElementById(`score-${p}`).innerText = roundScores[p];
+                
+                const idx = placedWords.indexOf(found);
+                const el = document.getElementById(`wi-${idx}`);
+                
+                if (el) {
+                    el.classList.remove('hidden-word');
+                    el.classList.add('found', 'revealed');
+                }
+                
+                let allFound = placedWords.every((w) => { return w.foundBy !== null; });
+                if (allFound) {
+                    endGame();
+                }
+            } else {
+                Sfx.wrong(); 
+                penaltyTime[p] = Date.now() + 2000;
+            }
+        }
+    }
+
+    cvs1.addEventListener('mousedown', (e) => { handleInput(e, 'p1'); });
+    cvs1.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(e, 'p1'); });
+    cvs2.addEventListener('mousedown', (e) => { handleInput(e, 'p2'); });
+    cvs2.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(e, 'p2'); });
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    }
+</script>
+</body>
+</html>

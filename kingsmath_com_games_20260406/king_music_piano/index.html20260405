@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>피아노킹 (턴제 대결)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vexflow/3.0.9/vexflow-min.js"></script>
+    <style>
+        * { box-sizing: border-box; touch-action: manipulation; }
+        body {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            text-align: center;
+            background-color: #1e272e;
+            color: white;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #top-bar { 
+            display: flex; justify-content: center; align-items: center; 
+            padding: 5px; position: relative;
+        }
+        h1 { color: #f1f2f6; font-size: 20px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        
+        /* 각종 모달(팝업) 공통 스타일 */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(30, 39, 46, 0.95);
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000; flex-direction: column;
+        }
+        .modal {
+            background-color: #2f3542; padding: 30px; border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); text-align: center; 
+            max-width: 600px; width: 90%; border: 2px solid #57606f;
+        }
+        .modal h2 { color: #ff4757; margin-top: 0; font-size: 32px; margin-bottom: 15px;}
+        
+        /* 게임 안내 스타일 */
+        .instructions {
+            background-color: #1e272e; padding: 15px; border-radius: 10px;
+            font-size: 16px; color: #f1f2f6; margin-bottom: 20px; line-height: 1.6;
+            text-align: left; border: 1px solid #57606f;
+        }
+        
+        .song-dropdown {
+            width: 100%; padding: 12px; font-size: 18px; margin-bottom: 20px;
+            border-radius: 10px; border: 2px solid #57606f;
+            background-color: #1e272e; color: #f1f2f6;
+            outline: none; cursor: pointer; font-weight: bold;
+        }
+
+        .options { margin-bottom: 25px; font-size: 16px; color: #f1f2f6; font-weight: bold; text-align: left; padding-left: 10px; }
+        .options label { display: block; margin-bottom: 10px; cursor: pointer; }
+        .options input { transform: scale(1.5); margin-right: 10px; vertical-align: middle; }
+        
+        .button-group {
+            display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;
+        }
+
+        button.action-btn {
+            padding: 15px 30px; font-size: 18px; font-weight: bold;
+            background-color: #ff4757; color: white; border: none;
+            border-radius: 50px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s, background-color 0.2s;
+            flex: 1; min-width: 150px;
+        }
+        button.action-btn:active { transform: scale(0.95); }
+        button.action-btn:hover { background-color: #ff6b81; }
+
+        button.secondary-btn {
+            background-color: #1e90ff;
+        }
+        button.secondary-btn:hover { background-color: #3742fa; }
+
+        .link-text {
+            color: #a4b0be; text-decoration: underline; font-size: 16px; cursor: pointer;
+        }
+        .link-text:hover { color: #ffffff; }
+
+        /* 룰렛 화면 스타일 */
+        #roulette-text { font-size: 40px; font-weight: bold; margin: 30px 0; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        .p1-color { color: #ff4757; }
+        .p2-color { color: #1e90ff; }
+
+        /* 결과 화면 스타일 */
+        #victory-title { font-size: 45px; margin-bottom: 10px; animation: pop 0.5s ease-out; }
+        .score-result { font-size: 24px; margin: 20px 0; background: #1e272e; padding: 15px; border-radius: 15px; }
+        @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        button#restartBtn {
+            position: absolute; right: 10px;
+            padding: 8px 16px; font-size: 14px; font-weight: bold;
+            background-color: #57606f; color: white; border: none;
+            border-radius: 20px; cursor: pointer; display: none;
+        }
+
+        #game-container { display: flex; flex: 1; width: 100%; gap: 10px; margin-top: 5px; }
+        
+        /* 옵션에 따른 숨김 처리 */
+        .hide-solfege text { display: none !important; }
+        .hide-piano-solfege .key-name, .hide-piano-solfege .black-key-name { display: none !important; }
+
+        /* 플레이어 영역 및 턴제 비활성화 스타일 */
+        .player-area {
+            flex: 1; display: flex; flex-direction: column;
+            background-color: #2f3542; border-radius: 15px; padding: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4); border: 4px solid transparent; 
+            transition: opacity 0.3s, filter 0.3s;
+        }
+        .inactive-player {
+            opacity: 0.3; pointer-events: none; filter: grayscale(80%);
+        }
+        .active-player-1 { border-color: #ff4757; box-shadow: 0 0 20px rgba(255, 71, 87, 0.5); }
+        .active-player-2 { border-color: #1e90ff; box-shadow: 0 0 20px rgba(30, 144, 255, 0.5); }
+        
+        .player-header {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 18px; font-weight: bold; margin-bottom: 5px; padding: 0 10px;
+        }
+        #p1-area .player-header { color: #ff4757; }
+        #p2-area .player-header { color: #1e90ff; }
+        .score-board { font-size: 22px; transition: transform 0.2s; }
+
+        /* 악보 뷰포트 */
+        .sheet-viewport {
+            width: 100%; aspect-ratio: 800 / 320; 
+            background-color: #fffdf5; border-radius: 10px;
+            overflow: hidden; position: relative;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5); flex-shrink: 0; margin-bottom: 5px;
+        }
+        .sheet-content { width: 100%; height: 100%; display: flex; flex-direction: column; }
+        .line { width: 100%; flex: 0 0 50%; position: relative; }
+        g.hit { opacity: 0.25; transition: opacity 0.3s; }
+
+        /* 피아노 건반 영역 */
+        .piano-container {
+            position: relative; width: 100%; height: 180px; margin: auto 0;
+            border-radius: 8px; background-color: #1e272e; padding-top: 5px; padding-bottom: 5px;
+            overflow: hidden; flex-shrink: 0;
+        }
+        .white-keys { display: flex; width: 100%; height: 100%; }
+        .white-key {
+            flex: 1; background-color: white; color: black; border: 1px solid #ccc; border-radius: 0 0 5px 5px;
+            display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 10px;
+            font-size: 13px; font-weight: bold; user-select: none; -webkit-user-select: none; position: relative;
+        }
+        
+        #p1-piano .white-key.pressed { background-color: #ffcccc; border-top: 2px solid #ccc; }
+        #p2-piano .white-key.pressed { background-color: #cce0ff; border-top: 2px solid #ccc; }
+        .white-key.dimmed { background-color: #dcdde1; color: #a4b0be; }
+        
+        .black-key {
+            position: absolute; top: 0; left: 100%; transform: translateX(-50%);
+            width: 70%; height: 60%; background-color: black; border-radius: 0 0 4px 4px;
+            z-index: 2; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); user-select: none; -webkit-user-select: none;
+        }
+        .black-key.scale-key { border: 2px solid #f1c40f; }
+        .black-key-name { color: white; font-size: 11px; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-weight: bold; }
+        
+        #p1-piano .black-key.pressed { background-color: #cc0000; }
+        #p2-piano .black-key.pressed { background-color: #0055cc; }
+        .key-name { font-size: 12px; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen" class="overlay" style="display: flex;">
+        <div class="modal">
+            <h2>🎹 피아노킹 🎹</h2>
+            
+            <div class="instructions">
+                💡 <strong>게임 방법</strong><br>
+                1. 룰렛으로 먼저 시작할 사람을 정해요.<br>
+                2. 자기 차례에 악보에 맞춰 피아노를 연주하세요.<br>
+                3. 정확히 치면 <strong>+10점</strong>, 틀리면 <strong>-5점</strong>!<br>
+                4. 더 높은 점수를 얻은 사람이 피아노킹! 👑
+            </div>
+
+            <select id="song-selector" class="song-dropdown">
+                <option value="santa">1. 울면 안 돼 (다장조)</option>
+                <option value="rudolph">2. 루돌프 사슴코 (다장조)</option>
+                <option value="jingle">3. 종소리 울려라 (바장조 - 시b)</option>
+                <option value="silent">4. 고요한 밤 거룩한 밤 (사장조 - 파#)</option>
+            </select>
+            
+            <div class="options">
+                <label>
+                    <input type="checkbox" id="show-solfege-opt" checked>
+                    악보 아래에 계이름 표시하기
+                </label>
+                <label>
+                    <input type="checkbox" id="show-piano-solfege-opt" checked>
+                    피아노 건반에 계이름 표시하기
+                </label>
+            </div>
+            
+            <div class="button-group">
+                <button class="action-btn" id="startBtnModal">대결 시작!</button>
+                <button class="action-btn secondary-btn" onclick="location.href='piano.html'">전자칠판 피아노</button>
+            </div>
+
+            <div>
+                <a href="/" class="link-text">다른 게임 고르기</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="roulette-screen" class="overlay">
+        <div class="modal">
+            <h2>누가 먼저 할까요?</h2>
+            <div id="roulette-text" class="p1-color">다라라라라~</div>
+        </div>
+    </div>
+
+    <div id="turn-screen" class="overlay">
+        <div class="modal">
+            <h2 id="turn-announce-text">2P 차례입니다!</h2>
+            <p style="font-size: 18px; color: #dfe4ea;">준비하세요...</p>
+        </div>
+    </div>
+
+    <div id="victory-screen" class="overlay">
+        <div class="modal">
+            <h1 id="victory-title">🏆 1P 승리! 🏆</h1>
+            <div class="score-result">
+                <span style="color: #ff4757; font-weight:bold;">1P (RED) : <span id="final-p1-score">0</span>점</span><br><br>
+                <span style="color: #1e90ff; font-weight:bold;">2P (BLUE) : <span id="final-p2-score">0</span>점</span>
+            </div>
+            <button class="action-btn" onclick="location.reload()">처음으로 돌아가기</button>
+        </div>
+    </div>
+
+    <div id="top-bar">
+        <h1 id="main-title">🎹 피아노킹 🎹</h1>
+        <button id="restartBtn" onclick="location.reload()">다시 하기</button>
+    </div>
+
+    <div id="game-container">
+        <div class="player-area inactive-player" id="p1-area">
+            <div class="player-header">
+                <span>1P (RED)</span>
+                <span class="score-board" id="p1-score-board"><span id="p1-score">0</span>점</span>
+            </div>
+            <div class="sheet-viewport">
+                <div class="sheet-content" id="p1-sheet-content">
+                    <div class="line" id="p1-line-1"></div>
+                    <div class="line" id="p1-line-2"></div>
+                </div>
+            </div>
+            <div class="piano-container" id="p1-piano">
+                <div class="white-keys" id="p1-white-keys"></div>
+            </div>
+        </div>
+
+        <div class="player-area inactive-player" id="p2-area">
+            <div class="player-header">
+                <span>2P (BLUE)</span>
+                <span class="score-board" id="p2-score-board"><span id="p2-score">0</span>점</span>
+            </div>
+            <div class="sheet-viewport">
+                <div class="sheet-content" id="p2-sheet-content">
+                    <div class="line" id="p2-line-1"></div>
+                    <div class="line" id="p2-line-2"></div>
+                </div>
+            </div>
+            <div class="piano-container" id="p2-piano">
+                <div class="white-keys" id="p2-white-keys"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let VF; 
+    let audioCtx;
+    let gameState = 'IDLE';
+    let currentPlayerTurn = 0; // 1 or 2
+    let playOrder = []; // [firstPlayerId, secondPlayerId]
+
+    const p1 = { id: 1, score: 0, index: 0, data: [], finished: false };
+    const p2 = { id: 2, score: 0, index: 0, data: [], finished: false };
+
+    const frequencies = {
+        'F3': 174.61, 'F#3': 185.00, 'G3': 196.00, 'G#3': 207.65, 'A3': 220.00, 'A#3': 233.08, 'B3': 246.94,
+        'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'E4': 329.63, 'F4': 349.23, 'F#4': 369.99,
+        'G4': 392.00, 'G#4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'B4': 493.88,
+        'C5': 523.25, 'C#5': 554.37, 'D5': 587.33, 'D#5': 622.25, 'E5': 659.25, 'F5': 698.46
+    };
+
+    const songsDatabase = {
+        'santa': {
+            title: '울면 안 돼 (다장조)', keySig: 'C', timeSig: '4/4',
+            measures: [
+                [ {keys:["e/4"], duration:"8d", text:"미"}, {keys:["f/4"], duration:"16", text:"파"}, {keys:["g/4"], duration:"q", text:"솔"}, {keys:["g/4"], duration:"q", text:"솔"} ],
+                [ {keys:["g/4"], duration:"q", text:"솔"}, {keys:["a/4"], duration:"8", text:"라"}, {keys:["b/4"], duration:"8", text:"시"}, {keys:["c/5"], duration:"q", text:"도"}, {keys:["c/5"], duration:"q", text:"도"} ],
+                [ {keys:["e/4"], duration:"8d", text:"미"}, {keys:["f/4"], duration:"16", text:"파"}, {keys:["g/4"], duration:"q", text:"솔"}, {keys:["g/4"], duration:"q", text:"솔"} ],
+                [ {keys:["g/4"], duration:"q", text:"솔"}, {keys:["a/4"], duration:"8", text:"라"}, {keys:["g/4"], duration:"8", text:"솔"}, {keys:["f/4"], duration:"q", text:"파"}, {keys:["f/4"], duration:"q", text:"파"} ],
+                [ {keys:["e/4"], duration:"q", text:"미"}, {keys:["g/4"], duration:"q", text:"솔"}, {keys:["c/5"], duration:"q", text:"도"}, {keys:["e/5"], duration:"q", text:"미"} ],
+                [ {keys:["d/5"], duration:"q", text:"레"}, {keys:["f/5"], duration:"q", text:"파"}, {keys:["d/5"], duration:"h", text:"레"} ],
+                [ {keys:["c/5"], duration:"w", text:"도"} ],
+                [ {keys:["c/5"], duration:"wr", isRest:true} ]
+            ]
+        },
+        'rudolph': {
+            title: '루돌프 사슴코 (다장조)', keySig: 'C', timeSig: '4/4',
+            measures: [
+                [ { keys: ["g/4"], duration: "8", text: "솔" }, { keys: ["a/4"], duration: "8", text: "라" }, { keys: ["g/4"], duration: "q", text: "솔" }, { keys: ["e/4"], duration: "q", text: "미" } ],
+                [ { keys: ["c/5"], duration: "q", text: "도" }, { keys: ["a/4"], duration: "q", text: "라" }, { keys: ["g/4"], duration: "h", text: "솔" } ],
+                [ { keys: ["g/4"], duration: "8", text: "솔" }, { keys: ["a/4"], duration: "8", text: "라" }, { keys: ["g/4"], duration: "8", text: "솔" }, { keys: ["a/4"], duration: "8", text: "라" }, { keys: ["g/4"], duration: "8", text: "솔" }, { keys: ["g/4"], duration: "8", text: "솔" }, { keys: ["c/5"], duration: "q", text: "도" } ],
+                [ { keys: ["b/4"], duration: "hd", text: "시" }, { keys: ["b/4"], duration: "qr", isRest: true } ],
+                [ { keys: ["f/4"], duration: "8", text: "파" }, { keys: ["g/4"], duration: "8", text: "솔" }, { keys: ["f/4"], duration: "q", text: "파" }, { keys: ["d/4"], duration: "q", text: "레" } ],
+                [ { keys: ["b/4"], duration: "q", text: "시" }, { keys: ["a/4"], duration: "q", text: "라" }, { keys: ["g/4"], duration: "h", text: "솔" } ],
+                [ { keys: ["g/4"], duration: "8", text: "솔" }, { keys: ["a/4"], duration: "8", text: "라" }, { keys: ["g/4"], duration: "8", text: "솔" }, { keys: ["a/4"], duration: "8", text: "라" }, { keys: ["g/4"], duration: "8", text: "솔" }, { keys: ["d/5"], duration: "8", text: "레" }, { keys: ["c/5"], duration: "q", text: "도" } ],
+                [ { keys: ["c/5"], duration: "hd", text: "도" }, { keys: ["b/4"], duration: "qr", isRest: true } ]
+            ]
+        },'jingle': {
+            title: '종소리 울려라 (바장조)', keySig: 'F', timeSig: '4/4',
+            measures: [
+                [ {keys:["a/4"], duration:"q", text:"미"}, {keys:["a/4"], duration:"q", text:"미"}, {keys:["a/4"], duration:"h", text:"미"} ],
+                [ {keys:["a/4"], duration:"q", text:"미"}, {keys:["a/4"], duration:"q", text:"미"}, {keys:["a/4"], duration:"h", text:"미"} ],
+                [ {keys:["a/4"], duration:"q", text:"미"}, {keys:["c/5"], duration:"q", text:"솔"}, {keys:["f/4"], duration:"qd", text:"도"}, {keys:["g/4"], duration:"8", text:"레"} ],
+                [ {keys:["a/4"], duration:"w", text:"미"} ],
+                [ {keys:["b/4"], duration:"q", text:"파", matchNote:"A#4"}, {keys:["b/4"], duration:"q", text:"파", matchNote:"A#4"}, {keys:["b/4"], duration:"qd", text:"파", matchNote:"A#4"}, {keys:["b/4"], duration:"8", text:"파", matchNote:"A#4"} ],
+                [ {keys:["b/4"], duration:"q", text:"파", matchNote:"A#4"}, {keys:["a/4"], duration:"q", text:"미"}, {keys:["a/4"], duration:"q", text:"미"}, {keys:["a/4"], duration:"q", text:"미"} ],
+                [ {keys:["c/5"], duration:"q", text:"솔"}, {keys:["c/5"], duration:"q", text:"솔"}, {keys:["b/4"], duration:"q", text:"파", matchNote:"A#4"}, {keys:["g/4"], duration:"q", text:"레"} ],
+                [ {keys:["f/4"], duration:"w", text:"도"} ]
+            ]
+        },
+        'silent': {
+            title: '고요한 밤 거룩한 밤 (사장조)', keySig: 'G', timeSig: '3/4',
+            measures: [
+                [ {keys:["g/4"], duration:"qd", text:"도"}, {keys:["a/4"], duration:"8", text:"레"}, {keys:["g/4"], duration:"q", text:"도"} ],
+                [ {keys:["e/4"], duration:"hd", text:"라"} ],
+                [ {keys:["g/4"], duration:"qd", text:"도"}, {keys:["a/4"], duration:"8", text:"레"}, {keys:["g/4"], duration:"q", text:"도"} ],
+                [ {keys:["e/4"], duration:"hd", text:"라"} ],
+                [ {keys:["d/5"], duration:"h", text:"솔"}, {keys:["d/5"], duration:"q", text:"솔"} ],
+                [ {keys:["b/4"], duration:"hd", text:"미"} ],
+                [ {keys:["c/5"], duration:"h", text:"파"}, {keys:["c/5"], duration:"q", text:"파"} ],
+                [ {keys:["g/4"], duration:"hd", text:"도"} ]
+            ]
+        }
+    };
+
+    let activeSong = songsDatabase['santa'];
+
+    function drawSheetMusicForPlayer(player) {
+        player.data.length = 0; 
+        let noteIdx = 0;
+        const line1Measures = activeSong.measures.slice(0, 4);
+        const line2Measures = activeSong.measures.slice(4, 8);
+        noteIdx = renderVexFlowLine(`p${player.id}-line-1`, line1Measures, true, noteIdx, player);
+        if(line2Measures.length > 0) {
+            renderVexFlowLine(`p${player.id}-line-2`, line2Measures, false, noteIdx, player);
+        } else {
+            document.getElementById(`p${player.id}-line-2`).innerHTML = '';
+        }
+    }
+
+    function renderVexFlowLine(containerId, measures, isFirstLine, startIdx, player) {
+        const div = document.getElementById(containerId);
+        div.innerHTML = ''; 
+        const renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
+        
+        renderer.resize(800, 160);
+        const context = renderer.getContext();
+        const svg = div.querySelector('svg');
+        svg.setAttribute('viewBox', '0 0 800 160');
+        svg.style.width = '100%'; svg.style.height = '100%';
+
+        let x = 10;
+        let noteIdx = startIdx;
+
+        measures.forEach((measureNotes, mIdx) => {
+            const width = (isFirstLine && mIdx === 0) ? 240 : (800 - 240) / 3;
+            const stave = new VF.Stave(x, 20, width);
+            
+            if (mIdx === 0 && isFirstLine) {
+                stave.addClef("treble"); 
+                stave.addKeySignature(activeSong.keySig);
+                stave.addTimeSignature(activeSong.timeSig); 
+            }
+            stave.setContext(context).draw();
+
+            const vfNotes = [];
+            measureNotes.forEach(d => {
+                const isRest = d.isRest || d.duration.includes('r');
+                const note = new VF.StaveNote({ clef: "treble", keys: d.keys, duration: d.duration });
+                
+                if (d.duration.includes('d')) note.addDot(0);
+                
+                if (!isRest) {
+                    const textAnno = new VF.Annotation(d.text)
+                        .setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM)
+                        .setFont("Malgun Gothic", 14, "bold");
+                    note.addModifier(0, textAnno);
+                    note.setAttribute('id', `p${player.id}-note-${noteIdx}`);
+                    note.addClass(`p${player.id}-note-${noteIdx}`);
+
+                    let expectedNote = d.matchNote || d.keys[0].replace('/', '').toUpperCase();
+
+                    player.data.push({
+                        index: noteIdx,
+                        note: expectedNote,
+                        vfNote: note 
+                    });
+                    noteIdx++;
+                }
+                vfNotes.push(note);
+            });
+
+            const beams = VF.Beam.generateBeams(vfNotes);
+            VF.Formatter.FormatAndDraw(context, stave, vfNotes);
+            beams.forEach(b => b.setContext(context).draw());
+            x += width;
+        });
+        return noteIdx;
+    }
+
+    const pianoLayout = [
+        { note: 'F3', name: '파', hasBlack: true, blackNote: 'F#3' }, { note: 'G3', name: '솔', hasBlack: true, blackNote: 'G#3' },
+        { note: 'A3', name: '라', hasBlack: true, blackNote: 'A#3' }, { note: 'B3', name: '시', hasBlack: false },
+        { note: 'C4', name: '도', hasBlack: true, blackNote: 'C#4' }, { note: 'D4', name: '레', hasBlack: true, blackNote: 'D#4' },
+        { note: 'E4', name: '미', hasBlack: false }, { note: 'F4', name: '파', hasBlack: true, blackNote: 'F#4' },
+        { note: 'G4', name: '솔', hasBlack: true, blackNote: 'G#4' }, { note: 'A4', name: '라', hasBlack: true, blackNote: 'A#4' },
+        { note: 'B4', name: '시', hasBlack: false }, { note: 'C5', name: '도', hasBlack: true, blackNote: 'C#5' },
+        { note: 'D5', name: '레', hasBlack: true, blackNote: 'D#5' }, { note: 'E5', name: '미', hasBlack: false },
+        { note: 'F5', name: '파', hasBlack: false }
+    ];
+
+function createPiano(playerId, keySig) {
+        const whiteKeysContainer = document.getElementById(`p${playerId}-white-keys`);
+        whiteKeysContainer.innerHTML = '';
+
+        const getMovableDoName = (noteLetter) => {
+            if (keySig === 'F') { 
+                const map = {'F':'도', 'G':'레', 'A':'미', 'A#':'파', 'C':'솔', 'D':'라', 'E':'시'};
+                return map[noteLetter] || '';
+            } else if (keySig === 'G') { 
+                const map = {'G':'도', 'A':'레', 'B':'미', 'C':'파', 'D':'솔', 'E':'라', 'F#':'시'};
+                return map[noteLetter] || '';
+            }
+            const map = {'C':'도', 'D':'레', 'E':'미', 'F':'파', 'G':'솔', 'A':'라', 'B':'시'};
+            return map[noteLetter] || '';
+        };
+
+        pianoLayout.forEach(keyData => {
+            const whiteKey = document.createElement('div');
+            whiteKey.className = 'white-key'; 
+            whiteKey.dataset.note = keyData.note;
+            whiteKey.dataset.player = playerId;
+            
+            const baseLetter = keyData.note.replace(/\d/, '');
+            const keyName = getMovableDoName(baseLetter);
+
+            whiteKey.innerHTML = `<span class="key-name">${keyName}</span>`;
+
+            if (keySig === 'F' && keyData.note.includes('B')) whiteKey.classList.add('dimmed');
+            if (keySig === 'G' && keyData.note.includes('F')) whiteKey.classList.add('dimmed');
+
+            if (keyData.hasBlack) {
+                const blackKey = document.createElement('div');
+                blackKey.className = 'black-key'; 
+                blackKey.dataset.note = keyData.blackNote;
+                blackKey.dataset.player = playerId;
+                
+                if (keySig === 'F' && keyData.blackNote.includes('A#')) {
+                    blackKey.innerHTML = `<span class="black-key-name">파</span>`;
+                    blackKey.classList.add('scale-key');
+                } else if (keySig === 'G' && keyData.blackNote.includes('F#')) {
+                    blackKey.innerHTML = `<span class="black-key-name">시</span>`;
+                    blackKey.classList.add('scale-key');
+                }
+                whiteKey.appendChild(blackKey);
+            }
+            whiteKeysContainer.appendChild(whiteKey);
+        });
+
+        const allKeys = whiteKeysContainer.querySelectorAll('.white-key, .black-key');
+        allKeys.forEach(key => {
+            const pressKey = (e) => {
+                e.preventDefault(); e.stopPropagation();
+                key.classList.add('pressed');
+                handleInput(key.dataset.note, playerId);
+            };
+            const releaseKey = (e) => {
+                e.preventDefault();
+                key.classList.remove('pressed');
+            };
+
+            key.addEventListener('touchstart', pressKey, {passive: false});
+            key.addEventListener('touchend', releaseKey, {passive: false});
+            key.addEventListener('mousedown', pressKey);
+            key.addEventListener('mouseup', releaseKey);
+            key.addEventListener('mouseleave', releaseKey);
+        });
+    }
+
+    function initAudio() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playTone(note, duration = 1.0) {
+        if (!audioCtx || !frequencies[note]) return;
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(frequencies[note], audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function highlightCurrentNote(player) {
+        if (player.index >= player.data.length) return;
+
+        const targetData = player.data[player.index];
+        const vfNote = targetData.vfNote;
+        if (!vfNote) return;
+
+        const svgElement = vfNote.getCategory() ? vfNote.stave.getContext().svg : null;
+        if (!svgElement) return;
+
+        let highlighter = document.getElementById(`p${player.id}-highlighter-rect`);
+        if (!highlighter) {
+            highlighter = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            highlighter.setAttribute('id', `p${player.id}-highlighter-rect`);
+            highlighter.setAttribute('rx', '5'); 
+            highlighter.setAttribute('ry', '5');
+            highlighter.style.fill = player.id === 1 ? 'rgba(255, 71, 87, 0.3)' : 'rgba(30, 144, 255, 0.3)';
+            highlighter.style.stroke = player.id === 1 ? '#ff4757' : '#1e90ff';
+            highlighter.style.strokeWidth = '2';
+            highlighter.style.pointerEvents = 'none'; 
+            highlighter.style.transition = 'x 0.1s ease-out, y 0.1s ease-out, width 0.1s ease-out, height 0.1s ease-out';
+        }
+
+        if (highlighter.parentNode !== svgElement) {
+            svgElement.appendChild(highlighter);
+        }
+
+        highlighter.style.display = 'block';
+
+        const x = vfNote.getAbsoluteX() - 8;
+        const y = 15; 
+        const width = 32; 
+        const height = 135; 
+
+        highlighter.setAttribute('x', x);
+        highlighter.setAttribute('y', y);
+        highlighter.setAttribute('width', width);
+        highlighter.setAttribute('height', height);
+    }
+
+    function showVictoryScreen() {
+        gameState = 'END';
+        document.getElementById('p1-area').classList.add('inactive-player');
+        document.getElementById('p2-area').classList.add('inactive-player');
+
+        const vScreen = document.getElementById('victory-screen');
+        const vTitle = document.getElementById('victory-title');
+        
+        document.getElementById('final-p1-score').innerText = p1.score;
+        document.getElementById('final-p2-score').innerText = p2.score;
+
+        if (p1.score > p2.score) {
+            vTitle.innerHTML = '🏆 1P (RED) 승리! 🏆';
+            vTitle.style.color = '#ff4757';
+        } else if (p2.score > p1.score) {
+            vTitle.innerHTML = '🏆 2P (BLUE) 승리! 🏆';
+            vTitle.style.color = '#1e90ff';
+        } else {
+            vTitle.innerHTML = '🤝 무승부! 🤝';
+            vTitle.style.color = '#2ed573';
+        }
+
+        vScreen.style.display = 'flex';
+        playTone('C5', 0.2); setTimeout(()=>playTone('E5', 0.2), 200); setTimeout(()=>playTone('G5', 0.5), 400);
+    }
+
+    function switchTurn() {
+        currentPlayerTurn = playOrder[1]; 
+        
+        const turnScreen = document.getElementById('turn-screen');
+        const turnText = document.getElementById('turn-announce-text');
+        
+        if(currentPlayerTurn === 1) {
+            turnText.innerText = "1P(RED) 차례입니다!";
+            turnText.style.color = "#ff4757";
+        } else {
+            turnText.innerText = "2P(BLUE) 차례입니다!";
+            turnText.style.color = "#1e90ff";
+        }
+
+        turnScreen.style.display = 'flex';
+        
+        setTimeout(() => {
+            turnScreen.style.display = 'none';
+            activatePlayer(currentPlayerTurn);
+        }, 2500);
+    }
+
+    function activatePlayer(playerId) {
+        const p1Area = document.getElementById('p1-area');
+        const p2Area = document.getElementById('p2-area');
+        
+        if (playerId === 1) {
+            p1Area.classList.remove('inactive-player');
+            p1Area.classList.add('active-player-1');
+            p2Area.classList.add('inactive-player');
+            p2Area.classList.remove('active-player-2');
+            highlightCurrentNote(p1);
+        } else {
+            p2Area.classList.remove('inactive-player');
+            p2Area.classList.add('active-player-2');
+            p1Area.classList.add('inactive-player');
+            p1Area.classList.remove('active-player-1');
+            highlightCurrentNote(p2);
+        }
+    }
+
+    function handleInput(pressedNote, playerId) {
+        initAudio();
+        playTone(pressedNote); 
+        
+        if (gameState !== 'PLAYING') return;
+        if (playerId !== currentPlayerTurn) return; 
+
+        const player = playerId === 1 ? p1 : p2;
+        if (player.finished) return;
+
+        const targetData = player.data[player.index];
+        const svgNote = document.getElementById(`p${player.id}-note-${targetData.index}`);
+        const scoreBoard = document.getElementById(`p${player.id}-score-board`);
+        const scoreSpan = document.getElementById(`p${player.id}-score`);
+
+        if (pressedNote === targetData.note) {
+            player.score += 10;
+            if (svgNote) svgNote.classList.add('hit'); 
+            
+            player.index++; 
+
+            if (player.index >= player.data.length) {
+                player.finished = true;
+                const highlighter = document.getElementById(`p${player.id}-highlighter-rect`);
+                if (highlighter) highlighter.style.display = 'none';
+
+                if (currentPlayerTurn === playOrder[0]) {
+                    switchTurn();
+                } else {
+                    showVictoryScreen();
+                }
+            } else {
+                setTimeout(() => { highlightCurrentNote(player); }, 50);
+            }
+        } else {
+            player.score = Math.max(0, player.score - 5);
+            scoreBoard.style.transform = 'scale(1.2)';
+            scoreBoard.style.color = '#ffa502';
+            setTimeout(() => {
+                scoreBoard.style.transform = 'scale(1)';
+                scoreBoard.style.color = ''; 
+            }, 200);
+        }
+        
+        scoreSpan.innerText = player.score;
+    }
+
+    function startRoulette() {
+        document.getElementById('start-screen').style.display = 'none';
+        const rouletteScreen = document.getElementById('roulette-screen');
+        const rouletteText = document.getElementById('roulette-text');
+        rouletteScreen.style.display = 'flex';
+
+        let count = 0;
+        let isP1 = true;
+        
+        const interval = setInterval(() => {
+            initAudio();
+            playTone('C5', 0.1);
+            if (isP1) {
+                rouletteText.innerText = "1P (RED)";
+                rouletteText.className = "p1-color";
+            } else {
+                rouletteText.innerText = "2P (BLUE)";
+                rouletteText.className = "p2-color";
+            }
+            isP1 = !isP1;
+            count++;
+
+            if (count > 15) {
+                clearInterval(interval);
+                const winnerId = Math.random() < 0.5 ? 1 : 2;
+                
+                if (winnerId === 1) {
+                    rouletteText.innerText = "1P 당첨! 먼저 시작!";
+                    rouletteText.className = "p1-color";
+                    playOrder = [1, 2];
+                } else {
+                    rouletteText.innerText = "2P 당첨! 먼저 시작!";
+                    rouletteText.className = "p2-color";
+                    playOrder = [2, 1];
+                }
+                playTone('G5', 0.5); 
+
+                setTimeout(() => {
+                    rouletteScreen.style.display = 'none';
+                    document.getElementById('restartBtn').style.display = 'block';
+                    gameState = 'PLAYING';
+                    currentPlayerTurn = playOrder[0];
+                    activatePlayer(currentPlayerTurn);
+                }, 2000);
+            }
+        }, 120);
+    }
+
+    function setupGame() {
+        initAudio();
+        const songKey = document.getElementById('song-selector').value;
+        activeSong = songsDatabase[songKey];
+        document.getElementById('main-title').innerText = `🎹 피아노킹 - ${activeSong.title} 🎹`;
+
+        const showSolfege = document.getElementById('show-solfege-opt').checked;
+        const showPianoSolfege = document.getElementById('show-piano-solfege-opt').checked;
+        const gameContainer = document.getElementById('game-container');
+        
+        if (showSolfege) gameContainer.classList.remove('hide-solfege');
+        else gameContainer.classList.add('hide-solfege');
+
+        if (showPianoSolfege) gameContainer.classList.remove('hide-piano-solfege');
+        else gameContainer.classList.add('hide-piano-solfege');
+        
+        p1.score = 0; p1.index = 0; p1.finished = false;
+        p2.score = 0; p2.index = 0; p2.finished = false;
+        
+        document.getElementById('p1-score').innerText = 0;
+        document.getElementById('p2-score').innerText = 0;
+        
+        drawSheetMusicForPlayer(p1);
+        drawSheetMusicForPlayer(p2);
+
+        createPiano(1, activeSong.keySig);
+        createPiano(2, activeSong.keySig);
+
+        document.getElementById('p1-area').classList.add('inactive-player');
+        document.getElementById('p2-area').classList.add('inactive-player');
+
+        startRoulette();
+    }
+
+    document.getElementById('startBtnModal').addEventListener('click', setupGame);
+
+    function initApp() {
+        if (typeof Vex === 'undefined') {
+            setTimeout(initApp, 100);
+            return;
+        }
+        VF = Vex.Flow;
+    }
+
+    initApp(); 
+</script>
+</body>
+</html>

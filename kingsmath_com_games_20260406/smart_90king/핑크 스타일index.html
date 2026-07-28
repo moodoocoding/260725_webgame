@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<?php
+// [통계 연결] 킹수학 폴더에 있는 counter.php를 불러와서 실행
+if(file_exists($_SERVER['DOCUMENT_ROOT'] . '/counter.php')) {
+    include_once $_SERVER['DOCUMENT_ROOT'] . '/counter.php';
+}
+?>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5YW0T2C109');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>스피드 각도킹</title>
+    <meta name="description" content="60초 동안 각도를 맞춰라! 스피드 각도킹 게임.">
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- [1] 기본 설정 (핑크 토끼 테마) --- */
+        :root {
+            /* 파스텔 핑크 테마 색상표 */
+            --bg-color: #FFF0F5;       /* 라벤더 블러쉬 (배경) */
+            --bg-pattern: #FFB7B2;     /* 패턴 점 색상 */
+            
+            --main-accent: #FF69B4;    /* 핫핑크 (진한 강조) */
+            --soft-pink: #FFC0CB;      /* 연분홍 */
+            
+            /* 기존 변수명 유지하되 색상 변경 (로직 호환성 위함) */
+            --neon-pink: #FF6B6B;      /* 실패/시간임박 (코랄 레드) */
+            --neon-blue: #4D96FF;      /* 파스텔 블루 */
+            --neon-green: #00D26A;     /* 성공 (진한 민트) */
+            
+            --text-color: #5D4037;     /* 초콜릿색 (검정 대신 부드럽게) */
+            --stitch-border: 3px dashed #fff; /* 스티치 효과 */
+            --box-shadow: 0 4px 10px rgba(255, 105, 180, 0.3);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            /* 귀여운 도트 패턴 배경 */
+            background-image: radial-gradient(var(--bg-pattern) 2px, transparent 2px);
+            background-size: 20px 20px;
+            
+            color: var(--text-color);
+            font-family: 'Jua', sans-serif;
+            overflow-y: auto;
+            overflow-x: hidden;
+            touch-action: pan-y;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* 공통 유틸리티 */
+        .hidden { display: none !important; }
+        .flex-center { display: flex; justify-content: center; align-items: center; }
+        button { font-family: 'Jua', sans-serif; cursor: pointer; border: none; outline: none; }
+        
+        /* 모바일 컨테이너 */
+        #app-container {
+            width: 100%;
+            max-width: 500px;
+            min-height: 100vh;
+            margin: 0 auto;
+            position: relative;
+            background: rgba(255, 255, 255, 0.6); /* 반투명 흰색 */
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 20px rgba(255, 182, 193, 0.5);
+            display: flex;
+            flex-direction: column;
+            border-left: 5px solid #FFC0CB;
+            border-right: 5px solid #FFC0CB;
+        }
+
+        /* --- [2] 시작 화면 --- */
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            padding-top: 60px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .top-link {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            color: var(--main-accent);
+            text-decoration: none;
+            font-size: 16px;
+            z-index: 100;
+            border-bottom: 2px dashed var(--main-accent);
+        }
+
+        .main-title {
+            font-size: 45px;
+            color: var(--main-accent);
+            /* 하얀색 테두리 효과 */
+            text-shadow: 
+                3px 3px 0 #fff,
+                -1px -1px 0 #fff,  
+                1px -1px 0 #fff,
+                -1px 1px 0 #fff,
+                1px 1px 0 #fff;
+            margin-bottom: 5px;
+            width: 100%;
+            line-height: 1.2;
+            letter-spacing: -1px;
+        }
+
+        .sub-desc {
+            font-size: 18px;
+            color: #888;
+            background: #fff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 2px dashed #FFB7B2;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        /* QR 코드 스타일 */
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+            cursor: pointer;
+        }
+        #qr-small {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px;
+            border: 4px dashed var(--main-accent); /* 스티치 보더 */
+            transition: transform 0.2s;
+            background: white;
+            padding: 5px;
+        }
+        #qr-small:hover { transform: scale(1.1) rotate(5deg); }
+        .qr-hint { font-size: 12px; color: var(--main-accent); margin-top: 5px; font-weight: bold; }
+
+        /* QR 확대 모달 */
+        #qr-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255, 240, 245, 0.9);
+            z-index: 9999;
+            cursor: pointer;
+        }
+        .qr-modal-content {
+            text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            border: 5px dashed var(--main-accent);
+        }
+        #qr-large {
+            width: 80vw;
+            max-width: 300px;
+            border-radius: 10px;
+        }
+        
+        .input-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input#nickname {
+            width: 90%;
+            padding: 15px;
+            font-size: 22px;
+            text-align: center;
+            border-radius: 25px;
+            /* 스티치 느낌 */
+            border: 3px dashed var(--main-accent);
+            background: #fff;
+            color: var(--text-color);
+            font-family: 'Jua', sans-serif;
+            box-shadow: 0 4px 0 rgba(255, 105, 180, 0.2);
+        }
+        input#nickname::placeholder { color: #FFB7B2; }
+        
+        .btn-start {
+            width: 90%;
+            padding: 15px;
+            font-size: 26px;
+            border-radius: 50px;
+            background: var(--main-accent);
+            color: white;
+            /* 버튼에도 스티치 */
+            border: 2px dashed #fff;
+            box-shadow: 0 5px 0 #D04F90; /* 입체감 */
+            transition: transform 0.1s;
+        }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 1px 0 #D04F90; }
+
+        #ranking-area {
+            width: 95%;
+            margin-top: 30px;
+            background: #fff;
+            border-radius: 20px;
+            /* 메모장 느낌 */
+            border: 3px solid #FFC0CB;
+            padding: 15px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+        }
+        /* 랭킹 위 테이프 장식 */
+        #ranking-area::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 25px;
+            background: rgba(255,255,255,0.6);
+            border-left: 1px dotted #ccc;
+            border-right: 1px dotted #ccc;
+            transform: translateX(-50%) rotate(-2deg);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .rank-header { 
+            font-size: 20px; 
+            color: var(--main-accent); 
+            margin-bottom: 10px; 
+            border-bottom: 2px dashed #FFEFF4;
+            padding-bottom: 5px;
+        }
+        
+        #ranking-list {
+            height: 300px;
+            overflow-y: auto;
+            text-align: left;
+        }
+        #ranking-list::-webkit-scrollbar { width: 5px; }
+        #ranking-list::-webkit-scrollbar-thumb { background: #FFC0CB; border-radius: 10px; }
+        
+        .rank-row {
+            display: flex; justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            border-bottom: 1px dashed #eee;
+            font-size: 16px;
+        }
+        .rank-row:last-child { border-bottom: none; }
+
+        .rank-num {
+            display: inline-block;
+            width: 24px; height: 24px;
+            line-height: 24px;
+            text-align: center;
+            font-size: 13px;
+            color: white;
+            background: #FFC0CB;
+            border-radius: 50%;
+            font-weight: bold;
+        }
+
+        /* --- [3] 게임 화면 --- */
+        #game-screen {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .game-top-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            z-index: 50;
+        }
+        .btn-mini {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 20px;
+            color: var(--text-color);
+            background: #fff;
+            border: 2px solid #FFC0CB;
+            box-shadow: 0 3px 0 #FFC0CB;
+        }
+        .btn-mini:active { transform: translateY(2px); box-shadow: none; }
+        .btn-restart { background: var(--main-accent); color: white; border-color: white; box-shadow: 0 3px 0 #D04F90; border: 2px dashed #fff;}
+
+        /* HUD: 점수(좌) - 미션(중) - 시간(우) */
+        .hud-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            margin: 10px;
+            background: white;
+            border-radius: 25px;
+            border: 3px dashed #FFB7B2;
+            position: relative;
+        }
+
+        .info-box {
+            text-align: center;
+            min-width: 60px;
+        }
+        .info-label { font-size: 12px; color: #aaa; margin-bottom: 2px; }
+        .info-val { font-size: 24px; font-weight: bold; }
+        
+        .val-score { color: var(--neon-green); }
+        .val-time { color: var(--neon-pink); }
+
+        /* 중앙 미션 각도 */
+        .mission-center {
+            text-align: center;
+            flex: 1;
+            background: #FFF0F5;
+            margin: 0 10px;
+            border-radius: 15px;
+            padding: 5px;
+        }
+        .mission-label { font-size: 12px; color: #888; display: block;}
+        .target-angle {
+            font-size: 45px;
+            color: var(--main-accent);
+            text-shadow: 2px 2px 0 #fff;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        /* 캔버스 영역 */
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            /* 모눈종이 배경 느낌 */
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-color: #fff;
+            margin: 10px;
+            width: calc(100% - 20px);
+            border-radius: 30px;
+            border: 4px solid #FFC0CB;
+            overflow: hidden;
+            touch-action: none;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 피드백 오버레이 */
+        #feedback-overlay {
+            position: absolute;
+            top: 0%; 
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            text-align: center;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .fb-angle { 
+            font-size: 40px; 
+            color: var(--text-color); 
+            margin-bottom: 5px; 
+            font-weight: bold;
+            background: rgba(255,255,255,0.8);
+            padding: 0 10px;
+            border-radius: 10px;
+        }
+        .fb-diff { 
+            font-size: 20px; 
+            font-weight: bold; 
+            padding: 8px 20px; 
+            border-radius: 20px; 
+            background: white; 
+            display: inline-block;
+            border: 2px solid #ddd;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+        }
+        /* 점수 표시 스타일 추가 */
+/* 점수 표시 스타일 수정 */
+        .fb-score {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 8px;
+            color: var(--main-accent);
+            
+            /* ▼▼▼ 이 아래 부분들을 추가/수정했습니다 ▼▼▼ */
+            background: rgba(255, 255, 255, 0.95); /* 진한 하얀색 배경 */
+            padding: 5px 15px;                     /* 글씨 주변 여백 */
+            border-radius: 15px;                   /* 둥근 모서리 */
+            border: 2px solid #FFC0CB;             /* 연한 핑크 테두리 */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 살짝 그림자 줘서 붕 띄우기 */
+        }
+        .fb-good { color: var(--neon-green); border-color: var(--neon-green); background: #E8F5E9; }
+        .fb-bad { color: var(--neon-pink); border-color: var(--neon-pink); background: #FFEBEE; }
+        
+        .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .pop-out { animation: popOut 0.3s ease-in forwards; }
+
+        @keyframes popIn {
+            0% { transform: translateX(-50%) scale(0); opacity: 0; }
+            80% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+            100% { transform: translateX(-50%) scale(1.0); opacity: 1; }
+        }
+
+        @keyframes popOut {
+            0% { transform: translateX(-50%) scale(1.0); opacity: 1; }
+            100% { transform: translateX(-50%) scale(0); opacity: 0; }
+        }
+
+        /* 카운트다운 오버레이 */
+        #countdown-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8);
+            z-index: 300;
+            flex-direction: column;
+            color: var(--main-accent);
+            font-size: 100px;
+            font-weight: bold;
+            text-shadow: 4px 4px 0 #fff, 0 0 20px rgba(255,105,180,0.5);
+        }
+
+        /* --- [4] 결과 화면 --- */
+        #result-screen {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(255, 240, 245, 0.95);
+            z-index: 200;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .res-title { font-size: 36px; margin-bottom: 10px; color: var(--text-color); }
+        .res-score { font-size: 70px; color: var(--main-accent); font-weight: bold; margin-bottom: 20px; text-shadow: 3px 3px 0 #fff; }
+        .res-msg { 
+            font-size: 18px; color: #888; margin-bottom: 40px; 
+            background: white; padding: 10px 20px; border-radius: 15px; border: 2px dashed #FFB7B2;
+        }
+        .btn-group { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+
+    </style>
+</head>
+<body>
+
+<div id="qr-modal" class="hidden flex-center" onclick="closeQrModal()">
+    <div class="qr-modal-content">
+        <img id="qr-large" src="" alt="QR Code Large">
+        <div style="color:var(--text-color); margin-top:20px; font-size:20px;">터치하면 닫힙니다 🐰</div>
+    </div>
+</div>
+
+<div id="app-container">
+
+    <div id="start-screen">
+        <a href="http://킹수학.com" class="top-link">킹수학.com</a>
+        
+        <div style="margin-top: 20px;">
+            <div class="main-title">🐰스피드 각도킹</div>
+            <div class="sub-desc">60초 동안 정확한 각도를 그려줘!</div>
+            
+            <div class="qr-section" onclick="openQrModal()">
+                <img id="qr-small" src="" alt="QR Code">
+                <div class="qr-hint">QR 코드로 친구 초대하기 🎀</div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="nickname" maxlength="8" placeholder="닉네임 입력">
+            <button class="btn-start" onclick="startGame()">💖 게임 시작</button>
+            <a href="/" style="font-size: 14px; color: #888; text-decoration: none; background: white; padding: 8px 16px; border-radius: 20px; border: 1px solid #ddd;">🎮 다른 게임 고르기</a>
+        </div>
+
+        <div id="ranking-area">
+            <div class="rank-header">🏆 명예의 전당 (Top 100)</div>
+            <div id="ranking-list">
+                <div style="padding:20px; color:#aaa;">랭킹을 불러오고 있어요...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div id="countdown-overlay" class="hidden flex-center">3</div>
+
+        <div class="game-top-bar">
+            <button class="btn-mini" onclick="goHome()">🏠 처음으로</button>
+            <button class="btn-mini btn-restart" onclick="resetGame()">🔄 다시하기</button>
+        </div>
+
+        <div class="hud-main">
+            <div class="info-box" style="text-align:left;">
+                <div class="info-label">SCORE</div>
+                <div class="info-val val-score" id="ui-score">0</div>
+            </div>
+
+            <div class="mission-center">
+                <span class="mission-label">목표 각도</span>
+                <span class="target-angle" id="ui-target">45°</span>
+            </div>
+
+            <div class="info-box" style="text-align:right;">
+                <div class="info-label">TIME</div>
+                <div class="info-val val-time" id="ui-timer">60</div>
+            </div>
+        </div>
+
+        <div id="canvas-container">
+            <canvas id="game-canvas"></canvas>
+            <div id="feedback-overlay">
+                <div class="fb-angle" id="fb-angle-text">46°</div>
+                <div class="fb-diff" id="fb-diff-text">1.0° 차이</div>
+                <div class="fb-score" id="fb-score-text">+500점</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden flex-center">
+        <div class="res-title">⏰ 시간이 다 됐어!</div>
+        <div class="res-score" id="res-final-score">0</div>
+        <div class="res-msg" id="res-msg">기록 저장 중...</div>
+
+        <div class="btn-group">
+            <button class="btn-start" style="background:var(--neon-green); color:white;" onclick="resetGame()">🔄 다시 도전하기</button>
+            <button class="btn-start" style="background:#aaa;" onclick="goHome()">🏠 홈으로 이동</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /* --- 전역 변수 --- */
+    const GAME_TIME_LIMIT = 60; 
+    let timer = GAME_TIME_LIMIT;
+    let score = 0;
+    let targetAngle = 0;
+    let currentDragRad = 0; 
+    let baseAngleRad = 0;    
+    let isGameRunning = false;
+    let isTouching = false;
+    let gameInterval = null;
+    let waitingNext = false;
+    let lastDrawSoundTime = 0; 
+    
+    let fbTimeout1 = null;
+    let fbTimeout2 = null;
+
+    // 캔버스 관련
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    let cx, cy; 
+    let radius; 
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+
+    window.onload = function() {
+        const savedName = localStorage.getItem("kingsmath_nickname");
+        if(savedName) document.getElementById("nickname").value = savedName;
+        
+        loadRanking();
+        generateQRCode();
+
+        window.addEventListener('resize', initCanvasSize);
+        canvas.addEventListener('pointerdown', handleStart);
+        canvas.addEventListener('pointermove', handleMove);
+        canvas.addEventListener('pointerup', handleEnd);
+        canvas.addEventListener('pointerleave', handleEnd);
+    };
+
+    function generateQRCode() {
+        const currentUrl = window.location.href;
+        const targetUrl = currentUrl.length > 5 ? currentUrl : "/";
+        const encodedUrl = encodeURIComponent(targetUrl);
+        const qrBaseUrl = "https://api.qrserver.com/v1/create-qr-code/?color=ff69b4&bgcolor=ffffff&data=" + encodedUrl; // QR색상도 핑크로 변경
+        
+        document.getElementById('qr-small').src = qrBaseUrl + "&size=100x100";
+        document.getElementById('qr-large').src = qrBaseUrl + "&size=500x500";
+    }
+
+    function openQrModal() { document.getElementById('qr-modal').classList.remove('hidden'); }
+    function closeQrModal() { document.getElementById('qr-modal').classList.add('hidden'); }
+
+    function initCanvasSize() {
+        const container = document.getElementById('canvas-container');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        
+        cx = canvas.width / 2;
+        // 원 위치: 상단 40% 지점
+        cy = canvas.height * 0.40; 
+        radius = Math.min(canvas.width, canvas.height) * 0.4; 
+        
+        if(isGameRunning) drawGame();
+    }
+
+    function initAudio() {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    
+    function playTone(freq, type, duration) {
+        if(!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function startGame() {
+        const nameInput = document.getElementById("nickname").value.trim();
+        if(nameInput.length < 1) { alert("닉네임을 입력해주세요!"); return; }
+        localStorage.setItem("kingsmath_nickname", nameInput);
+        initAudio();
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+
+        startCountdown(); 
+    }
+
+    function resetGame() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        startCountdown();
+    }
+
+    function startCountdown() {
+        const cntEl = document.getElementById('countdown-overlay');
+        cntEl.classList.remove('hidden');
+        let count = 3;
+        cntEl.innerText = count;
+
+        isGameRunning = false;
+        clearInterval(gameInterval);
+
+        const timerId = setInterval(() => {
+            count--;
+            if(count > 0) {
+                cntEl.innerText = count;
+                playTone(800, 'square', 0.1); 
+            } else if (count === 0) {
+                cntEl.innerText = "GO!💖";
+                playTone(1200, 'square', 0.2);
+            } else {
+                clearInterval(timerId);
+                cntEl.classList.add('hidden');
+                resetGameLogic(); 
+            }
+        }, 1000);
+    }
+
+    function goHome() {
+        isGameRunning = false;
+        clearInterval(gameInterval);
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+        document.getElementById('countdown-overlay').classList.add('hidden'); 
+        loadRanking();
+    }
+
+    function resetGameLogic() {
+        if(fbTimeout1) clearTimeout(fbTimeout1);
+        if(fbTimeout2) clearTimeout(fbTimeout2);
+        
+        const fbOverlay = document.getElementById('feedback-overlay');
+        fbOverlay.classList.remove('pop-in', 'pop-out');
+        fbOverlay.style.opacity = 0;
+
+        score = 0;
+        timer = GAME_TIME_LIMIT;
+        isGameRunning = true;
+        waitingNext = false;
+        
+        updateUI();
+        initCanvasSize();
+        nextProblem();
+        
+        if(gameInterval) clearInterval(gameInterval);
+        gameInterval = setInterval(gameLoop, 1000);
+    }
+
+    function gameLoop() {
+        if(!isGameRunning) return;
+        timer--;
+        if(timer <= 5) playTone(800, 'square', 0.05);
+        updateUI();
+
+        if(timer <= 0) {
+            finishGame();
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('ui-score').innerText = score;
+        document.getElementById('ui-timer').innerText = timer;
+        const timerEl = document.getElementById('ui-timer');
+        if(timer <= 5) timerEl.style.color = "var(--neon-pink)";
+        else timerEl.style.color = "var(--main-accent)";
+    }
+
+    function nextProblem() {
+        targetAngle = Math.floor(Math.random() * 160) + 10;
+        document.getElementById('ui-target').innerText = targetAngle + "°";
+        
+        baseAngleRad = (Math.random() * Math.PI * 2) - Math.PI; 
+        currentDragRad = baseAngleRad; 
+        
+        drawGame();
+    }
+
+    function drawGame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // [디자인 변경] 밝은 배경에 맞춰 색상 변경
+        
+        // 1. 전체 원 테두리 (연한 핑크 점선)
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(255, 105, 180, 0.2)"; // 연한 핫핑크
+        ctx.setLineDash([10, 10]); // 점선 효과
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.setLineDash([]); // 점선 초기화
+
+        // 2. 기준선 (진한 갈색/회색)
+        const baseX = cx + Math.cos(baseAngleRad) * radius;
+        const baseY = cy + Math.sin(baseAngleRad) * radius;
+        
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(baseX, baseY);
+        ctx.strokeStyle = "#8D6E63"; // 브라운 컬러
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        
+        // 3. 중심점 (하얀색 + 핑크 테두리)
+        ctx.beginPath();
+        ctx.arc(cx, cy, 12, 0, Math.PI*2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+        ctx.strokeStyle = varColor('main-accent');
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // 4. 플레이어 드래그 영역 (부채꼴)
+        if (isTouching) {
+            const endX = cx + Math.cos(currentDragRad) * radius;
+            const endY = cy + Math.sin(currentDragRad) * radius;
+
+            // 드래그 선 (강조색)
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(endX, endY);
+            ctx.strokeStyle = varColor('main-accent'); // 핫핑크
+            ctx.lineWidth = 6;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // 부채꼴 채우기 (반투명 핑크)
+            let diff = currentDragRad - baseAngleRad;
+            while(diff <= -Math.PI) diff += 2*Math.PI;
+            while(diff > Math.PI) diff -= 2*Math.PI;
+            
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, radius, baseAngleRad, currentDragRad, diff < 0);
+            ctx.lineTo(cx, cy); 
+            ctx.fillStyle = "rgba(255, 105, 180, 0.3)"; // 반투명 핫핑크
+            ctx.fill();
+        }
+    }
+    
+    function varColor(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue('--' + name).trim();
+    }
+
+    function getRawAngleRad(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        
+        if(!clientX) return currentDragRad;
+
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        return Math.atan2(y - cy, x - cx);
+    }
+
+    function handleStart(e) {
+        if(!isGameRunning || waitingNext) return;
+        e.preventDefault();
+        isTouching = true;
+        currentDragRad = getRawAngleRad(e);
+        drawGame();
+        playDrawFeedback(); 
+    }
+
+    function handleMove(e) {
+        if(!isGameRunning || !isTouching || waitingNext) return;
+        e.preventDefault();
+        currentDragRad = getRawAngleRad(e);
+        drawGame();
+        playDrawFeedback(); 
+    }
+
+    function playDrawFeedback() {
+        const now = Date.now();
+        if (now - lastDrawSoundTime > 80) {
+            let diff = Math.abs(currentDragRad - baseAngleRad);
+            let freq = 300 + (diff * 50); 
+            playTone(freq, 'sine', 0.05); 
+            lastDrawSoundTime = now;
+        }
+    }
+
+    function handleEnd(e) {
+        if(!isGameRunning || !isTouching || waitingNext) return;
+        isTouching = false;
+        evaluateAnswer();
+    }
+
+    function evaluateAnswer() {
+        waitingNext = true;
+
+        let diffRad = currentDragRad - baseAngleRad;
+        while(diffRad <= -Math.PI) diffRad += 2*Math.PI;
+        while(diffRad > Math.PI) diffRad -= 2*Math.PI;
+        
+        const currentDeg = Math.abs(diffRad) * (180 / Math.PI);
+        const error = Math.abs(targetAngle - currentDeg);
+
+        const fbOverlay = document.getElementById('feedback-overlay');
+        const fbAngle = document.getElementById('fb-angle-text');
+        const fbDiff = document.getElementById('fb-diff-text');
+        const fbScore = document.getElementById('fb-score-text'); // 점수 엘리먼트 가져오기
+
+        let earned = 0;
+        let isSuccess = false;
+
+        if (error <= 3) { earned = 500; isSuccess = true; }
+        else if (error <= 6) { earned = 300; isSuccess = true; }
+        else if (error <= 10) { earned = 100; isSuccess = true; }
+        else { earned = 0; }
+
+        if(earned > 0) score += earned;
+
+        if(isSuccess) playTone(600 + earned, 'sine', 0.2);
+        else playTone(150, 'sawtooth', 0.3);
+
+        fbAngle.innerText = currentDeg.toFixed(1) + "°";
+        fbDiff.innerText = error.toFixed(1) + "° 차이";
+        fbDiff.className = "fb-diff " + (isSuccess ? "fb-good" : "fb-bad");
+        
+        // --- [점수 표시 로직 추가] ---
+        if(earned > 0) {
+            fbScore.innerText = "+" + earned + "점";
+            fbScore.style.color = "var(--neon-green)";
+        } else {
+            fbScore.innerText = "+0점";
+            fbScore.style.color = "#aaa";
+        }
+        // ------------------------
+        
+        fbOverlay.classList.remove('pop-in', 'pop-out');
+        
+        fbOverlay.style.opacity = 1; 
+        void fbOverlay.offsetWidth; 
+        fbOverlay.classList.add('pop-in');
+
+        fbTimeout1 = setTimeout(() => {
+            fbOverlay.classList.remove('pop-in');
+            fbOverlay.classList.add('pop-out');
+            
+            fbTimeout2 = setTimeout(() => {
+                if(isGameRunning) {
+                    waitingNext = false;
+                    nextProblem();
+                    updateUI();
+                    
+                    fbOverlay.style.opacity = 0;
+                    fbOverlay.classList.remove('pop-out');
+                }
+            }, 300); 
+        }, 700); 
+    }
+
+    function finishGame() {
+        isGameRunning = false;
+        clearInterval(gameInterval);
+        playTone(300, 'triangle', 0.5);
+
+        document.getElementById('res-final-score').innerText = score;
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+
+        submitScore(localStorage.getItem("kingsmath_nickname"), score);
+    }
+
+    const API_URL = "./ranking.php";
+
+    function submitScore(name, score) {
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=submit&nickname=${encodeURIComponent(name)}&score=${score}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            const msgEl = document.getElementById("res-msg");
+            if(data.rank) msgEl.innerHTML = `현재 <span style='color:#FF69B4; font-weight:bold;'>${data.rank}등</span> 이에요!`;
+            else msgEl.innerText = "점수가 저장되었어요.";
+        })
+        .catch(e => {
+            document.getElementById("res-msg").innerText = "수고했어요!";
+        });
+    }
+
+    function loadRanking() {
+        const list = document.getElementById("ranking-list");
+        fetch(API_URL + "?action=list")
+        .then(res => res.json())
+        .then(data => {
+            let html = "";
+            if(data.length === 0) {
+                html = `<div style='padding:20px; color:#aaa; text-align:center;'>1등에 도전해봐요!</div>`;
+            } else {
+                data.forEach((item, index) => {
+                    let medal = "";
+                    let style = "";
+                    
+                    if(index===0) { medal="🥇"; style="width:15%; font-weight:bold;"; }
+                    else if(index===1) { medal="🥈"; style="width:15%; font-weight:bold;"; }
+                    else if(index===2) { medal="🥉"; style="width:15%; font-weight:bold;"; }
+                    else { 
+                        medal = `<span class="rank-num">${index+1}</span>`;
+                        style="width:15%;";
+                    }
+                    
+                    html += `
+                    <div class="rank-row">
+                        <span style="${style}">${medal}</span>
+                        <span style="width:50%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; color:#555;">${item.nickname}</span>
+                        <span style="width:35%; text-align:right; color:var(--main-accent); font-weight:bold;">${item.score}</span>
+                    </div>`;
+                });
+            }
+            list.innerHTML = html;
+        })
+        .catch(err => {
+        });
+    }
+
+</script>
+</body>
+</html>

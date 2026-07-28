@@ -1,0 +1,5943 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5YW0T2C109');
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0F4C3A">
+
+<title>English Korean Word King</title>
+<meta name="description" content="전자칠판을 최고의 영어 학습 도구로 만드세요! 게임으로 즐기는 무료 영단어 트레이닝.">
+<meta name="keywords" content="전자칠판, 영어, 영단어게임, 단어킹, 두뇌게임, 무료게임, 영어게임, 교육용게임">
+<link rel="canonical" href="/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="English Korean Word King">
+<meta property="og:description" content="전자칠판 전용 무료·무설치 영단어 배틀 게임">
+<meta property="og:url" content="/">
+<meta property="og:site_name" content="English Korean Word King">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    corePlugins: {
+      preflight: false,
+    }
+  }
+</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+/* === [핵심] 색상 변수 설정 (다크모드 고정) === */
+:root {
+    --bg: #121212;
+    --panel-bg: #1e1e2e;
+    --dark: #e0e0e0;
+    --text-muted: #a0a0a0;
+    --border-color: #333333;
+
+    /* 팀 배경색 (다크모드용: 어두운 톤) */
+    --dog-color: #332b00;
+    --cat-color: #1e1b2e;
+    --rabbit-color: #2e151a;
+    --hamster-color: #2e1e0f;
+    --panda-color: #0f2e26;
+    --monkey-color: #221826;
+
+    /* 메뉴 색상 */
+    --math-blue: #4dabf7; --math-blue-light: #183e5c;
+    --math-red: #ff8787; --math-red-light: #4a1818;
+    --math-green: #69db7c; --math-green-light: #164020;
+    --math-yellow: #fcc419; --math-yellow-light: #332b00;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--dark);
+    font-family: 'Noto Sans KR', 'Malgun Gothic', '맑은 고딕', sans-serif;
+    overflow: hidden;
+    user-select: none; -webkit-user-select: none;
+    touch-action: pan-y; overscroll-behavior: none;
+    -webkit-text-size-adjust: none;
+    display: flex; flex-direction: column;
+    height: 100vh; height: -webkit-fill-available; height: 100dvh;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
+}
+
+i[class^="fa-"] {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+body:not(.lang-ko) { font-family: 'Noto Sans', sans-serif; }
+
+#overlay {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    opacity: 0.98;
+    display: flex; flex-direction: column;
+    z-index: 100; backdrop-filter: blur(15px);
+    text-align: center; padding: 0;
+    overflow-y: auto; touch-action: pan-y;
+}
+
+.overlay-content {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 0px; width: 100%; box-sizing: border-box;
+}
+
+.title-area { margin-bottom: 15px; }
+
+#msgTitle {
+    font-size: 2.6rem;
+    color: var(--dark);
+    margin: 0; font-weight: 500;
+    text-shadow: 0 0 20px rgba(255,255,255,0.1); word-break: keep-all; line-height: 1.2;
+}
+.lang-ru #msgTitle, .lang-es #msgTitle, .lang-fr #msgTitle { font-size: 2.8rem; }
+.subtitle {
+    color: var(--text-muted);
+    font-size: 1.2rem; margin-top: 5px; line-height: 1.4;
+}
+
+#setupArea {
+    width: 480px; max-width: 95vw;
+    margin: 0 auto 15px auto;
+    display: flex; flex-direction: column; gap: 15px;
+}
+
+.setup-row { display: flex; gap: 10px; width: 100%; }
+.setup-group { flex: 1; text-align: left; }
+
+.setup-label {
+    font-size: 1.2rem; color: var(--text-muted);
+    margin-bottom: 6px; display: block; margin-left: 5px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.custom-select {
+    width: 100%; font-family: inherit;
+    font-size: 1.2rem; padding: 12px 12px;
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    background: var(--panel-bg);
+    cursor: pointer; outline: none;
+    color: var(--dark);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.math-menu-wrapper {
+    width: 480px; max-width: 95vw; margin: 0 auto;
+}
+
+.math-menu-container {
+    width: 100%; background: var(--panel-bg);
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.math-tabs {
+    display: flex;
+    background: rgba(128, 128, 128, 0.1);
+    padding: 8px 8px 0 8px; gap: 4px; overflow-x: auto;
+}
+.math-tabs::-webkit-scrollbar { display: none; }
+
+.math-tab {
+    flex: 1; min-width: 45px; padding: 10px 2px;
+    border-radius: 12px 12px 0 0; border: none;
+    background: transparent; cursor: pointer;
+    transition: all 0.2s; color: var(--text-muted);
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.math-tab.active {
+    background: var(--panel-bg);
+    box-shadow: 0 -3px 10px rgba(0,0,0,0.05);
+    color: var(--dark); font-weight: bold;
+    transform: translateY(2px);
+}
+
+.tab-icon { font-size: 1.4rem; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
+.tab-text { font-size: 0.9rem; white-space: nowrap; overflow: hidden; }
+
+.math-tab[data-type="en_kr"].active { color: var(--math-blue); background: var(--math-blue-light); border-bottom: 2px solid var(--math-blue);}
+.math-tab[data-type="kr_en"].active { color: var(--math-red); background: var(--math-red-light); border-bottom: 2px solid var(--math-red);}
+.math-tab[data-type="ox_quiz"].active { color: var(--math-yellow); background: var(--math-yellow-light); border-bottom: 2px solid var(--math-yellow);}
+.math-tab[data-type="random"].active { color: var(--math-green); background: var(--math-green-light); border-bottom: 2px solid var(--math-green);}
+
+.level-list { padding: 10px; background: var(--panel-bg); }
+
+.level-item {
+    display: flex; align-items: center; padding: 6px 15px;
+    margin-bottom: 8px; border-radius: 12px;
+    border: 2px solid var(--border-color);
+    background: var(--panel-bg);
+    cursor: pointer; transition: all 0.15s; text-align: left;
+    color: var(--dark);
+}
+.level-item:last-child { margin-bottom: 0; }
+.level-item.selected { border-color: transparent; background-color: #333; }
+
+.level-list[data-theme="en_kr"] .level-item.selected { background-color: var(--math-blue-light); border-color: var(--math-blue); }
+.level-list[data-theme="kr_en"] .level-item.selected { background-color: var(--math-red-light); border-color: var(--math-red); }
+.level-list[data-theme="ox_quiz"] .level-item.selected { background-color: var(--math-yellow-light); border-color: var(--math-yellow); }
+.level-list[data-theme="random"] .level-item.selected { background-color: var(--math-green-light); border-color: var(--math-green); }
+
+.level-badge {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(128,128,128,0.2); color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: bold; margin-right: 15px; flex-shrink: 0;
+}
+.level-item.selected .level-badge { color: white; background: rgba(255,255,255,0.2); }
+.level-list[data-theme="en_kr"] .level-item.selected .level-badge { background: var(--math-blue); }
+.level-list[data-theme="kr_en"] .level-item.selected .level-badge { background: var(--math-red); }
+.level-list[data-theme="ox_quiz"] .level-item.selected .level-badge { background: var(--math-yellow); }
+.level-list[data-theme="random"] .level-item.selected .level-badge { background: var(--math-green); }
+
+.level-info { flex: 1; display: flex; justify-content: space-between; align-items: center; overflow: hidden; }
+.level-title { font-size: 1.15rem; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.level-desc { font-size: 1.15rem; margin-left: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; display: flex; align-items: center;}
+.level-list[data-theme="en_kr"] .level-desc { color: var(--math-blue); }
+.level-list[data-theme="kr_en"] .level-desc { color: var(--math-red); }
+.level-list[data-theme="ox_quiz"] .level-desc { color: var(--math-yellow); }
+.level-list[data-theme="random"] .level-desc { color: var(--math-green); }
+.level-item.selected .level-desc { color: #e0e0e0; opacity: 1; }
+
+#startBtn {
+    font-size: 2.2rem; padding: 12px 0; border-radius: 50px; border: none;
+    background: #339af0; color: white; cursor: pointer;
+    box-shadow: 0 6px 0 #1c7ed6; transition: 0.1s;
+    font-family: inherit; touch-action: manipulation;
+    width: 470px; max-width: 92vw; margin: 20px auto 0 auto; display: block;
+    white-space: nowrap; overflow: hidden;
+}
+#startBtn:active { transform: translateY(4px); box-shadow: 0 2px 0 #1c7ed6 !important; }
+
+/* === 인게임 스타일 === */
+#finalPodium { height: 25vh; width: 100%; display: none; flex-direction: row; }
+.podium-col {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative; border-top: 4px solid rgba(255,255,255,0.05);
+}
+.podium-medal {
+    font-size: clamp(45px, 5vw, 69px); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+    margin-bottom: 5px; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+.podium-name {
+    font-size: clamp(45px, 5vw, 69px); color: var(--dark);
+    display: flex; align-items: center; justify-content: center; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+@keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+#countdownLayer {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
+    display: none; align-items: center; justify-content: center;
+    z-index: 200; pointer-events: none; backdrop-filter: blur(5px);
+}
+#countdownText {
+    font-size: 30vw; color: white;
+    text-shadow: 0 0 50px rgba(255,255,255,0.5);
+    animation: countAnim 1s ease-out forwards;
+}
+@keyframes countAnim { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+
+/* === 헤더 & 타이머 === */
+#header {
+    height: 160px; background: var(--panel-bg);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; z-index: 20; padding: 0 -3px;
+    border-bottom: 2px solid #333;
+}
+.header-logo { font-size: clamp(20px, 2vw, 30px); flex: 1; color: var(--text-muted); }
+.header-logo a { color: #ff8787; text-decoration: none; transition: all 0.2s ease-in-out; }
+.header-logo a:hover { color: #ffc9c9; text-decoration: underline; }
+.logo-left { text-align: center; } 
+.logo-right { text-align: center; }
+
+#timerDisplay {
+    font-size:120px; padding: 0 20px; color: #ff6b6b;
+    text-align: center; width: 260px; min-width: auto;
+    font-weight: bold; flex-shrink: 0; text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+}
+.timer-urgent { animation: timerBlink 0.5s infinite; background: #c92a2a !important; color: white !important; border-radius: 20px; box-shadow: 0 0 20px #c92a2a; }
+@keyframes timerBlink { 50% { opacity: 0.7; } }
+
+/* === 팀전 전용 스코어보드 === */
+#teamScoreBoard {
+    display: none; width: 100%; height: 31vh;
+    flex-direction: row; justify-content: space-around; align-items: center;
+    background: var(--bg); padding: 0 10px; box-sizing: border-box; z-index: 15;
+}
+.team-card {
+    flex: 1; height: 90%; border-radius: 20px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.3); margin: 0 5px; border: 2px solid rgba(255,255,255,0.05);
+}
+.team-A { background: var(--dog-color); }
+.team-B { background: var(--rabbit-color); }
+.team-C { background: var(--panda-color); display: none; }
+
+.team-card .team-name { font-size: 3.5rem; color: var(--dark); margin-bottom: 5px; white-space: nowrap; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+.team-card .team-score { font-size: 4rem; color: #ff8787; font-weight: bold; display: flex; align-items: center; gap: 10px; text-shadow: 0 0 10px rgba(255,135,135,0.3); }
+.team-card .team-rank {
+    position: absolute; bottom: -30px; background: #333; color: #ccc;
+    padding: 5px 20px; border-radius: 20px; font-size: 2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: 0.3s;
+    border: 2px solid #444;
+}
+.team-card .team-rank.rank-1 {
+    background: #ff6b6b; color: white; transform: scale(1.2);
+    border: none; font-weight: bold; box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+}
+
+/* === 게임판 레이아웃 === */
+#arena {
+    display: flex; flex: 1; width: 100vw; gap: 0;
+    touch-action: none; background: #000;
+}
+.teamBox {
+    flex: 1; display: none; flex-direction: column; align-items: center; justify-content: space-evenly;
+    padding: 10px 2px; position: relative;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    overflow: hidden; z-index: 1;
+}
+body.team-mode .teamTitle, body.team-mode .scoreBadge, body.team-mode .rank-badge { display: none !important; }
+body.team-mode .problem { font-size: 40px; margin-bottom: -10px; }
+.teamBox:last-child { border-right: none; }
+
+.bg-dog { background: var(--dog-color); }
+.bg-dog::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='35'%3E🐶%3C/text%3E%3C/svg%3E"); }
+.bg-cat { background: var(--cat-color); }
+.bg-cat::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='35'%3E🐱%3C/text%3E%3C/svg%3E"); }
+.bg-rabbit { background: var(--rabbit-color); }
+.bg-rabbit::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='35'%3E🐰%3C/text%3E%3C/svg%3E"); }
+.bg-hamster { background: var(--hamster-color); }
+.bg-hamster::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='35'%3E🐹%3C/text%3E%3C/svg%3E"); }
+.bg-panda { background: var(--panda-color); }
+.bg-panda::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='35'%3E🐼%3C/text%3E%3C/svg%3E"); }
+.bg-monkey { background: var(--monkey-color); }
+.bg-monkey::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='35'%3E🐵%3C/text%3E%3C/svg%3E"); }
+.teamBox::before, .podium-col::before {
+    content: ""; position: absolute; inset: 0; opacity: 0.05; z-index: -1; pointer-events: none;
+    background-size: 80px 80px; background-repeat: repeat;
+}
+
+.teamTitle {
+    font-size: clamp(40px, 4vw, 42px); min-font-size: 18px; margin: 0; color: var(--dark);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;
+    width: 100%; z-index: 15; margin-bottom: 5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+.scoreBadge {
+    font-size: clamp(45px, 4vw, 60px); color: #ff8787; margin: 2px 0; z-index: 15; margin-bottom: 5px; text-shadow: 0 0 5px rgba(255,135,135,0.3);
+}
+.rank-badge {
+    font-size: clamp(40px, 5vw, 55px);
+    width: 100%; height: 60px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent !important; box-shadow: none !important; border: none !important;
+    padding: 0; margin-bottom: 5px; z-index: 15;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); line-height: 1;
+}
+
+.rank-badge.rank-low { font-size: clamp(28px, 3.5vw, 38px) !important;  }
+.rank-1 { background: transparent !important; color: inherit !important; transform: scale(1.2); box-shadow: none !important; }
+
+.problem { 
+    font-size: clamp(30px, 3.5vw, 40px); color: #ffffff; margin: 0;
+    letter-spacing: 0px; white-space: normal; z-index: 15;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    line-height: 1.2; text-shadow: 0 2px 2px rgba(0,0,0,0.8);
+    word-break: keep-all; padding: 0 10px; min-height: 60px;gap: 10px;
+}
+
+.display { display: none !important; } 
+
+/* 4지선다형 키패드 (2x2) */
+.keypad {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; 
+    width: 100% !important; max-width: 280px !important; min-width: 120px !important;
+    position: relative; z-index: 15;
+}
+/* OX 퀴즈용 1x2 키패드 */
+.keypad.ox-mode {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.key { 
+    height: auto; min-height: 60px; max-height: 80px; padding: 5px;
+    background: #2b2b2b; border-radius: 12px; 
+    font-size: clamp(16px, 2vw, 19px); display: flex; align-items: center; justify-content: center; 
+    cursor: pointer; box-shadow: 0 4px 0 #111; transition: 0.1s; touch-action: manipulation;
+    color: #e0e0e0; border: 1px solid #3d3d3d; text-align: center; word-break: keep-all; line-height: 1.1;
+}
+.key:active { transform: translateY(2px); box-shadow: 0 1px 0 #111; }
+
+.item-effect {
+    position: absolute; bottom: -80px; font-size: 4rem; pointer-events: none;
+    z-index: 50; animation: itemFlyUp 1.875s ease-in forwards; opacity: 0; filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
+}
+@keyframes itemFlyUp {
+    0% { transform: translateY(0) scale(0.6) rotate(0deg); opacity: 0; }
+    20% { opacity: 0.8; }
+    100% { transform: translateY(-700px) scale(2.8) rotate(500deg); opacity: 0; }
+}
+
+.combo-text {
+    position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 2.5rem; font-weight: 800; color: #69db7c;
+    text-shadow: 2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000;
+    z-index: 100; pointer-events: none; white-space: nowrap; animation: comboPop 0.8s ease-out forwards;
+}
+.combo-text.super { color: #ff8787; font-size: 3.2rem; top: 25%; }
+@keyframes comboPop {
+    0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+    40% { transform: translate(-50%, -40px) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -100px) scale(1); opacity: 0; }
+}
+
+.fixed-btn {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    z-index: 500; font-size: 2.8rem; background: rgba(0,0,0,0.5); 
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 50%;
+    width: 60px; height: 60px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; outline: none; touch-action: manipulation;
+    backdrop-filter: blur(5px); color: white;
+}
+.fixed-btn:active { transform: translateY(-50%) scale(0.85); background: rgba(0,0,0,0.8); }
+#resetBtn { left: 10px; }
+#gameFsBtn { right: 10px; }
+
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+.wrong { animation: shake 0.2s; color: #ff6b6b !important; text-shadow: none !important;}
+
+@keyframes winPulse { 0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(255,215,0,0.2); } 50% { transform: scale(1.02); box-shadow: 0 4px 25px rgba(255,215,0,0.5); } }
+.gold { background: #332b00 !important; border: 2px solid #fcc419 !important; color: #fcc419; animation: winPulse 0.6s infinite ease-in-out; }
+
+#resultList {margin: 20px 0;padding: 0;list-style: none;width: 470px;max-width: 92vw;}
+#resultList li {
+    font-size: 1.5rem; padding: 10px 20px; margin: 8px 0; background: var(--panel-bg);
+    border-radius: 15px; display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid #333; color: var(--dark);
+}
+.result-name { display: flex; gap: 10px; align-items: center; }
+
+.desktop-view { display: inline; }
+.mobile-view { display: none; cursor: pointer; }
+
+@media (max-width: 768px) {
+    #header { height: 100px; }
+    .header-logo { font-size: 0px; }
+    .desktop-view { display: none !important; }
+    .mobile-view { display: inline !important; font-size: 3rem; color: #fff; }
+    .header-logo .mobile-view { font-size: 3.5rem; display: inline-block !important; line-height: 1; }
+    #timerDisplay { font-size: 70px; width: 120px; }
+    #msgTitle { font-size: 2.2rem; } /* 폰트 사이즈 조정 */
+    .subtitle { font-size: 1rem; }
+    .title-area { margin-bottom: 12px; }
+    .fixed-btn { display: none !important; }
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 8px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+/* 단어 보기 모달 CSS */
+.word-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    display: none; align-items: center; justify-content: center; z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+.word-modal-content {
+    background: var(--panel-bg); width: 90%; max-width: 500px; max-height: 80vh;
+    border-radius: 20px; border: 2px solid var(--border-color);
+    display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.word-modal-header {
+    padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid var(--border-color); background: #2a2a35; border-radius: 20px 20px 0 0;
+}
+.word-modal-header h2 { margin: 0; font-size: 1.5rem; color: #e0e0e0; }
+.word-modal-close {
+    background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #ff6b6b; transition: 0.2s;
+}
+.word-modal-close:hover { transform: scale(1.1); }
+.word-modal-list {
+    padding: 15px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px;
+}
+.word-item {
+    display: flex; justify-content: space-between; align-items: center; padding: 12px 15px;
+    background: #1e1e2e; border-radius: 12px; border: 1px solid #333;
+}
+.word-item .en { color: #4dabf7; font-weight: bold; font-size: 1.2rem; }
+.word-item .kr { color: #e0e0e0; font-size: 1.1rem; }
+.word-view-btn {
+    background: #495057; border: none; color: white; border-radius: 8px;
+    padding: 4px 8px; font-size: 0.9rem; margin-left: 10px; cursor: pointer;
+    transition: 0.2s; z-index: 10;
+}
+.word-view-btn:hover { background: #6c757d; }
+
+</style>
+</head>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col relative overflow-x-hidden lang-ko">
+
+<div id="countdownLayer"><div id="countdownText">3</div></div>
+
+<div id="overlay">
+    <div class="overlay-content">
+        <div class="title-area">
+            <h1 id="msgTitle" class="dynamic-text">English Korean Word King<span class="mobile-view" id="mobileTitleFsBtn">↕️</span></h1>
+            <div class="subtitle dynamic-text" id="subtitle">📱 ~2 | 📑 ~4 | 📺 ~6</div>
+        </div>
+        
+        <ul id="resultList" style="display:none;"></ul>
+        
+        <div id="setupArea">
+            <div class="setup-row">
+                <div class="setup-group">
+                    <label class="setup-label dynamic-text">⏱️ Time</label>
+                    <select id="gameTimeLimit" class="custom-select">
+                        <option value="60" selected>1 Min</option>
+                        <option value="120">2 Min</option>
+                        <option value="180">3 Min</option>
+                    </select>
+                </div>
+                <div class="setup-group">
+                    <label class="setup-label dynamic-text">👥 Mode</label>
+                    <select id="playerCount" class="custom-select">
+                        <option value="1">1 Player</option>
+                        <option value="2">2 Players</option>
+                        <option value="3">3 Players</option>
+                        <option value="4" selected>4 Players</option>
+                        <option value="5">5 Players</option>
+                        <option value="6">6 Players</option>
+                        <option value="team2vs2">2:2 Team</option>
+                        <option value="team3vs3">3:3 Team</option>
+                        <option value="team2vs2vs2">2:2:2 Team</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="math-menu-wrapper">
+            <div class="math-menu-container">
+                <div class="math-tabs" id="mathTabs"></div>
+                <div class="level-list" id="levelList" data-theme="en_kr"></div>
+            </div>
+        </div>
+        
+        <button id="startBtn" class="dynamic-text">Start Battle</button>
+<a id="otherGameLink" href="/?cg=kingen" target="_self" style="display: inline-block; margin-top: 20px; padding: 10px 24px; font-size: 1.1rem; font-weight: 700; color: #e0e0e0; text-decoration: none; background-color: rgba(255, 255, 255, 0.1); border-radius: 30px; transition: all 0.2s;">🎮 Other Games</a>
+    </div>
+    
+    <div id="finalPodium"></div>
+</div>
+
+<button id="resetBtn" class="fixed-btn">🏠</button>
+<button id="gameFsBtn" class="fixed-btn">↕️</button>
+
+<header id="header">
+    <div class="header-logo logo-left">
+        <span class="mobile-view" id="headerHomeBtn">🏠</span>
+    </div>
+    <div id="timerDisplay">60</div>
+    <div class="header-logo logo-right">
+        <span class="mobile-view" id="headerFsBtn">↕️</span>
+    </div>
+</header>
+
+<div id="teamScoreBoard">
+    <div class="team-card team-A" id="teamCardA">
+        <div class="team-name" id="teamNameA">🐶Dog & Cat🐱</div>
+        <div class="team-score">🦴 <span id="scoreA">0</span> 🐟</div>
+        <div class="team-rank" id="rankA">1st</div>
+    </div>
+    <div class="team-card team-B" id="teamCardB">
+        <div class="team-name" id="teamNameB">🐰Rabbit & Hamster🐹</div>
+        <div class="team-score">🥕 <span id="scoreB">0</span> 🥜</div>
+        <div class="team-rank" id="rankB">1st</div>
+    </div>
+    <div class="team-card team-C" id="teamCardC">
+        <div class="team-name" id="teamNameC">🐼Panda & Monkey🐵</div>
+        <div class="team-score">🎋 <span id="scoreC">0</span> 🍌</div>
+        <div class="team-rank" id="rankC">1st</div>
+    </div>
+</div>
+
+<div id="arena">
+    <div class="teamBox bg-dog" id="dogSide">
+        <div class="teamTitle" id="title-dog">🐶 Dog</div>
+        <div class="scoreBadge" id="dogScore">🦴 0</div>
+        <div id="dogRank" class="rank-badge">1st</div>
+        <div class="problem" id="dogProb">단어</div>
+        <div class="keypad" id="dogPad"></div>
+    </div>
+    <div class="teamBox bg-cat" id="catSide">
+        <div class="teamTitle" id="title-cat">🐱 Cat</div>
+        <div class="scoreBadge" id="catScore">🐟 0</div>
+        <div id="catRank" class="rank-badge">1st</div>
+        <div class="problem" id="catProb">단어</div>
+        <div class="keypad" id="catPad"></div>
+    </div>
+    <div class="teamBox bg-rabbit" id="rabbitSide">
+        <div class="teamTitle" id="title-rabbit">🐰 Rabbit</div>
+        <div class="scoreBadge" id="rabbitScore">🥕 0</div>
+        <div id="rabbitRank" class="rank-badge">1st</div>
+        <div class="problem" id="rabbitProb">단어</div>
+        <div class="keypad" id="rabbitPad"></div>
+    </div>
+    <div class="teamBox bg-hamster" id="hamsterSide">
+        <div class="teamTitle" id="title-hamster">🐹 Hamster</div>
+        <div class="scoreBadge" id="hamsterScore">🥜 0</div>
+        <div id="hamsterRank" class="rank-badge">1st</div>
+        <div class="problem" id="hamsterProb">단어</div>
+        <div class="keypad" id="hamsterPad"></div>
+    </div>
+    <div class="teamBox bg-panda" id="pandaSide">
+        <div class="teamTitle" id="title-panda">🐼 Panda</div>
+        <div class="scoreBadge" id="pandaScore">🎋 0</div>
+        <div id="pandaRank" class="rank-badge">1st</div>
+        <div class="problem" id="pandaProb">단어</div>
+        <div class="keypad" id="pandaPad"></div>
+    </div>
+    <div class="teamBox bg-monkey" id="monkeySide">
+        <div class="teamTitle" id="title-monkey">🐵 Monkey</div>
+        <div class="scoreBadge" id="monkeyScore">🍌 0</div>
+        <div id="monkeyRank" class="rank-badge">1st</div>
+        <div class="problem" id="monkeyProb">단어</div>
+        <div class="keypad" id="monkeyPad"></div>
+    </div>
+</div>
+
+<div id="wordModal" class="word-modal">
+    <div class="word-modal-content">
+        <div class="word-modal-header">
+            <h2 id="wordModalTitle">Grade Words</h2>
+            <button class="word-modal-close" onclick="closeWordModal()">✖</button>
+        </div>
+        <div id="wordModalList" class="word-modal-list custom-scrollbar"></div>
+    </div>
+</div>
+
+<script>
+/* =========================================
+   영단어 데이터 리스트 (이모지 포함 소문자 필수 단어 60개 세트)
+   ========================================= */
+const wordDataList = [
+
+  {
+
+    "grade":3,
+
+    "en":"a",
+
+    "kr":"하나의"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"Hi",
+
+    "kr":"안녕"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"dad",
+
+    "kr":"아빠"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"mommy",
+
+    "kr":"엄마"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"Okay",
+
+    "kr":"좋아!, 알았어요"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"Hello",
+
+    "kr":"안녕하세요, 여보세요"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"I",
+
+    "kr":"나는, 내가"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"you",
+
+    "kr":"당신, 너, 여러분"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"It",
+
+    "kr":"그것, 이것"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"thank",
+
+    "kr":"감사하다, 고맙습니다, 고마움"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"name",
+
+    "kr":"이름, 명칭, 지명하다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"this",
+
+    "kr":"이것, 이런, 지금"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"that",
+
+    "kr":"저것"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"ruler",
+
+    "kr":"통치자, 지도자, 지배자, 자"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"sorry",
+
+    "kr":"미안한, 죄송한, 유감스러운"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"apple",
+
+    "kr":"사과, 사과나무"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"orange",
+
+    "kr":"오렌지, 오렌지색의"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"banana",
+
+    "kr":"바나나"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"grape",
+
+    "kr":"포도"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"monkey",
+
+    "kr":"원숭이"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"cow",
+
+    "kr":"소, 암소, 젖소"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"cat",
+
+    "kr":"고양이"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"kangaroo",
+
+    "kr":"캥거루"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"dog",
+
+    "kr":"개"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"for",
+
+    "kr":"~을 위하여"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"down",
+
+    "kr":"아래에, 내리다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"here",
+
+    "kr":"여기, 이곳, 이쪽"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"up",
+
+    "kr":"위로, 오르다, 증가하다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"too",
+
+    "kr":"너무, 또한"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"on",
+
+    "kr":"위에, 계속하여"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"yes",
+
+    "kr":"예, 맞아, 네"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"no",
+
+    "kr":"아니오, 없다, 반대"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"great",
+
+    "kr":"위대한, 큰, 훌륭한"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"happy",
+
+    "kr":"행복한, 즐거운"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"hungry",
+
+    "kr":"배고픈"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"cold",
+
+    "kr":"추운, 감기, 추위"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"big",
+
+    "kr":"큰, 중요한"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"open",
+
+    "kr":"열다, 열린"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"sure",
+
+    "kr":"확실한"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"please",
+
+    "kr":"제발, 부디"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"outside",
+
+    "kr":"외부의, 밖의"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"many",
+
+    "kr":"많은, 다수의"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"how",
+
+    "kr":"어떻게, 얼마나"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"what",
+
+    "kr":"무엇, 무슨"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"small",
+
+    "kr":"작은, 적은"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"mouth",
+
+    "kr":"입"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"nose",
+
+    "kr":"코, 후각"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"shoe",
+
+    "kr":"신발, 구두"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"snow",
+
+    "kr":"눈, 눈이 오다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"snowman",
+
+    "kr":"눈사람"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"eye",
+
+    "kr":"눈, 시력, 시각"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"glove",
+
+    "kr":"장갑, 글러브"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"hand",
+
+    "kr":"손, 주다, 도움"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"sweater",
+
+    "kr":"스웨터"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"bag",
+
+    "kr":"가방, 자루, 주머니"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"book",
+
+    "kr":"책, 도서, 서적"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"chair",
+
+    "kr":"의자, 자리"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"door",
+
+    "kr":"문, 도어, 현관"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"bear",
+
+    "kr":"곰"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"lion",
+
+    "kr":"사자"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"pants",
+
+    "kr":"바지"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"pear",
+
+    "kr":"배"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"pen",
+
+    "kr":"펜"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"pencil",
+
+    "kr":"연필"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"window",
+
+    "kr":"창문, 창"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"desk",
+
+    "kr":"책상"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"point",
+
+    "kr":"점, 포인트, 요점"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"face",
+
+    "kr":"얼굴, 직면하다, 표정"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"fish",
+
+    "kr":"물고기, 낚시하다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"pig",
+
+    "kr":"돼지"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"time",
+
+    "kr":"시간, 때"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"everyone",
+
+    "kr":"모든 사람, 모두"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"birthday",
+
+    "kr":"생일"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"chicken",
+
+    "kr":"닭, 치킨, 닭고기, 병아리"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"lunch",
+
+    "kr":"점심"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"welcome",
+
+    "kr":"환영하다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"run",
+
+    "kr":"달리다, 운영하다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"have",
+
+    "kr":"가지다, 얻다, 소유하다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"close",
+
+    "kr":"가까운, 닫다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"fly",
+
+    "kr":"날다, 비행하다, 파리"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"go",
+
+    "kr":"가다, 떠나다, 출발하다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"like",
+
+    "kr":"좋아하다, ~같은"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"put",
+
+    "kr":"놓다, 두다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"ski",
+
+    "kr":"스키"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"skate",
+
+    "kr":"스케이트, 스케이트를 타다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"draw",
+
+    "kr":"그리다, 끌다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"touch",
+
+    "kr":"만지다, 감동시키다, 접촉"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"swim",
+
+    "kr":"수영하다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"dance",
+
+    "kr":"춤, 춤추다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"wait",
+
+    "kr":"기다리다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"can",
+
+    "kr":"할 수 있다, 캔"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"come",
+
+    "kr":"오다, 되다, 나오다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"help",
+
+    "kr":"돕다, 도움"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"jump",
+
+    "kr":"뛰어오르다, 도약, 점프"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"make",
+
+    "kr":"만들다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"look",
+
+    "kr":"보다, 찾다, 바라보다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"sit",
+
+    "kr":"앉다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"stand",
+
+    "kr":"서다, 서 있다, 입장"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"wash",
+
+    "kr":"씻다, 세탁하다"
+
+  },
+
+  {
+
+    "grade":3,
+
+    "en":"bye",
+
+    "kr":"안녕, 잘가요"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"good",
+
+    "kr":"좋은, 잘, 착한"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"morning",
+
+    "kr":"아침, 오전"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"weather",
+
+    "kr":"날씨, 기상, 기후"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"sunny",
+
+    "kr":"맑은, 햇살의"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"rain",
+
+    "kr":"비, 비가 오다"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"cloudy",
+
+    "kr":"흐린, 구름이 낀"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"afternoon",
+
+    "kr":"오후, 점심"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"envening",
+
+    "kr":"저녁"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"breakfast",
+
+    "kr":"아침식사, 아침"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"dinner",
+
+    "kr":"저녁식사, 저녁"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"bird",
+
+    "kr":"새, 조류"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"flower",
+
+    "kr":"꽃"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"king",
+
+    "kr":"왕, 국왕"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"bed",
+
+    "kr":"침대"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"friend",
+
+    "kr":"친구"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"girl",
+
+    "kr":"소녀"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"rice",
+
+    "kr":"쌀"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"school",
+
+    "kr":"학교"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"he",
+
+    "kr":"그는, 그 사람은"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"she",
+
+    "kr":"그녀, 그 여자"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"year",
+
+    "kr":"연도, 나이"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"bat",
+
+    "kr":"박쥐, 방망이"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"black",
+
+    "kr":"검은"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"body",
+
+    "kr":"몸, 신체"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"brother",
+
+    "kr":"형제"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"case",
+
+    "kr":"경우, 사건"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"crayon",
+
+    "kr":"크레용"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"eraser",
+
+    "kr":"지우개"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"father",
+
+    "kr":"아버지"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"mother",
+
+    "kr":"어머니"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"notebook",
+
+    "kr":"노트북, 공책"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"puppy",
+
+    "kr":"강아지"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"red",
+
+    "kr":"빨간, 레드"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"baseball",
+
+    "kr":"야구, 베이스볼"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"basketball",
+
+    "kr":"농구"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"tennis",
+
+    "kr":"테니스"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"cake",
+
+    "kr":"케이크"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"candy",
+
+    "kr":"사탕, 캔디"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"cap",
+
+    "kr":"모자, 캡, 뚜껑"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"color",
+
+    "kr":"색깔, 색, 컬러"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"white",
+
+    "kr":"흰색의, 흰, 백색의"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"yellow",
+
+    "kr":"노란색, 노란"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"green",
+
+    "kr":"녹색의"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"blue",
+
+    "kr":"파란, 푸른"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"doll",
+
+    "kr":"인형"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"soccer",
+
+    "kr":"축구, 싸커"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"table",
+
+    "kr":"테이블, 식탁"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"shirt",
+
+    "kr":"셔츠"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"soup",
+
+    "kr":"수프, 죽"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"card",
+
+    "kr":"카드, 엽서"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"chocolate",
+
+    "kr":"초콜릿"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"computer",
+
+    "kr":"컴퓨터"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"ribbon",
+
+    "kr":"리본"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"Xray",
+
+    "kr":"엑스레이"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"zoo",
+
+    "kr":"동물원"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"sports",
+
+    "kr":"스포츠, 운동"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"blouse",
+
+    "kr":"블라우스"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"juice",
+
+    "kr":"주스"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"party",
+
+    "kr":"파티"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"radio",
+
+    "kr":"라디오, 무선, 무전"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"bike",
+
+    "kr":"자전거"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"cheese",
+
+    "kr":"치즈"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"robot",
+
+    "kr":"로봇"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"sister",
+
+    "kr":"여동생, 자매, 누나"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"who",
+
+    "kr":"누구"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"coat",
+
+    "kr":"코트, 외투"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"game",
+
+    "kr":"게임, 경기, 시합"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"group",
+
+    "kr":"그룹, 단체, 집단"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"hamburger",
+
+    "kr":"햄버거"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"hundred",
+
+    "kr":"백, 100"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"classroom",
+
+    "kr":"교실, 수업, 학급"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"day",
+
+    "kr":"날, 하루, 낮"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"teacher",
+
+    "kr":"선생님, 교사"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"hot",
+
+    "kr":"뜨거운, 더운, 매운"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"nice",
+
+    "kr":"멋진, 좋은"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"windy",
+
+    "kr":"바람이 부는"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"beautiful",
+
+    "kr":"아름다운, 멋있는"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"late",
+
+    "kr":"늦은, 늦게"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"much",
+
+    "kr":"많은, 대부분"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"now",
+
+    "kr":"지금, 이제"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"o,clock",
+
+    "kr":"… 시"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"old",
+
+    "kr":"나이든, 늙은, 오래된"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"strong",
+
+    "kr":"강한, 튼튼한"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"very",
+
+    "kr":"매우"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"sick",
+
+    "kr":"아픈, 병든"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"tired",
+
+    "kr":"피곤한, 싫증난"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"there",
+
+    "kr":"거기, 그곳"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"cute",
+
+    "kr":"귀여운"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"pretty",
+
+    "kr":"예쁜, 꽤, 상당한"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"right",
+
+    "kr":"옳은, 권리"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"all",
+
+    "kr":"모든, 모두"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"bad",
+
+    "kr":"나쁜, 좋지 않은"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"know",
+
+    "kr":"알다, 인식하다"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"meet",
+
+    "kr":"만나다"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"see",
+
+    "kr":"보다, 알다, 이해하다"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"watch",
+
+    "kr":"보다, 지켜보다, 시계"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"play",
+
+    "kr":"놀다, 연주하다"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"want",
+
+    "kr":"원하다, 바라다"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"stop",
+
+    "kr":"멈추다, 막다"
+
+  },
+
+  {
+
+    "grade":4,
+
+    "en":"walk",
+
+    "kr":"걷다, 보행, 산책하다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"clean",
+
+    "kr":"깨끗한, 청소하다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"wonderful",
+
+    "kr":"멋진, 훌륭한, 놀라운"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"home",
+
+    "kr":"집, 가정, 홈"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"angry",
+
+    "kr":"화난, 성난"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"really",
+
+    "kr":"정말, 사실상, 실제로"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"well",
+
+    "kr":"잘, 충분히, 우물"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"middle",
+
+    "kr":"중앙의, 중간의"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"tall",
+
+    "kr":"키가 큰, 높은"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"every",
+
+    "kr":"모든, 모두"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"long",
+
+    "kr":"긴, 오래, 오랫동안"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"short",
+
+    "kr":"짧은, 단기의, 작은"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"straight",
+
+    "kr":"똑바로, 직선, 바로"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"ahead",
+
+    "kr":"앞서, 앞에, 미리"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"busy",
+
+    "kr":"바쁜, 분주한"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"full",
+
+    "kr":"가득한, 완전한"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"more",
+
+    "kr":"더 많은, 더욱"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"ready",
+
+    "kr":"준비된, 사전에"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"some",
+
+    "kr":"몇몇, 일부, ~중에는"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"today",
+
+    "kr":"오늘, 현재, 지금"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"favorite",
+
+    "kr":"가장 좋아하는, 마음에 드는"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"fun",
+
+    "kr":"재미있는, 즐거운"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"with",
+
+    "kr":"함께"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"living",
+
+    "kr":"살아 있는, 생활의"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"yesterday",
+
+    "kr":"어제"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"everywhere",
+
+    "kr":"어디나"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"free",
+
+    "kr":"자유의, 무료의"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"about",
+
+    "kr":"~에 대하여"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"from",
+
+    "kr":"~로 부터, ~에서"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"over",
+
+    "kr":"~이상, 위의"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"under",
+
+    "kr":"아래의, ~의 밑에"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"art",
+
+    "kr":"예술, 미술, 아트"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"bookcase",
+
+    "kr":"책장"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"box",
+
+    "kr":"상자, 박스"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"egg",
+
+    "kr":"달걀, 알, 계란"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"fine",
+
+    "kr":"좋은, 벌금, 미세한"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"goat",
+
+    "kr":"염소"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"headache",
+
+    "kr":"두통, 골칫거리"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"music",
+
+    "kr":"음악, 노래"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"prince",
+
+    "kr":"왕자, 세자, 프린스"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"science",
+
+    "kr":"과학, 사이언스"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"song",
+
+    "kr":"노래, 곡"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"we",
+
+    "kr":"우리"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"ball",
+
+    "kr":"공, 볼"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"bank",
+
+    "kr":"은행, 강둑"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"city",
+
+    "kr":"도시, 시내, 도심"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"elephant",
+
+    "kr":"코끼리"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"elevator",
+
+    "kr":"엘리베이터"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"excuse",
+
+    "kr":"변명, 핑계"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"idea",
+
+    "kr":"생각, 아이디어"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"left",
+
+    "kr":"왼쪽"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"picnic",
+
+    "kr":"소풍, 피크닉"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"rock",
+
+    "kr":"바위, 돌, 암석"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"sky",
+
+    "kr":"하늘, 상공"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"tower",
+
+    "kr":"타워, 탑, 고층 빌딩"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"where",
+
+    "kr":"어디, 장소"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"church",
+
+    "kr":"교회, 성당"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"ear",
+
+    "kr":"귀, 청각"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"glass",
+
+    "kr":"유리, 잔"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"hair",
+
+    "kr":"머리카락"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"homework",
+
+    "kr":"숙제"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"hospital",
+
+    "kr":"병원"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"night",
+
+    "kr":"밤, 야간, 어둠"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"problem",
+
+    "kr":"문제, 과제"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"singer",
+
+    "kr":"가수, 싱어"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"study",
+
+    "kr":"공부, 연구"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"way",
+
+    "kr":"방법, 길, 방식"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"boat",
+
+    "kr":"배, 보트"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"chopstick",
+
+    "kr":"젖가락"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"glue",
+
+    "kr":"풀, 접착제, 붙이다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"knife",
+
+    "kr":"칼, 나이프"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"lesson",
+
+    "kr":"수업, 단원, 교훈"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"paper",
+
+    "kr":"종이, 신문, 서류"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"scissors",
+
+    "kr":"가위"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"sock",
+
+    "kr":"양말"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"sound",
+
+    "kr":"소리, 들리다, 사운드"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"uncle",
+
+    "kr":"삼촌, 아저씨"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"camping",
+
+    "kr":"캠핑, 야영"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"backyard",
+
+    "kr":"뒷마당, 뒤뜰"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"bathroom",
+
+    "kr":"화장실, 욕실"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"bedroom",
+
+    "kr":"침실"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"cousin",
+
+    "kr":"사촌, 친척"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"dish",
+
+    "kr":"접시, 요리"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"fork",
+
+    "kr":"포크"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"future",
+
+    "kr":"미래, 장래"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"house",
+
+    "kr":"집, 주택"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"holiday",
+
+    "kr":"휴일, 공휴일, 휴가"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"people",
+
+    "kr":"사람들, 국민"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"zoo",
+
+    "kr":"동물원"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"kitchen",
+
+    "kr":"부엌, 주방"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"museum",
+
+    "kr":"박물관, 미술관"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"room",
+
+    "kr":"방, 공간"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"spoon",
+
+    "kr":"숟가락, 스푼"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"job",
+
+    "kr":"직업, 일자리"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"movie",
+
+    "kr":"영화, 무비"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"park",
+
+    "kr":"공원, 주차하다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"potato",
+
+    "kr":"감자, 포테이토"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"river",
+
+    "kr":"강, 하천"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"then",
+
+    "kr":"그 때, 그 다음에, 그 당시에"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"shopping",
+
+    "kr":"쇼핑, 가게 구경"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"together",
+
+    "kr":"함께, 같이, 서로"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"again",
+
+    "kr":"한 번 더, 다시"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"love",
+
+    "kr":"사랑하다, 좋아하다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"hurry",
+
+    "kr":"서두르다, 급하다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"back",
+
+    "kr":"돌아가다, 뒤, 등"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"get",
+
+    "kr":"얻다, 받다, 가지다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"miss",
+
+    "kr":"놓치다, 그리워하다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"turn",
+
+    "kr":"돌리다, 바꾸다, 전환하다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"try",
+
+    "kr":"노력하다, 시도하다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"use",
+
+    "kr":"이용하다, 쓰다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"cook",
+
+    "kr":"요리하다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"enjoy",
+
+    "kr":"즐기다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"kick",
+
+    "kr":"차다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"think",
+
+    "kr":"생각하다, 상상하다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"speak",
+
+    "kr":"말하다, 이야기하다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"stay",
+
+    "kr":"머물다, 지내다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"must",
+
+    "kr":"~해야 한다, 꼭~해야 한다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"buy",
+
+    "kr":"사다, 구입하다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"join",
+
+    "kr":"참여하다, 가입하다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"listen",
+
+    "kr":"듣다, 귀를 기울이다"
+
+  },
+
+  {
+
+    "grade":5,
+
+    "en":"visit",
+
+    "kr":"방문하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"aunt",
+
+    "kr":"이모, 고모"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"grandfather",
+
+    "kr":"할아버지"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"grandmother",
+
+    "kr":"할머니"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"bookstore",
+
+    "kr":"서점"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"building",
+
+    "kr":"건물, 건축"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"corner",
+
+    "kr":"구석, 모퉁이"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"office",
+
+    "kr":"사무실, 회사"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"post",
+
+    "kr":"우편"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"restaurant",
+
+    "kr":"식당, 레스토랑"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"watermelon",
+
+    "kr":"수박"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"than",
+
+    "kr":"~보다는"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"because",
+
+    "kr":"왜냐하면, ~때문에"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"fall",
+
+    "kr":"가을, 떨어지다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"season",
+
+    "kr":"계절, 시기, 시즌"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"spring",
+
+    "kr":"봄, 스프링"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"summer",
+
+    "kr":"여름"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"winter",
+
+    "kr":"겨울"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"mouse",
+
+    "kr":"쥐"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"rabbit",
+
+    "kr":"토끼"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"snake",
+
+    "kr":"뱀"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"feel",
+
+    "kr":"느끼다, 감정"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"change",
+
+    "kr":"변하다, 바꾸다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"show",
+
+    "kr":"보여주다, 쇼"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"hope",
+
+    "kr":"희망하다, 바라다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"Invite",
+
+    "kr":"초대하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"drink",
+
+    "kr":"마시다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"work",
+
+    "kr":"일하다, 작업"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"read",
+
+    "kr":"읽다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"ride",
+
+    "kr":"타다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"talk",
+
+    "kr":"말하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"hold",
+
+    "kr":"잡다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"move",
+
+    "kr":"움직이다, 이동하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"paint",
+
+    "kr":"그리다, 칠하다, 페인트"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"pass",
+
+    "kr":"지나가다, 통과하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"worry",
+
+    "kr":"걱정하다, 우려하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"eat",
+
+    "kr":"먹다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"write",
+
+    "kr":"쓰다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"sleep",
+
+    "kr":"자다, 잠"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"see",
+
+    "kr":"보다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"toy",
+
+    "kr":"장난감"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"concert",
+
+    "kr":"공연, 콘서트"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"trip",
+
+    "kr":"여행"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"course",
+
+    "kr":"과정, 코스"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"guitar",
+
+    "kr":"기타"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"musical",
+
+    "kr":"음악의, 뮤지컬의"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"bucket",
+
+    "kr":"양동이"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"model",
+
+    "kr":"모델, 모형, 방법"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"congratulation",
+
+    "kr":"축하, 축하하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"date",
+
+    "kr":"날짜"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"tomorrow",
+
+    "kr":"내일"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"soon",
+
+    "kr":"곧, 조만간, 금방"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"already",
+
+    "kr":"이미, 벌써"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"yet",
+
+    "kr":"아직"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"earache",
+
+    "kr":"귀앓이, 귀아픔"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"stomachache",
+
+    "kr":"복통, 배탈"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"car",
+
+    "kr":"자동차"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"helicopter",
+
+    "kr":"헬리콥터, 헬기"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"airplane",
+
+    "kr":"비행기"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"behind",
+
+    "kr":"~뒤에, 숨겨진"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"between",
+
+    "kr":"~사이에"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"near",
+
+    "kr":"근처에, 가갑게"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"street",
+
+    "kr":"거리, 길"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"away",
+
+    "kr":"떨어져, 떠나"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"food",
+
+    "kr":"음식"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"water",
+
+    "kr":"물"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"when",
+
+    "kr":"언제"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"why",
+
+    "kr":"왜"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"leaf",
+
+    "kr":"나뭇잎"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"may",
+
+    "kr":"~일지도 모른다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"will",
+
+    "kr":"~할 것이다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"doctor",
+
+    "kr":"의사, 박사"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"nurse",
+
+    "kr":"간호사"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"driver",
+
+    "kr":"운전사, 기사"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"pilot",
+
+    "kr":"조종사, 비행사"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"policeofficer",
+
+    "kr":"경찰관"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"singer",
+
+    "kr":"가수"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"floor",
+
+    "kr":"바닥, 층"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"present",
+
+    "kr":"선물, 현재의"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"elementary",
+
+    "kr":"초보의, 기초의, 기본의"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"last",
+
+    "kr":"지난, 마지막의"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"lucky",
+
+    "kr":"운이 좋은, 행운의"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"expensive",
+
+    "kr":"비싼"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"delicious",
+
+    "kr":"맛있는, 맛좋은"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"same",
+
+    "kr":"똑같은, 같은"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"cool",
+
+    "kr":"시원한, 냉각"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"warm",
+
+    "kr":"따뜻한, 온난한"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"little",
+
+    "kr":"작은, 조금, 약간의"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"fast",
+
+    "kr":"빠른, 빨리, 단식하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"surprise",
+
+    "kr":"놀라다, 깜짝"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"heavy",
+
+    "kr":"무거운"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"able",
+
+    "kr":"~할 수 있는, 유능한"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"agree",
+
+    "kr":"동의하다, 승낙하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"enough",
+
+    "kr":"충분히"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"introduce",
+
+    "kr":"소개하다, 도입하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"popular",
+
+    "kr":"인기 있는, 유명한"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"army",
+
+    "kr":"군대"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"death",
+
+    "kr":"죽음, 사망"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"spend",
+
+    "kr":"쓰다, 보내다, 사용하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"subject",
+
+    "kr":"과목, 주제, 대상"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"exercise",
+
+    "kr":"운동, 연습, 훈련"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"excuse",
+
+    "kr":"변명, 핑계"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"share",
+
+    "kr":"공유하다, 나누다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"pick",
+
+    "kr":"고르다, 선택하다, 뽑다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"habit",
+
+    "kr":"습관, 버릇"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"health",
+
+    "kr":"건강"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"possible",
+
+    "kr":"가능한, 할 수 있는"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"check",
+
+    "kr":"확인하다, 점검하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"follow",
+
+    "kr":"따르다, 뒤를 잇다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"south",
+
+    "kr":"남쪽"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"north",
+
+    "kr":"북쪽"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"social",
+
+    "kr":"사회의, 사교적인"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"someone",
+
+    "kr":"누군가"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"useful",
+
+    "kr":"유용한, 쓸모 있는"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"war",
+
+    "kr":"전쟁"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"factory",
+
+    "kr":"공장"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"result",
+
+    "kr":"결과"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"shape",
+
+    "kr":"형태, 모양"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"daily",
+
+    "kr":"매일의, 일상적인"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"allow",
+
+    "kr":"허락하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"image",
+
+    "kr":"이미지, 영상, 그림"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"mistake",
+
+    "kr":"실수, 잘못"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"national",
+
+    "kr":"국가의, 전국민의"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"nobody",
+
+    "kr":"아무도 ~ 않다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"crowd",
+
+    "kr":"군중, 붐비다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"raise",
+
+    "kr":"올리다, 높이다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"serve",
+
+    "kr":"제공하다, 봉사하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"success",
+
+    "kr":"성공"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"improve",
+
+    "kr":"개선하다, 향상하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"accept",
+
+    "kr":"받아들이다, 인정하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"appear",
+
+    "kr":"나타나다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"product",
+
+    "kr":"상품, 제품, 생산하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"express",
+
+    "kr":"표현하다, 나타내다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"forever",
+
+    "kr":"영원히, 항상, 계속"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"law",
+
+    "kr":"법, 법률"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"natural",
+
+    "kr":"자연의, 천연의"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"poem",
+
+    "kr":"시원한, 냉각"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"notice",
+
+    "kr":"알아차리다, 게시판"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"suggest",
+
+    "kr":"제안하다, 제의하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"disease",
+
+    "kr":"질병, 병"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"soldier",
+
+    "kr":"군인, 병사"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"sudden",
+
+    "kr":"갑작스러운, 느닷없이"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"provide",
+
+    "kr":"제공하다, 공급하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"support",
+
+    "kr":"지원하다, 지지하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"average",
+
+    "kr":"평균, 보통의"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"deliver",
+
+    "kr":"배달하다, 전달하다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"remain",
+
+    "kr":"남다, 머무르다"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"regular",
+
+    "kr":"규칙적인, 정기적인"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"difficulty",
+
+    "kr":"어려움, 곤경"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"purpose",
+
+    "kr":"목적, 목표"
+
+  },
+
+  {
+
+    "grade":6,
+
+    "en":"experiment",
+
+    "kr":"실험, 시도"
+
+  }
+
+];
+
+/* === 영단어 메뉴 데이터 설정 === */
+const ENG_MENU_DATA = [
+    {
+        id: 'en_kr', title: 'English<br>→ Korean', icon: '🔤', theme: 'en_kr', color: '#339af0',
+        levels: [
+            { lv: 1, title: 'Easy', desc: '초등 3학년' },
+            { lv: 2, title: 'Normal', desc: '초등 4학년' },
+            { lv: 3, title: 'Hard', desc: '초등 5학년' },
+            { lv: 4, title: 'Very Hard', desc: '초등 6학년' },
+            { lv: 5, title: 'Random', desc: 'All Grades' }
+        ]
+    },
+    {
+        id: 'kr_en', title: 'Korean<br>→ English', icon: '가', theme: 'kr_en', color: '#ff6b6b',
+        levels: [
+            { lv: 1, title: 'Easy', desc: '초등 3학년' },
+            { lv: 2, title: 'Normal', desc: '초등 4학년' },
+            { lv: 3, title: 'Hard', desc: '초등 5학년' },
+            { lv: 4, title: 'Very Hard', desc: '초등 6학년' },
+            { lv: 5, title: 'Random', desc: 'All Grades' }
+        ]
+    },
+    {
+        // 새로 추가된 OX 퀴즈 메뉴
+        id: 'ox_quiz', title: 'O X<br>Quiz', icon: '⭕', theme: 'ox_quiz', color: '#fcc419',
+        levels: [
+            { lv: 1, title: 'Easy', desc: '초등 3학년' },
+            { lv: 2, title: 'Normal', desc: '초등 4학년' },
+            { lv: 3, title: 'Hard', desc: '초등 5학년' },
+            { lv: 4, title: 'Very Hard', desc: '초등 6학년' },
+            { lv: 5, title: 'Random', desc: 'All Grades' }
+        ]
+    },
+    {
+        id: 'random', title: 'Random<br>Quiz', icon: '🎲', theme: 'random', color: '#51cf66',
+        levels: [
+            { lv: 1, title: 'Easy', desc: '초등 3학년' },
+            { lv: 2, title: 'Normal', desc: '초등 4학년' },
+            { lv: 3, title: 'Hard', desc: '초등 5학년' },
+            { lv: 4, title: 'Very Hard', desc: '초등 6학년' },
+            { lv: 5, title: 'Random', desc: 'All Grades' }
+        ]
+    }
+];
+
+const playerIds = ['dog', 'cat', 'rabbit', 'hamster', 'panda', 'monkey'];
+const state = {
+    dog: { id: 'dog', name: 'Dog', emoji: '🐶', item: '🦴', score: 0, ans: "", active: false, rank: 1, colorClass: 'bg-dog', combo: 0 },
+    cat: { id: 'cat', name: 'Cat', emoji: '🐱', item: '🐟', score: 0, ans: "", active: false, rank: 1, colorClass: 'bg-cat', combo: 0 },
+    rabbit: { id: 'rabbit', name: 'Rabbit', emoji: '🐰', item: '🥕', score: 0, ans: "", active: false, rank: 1, colorClass: 'bg-rabbit', combo: 0 },
+    hamster: { id: 'hamster', name: 'Hamster', emoji: '🐹', item: '🥜', score: 0, ans: "", active: false, rank: 1, colorClass: 'bg-hamster', combo: 0 },
+    panda: { id: 'panda', name: 'Panda', emoji: '🐼', item: '🎋', score: 0, ans: "", active: false, rank: 1, colorClass: 'bg-panda', combo: 0 },
+    monkey: { id: 'monkey', name: 'Monkey', emoji: '🐵', item: '🍌', score: 0, ans: "", active: false, rank: 1, colorClass: 'bg-monkey', combo: 0 },
+    timeLeft: 60, baseTime: 60, timerInterval: null, isGameOver: true, isCounting: false,
+    count: 4, teamModeType: 'none', currentTabId: 'en_kr', currentLevelIndex: 0
+};
+
+function renderMathMenu() {
+    const tabsContainer = document.getElementById('mathTabs');
+    const levelListContainer = document.getElementById('levelList');
+    
+    tabsContainer.innerHTML = '';
+    ENG_MENU_DATA.forEach(menu => {
+        const btn = document.createElement('button');
+        btn.className = `math-tab ${state.currentTabId === menu.id ? 'active' : ''}`;
+        btn.dataset.type = menu.id;
+        btn.innerHTML = `<span class="tab-icon">${menu.icon}</span><span class="tab-text">${menu.title}</span>`;
+        btn.onclick = () => {
+            state.currentTabId = menu.id;
+            state.currentLevelIndex = 0;
+            renderMathMenu();
+        };
+        tabsContainer.appendChild(btn);
+    });
+
+    const currentMenu = ENG_MENU_DATA.find(m => m.id === state.currentTabId);
+    levelListContainer.dataset.theme = currentMenu.theme;
+    levelListContainer.innerHTML = '';
+    
+    currentMenu.levels.forEach((level, idx) => {
+        let wordBtnHtml = '';
+        if (idx < 4) {
+            let grade = idx + 3;
+            wordBtnHtml = `<button class="word-view-btn" onclick="openWordModal(${grade}, event)">Word List</button>`;
+        }
+
+        const item = document.createElement('div');
+        item.className = `level-item ${state.currentLevelIndex === idx ? 'selected' : ''}`;
+        item.innerHTML = `
+            <div class="level-badge">${level.lv}</div>
+            <div class="level-info">
+                <div class="level-title">${level.title}</div>
+                <div class="level-desc">${level.desc} ${wordBtnHtml}</div>
+            </div>`;
+        item.onclick = () => {
+            state.currentLevelIndex = idx;
+            document.querySelectorAll('.level-item').forEach((el, i) => {
+                if(i === idx) el.classList.add('selected'); else el.classList.remove('selected');
+            });
+            updateStartButtonColor();
+        };
+        levelListContainer.appendChild(item);
+    });
+    updateStartButtonColor();
+    adjustFontSize();
+}
+
+function updateStartButtonColor() {
+    const currentMenu = ENG_MENU_DATA.find(m => m.id === state.currentTabId);
+    const btn = document.getElementById('startBtn');
+    btn.style.backgroundColor = currentMenu.color;
+    btn.style.boxShadow = `0 6px 0 ${adjustColor(currentMenu.color, -20)}`;
+}
+
+function adjustColor(color, amount) {
+    return '#' + color.replace(/^#/, '').replace(/../g, color => ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
+}
+
+function adjustFontSize() {
+    setTimeout(() => {
+        const els = document.querySelectorAll('.dynamic-text, .math-tab .tab-text, .level-title, .setup-label, #startBtn');
+        els.forEach(el => {
+            el.style.fontSize = '';
+            let fontSize = parseFloat(window.getComputedStyle(el).fontSize);
+            while (el.scrollWidth > el.clientWidth && fontSize > 10) {
+                fontSize -= 1;
+                el.style.fontSize = fontSize + 'px';
+            }
+        });
+    }, 50);
+}
+
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); }
+function playBeep(freq, duration, type = 'sine') {
+    if(!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime); gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration); osc.stop(audioCtx.currentTime + duration);
+}
+function playSuccessSound() { if(!audioCtx) return; [523.25, 659.25, 783.99].forEach((f, i) => { const osc = audioCtx.createOscillator(); const g = audioCtx.createGain(); osc.frequency.setValueAtTime(f, audioCtx.currentTime + (i*0.07)); g.gain.setValueAtTime(0.4, audioCtx.currentTime + (i*0.07)); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + (i*0.07) + 0.3); osc.connect(g); g.connect(audioCtx.destination); osc.start(audioCtx.currentTime + (i*0.07)); osc.stop(audioCtx.currentTime + (i*0.07) + 0.3); }); }
+function playFailSound() { if(!audioCtx) return; [392.00, 349.23, 311.13].forEach((f, i) => { const osc = audioCtx.createOscillator(); const g = audioCtx.createGain(); osc.frequency.setValueAtTime(f, audioCtx.currentTime + (i*0.1)); g.gain.setValueAtTime(0.4, audioCtx.currentTime + (i*0.1)); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + (i*0.1) + 0.4); osc.connect(g); g.connect(audioCtx.destination); osc.start(audioCtx.currentTime + (i*0.1)); osc.stop(audioCtx.currentTime + (i*0.1) + 0.4); }); }
+function playVictorySound() { if(!audioCtx) return; const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; notes.forEach((f, i) => { const osc = audioCtx.createOscillator(); const g = audioCtx.createGain(); const startTime = audioCtx.currentTime + (i * 0.12); osc.type = (i === notes.length - 1) ? 'square' : 'triangle'; osc.frequency.setValueAtTime(f, startTime); g.gain.setValueAtTime(0.4, startTime); g.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.6); osc.connect(g); g.connect(audioCtx.destination); osc.start(startTime); osc.stop(startTime + 0.6); }); }
+
+async function startCountdown() {
+    state.isCounting = true;
+    const layer = document.getElementById('countdownLayer');
+    const text = document.getElementById('countdownText');
+    const counts = ['3', '2', '1', 'GO!'];
+    
+    layer.style.display = 'flex';
+    for(let i = 0; i < counts.length; i++) {
+        if (state.isGameOver) { layer.style.display = 'none'; state.isCounting = false; return; }
+        text.textContent = counts[i];
+        if (i === counts.length - 1) playBeep(880, 0.4, 'triangle'); else playBeep(440, 0.2, 'sine');
+        text.style.animation = 'none'; text.offsetHeight; text.style.animation = 'countAnim 1s ease-out forwards';
+        await new Promise(r => setTimeout(r, 1000));
+    }
+    layer.style.display = 'none'; state.isCounting = false;
+}
+
+// 4지선다형 및 OX 퀴즈 영단어 문제 출제 로직
+function generate(team) {
+    const tab = state.currentTabId; // 'en_kr', 'kr_en', 'ox_quiz', 'random'
+    const level = state.currentLevelIndex + 1; // 1: 3학년, 2: 4학년, 3: 5학년, 4: 6학년, 5: 랜덤
+    
+    // 대상 학년 데이터 필터링
+    let pool = wordDataList;
+    if (level <= 4) {
+        let gradeTarget = level + 2;
+        pool = wordDataList.filter(w => w.grade === gradeTarget);
+    }
+    
+    // 정답 단어 1개 뽑기
+    const correctWord = pool[Math.floor(Math.random() * pool.length)];
+    
+    // 문제 타입 결정
+    let qType = tab;
+    if (qType === 'random') {
+        const rand = Math.random();
+        if (rand < 0.33) qType = 'en_kr';
+        else if (rand < 0.66) qType = 'kr_en';
+        else qType = 'ox_quiz'; // 랜덤 출제 시 OX 퀴즈도 포함
+    }
+    
+    const probEl = document.getElementById(team+'Prob');
+    const pad = document.getElementById(team+'Pad');
+    pad.innerHTML = '';
+    
+    // OX 퀴즈 모드 로직
+    if (qType === 'ox_quiz') {
+        pad.classList.add('ox-mode');
+        
+        const isCorrect = Math.random() < 0.5; // 50% 확률
+        let displayKr = correctWord.kr;
+        
+        if (!isCorrect) {
+            // 오답을 보여줄 경우 랜덤으로 다른 단어의 뜻을 가져옴
+            let wrongWord = wordDataList[Math.floor(Math.random() * wordDataList.length)];
+            // 뜻이 우연히 같은 단어가 나올 경우를 방지
+            while(wrongWord.kr === correctWord.kr && wordDataList.length > 1) {
+                wrongWord = wordDataList[Math.floor(Math.random() * wordDataList.length)];
+            }
+            displayKr = wrongWord.kr;
+        }
+        
+        // 문제 화면 구성: 영어단어 밑에 작게 한글 뜻을 표시
+        probEl.innerHTML = `${correctWord.en}<br><span style="font-size:0.7em; color:#a0a0a0; margin-top:5px; display:inline-block;">${displayKr}</span>`;
+        state[team].ans = isCorrect ? 'O' : 'X';
+        
+        // O, X 버튼 생성
+        ['O', 'X'].forEach(opt => {
+            const btn = document.createElement('div');
+            btn.className = 'key';
+            // O는 초록계열, X는 빨강계열로 색상 포인트
+            const optColor = opt === 'O' ? '#69db7c' : '#ff8787';
+            btn.innerHTML = `<span style="font-size:1.8em; font-weight:bold; color: ${optColor}">${opt}</span>`;
+            btn.onpointerdown = (e) => {
+                e.preventDefault();
+                checkAnswer(team, opt);
+            };
+            pad.appendChild(btn);
+        });
+        
+    } else {
+        // 기존 4지선다형 로직
+        pad.classList.remove('ox-mode');
+        
+        let questionText, correctText;
+        if (qType === 'en_kr') {
+            questionText = correctWord.en;
+            correctText = correctWord.kr;
+        } else {
+            questionText = correctWord.kr;
+            correctText = correctWord.en;
+        }
+        
+        // 오답 3개 뽑기
+        let distractors = [];
+        while(distractors.length < 3) {
+            const randomWord = wordDataList[Math.floor(Math.random() * wordDataList.length)];
+            const wrongText = (qType === 'en_kr') ? randomWord.kr : randomWord.en;
+            if (wrongText !== correctText && !distractors.includes(wrongText)) {
+                distractors.push(wrongText);
+            }
+        }
+        
+        // 4지선다 섞기
+        let options = [correctText, ...distractors];
+        options.sort(() => Math.random() - 0.5);
+        
+        state[team].ans = correctText;
+        probEl.innerHTML = questionText;
+        
+        options.forEach(opt => {
+            const btn = document.createElement('div');
+            btn.className = 'key';
+            btn.textContent = opt;
+            btn.onpointerdown = (e) => {
+                e.preventDefault();
+                checkAnswer(team, opt);
+            };
+            pad.appendChild(btn);
+        });
+    }
+}
+
+function checkAnswer(team, selectedOpt) {
+    if(state.isGameOver || state.isCounting) return;
+    const s = state[team];
+    const probEl = document.getElementById(team+'Prob');
+
+    if(selectedOpt === s.ans) {
+        // 정답
+        playSuccessSound(); s.combo++; 
+        let addScore = 1;
+        if (s.combo > 0 && s.combo % 5 === 0) { addScore = 3; showComboEffect(team, s.combo, true); } 
+        else if (s.combo > 1) { showComboEffect(team, s.combo, false); }
+        
+        let currentMax = 0; let t1, t2, t3;
+        if (state.teamModeType === '2vs2') { t1 = state.dog.score + state.cat.score; t2 = state.rabbit.score + state.hamster.score; currentMax = Math.max(t1, t2); } 
+        else if (state.teamModeType === '3vs3') { t1 = state.dog.score + state.cat.score + state.rabbit.score; t2 = state.hamster.score + state.panda.score + state.monkey.score; currentMax = Math.max(t1, t2); } 
+        else if (state.teamModeType === '2vs2vs2') { t1 = state.dog.score + state.cat.score; t2 = state.rabbit.score + state.hamster.score; t3 = state.panda.score + state.monkey.score; currentMax = Math.max(t1, t2, t3); } 
+        else { const activeTeams = playerIds.map(id => state[id]).filter(t => t.active); currentMax = Math.max(...activeTeams.map(t => t.score)); }
+        
+        s.score += addScore; 
+        let becomeFirst = false;
+        if (state.teamModeType !== 'none') {
+            let myTeamScore = 0;
+            if (state.teamModeType === '2vs2') { if (team==='dog'||team==='cat') myTeamScore = state.dog.score + state.cat.score; else myTeamScore = state.rabbit.score + state.hamster.score; } 
+            else if (state.teamModeType === '3vs3') { if (team==='dog'||team==='cat'||team==='rabbit') myTeamScore = state.dog.score + state.cat.score + state.rabbit.score; else myTeamScore = state.hamster.score + state.panda.score + state.monkey.score; } 
+            else if (state.teamModeType === '2vs2vs2') { if (team==='dog'||team==='cat') myTeamScore = state.dog.score + state.cat.score; else if (team==='rabbit'||team==='hamster') myTeamScore = state.rabbit.score + state.hamster.score; else myTeamScore = state.panda.score + state.monkey.score; }
+            becomeFirst = (myTeamScore >= currentMax && currentMax > 0);
+        } else { becomeFirst = (s.score >= currentMax && currentMax > 0); }
+        
+        spawnItem(team, becomeFirst); updateRanks(); generate(team);
+    } else {
+        // 오답
+        playFailSound(); s.combo = 0;
+        probEl.classList.add('wrong'); setTimeout(()=>probEl.classList.remove('wrong'), 300);
+        if(s.score > 0) s.score--; updateRanks(); generate(team);
+    }
+    render();
+}
+
+function spawnItem(team, isGold) {
+    const parent = document.getElementById(team + 'Side');
+    const itemEl = document.createElement('div'); itemEl.className = 'item-effect';
+    itemEl.textContent = isGold ? '🥇' : state[team].item;
+    itemEl.style.left = (Math.random() * 70 + 10) + '%';
+    parent.appendChild(itemEl); setTimeout(() => itemEl.remove(), 1875);
+}
+
+function showComboEffect(team, count, isSuper) {
+    const parent = document.getElementById(team + 'Side');
+    const comboEl = document.createElement('div'); comboEl.className = `combo-text ${isSuper ? 'super' : ''}`;
+    if (isSuper) { comboEl.innerHTML = `🔥SUPER<br>COMBO! +3`; } else { comboEl.innerHTML = `⚡ ${count} COMBO`; }
+    parent.appendChild(comboEl); setTimeout(() => comboEl.remove(), 800);
+}
+
+function updateRanks() {
+    if (state.teamModeType !== 'none') {
+        let scores = [];
+        if (state.teamModeType === '2vs2') { scores.push({ id:'A', val: state.dog.score + state.cat.score }); scores.push({ id:'B', val: state.rabbit.score + state.hamster.score }); } 
+        else if (state.teamModeType === '3vs3') { scores.push({ id:'A', val: state.dog.score + state.cat.score + state.rabbit.score }); scores.push({ id:'B', val: state.hamster.score + state.panda.score + state.monkey.score }); } 
+        else if (state.teamModeType === '2vs2vs2') { scores.push({ id:'A', val: state.dog.score + state.cat.score }); scores.push({ id:'B', val: state.rabbit.score + state.hamster.score }); scores.push({ id:'C', val: state.panda.score + state.monkey.score }); }
+        scores.sort((a,b) => b.val - a.val);
+        let currentRank = 1;
+        for(let i=0; i<scores.length; i++) { if(i > 0 && scores[i].val < scores[i-1].val) { currentRank = i + 1; } const rankEl = document.getElementById('rank' + scores[i].id); if(rankEl) { rankEl.textContent = getRankSymbol(currentRank); rankEl.classList.remove('rank-1'); if(currentRank === 1) rankEl.classList.add('rank-1'); } }
+    } else {
+        const activeTeams = playerIds.map(id => state[id]).filter(t => t.active);
+        const sortedScores = activeTeams.map(t => t.score).sort((a, b) => b - a);
+        activeTeams.forEach(t => { const rank = sortedScores.indexOf(t.score) + 1; state[t.id].rank = rank; updateBadge(t.id, rank); });
+    }
+}
+
+function updateBadge(id, rank) {
+    const badge = document.getElementById(id + 'Rank');
+    if (badge) {
+        badge.className = 'rank-badge';
+        const symbols = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣'];
+        badge.textContent = symbols[rank - 1] || rank;
+        if (rank === 1) { badge.classList.add('rank-1'); }
+        if (rank >= 4) { badge.classList.add('rank-low'); }
+    }
+}
+
+function render() {
+    const timerDisp = document.getElementById('timerDisplay');
+    if(state.teamModeType !== 'none') {
+        let sa=0, sb=0, sc=0;
+        if(state.teamModeType === '2vs2' || state.teamModeType === '2vs2vs2') { sa = state.dog.score + state.cat.score; sb = state.rabbit.score + state.hamster.score; if(state.teamModeType === '2vs2vs2') sc = state.panda.score + state.monkey.score; } 
+        else if(state.teamModeType === '3vs3') { sa = state.dog.score + state.cat.score + state.rabbit.score; sb = state.hamster.score + state.panda.score + state.monkey.score; }
+        document.getElementById('scoreA').textContent = sa; document.getElementById('scoreB').textContent = sb; if(state.teamModeType === '2vs2vs2') document.getElementById('scoreC').textContent = sc;
+    }
+    playerIds.forEach(id => { const t = state[id]; if(t && t.active) { const scoreBadge = document.getElementById(t.id+'Score'); if (scoreBadge && state.teamModeType === 'none') { scoreBadge.textContent = `${t.item} ${t.score}`; } } });
+    timerDisp.textContent = state.timeLeft;
+    if (state.timeLeft <= 5 && state.timeLeft > 0) timerDisp.classList.add('timer-urgent'); else timerDisp.classList.remove('timer-urgent');
+}
+
+function getRankSymbol(rank) { const symbols = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣']; return symbols[rank-1] || rank; }
+
+async function prepareGame() {
+    initAudio(); state.isGameOver = false;
+
+    const pVal = document.getElementById('playerCount').value;
+    const tVal = document.getElementById('gameTimeLimit').value; 
+    state.teamModeType = 'none';
+    if(pVal === 'team2vs2') { state.count = 4; state.teamModeType = '2vs2'; } else if(pVal === 'team3vs3') { state.count = 6; state.teamModeType = '3vs3'; } else if(pVal === 'team2vs2vs2') { state.count = 6; state.teamModeType = '2vs2vs2'; } else { state.count = parseInt(pVal); state.teamModeType = 'none'; }
+    state.baseTime = parseInt(tVal); 
+    document.body.dataset.pcount = state.count;
+
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('resultList').style.display = 'none';
+    document.getElementById('finalPodium').style.display = 'none';
+    document.getElementById('setupArea').style.display = 'none';
+    document.getElementById('subtitle').style.display = 'none';
+    document.querySelector('.math-menu-wrapper').style.display = 'none';
+    
+    const scoreBoard = document.getElementById('teamScoreBoard');
+    const cardB = document.getElementById('teamCardB');
+    const cardC = document.getElementById('teamCardC');
+    
+    if (state.teamModeType !== 'none') {
+        document.body.classList.add('team-mode');
+        scoreBoard.style.display = 'flex';
+        cardB.style.background = ''; 
+        cardB.querySelector('.team-score').innerHTML = '🥕 <span id="scoreB">0</span> 🥜'; 
+        
+        if (state.teamModeType === '2vs2vs2') {
+            cardC.style.display = 'flex';
+            document.getElementById('teamNameA').textContent = '🐶Dog & Cat🐱';
+            document.getElementById('teamNameB').textContent = '🐰Rabbit & Hamster🐹';
+            document.getElementById('teamNameC').textContent = '🐼Panda & Monkey🐵';
+        } else if (state.teamModeType === '3vs3') {
+            cardC.style.display = 'none';
+            document.getElementById('teamNameA').textContent = '🐶DogCatRabbit🐰';
+            document.getElementById('teamNameB').textContent = '🐹HamPanMon🐵';
+            cardB.style.background = 'var(--hamster-color)';
+            cardB.querySelector('.team-score').innerHTML = '🥜 <span id="scoreB">0</span> 🍌';
+        } else {
+            cardC.style.display = 'none';
+            document.getElementById('teamNameA').textContent = '🐶Dog & Cat🐱';
+            document.getElementById('teamNameB').textContent = '🐰Rabbit & Hamster🐹';
+        }
+    } else {
+        document.body.classList.remove('team-mode');
+        scoreBoard.style.display = 'none';
+    }
+    
+    playerIds.forEach((id, idx) => {
+        const box = document.getElementById(id + 'Side');
+        if (idx < state.count) {
+            state[id].active = true; state[id].score = 0; state[id].ans = "";
+            state[id].combo = 0;
+            box.style.display = 'flex';
+            generate(id);
+        } else {
+            state[id].active = false; box.style.display = 'none';
+        }
+    });
+    
+    state.timeLeft = state.baseTime; 
+    updateRanks(); render(); 
+    await startCountdown();
+    if(state.isGameOver) return;
+    state.timeLeft = state.baseTime; startTimer();
+}
+
+function startTimer() {
+    clearInterval(state.timerInterval);
+    state.timerInterval = setInterval(() => {
+        state.timeLeft--;
+        if (state.timeLeft <= 5 && state.timeLeft > 0) playBeep(900, 0.1);
+        else if (state.timeLeft === 0) playBeep(400, 0.5);
+        render();
+        if (state.timeLeft <= 0) endGame();
+    }, 1000);
+}
+
+function goToMenu() {
+    state.isGameOver = true; state.isCounting = false;
+    clearInterval(state.timerInterval);
+
+    document.getElementById('overlay').style.display = 'flex';
+    document.getElementById('resultList').style.display = 'none';
+    document.getElementById('finalPodium').style.display = 'none';
+    document.getElementById('setupArea').style.display = 'flex'; 
+    document.getElementById('subtitle').style.display = 'block';
+    document.querySelector('.math-menu-wrapper').style.display = 'block';
+    document.getElementById('countdownLayer').style.display = 'none';
+    
+    document.getElementById('msgTitle').innerHTML = 'English Korean Word King<span class="mobile-view" id="mobileTitleFsBtn">↕️</span>';
+    attachMobileEvents();
+    document.getElementById('startBtn').textContent = "Start Battle";
+    adjustFontSize();
+}
+
+function endGame() {
+    state.isGameOver = true; clearInterval(state.timerInterval); playVictorySound();
+    
+    document.getElementById('setupArea').style.display = 'none'; 
+    document.getElementById('subtitle').style.display = 'none';
+    document.querySelector('.math-menu-wrapper').style.display = 'none';
+    document.getElementById('overlay').style.display = 'flex';
+    document.getElementById('msgTitle').textContent = "Game Over!";
+    
+    const resultList = document.getElementById('resultList');
+    const podium = document.getElementById('finalPodium');
+    resultList.innerHTML = ''; podium.innerHTML = ''; podium.style.display = 'flex';
+    
+    if (state.teamModeType !== 'none') {
+        let teams = [];
+        if (state.teamModeType === '2vs2') { teams = [ { name: '🐶Dog & Cat🐱', score: state.dog.score + state.cat.score, ids: ['dog','cat'], class: 'bg-dog' }, { name: '🐰Rabbit & Hamster🐹', score: state.rabbit.score + state.hamster.score, ids: ['rabbit','hamster'], class: 'bg-rabbit' } ]; } 
+        else if (state.teamModeType === '3vs3') { teams = [ { name: '🐶DogCatRabbit🐰', score: state.dog.score + state.cat.score + state.rabbit.score, ids: ['dog','cat','rabbit'], class: 'bg-dog' }, { name: '🐹HamPanMon🐵', score: state.hamster.score + state.panda.score + state.monkey.score, ids: ['hamster','panda','monkey'], class: 'bg-hamster' } ]; } 
+        else if (state.teamModeType === '2vs2vs2') { teams = [ { name: '🐶Dog & Cat🐱', score: state.dog.score + state.cat.score, ids: ['dog','cat'], class: 'bg-dog' }, { name: '🐰Rabbit & Hamster🐹', score: state.rabbit.score + state.hamster.score, ids: ['rabbit','hamster'], class: 'bg-rabbit' }, { name: '🐼Panda & Monkey🐵', score: state.panda.score + state.monkey.score, ids: ['panda','monkey'], class: 'bg-panda' } ]; }
+        teams.sort((a,b) => b.score - a.score);
+        let currentRank = 1; for(let i=0; i<teams.length; i++){ if(i>0 && teams[i].score < teams[i-1].score) currentRank = i+1; teams[i].rank = currentRank; }
+        teams.forEach(t => { const li = document.createElement('li'); if(t.rank === 1) li.className = 'gold'; const symbol = getRankSymbol(t.rank); li.innerHTML = `<div class="result-name"><span>${symbol}</span><span>${t.name}</span></div><div class="result-score">Total ${t.score}</div>`; resultList.appendChild(li); });
+        playerIds.forEach(id => { if(state[id].active) { const myTeam = teams.find(t => t.ids.includes(id)); const rank = myTeam ? myTeam.rank : 6; const tInfo = state[id]; const col = document.createElement('div'); col.className = `podium-col ${tInfo.colorClass}`; col.innerHTML = ` <div class="podium-medal">${getRankSymbol(rank)}</div> <div class="podium-name">${tInfo.emoji}</div> `; podium.appendChild(col); } });
+    } else {
+        const activeTeams = playerIds.map(id => state[id]).filter(t => t.active);
+        const finalSort = [...activeTeams].sort((a, b) => b.score - a.score);
+        const allScores = activeTeams.map(t => t.score).sort((a,b) => b-a);
+        finalSort.forEach((t) => { const li = document.createElement('li'); const rank = allScores.indexOf(t.score) + 1; if(rank === 1) li.className = 'gold'; const symbol = getRankSymbol(rank); li.innerHTML = `<div class="result-name"><span>${symbol}</span><span>${t.emoji}${t.name}</span></div><div class="result-score">${t.item} ${t.score}</div>`; resultList.appendChild(li); });
+        playerIds.forEach(id => { const t = state[id]; if(t.active) { const rank = allScores.indexOf(t.score) + 1; const col = document.createElement('div'); col.className = `podium-col ${t.colorClass}`; col.innerHTML = ` <div class="podium-medal">${getRankSymbol(rank)}</div> <div class="podium-name">${t.emoji}</div> `; podium.appendChild(col); } });
+    }
+    resultList.style.display = 'block';
+    const startBtn = document.getElementById('startBtn');
+    startBtn.textContent = "Play Again";
+    startBtn.style.background = "#ff7675"; startBtn.style.boxShadow = "0 6px 0 #fa5252"; 
+    startBtn.onpointerdown = null;
+    startBtn.onclick = (e) => { 
+        e.preventDefault(); goToMenu(); 
+        startBtn.onclick = null; startBtn.onpointerdown = (e) => { e.preventDefault(); prepareGame(); };
+    };
+}
+
+function openWordModal(grade, event) {
+    if (event) event.stopPropagation();
+    const modal = document.getElementById('wordModal');
+    const title = document.getElementById('wordModalTitle');
+    const list = document.getElementById('wordModalList');
+
+    title.textContent = `Grade ${grade} Words`;
+    list.innerHTML = '';
+
+    let words = wordDataList.filter(w => w.grade === grade);
+    
+    // 영어 알파벳 순서대로 정렬 (이모지 및 특수문자 제외한 텍스트 기준)
+    words.sort((a, b) => {
+        let textA = a.en.replace(/[^a-zA-Z]/g, '').toLowerCase();
+        let textB = b.en.replace(/[^a-zA-Z]/g, '').toLowerCase();
+        return textA.localeCompare(textB);
+    });
+
+    words.forEach(w => {
+        const item = document.createElement('div');
+        item.className = 'word-item';
+        item.innerHTML = `<span class="en">${w.en}</span><span class="kr">${w.kr}</span>`;
+        list.appendChild(item);
+    });
+
+    modal.style.display = 'flex';
+}
+
+function closeWordModal() {
+    document.getElementById('wordModal').style.display = 'none';
+}
+
+function toggleFullScreen() {
+    var doc = window.document; var docEl = doc.documentElement;
+    var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+    var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+    var activeFullScreen = doc.fullscreenElement || doc.mozFullScreenElement || doc.webkitFullscreenElement || doc.msFullscreenElement;
+    if (!requestFullScreen) return;
+    if (!activeFullScreen) requestFullScreen.call(docEl); else cancelFullScreen.call(doc);
+}
+
+function attachMobileEvents() {
+    const mTitleFs = document.getElementById('mobileTitleFsBtn');
+    const mHeaderHome = document.getElementById('headerHomeBtn');
+    const mHeaderFs = document.getElementById('headerFsBtn');
+    if (mTitleFs) mTitleFs.onclick = toggleFullScreen;
+    if (mHeaderHome) mHeaderHome.onclick = () => {
+        if (document.fullscreenElement) {
+            state.isPlaying = false;
+            clearInterval(state.timerInterval);
+            goToMenu();
+        } else {
+            location.reload();
+        }
+    };
+    if (mHeaderFs) mHeaderFs.onclick = toggleFullScreen;
+}
+
+const gameFsBtn = document.getElementById('gameFsBtn');
+if(gameFsBtn) gameFsBtn.onclick = (e) => { toggleFullScreen(); };
+
+document.addEventListener('touchmove', function(e) { if (e.scale !== 1) { e.preventDefault(); } }, { passive: false });
+document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function (event) {
+    var now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) { event.preventDefault(); }
+    lastTouchEnd = now;
+}, false);
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+document.getElementById('resetBtn').onpointerdown = (e) => { 
+    e.preventDefault(); 
+    if (document.fullscreenElement) {
+        state.isPlaying = false;
+        clearInterval(state.timerInterval);
+        goToMenu();
+    } else {
+        location.reload();
+    }
+};
+
+const pcSelect = document.getElementById('playerCount');
+if (window.innerWidth <= 768) { pcSelect.value = "1"; } else { pcSelect.value = "4"; }
+
+document.getElementById('startBtn').onpointerdown = (e) => { e.preventDefault(); prepareGame(); };
+attachMobileEvents();
+
+// 초기화
+renderMathMenu();
+
+</script>
+
+
+
+</body>
+</html>

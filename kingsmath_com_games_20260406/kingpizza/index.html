@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5YW0T2C109');
+</script>
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0F4C3A">
+
+<title>분수 피자킹 | KingsMath</title>
+<meta name="description" content="전자칠판 전용 수학 놀이, 무료·무설치. 분수 개념을 피자 게임으로 배워보세요!">
+<meta name="keywords" content="전자칠판, 수학게임, 킹수학, KingsMath, 분수게임, Fraction Game, 교육용게임, 초등수학">
+
+<link rel="canonical" href="https://킹수학.com">
+<meta property="og:type" content="website">
+<meta property="og:title" content="분수 피자킹 | KingsMath">
+<meta property="og:description" content="전자칠판 전용 수학 놀이, 무료·무설치">
+<meta property="og:image" content="http://11ukul.com/wp-content/uploads/2026/01/분수-피자킹_킹수학-전자칠판-전용-수학-배틀-게임.png">
+<meta property="og:url" content="https://킹수학.com">
+<meta property="og:site_name" content="KingsMath">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="분수 피자킹 | KingsMath">
+<meta name="twitter:description" content="전자칠판 전용 수학 놀이">
+<meta name="twitter:image" content="http://11ukul.com/wp-content/uploads/2026/01/분수-피자킹_킹수학-전자칠판-전용-수학-배틀-게임.png">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+    /* 커스텀 스크롤바 숨김 */
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* 배달 애니메이션 */
+    @keyframes drive-delivery {
+        0% { transform: translateX(-200vw) rotate(-5deg); opacity: 0; }
+        20% { opacity: 1; transform: translateX(-20vw) rotate(0deg); }
+        80% { opacity: 1; transform: translateX(20vw) rotate(0deg); }
+        100% { transform: translateX(200vw) rotate(5deg); opacity: 0; }
+    }
+    .animate-drive-delivery {
+        animation: drive-delivery 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .flip-horizontal {
+        transform: scaleX(-1);
+        display: inline-block;
+    }
+
+    /* [필수 최적화 설정] */
+    html, body {
+        height: 100dvh; 
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* 게임 폰트 분리 적용 */
+    body.lang-ko { font-family: 'Jua', sans-serif !important; }
+    body.lang-other { font-family: 'Noto Sans KR', sans-serif !important; }
+
+    body { 
+        user-select: none; 
+        -webkit-user-select: none; 
+        overscroll-behavior: none; 
+        touch-action: none; 
+        -webkit-touch-callout: none; 
+    }
+    
+    body, button, input, textarea, select, div, span, h1, h2, h3, h4, h5, h6, a {
+        -webkit-user-drag: none; 
+    }
+
+    .text-stroke { -webkit-text-stroke: 1px rgba(0, 0, 0, 0.1); }
+    .text-stroke-white { -webkit-text-stroke: 4px white; paint-order: stroke fill; }
+
+    /* ========================================= */
+    /* 언어 선택 모달 독립 CSS & 예외 처리 시작 */
+    /* ========================================= */
+    #langModalWrapper, #langModalWrapper * {
+        box-sizing: border-box !important;
+    }
+    
+    /* 폰트어썸 아이콘 깨짐 방지용 예외 처리 */
+    i[class^="fa-"] {
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+    .modal-overlay { opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-content { transform: scale(0.95) translateY(-10px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .modal-overlay.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+
+    .toast { transform: translateY(100%); opacity: 0; transition: all 0.3s ease; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    
+    .global-lang-ui { z-index: 99999 !important; }
+    /* 언어 선택 모달 독립 CSS 끝 */
+</style>
+</head>
+<body class="bg-stone-100 fixed inset-0 overflow-hidden lang-ko">
+<div id="root"></div>
+
+<script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- 16개국 언어 설정 데이터 ---
+    const LANGUAGES = [
+        { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+        { code: 'en', country: 'us', name: 'English', enName: 'English' },
+        { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)' },
+        { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+        { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+        { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+        { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+        { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+        { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+        { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+        { code: 'pt-br', country: 'br', name: 'Português (Brasil)', enName: 'Portuguese (Brazil)' },
+        { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+        { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+        { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' },
+        { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+        { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' }
+    ];
+
+    const TOAST_TRANSLATIONS = {
+        'ko': '언어가 변경되었습니다.', 'en': 'Language changed.', 'zh': '语言已更改。', 'ja': '言語が変更されました。',
+        'es': 'Idioma cambiado.', 'fr': 'Langue modifiée.', 'ru': 'Язык изменен.', 'id': 'Bahasa telah diubah.',
+        'vi': 'Ngôn ngữ đã được thay đổi.', 'th': 'เปลี่ยนภาษาเรียบร้อยแล้ว', 'pt-br': 'Idioma alterado.', 'hi': 'भाषा बदल दी गई है।',
+        'bn': 'ভাষা পরিবর্তন করা হয়েছে।', 'tr': 'Dil değiştirildi.', 'de': 'Sprache geändert.', 'it': 'Lingua cambiata.'
+    };
+
+    // --- 번역 데이터 (SEO & Game Text 16개국 지원) ---
+    const TRANSLATIONS = {
+        ko: { title: '분수 피자킹', siteName: '킹수학.com', metaDesc: '전자칠판 전용 수학 놀이. 분수 개념을 피자 게임으로 쉽고 재미있게 배워보세요!', p1Name: '흑 피자', p1Desc: '어둠의 실력자', p2Name: '백 피자', p2Desc: '전통의 강호', p3Name: '킹 피자', p3Desc: '왕의 품격', p4Name: '퀸 피자', p4Desc: '여왕의 우아함', heroTitle1: '분수', heroTitle2: '피자킹', heroSubtitle: '토핑을 채워 피자를 배달해라.', vs: 'VS', gameStart2: '2인용 시작', gameStart4: '4인용 시작', otherGames: '🎮 다른 게임 고르기', remaining: '남은 배달', order: '주문서', reset: '초기화', deliver: '배달', msg_fill: '꽉 채워주세요!', msg_wrong: '비율 땡!', msg_success: '배달 성공!', winTitle: '최종 우승', winProof: '최고의 분수 요리 실력을 증명했습니다.', home: '홈으로', replay: '다시 대결하기' },
+        en: { title: 'Fraction Pizza King', siteName: 'KingsMath.com', metaDesc: 'Interactive whiteboard math game. Learn fractions with pizza!', p1Name: 'Black Pizza', p1Desc: 'Master of Dark', p2Name: 'White Pizza', p2Desc: 'Legendary Taste', p3Name: 'King Pizza', p3Desc: 'Majestic Flavor', p4Name: 'Queen Pizza', p4Desc: 'Elegant Taste', heroTitle1: 'Fraction', heroTitle2: 'Pizza King', heroSubtitle: 'Fill toppings and deliver!', vs: 'VS', gameStart2: '2 Players', gameStart4: '4 Players', otherGames: '🎮 More Games', remaining: 'Left', order: 'Order', reset: 'Reset', deliver: 'Deliver', msg_fill: 'Fill it up!', msg_wrong: 'Wrong Ratio!', msg_success: 'Success!', winTitle: 'Champion', winProof: 'You proved your fraction cooking skills.', home: 'Home', replay: 'Play Again' },
+        zh: { title: '分数披萨王', siteName: 'KingsMath.com', metaDesc: '交互式白板数学游戏。用披萨学习分数！', p1Name: '黑披萨', p1Desc: '黑暗大师', p2Name: '白披萨', p2Desc: '传说美味', p3Name: '国王披萨', p3Desc: '王者风味', p4Name: '女王披萨', p4Desc: '优雅品味', heroTitle1: '分数', heroTitle2: '披萨王', heroSubtitle: '放上配料并配送！', vs: 'VS', gameStart2: '双人模式', gameStart4: '四人模式', otherGames: '🎮 更多游戏', remaining: '剩余', order: '订单', reset: '重置', deliver: '配送', msg_fill: '请填满！', msg_wrong: '比例不对！', msg_success: '成功！', winTitle: '冠军', winProof: '你证明了你的分数烹饪技巧。', home: '主页', replay: '再玩一次' },
+        ja: { title: '分数ピザキング', siteName: 'KingsMath.com', metaDesc: '電子黒板の数学ゲーム。ピザで分数を学ぼう！', p1Name: '黒ピザ', p1Desc: '闇のマスター', p2Name: '白ピザ', p2Desc: '伝説の味', p3Name: 'キングピザ', p3Desc: '王の風味', p4Name: 'クイーンピザ', p4Desc: '優雅な味', heroTitle1: '分数', heroTitle2: 'ピザキング', heroSubtitle: 'トッピングをのせて配達！', vs: 'VS', gameStart2: '2人プレイ', gameStart4: '4人プレイ', otherGames: '🎮 他のゲーム', remaining: '残り', order: '注文', reset: 'リセット', deliver: '配達', msg_fill: '満たして！', msg_wrong: '比率が違う！', msg_success: '成功！', winTitle: 'チャンピオン', winProof: '分数の料理スキルを証明しました。', home: 'ホーム', replay: 'もう一度' },
+        es: { title: 'Rey Pizza Fracción', siteName: 'KingsMath.com', metaDesc: 'Juego de matemáticas. ¡Aprende fracciones con pizza!', p1Name: 'Pizza Negra', p1Desc: 'Maestro Oscuro', p2Name: 'Pizza Blanca', p2Desc: 'Sabor Leyenda', p3Name: 'Pizza Rey', p3Desc: 'Sabor Majestuoso', p4Name: 'Pizza Reina', p4Desc: 'Gusto Elegante', heroTitle1: 'Fracción', heroTitle2: 'Rey Pizza', heroSubtitle: '¡Pon los ingredientes y entrega!', vs: 'VS', gameStart2: '2 Jugadores', gameStart4: '4 Jugadores', otherGames: '🎮 Más Juegos', remaining: 'Quedan', order: 'Orden', reset: 'Reiniciar', deliver: 'Entregar', msg_fill: '¡Llénalo!', msg_wrong: '¡Proporción incorrecta!', msg_success: '¡Éxito!', winTitle: 'Campeón', winProof: 'Demostraste tus habilidades.', home: 'Inicio', replay: 'Jugar de nuevo' },
+        fr: { title: 'Roi Pizza Fraction', siteName: 'KingsMath.com', metaDesc: 'Jeu mathématique. Apprenez les fractions avec des pizzas !', p1Name: 'Pizza Noire', p1Desc: 'Maître Obscur', p2Name: 'Pizza Blanche', p2Desc: 'Goût Légende', p3Name: 'Pizza Roi', p3Desc: 'Saveur Majestueuse', p4Name: 'Pizza Reine', p4Desc: 'Goût Élégant', heroTitle1: 'Fraction', heroTitle2: 'Roi Pizza', heroSubtitle: 'Ajoutez les garnitures et livrez !', vs: 'VS', gameStart2: '2 Joueurs', gameStart4: '4 Joueurs', otherGames: '🎮 Autres jeux', remaining: 'Reste', order: 'Commande', reset: 'Réinitialiser', deliver: 'Livrer', msg_fill: 'Remplissez !', msg_wrong: 'Mauvais ratio !', msg_success: 'Succès !', winTitle: 'Champion', winProof: 'Vous avez prouvé vos talents.', home: 'Accueil', replay: 'Rejouer' },
+        ru: { title: 'Король Пицца Дроби', siteName: 'KingsMath.com', metaDesc: 'Математическая игра. Изучайте дроби с пиццей!', p1Name: 'Черная Пицца', p1Desc: 'Мастер Тьмы', p2Name: 'Белая Пицца', p2Desc: 'Легенда Вкуса', p3Name: 'Пицца Король', p3Desc: 'Королевский Вкус', p4Name: 'Пицца Королева', p4Desc: 'Элегантный Вкус', heroTitle1: 'Дробь', heroTitle2: 'Пицца Кинг', heroSubtitle: 'Положи начинку и доставь!', vs: 'VS', gameStart2: '2 Игрока', gameStart4: '4 Игрока', otherGames: '🎮 Еще игры', remaining: 'Осталось', order: 'Заказ', reset: 'Сброс', deliver: 'Доставить', msg_fill: 'Заполните!', msg_wrong: 'Неверно!', msg_success: 'Успех!', winTitle: 'Чемпион', winProof: 'Вы доказали свое мастерство.', home: 'Домой', replay: 'Играть снова' },
+        id: { title: 'Raja Pizza Pecahan', siteName: 'KingsMath.com', metaDesc: 'Game matematika. Belajar pecahan dengan pizza!', p1Name: 'Pizza Hitam', p1Desc: 'Master Gelap', p2Name: 'Pizza Putih', p2Desc: 'Rasa Legenda', p3Name: 'Pizza Raja', p3Desc: 'Rasa Megah', p4Name: 'Pizza Ratu', p4Desc: 'Rasa Elegan', heroTitle1: 'Pecahan', heroTitle2: 'Raja Pizza', heroSubtitle: 'Isi topping dan kirim!', vs: 'VS', gameStart2: '2 Pemain', gameStart4: '4 Pemain', otherGames: '🎮 Game Lainnya', remaining: 'Sisa', order: 'Pesanan', reset: 'Ulangi', deliver: 'Kirim', msg_fill: 'Isi penuh!', msg_wrong: 'Rasio salah!', msg_success: 'Berhasil!', winTitle: 'Juara', winProof: 'Anda membuktikan kemampuan Anda.', home: 'Beranda', replay: 'Main Lagi' },
+        vi: { title: 'Vua Pizza Phân Số', siteName: 'KingsMath.com', metaDesc: 'Trò chơi toán học. Học phân số với pizza!', p1Name: 'Pizza Đen', p1Desc: 'Bậc Thầy Bóng Tối', p2Name: 'Pizza Trắng', p2Desc: 'Hương Vị Huyền Thoại', p3Name: 'Pizza Vua', p3Desc: 'Hương Vị Hoàng Gia', p4Name: 'Pizza Nữ Hoàng', p4Desc: 'Hương Vị Thanh Lịch', heroTitle1: 'Phân Số', heroTitle2: 'Vua Pizza', heroSubtitle: 'Thêm topping và giao hàng!', vs: 'VS', gameStart2: '2 Người Chơi', gameStart4: '4 Người Chơi', otherGames: '🎮 Trò Chơi Khác', remaining: 'Còn Lại', order: 'Đơn Hàng', reset: 'Đặt Lại', deliver: 'Giao', msg_fill: 'Đổ đầy!', msg_wrong: 'Tỷ lệ sai!', msg_success: 'Thành Công!', winTitle: 'Nhà Vô Địch', winProof: 'Bạn đã chứng minh kỹ năng của mình.', home: 'Trang Chủ', replay: 'Chơi Lại' },
+        th: { title: 'ราชาพิซซ่าเศษส่วน', siteName: 'KingsMath.com', metaDesc: 'เกมคณิตศาสตร์ เรียนรู้เศษส่วนด้วยพิซซ่า!', p1Name: 'พิซซ่าดำ', p1Desc: 'จ้าวแห่งความมืด', p2Name: 'พิซซ่าขาว', p2Desc: 'รสชาติในตำนาน', p3Name: 'พิซซ่าราชา', p3Desc: 'รสชาติแห่งราชา', p4Name: 'พิซซ่าราชินี', p4Desc: 'รสชาติที่หรูหรา', heroTitle1: 'เศษส่วน', heroTitle2: 'ราชาพิซซ่า', heroSubtitle: 'ใส่ท็อปปิ้งแล้วส่ง!', vs: 'VS', gameStart2: '2 ผู้เล่น', gameStart4: '4 ผู้เล่น', otherGames: '🎮 เกมอื่นๆ', remaining: 'เหลือ', order: 'ออร์เดอร์', reset: 'รีเซ็ต', deliver: 'ส่ง', msg_fill: 'เติมให้เต็ม!', msg_wrong: 'อัตราส่วนผิด!', msg_success: 'สำเร็จ!', winTitle: 'แชมป์', winProof: 'คุณพิสูจน์ทักษะของคุณแล้ว', home: 'หน้าแรก', replay: 'เล่นอีกครั้ง' },
+        'pt-br': { title: 'Rei Pizza Fração', siteName: 'KingsMath.com', metaDesc: 'Jogo de matemática. Aprenda frações com pizza!', p1Name: 'Pizza Preta', p1Desc: 'Mestre Sombrio', p2Name: 'Pizza Branca', p2Desc: 'Sabor Lenda', p3Name: 'Pizza Rei', p3Desc: 'Sabor Majestoso', p4Name: 'Pizza Rainha', p4Desc: 'Gosto Elegante', heroTitle1: 'Fração', heroTitle2: 'Rei Pizza', heroSubtitle: 'Coloque os ingredientes e entregue!', vs: 'VS', gameStart2: '2 Jogadores', gameStart4: '4 Jogadores', otherGames: '🎮 Mais Jogos', remaining: 'Restando', order: 'Pedido', reset: 'Reiniciar', deliver: 'Entregar', msg_fill: 'Preencha!', msg_wrong: 'Proporção Errada!', msg_success: 'Sucesso!', winTitle: 'Campeão', winProof: 'Você provou suas habilidades.', home: 'Início', replay: 'Jogar Novamente' },
+        hi: { title: 'भिन्न पिज्जा किंग', siteName: 'KingsMath.com', metaDesc: 'गणित का खेल। पिज्जा के साथ भिन्न सीखें!', p1Name: 'ब्लैक पिज्जा', p1Desc: 'डार्क मास्टर', p2Name: 'व्हाइट पिज्जा', p2Desc: 'लेजेंड्री स्वाद', p3Name: 'किंग पिज्जा', p3Desc: 'शाही स्वाद', p4Name: 'क्वीन पिज्जा', p4Desc: 'एलिगेंट स्वाद', heroTitle1: 'भिन्न', heroTitle2: 'पिज्जा किंग', heroSubtitle: 'टॉपिंग डालें और डिलीवर करें!', vs: 'VS', gameStart2: '2 खिलाड़ी', gameStart4: '4 खिलाड़ी', otherGames: '🎮 और खेल', remaining: 'बाकी', order: 'ऑर्डर', reset: 'रीसेट', deliver: 'डिलीवर', msg_fill: 'पूरा भरें!', msg_wrong: 'गलत अनुपात!', msg_success: 'सफल!', winTitle: 'चैंपियन', winProof: 'आपने अपना हुनर साबित कर दिया।', home: 'होम', replay: 'फिर से खेलें' },
+        bn: { title: 'ভগ্নাংশ পিজ্জা কিং', siteName: 'KingsMath.com', metaDesc: 'গণিত খেলা। পিজ্জার সাথে ভগ্নাংশ শিখুন!', p1Name: 'কালো পিজ্জা', p1Desc: 'অন্ধকার মাস্টার', p2Name: 'সাদা পিজ্জা', p2Desc: 'কিংবদন্তি স্বাদ', p3Name: 'কিং পিজ্জা', p3Desc: 'রাজকীয় স্বাদ', p4Name: 'রানি পিজ্জা', p4Desc: 'মার্জিত স্বাদ', heroTitle1: 'ভগ্নাংশ', heroTitle2: 'পিজ্জা কিং', heroSubtitle: 'টপিং যোগ করুন এবং ডেলিভারি দিন!', vs: 'VS', gameStart2: '২ খেলোয়াড়', gameStart4: '৪ খেলোয়াড়', otherGames: '🎮 আরও খেলা', remaining: 'অবশিষ্ট', order: 'অর্ডার', reset: 'রিসেট', deliver: 'ডেলিভারি', msg_fill: 'পূর্ণ করুন!', msg_wrong: 'ভুল অনুপাত!', msg_success: 'সফল!', winTitle: 'চ্যাম্পিয়ন', winProof: 'আপনি আপনার দক্ষতা প্রমাণ করেছেন।', home: 'হোম', replay: 'আবার খেলুন' },
+        tr: { title: 'Kesir Pizza Kralı', siteName: 'KingsMath.com', metaDesc: 'Matematik oyunu. Pizza ile kesirleri öğrenin!', p1Name: 'Siyah Pizza', p1Desc: 'Karanlık Usta', p2Name: 'Beyaz Pizza', p2Desc: 'Efsane Tat', p3Name: 'Kral Pizza', p3Desc: 'Görkemli Lezzet', p4Name: 'Kraliçe Pizza', p4Desc: 'Zarif Tat', heroTitle1: 'Kesir', heroTitle2: 'Pizza Kralı', heroSubtitle: 'Malzemeleri koy ve teslim et!', vs: 'VS', gameStart2: '2 Oyuncu', gameStart4: '4 Oyuncu', otherGames: '🎮 Diğer Oyunlar', remaining: 'Kalan', order: 'Sipariş', reset: 'Sıfırla', deliver: 'Teslim Et', msg_fill: 'Doldur!', msg_wrong: 'Yanlış Oran!', msg_success: 'Başarılı!', winTitle: 'Şampiyon', winProof: 'Yeteneklerini kanıtladın.', home: 'Ana Sayfa', replay: 'Tekrar Oyna' },
+        de: { title: 'Bruch Pizza König', siteName: 'KingsMath.com', metaDesc: 'Mathespiel. Brüche mit Pizza lernen!', p1Name: 'Schwarze Pizza', p1Desc: 'Dunkler Meister', p2Name: 'Weiße Pizza', p2Desc: 'Legendärer Geschmack', p3Name: 'König Pizza', p3Desc: 'Majestätischer Geschmack', p4Name: 'Königin Pizza', p4Desc: 'Eleganter Geschmack', heroTitle1: 'Bruch', heroTitle2: 'Pizza König', heroSubtitle: 'Belag drauf und liefern!', vs: 'VS', gameStart2: '2 Spieler', gameStart4: '4 Spieler', otherGames: '🎮 Mehr Spiele', remaining: 'Übrig', order: 'Bestellung', reset: 'Zurücksetzen', deliver: 'Liefern', msg_fill: 'Auffüllen!', msg_wrong: 'Falsches Verhältnis!', msg_success: 'Erfolg!', winTitle: 'Meister', winProof: 'Du hast deine Fähigkeiten bewiesen.', home: 'Start', replay: 'Nochmal spielen' },
+        it: { title: 'Re della Pizza Frazione', siteName: 'KingsMath.com', metaDesc: 'Gioco di matematica. Impara le frazioni con la pizza!', p1Name: 'Pizza Nera', p1Desc: 'Maestro Oscuro', p2Name: 'Pizza Bianca', p2Desc: 'Gusto Leggenda', p3Name: 'Pizza Re', p3Desc: 'Sapore Maestoso', p4Name: 'Pizza Regina', p4Desc: 'Gusto Elegante', heroTitle1: 'Frazione', heroTitle2: 'Re Pizza', heroSubtitle: 'Aggiungi i condimenti e consegna!', vs: 'VS', gameStart2: '2 Giocatori', gameStart4: '4 Giocatori', otherGames: '🎮 Altri Giochi', remaining: 'Rimasti', order: 'Ordine', reset: 'Reset', deliver: 'Consegna', msg_fill: 'Riempi!', msg_wrong: 'Rapporto Errato!', msg_success: 'Successo!', winTitle: 'Campione', winProof: 'Hai dimostrato le tue abilità.', home: 'Home', replay: 'Gioca Ancora' }
+    };
+
+    // --- 언어 감지 로직 ---
+    const getInitialLang = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlLang = urlParams.get('lang');
+        if (urlLang && TRANSLATIONS[urlLang]) return urlLang;
+        const storedLang = localStorage.getItem('kingsmath_lang');
+        if (storedLang && TRANSLATIONS[storedLang]) return storedLang;
+        const browserLang = navigator.language.slice(0, 2);
+        if (TRANSLATIONS[browserLang]) return browserLang;
+        return 'en';
+    };
+
+    const updateMetadata = (lang) => {
+        const t = TRANSLATIONS[lang] || TRANSLATIONS['en'];
+        document.title = t.title + ' | ' + t.siteName;
+        
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if(metaDesc) metaDesc.setAttribute("content", t.metaDesc);
+
+        let metaKeywords = document.querySelector('meta[name="keywords"]');
+        if (!metaKeywords) {
+            metaKeywords = document.createElement('meta');
+            metaKeywords.name = "keywords";
+            document.head.appendChild(metaKeywords);
+        }
+        metaKeywords.setAttribute("content", `${t.title}, Fraction Game, Math Game, KingsMath`);
+        
+        document.documentElement.lang = lang;
+        
+        // 폰트 분리 로직 적용 (한국어는 Jua, 외국어는 돋움/보통 폰트)
+        if (lang === 'ko') {
+            document.body.classList.remove('lang-other');
+            document.body.classList.add('lang-ko');
+        } else {
+            document.body.classList.remove('lang-ko');
+            document.body.classList.add('lang-other');
+        }
+    };
+
+    // --- 아이콘 컴포넌트 ---
+    const IconShoppingCart = ({ size = 24, className }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>);
+    const IconRefreshCcw = ({ size = 24, className }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>);
+    const IconArrowRight = ({ size = 24, strokeWidth = 2, className }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>);
+    const IconTrophy = ({ className }) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>);
+    const IconHome = ({ size = 24, className }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>);
+    const IconMaximize = ({ size = 24 }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>);
+    const IconMinimize = ({ size = 24 }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>);
+    const IconVolume2 = ({ size = 24 }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>);
+    const IconVolumeX = ({ size = 24 }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" x2="17" y1="9" y2="15"/><line x1="17" x2="23" y1="9" y2="15"/></svg>);
+
+    let globalAudioCtx = null;
+
+    const playSound = (type, freq) => {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            if (!globalAudioCtx) {
+                globalAudioCtx = new AudioContext();
+            }
+            if (globalAudioCtx.state === 'suspended') {
+                globalAudioCtx.resume();
+            }
+
+            const ctx = globalAudioCtx;
+            const now = ctx.currentTime;
+            
+            const masterGain = ctx.createGain();
+            masterGain.connect(ctx.destination);
+            masterGain.gain.setValueAtTime(0.5, now);
+
+            const createOsc = (type, frequency, startTime, duration, vol = 1) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(frequency, startTime);
+                
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(vol, startTime + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            };
+
+            if (type === 'pop') {
+                createOsc('sine', freq || 600, now, 0.15, 0.4);
+            } else if (type === 'start') {
+                const notes = [440, 554.37, 659.25, 880, 1108.73];
+                notes.forEach((f, i) => createOsc('triangle', f, now + i * 0.08, 0.4, 0.2));
+            } else if (type === 'tick') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.frequency.setValueAtTime(800, now);
+                osc.type = 'square';
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'success') {
+                createOsc('triangle', 523.25, now, 0.2, 0.3);
+                createOsc('triangle', 659.25, now + 0.1, 0.2, 0.3);
+                createOsc('sine', 783.99, now + 0.2, 0.4, 0.3);
+                createOsc('sine', 1046.50, now + 0.2, 0.4, 0.2);
+            } else if (type === 'error') {
+                createOsc('sawtooth', 150, now, 0.3, 0.3);
+                createOsc('sawtooth', 140, now + 0.1, 0.3, 0.3);
+            } else if (type === 'win') {
+                const melody = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50];
+                const times = [0, 0.15, 0.3, 0.45, 0.6, 0.75];
+                melody.forEach((f, i) => createOsc('square', f, now + times[i], 0.4, 0.2));
+            }
+        } catch (e) {
+            console.error("Audio error", e);
+        }
+    };
+    window.playSound = playSound;
+
+    // --- 데이터 상수 ---
+    const TOPPINGS = [
+        { id: 'tomato', soundFreq: 261.63, color: '#f87171', emoji: '🍅' },
+        { id: 'cheese', soundFreq: 293.66, color: '#fbbf24', emoji: '🧀' },
+        { id: 'onion', soundFreq: 329.63, color: '#f3f4f6', emoji: '🧅' },
+        { id: 'mushroom', soundFreq: 349.23, color: '#a8a29e', emoji: '🍄' },
+        { id: 'bacon', soundFreq: 392.00, color: '#f43f5e', emoji: '🥓' },
+        { id: 'steak', soundFreq: 440.00, color: '#78350f', emoji: '🥩' },
+    ];
+
+    const TOTAL_SLICES = 12;
+    const GOAL_SCORE = 5;
+
+    // --- 로직 유틸리티 ---
+    const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+
+    const generateRandomProblem = () => {
+        const difficulty = Math.floor(Math.random() * 4) + 1;
+        let numToppings = 2;
+        if (difficulty >= 2) numToppings = 3;
+        if (difficulty >= 4) numToppings = 4;
+
+        const shuffledToppings = [...TOPPINGS].sort(() => 0.5 - Math.random());
+        const selectedToppings = shuffledToppings.slice(0, numToppings);
+
+        let remains = TOTAL_SLICES;
+        let partitions = [];
+
+        for (let i = 0; i < numToppings - 1; i++) {
+            const maxTake = remains - (numToppings - 1 - i);
+            let take;
+            if (difficulty === 1) {
+                const candidates = [1, 2, 3, 4, 6].filter(n => n <= maxTake);
+                take = candidates[Math.floor(Math.random() * candidates.length)] || 1;
+            } else {
+                take = Math.floor(Math.random() * maxTake) + 1;
+            }
+            partitions.push(take);
+            remains -= take;
+        }
+        partitions.push(remains);
+
+        const order = partitions.map((count, idx) => {
+            const divisor = gcd(count, TOTAL_SLICES);
+            return {
+                topping: selectedToppings[idx].id,
+                n: count / divisor,
+                d: TOTAL_SLICES / divisor,
+                originalCount: count
+            };
+        });
+
+        return { difficulty, order };
+    };
+
+    const getRandomProblem = () => generateRandomProblem();
+
+    const FractionDisplay = ({ n, d, textColor, small }) => (
+        <div className={`inline-flex flex-col items-center align-middle mx-1 font-black leading-none ${textColor} ${small ? 'text-lg' : 'text-2xl'}`} style={{ verticalAlign: 'middle' }}>
+            <span className="border-b-[2px] border-current px-1 mb-0.5">{n}</span>
+            <span className="px-1">{d}</span>
+        </div>
+    );
+
+    const describeArc = (x, y, radius, startAngle, endAngle) => {
+        const start = polarToCartesian(x, y, radius, endAngle);
+        const end = polarToCartesian(x, y, radius, startAngle);
+        const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+        return ["M", x, y, "L", start.x, start.y, "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y, "Z"].join(" ");
+    };
+
+    const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
+        const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+        return {
+            x: centerX + (radius * Math.cos(angleInRadians)),
+            y: centerY + (radius * Math.sin(angleInRadians))
+        };
+    };
+
+    // --- 메인 앱 컴포넌트 ---
+    function App() {
+        const [lang, setLang] = useState(getInitialLang);
+        const [viewState, setViewState] = useState('start');
+        const [winner, setWinner] = useState(null);
+        const [soundEnabled, setSoundEnabled] = useState(true);
+        const [isFullscreen, setIsFullscreen] = useState(false);
+        const [gameMode, setGameMode] = useState('2p'); 
+
+        const [p1State, setP1State] = useState({ score: 0, slices: Array(TOTAL_SLICES).fill(null), topping: TOPPINGS[0].id, problem: getRandomProblem(), message: { type: '', text: '' }, delivering: false });
+        const [p2State, setP2State] = useState({ score: 0, slices: Array(TOTAL_SLICES).fill(null), topping: TOPPINGS[0].id, problem: getRandomProblem(), message: { type: '', text: '' }, delivering: false });
+        const [p3State, setP3State] = useState({ score: 0, slices: Array(TOTAL_SLICES).fill(null), topping: TOPPINGS[0].id, problem: getRandomProblem(), message: { type: '', text: '' }, delivering: false });
+        const [p4State, setP4State] = useState({ score: 0, slices: Array(TOTAL_SLICES).fill(null), topping: TOPPINGS[0].id, problem: getRandomProblem(), message: { type: '', text: '' }, delivering: false });
+
+        const [isDragging, setIsDragging] = useState(false);
+        const [dragMode, setDragMode] = useState(null);
+
+        const t = TRANSLATIONS[lang] || TRANSLATIONS['en'];
+
+        const getPlayerState = (pid) => {
+            if(pid === 'p1') return { state: p1State, setState: setP1State };
+            if(pid === 'p2') return { state: p2State, setState: setP2State };
+            if(pid === 'p3') return { state: p3State, setState: setP3State };
+            if(pid === 'p4') return { state: p4State, setState: setP4State };
+            return { state: p1State, setState: setP1State };
+        };
+
+        const changeLang = (newLang) => {
+            setLang(newLang);
+            localStorage.setItem('kingsmath_lang', newLang);
+            const url = new URL(window.location);
+            url.searchParams.set('lang', newLang);
+            window.history.pushState({}, '', url);
+            updateMetadata(newLang);
+        };
+
+        useEffect(() => {
+            updateMetadata(lang);
+        }, [lang]);
+
+        // 멀티터치 & 드래그 최적화
+        useEffect(() => {
+            const handleGlobalUp = () => {
+                if(isDragging) {
+                    setIsDragging(false);
+                    setDragMode(null);
+                }
+            };
+            window.addEventListener('mouseup', handleGlobalUp);
+            window.addEventListener('touchend', handleGlobalUp);
+
+            const handleContextMenu = (e) => e.preventDefault();
+            window.addEventListener('contextmenu', handleContextMenu);
+
+            const handleTouchMove = (e) => {
+                if (e.scale !== 1) e.preventDefault();
+            };
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            
+            let lastTouchEnd = 0;
+            const handleTouchEnd = (event) => {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            };
+            document.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+            return () => {
+                window.removeEventListener('mouseup', handleGlobalUp);
+                window.removeEventListener('touchend', handleGlobalUp);
+                window.removeEventListener('contextmenu', handleContextMenu);
+                document.removeEventListener('touchmove', handleTouchMove);
+                document.removeEventListener('touchend', handleTouchEnd);
+            };
+        }, [isDragging]);
+
+        // 우승 체크
+        useEffect(() => {
+            if (p1State.score >= GOAL_SCORE) { setWinner('p1'); setViewState('winner'); if(soundEnabled) playSound('win'); }
+            else if (p2State.score >= GOAL_SCORE) { setWinner('p2'); setViewState('winner'); if(soundEnabled) playSound('win'); }
+            else if (gameMode === '4p' && p3State.score >= GOAL_SCORE) { setWinner('p3'); setViewState('winner'); if(soundEnabled) playSound('win'); }
+            else if (gameMode === '4p' && p4State.score >= GOAL_SCORE) { setWinner('p4'); setViewState('winner'); if(soundEnabled) playSound('win'); }
+        }, [p1State.score, p2State.score, p3State.score, p4State.score, soundEnabled, gameMode]);
+
+        const toggleFullscreen = () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch((e) => console.log(e));
+                setIsFullscreen(true);
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    setIsFullscreen(false);
+                }
+            }
+        };
+
+        const resetAllPlayers = () => {
+            const initial = { score: 0, slices: Array(TOTAL_SLICES).fill(null), topping: TOPPINGS[0].id, problem: getRandomProblem(), message: { type: '', text: '' }, delivering: false };
+            setP1State({ ...initial, problem: getRandomProblem() });
+            setP2State({ ...initial, problem: getRandomProblem() });
+            setP3State({ ...initial, problem: getRandomProblem() });
+            setP4State({ ...initial, problem: getRandomProblem() });
+        };
+
+        // 전체 화면 모드이면 상태만 초기화, 아니면 새로고침 로직
+        const goHome = () => {
+            if (document.fullscreenElement) {
+                setViewState('start');
+                setWinner(null);
+                resetAllPlayers();
+                if(window.playSound && soundEnabled) window.playSound('click');
+            } else {
+                location.reload();
+            }
+        };
+
+        const startGame = (mode) => {
+            setGameMode(mode);
+            setViewState('playing');
+            resetAllPlayers();
+            if(soundEnabled) playSound('start');
+        };
+
+        const applySliceChange = (player, index, mode) => {
+            const { state, setState } = getPlayerState(player);
+            if (state.delivering) return;
+            const newSlices = [...state.slices];
+            const targetVal = mode === 'paint' ? state.topping : null;
+            if (newSlices[index] === targetVal) return;
+            newSlices[index] = targetVal;
+            if (soundEnabled && mode === 'paint') {
+                  const toppingData = TOPPINGS.find(t => t.id === state.topping);
+                  playSound('pop', toppingData ? toppingData.soundFreq : 600);
+            }
+            setState(prev => ({ ...prev, slices: newSlices, message: { type: '', text: '' } }));
+        };
+
+        const handlePointerDown = (player, index) => {
+            const { state } = getPlayerState(player);
+            if (state.delivering) return;
+            const currentTopping = state.slices[index];
+            const selectedTopping = state.topping;
+            const mode = (currentTopping === selectedTopping) ? 'erase' : 'paint';
+            setDragMode(mode);
+            setIsDragging(true);
+            applySliceChange(player, index, mode);
+        };
+
+        const handlePointerEnter = (player, index) => {
+            if (!isDragging) return;
+            applySliceChange(player, index, dragMode);
+        };
+
+        const handleTouchMove = (e, player) => {
+            if(e.cancelable) e.preventDefault(); 
+            if (!isDragging && e.type !== 'touchmove') return;
+
+            Array.from(e.changedTouches).forEach(touch => {
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (target && target.tagName === 'path' && target.dataset.player === player) {
+                    const index = parseInt(target.dataset.index, 10);
+                    if (!isNaN(index)) {
+                        let currentDragMode = dragMode;
+                        if (!currentDragMode) {
+                             const { state } = getPlayerState(player);
+                             const currentTopping = state.slices[index];
+                             currentDragMode = (currentTopping === state.topping) ? 'erase' : 'paint';
+                             if(e.changedTouches.length === 1) setDragMode(currentDragMode); 
+                        }
+                        applySliceChange(player, index, currentDragMode || 'paint');
+                    }
+                }
+            });
+        };
+
+        const updateTopping = (player, toppingId) => {
+            const { state, setState } = getPlayerState(player);
+            if (state.delivering) return;
+            setState(prev => ({ ...prev, topping: toppingId }));
+            if(soundEnabled) {
+                  const toppingData = TOPPINGS.find(t => t.id === toppingId);
+                  playSound('pop', toppingData ? toppingData.soundFreq : 600);
+            }
+        };
+
+        const checkOrder = (player) => {
+            const { state, setState } = getPlayerState(player);
+            if (state.delivering) return;
+            const filledCount = state.slices.filter(s => s !== null).length;
+            if (filledCount < TOTAL_SLICES) {
+                setState(prev => ({ ...prev, message: { type: 'error', text: t.msg_fill } }));
+                if(soundEnabled) playSound('error');
+                setTimeout(() => { setState(prev => ({ ...prev, message: { type: '', text: '' } })); }, 2000);
+                return;
+            }
+            const counts = {};
+            TOPPINGS.forEach(t => counts[t.id] = 0);
+            state.slices.forEach(s => { if(s) counts[s]++ });
+            let isCorrect = true;
+            for (const item of state.problem.order) {
+                const required = Math.round((item.n / item.d) * TOTAL_SLICES);
+                if (counts[item.topping] !== required) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+            if (isCorrect) {
+                if(soundEnabled) playSound('success');
+                const equationText = state.problem.order.map(item => `${item.n}/${item.d}`).join(' + ') + ' = 1';
+                setState(prev => ({ ...prev, delivering: true, message: { type: 'success', text: equationText } }));
+                setTimeout(() => {
+                    setState(prev => ({ ...prev, score: prev.score + 1, slices: Array(TOTAL_SLICES).fill(null), problem: getRandomProblem(), message: { type: 'success', text: t.msg_success }, delivering: false }));
+                    setTimeout(() => {
+                        setState(prev => ({ ...prev, message: { type: '', text: '' } }));
+                    }, 3000);
+                }, 1500);
+            } else {
+                if(soundEnabled) playSound('error');
+                setState(prev => ({ ...prev, message: { type: 'error', text: t.msg_wrong } }));
+                setTimeout(() => { setState(prev => ({ ...prev, message: { type: '', text: '' } })); }, 2000);
+            }
+        };
+
+        const resetPlate = (player) => {
+            const { state, setState } = getPlayerState(player);
+            if (state.delivering) return;
+            setState(prev => ({ ...prev, slices: Array(TOTAL_SLICES).fill(null), message: { type: '', text: '' } }));
+        };
+
+
+        // ==========================================
+        // 다국어 지원 모달 React 컴포넌트 구현
+        // ==========================================
+        const LanguageModal = () => {
+            const [isOpen, setIsOpen] = useState(false);
+            const [search, setSearch] = useState('');
+            const [toast, setToast] = useState({ show: false, langName: '', langCode: 'en' });
+
+            const openModal = () => { setIsOpen(true); document.body.style.overflow = 'hidden'; };
+            const closeModal = () => { setIsOpen(false); document.body.style.overflow = ''; setSearch(''); };
+
+            const handleLangSelect = (langObj) => {
+                changeLang(langObj.code);
+                closeModal();
+                setToast({ show: true, langName: langObj.name, langCode: langObj.code });
+                setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+            };
+
+            const renderLanguages = () => {
+                const lowerFilter = search.toLowerCase();
+                const filtered = LANGUAGES.filter(l => 
+                    l.name.toLowerCase().includes(lowerFilter) || 
+                    l.enName.toLowerCase().includes(lowerFilter) ||
+                    l.code.toLowerCase().includes(lowerFilter)
+                );
+
+                if (filtered.length === 0) {
+                    return (
+                        <div id="noResult" className="flex flex-col items-center justify-center py-12 text-gray-500 font-sans">
+                            <i className="fa-regular fa-face-frown-open text-4xl mb-3"></i>
+                            <p>No results / 검색 결과 없음</p>
+                        </div>
+                    );
+                }
+
+                return (
+                    <div id="languageGrid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 font-sans">
+                        {filtered.map(l => {
+                            const isSelected = l.code === lang;
+                            const baseClasses = "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 group relative overflow-hidden";
+                            const stateClasses = isSelected 
+                                ? "bg-gray-800 border-yellow-500 ring-1 ring-yellow-500/50" 
+                                : "bg-gray-800/40 border-gray-700 hover:bg-gray-700 hover:border-gray-500";
+                            const flagUrl = `https://flagcdn.com/w40/${l.country}.png`;
+                            
+                            return (
+                                <div key={l.code} className={`${baseClasses} ${stateClasses}`} onClick={() => handleLangSelect(l)}>
+                                    <div className="shrink-0 w-8 h-6 rounded overflow-hidden shadow-sm border border-gray-700/50">
+                                        <img src={flagUrl} alt={l.country} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                                    </div>
+                                    <div className="flex-1 min-w-0 flex flex-col items-start" dir={l.dir === 'rtl' ? 'rtl' : 'ltr'}>
+                                        <span className={`text-sm font-medium text-white truncate w-full ${isSelected ? 'text-yellow-400' : ''}`}>{l.name}</span>
+                                        <span className="text-xs text-gray-400 truncate w-full">{l.enName}</span>
+                                    </div>
+                                    {isSelected && <i className="fa-solid fa-circle-check text-yellow-500 text-lg ml-2"></i>}
+                                </div>
+                            )
+                        })}
+                    </div>
+                );
+            };
+
+            const currentLangObj = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
+            const toastMsg = TOAST_TRANSLATIONS[toast.langCode] || TOAST_TRANSLATIONS['en'];
+
+            return (
+                <div id="langModalWrapper" className="global-lang-ui">
+                    <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[99999]">
+                        <button id="langTriggerBtn" onClick={openModal} className="flex items-center gap-2 bg-gray-800/80 hover:bg-gray-700 border border-gray-600 rounded-full px-4 py-2 transition-all duration-200 text-sm font-medium shadow-lg text-white font-sans">
+                            <i className="fa-solid fa-globe text-gray-400"></i>
+                            <img id="currentFlag" src={`https://flagcdn.com/w40/${currentLangObj.country}.png`} alt={currentLangObj.country} className="w-5 h-auto rounded-[2px] shadow-sm" />
+                            <span id="currentLangName" className="hidden sm:inline-block">{currentLangObj.name}</span>
+                            <i className="fa-solid fa-chevron-down text-gray-400 ml-1 text-xs"></i>
+                        </button>
+                    </div>
+
+                    <div id="langModal" className={`modal-overlay fixed inset-0 z-[99999] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm pt-16 sm:pt-0 px-4 ${isOpen ? 'active' : ''}`} onClick={(e) => { if(e.target === e.currentTarget) closeModal(); }}>
+                        <div className="modal-content bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden font-sans">
+                            <div className="flex items-center justify-between p-5 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10">
+                                <div>
+                                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <i className="fa-solid fa-language text-yellow-500"></i>
+                                        <span>Language / 언어</span>
+                                    </h2>
+                                </div>
+                                <button id="closeModalBtn" onClick={closeModal} className="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                                    <i className="fa-solid fa-xmark text-lg"></i>
+                                </button>
+                            </div>
+                            <div className="p-5 pb-2 bg-gray-900">
+                                <div className="relative font-sans">
+                                    <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    <input type="text" id="searchInput" placeholder="Search / 검색 ..." value={search} onChange={(e) => setSearch(e.target.value)}
+                                        className="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 block pl-11 p-3.5 outline-none transition-all placeholder-gray-500" />
+                                </div>
+                            </div>
+                            <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
+                                {renderLanguages()}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="toastNotification" className={`toast font-sans fixed bottom-6 right-6 bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 flex items-center gap-3 z-[99999] ${toast.show ? 'show' : ''}`}>
+                        <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+                            <i className="fa-solid fa-check"></i>
+                        </div>
+                        <div>
+                            <p id="ui-toast" className="text-sm font-medium text-white">{toastMsg}</p>
+                            <p id="toastLangName" className="text-xs text-gray-400">{toast.langName}</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const CommonControls = () => (
+            <>
+                <button 
+                    onPointerDown={goHome}
+                    className="fixed left-4 top-1/2 transform -translate-y-1/2 z-50 bg-white p-3 rounded-full shadow-lg text-stone-500 hover:text-stone-900 border-2 border-stone-100 transition-all"
+                    title={t.home}
+                >
+                    <IconHome size={28} />
+                </button>
+
+                <button 
+                    onPointerDown={toggleFullscreen}
+                    className="fixed right-4 top-1/2 transform -translate-y-1/2 z-50 bg-white p-3 rounded-full shadow-lg text-stone-500 hover:text-stone-900 border-2 border-stone-100 transition-all"
+                    title="Fullscreen"
+                >
+                    {isFullscreen ? <IconMinimize size={28} /> : <IconMaximize size={28} />}
+                </button>
+                <button 
+                    onPointerDown={() => setSoundEnabled(!soundEnabled)}
+                    className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 bg-stone-900 text-white p-2 rounded-full opacity-50 hover:opacity-100 transition-opacity"
+                >
+                    {soundEnabled ? <IconVolume2 size={16}/> : <IconVolumeX size={16}/>}
+                </button>
+            </>
+        );
+
+        // --- Render Board Function ---
+        const renderBoard = (player, mode = '2p') => {
+            const { state } = getPlayerState(player);
+            const is4P = mode === '4p';
+            
+            let name, theme;
+            const darkTheme = { bg: 'bg-stone-900', border: 'border-stone-700', headerBg: 'bg-stone-800', text: 'text-stone-100', cardBg: 'bg-stone-800', cardBorder: 'border-stone-700', btnBg: 'bg-stone-700', btnHover: 'hover:bg-stone-600', btnText: 'text-stone-100', btnShadow: 'shadow-stone-950', fractionText: 'text-stone-100', ticketBg: 'bg-stone-700', pizzaBorderColor: '#57534e', strokeColor: '#57534e', ringColor: 'ring-stone-500' };
+            const lightTheme = { bg: 'bg-white', border: 'border-gray-200', headerBg: 'bg-white', text: 'text-gray-900', cardBg: 'bg-white', cardBorder: 'border-gray-200', btnBg: 'bg-white', btnHover: 'hover:bg-gray-50', btnText: 'text-gray-800', btnShadow: 'shadow-gray-200', fractionText: 'text-gray-800', ticketBg: 'bg-gray-50', pizzaBorderColor: '#d1d5db', strokeColor: '#d1d5db', ringColor: 'ring-gray-300' };
+            const kingTheme = { bg: 'bg-slate-900', border: 'border-amber-600', headerBg: 'bg-slate-800', text: 'text-amber-100', cardBg: 'bg-slate-800', cardBorder: 'border-amber-700', btnBg: 'bg-slate-700', btnHover: 'hover:bg-slate-600', btnText: 'text-amber-100', btnShadow: 'shadow-slate-950', fractionText: 'text-amber-100', ticketBg: 'bg-slate-700', pizzaBorderColor: '#b45309', strokeColor: '#b45309', ringColor: 'ring-amber-500' };
+            const queenTheme = { bg: 'bg-rose-50', border: 'border-rose-200', headerBg: 'bg-white', text: 'text-rose-900', cardBg: 'bg-white', cardBorder: 'border-rose-200', btnBg: 'bg-white', btnHover: 'hover:bg-rose-50', btnText: 'text-rose-800', btnShadow: 'shadow-rose-200', fractionText: 'text-rose-800', ticketBg: 'bg-rose-50', pizzaBorderColor: '#fda4af', strokeColor: '#fda4af', ringColor: 'ring-rose-300' };
+
+            if (player === 'p1') { name = t.p1Name; theme = darkTheme; }
+            else if (player === 'p2') { name = t.p2Name; theme = lightTheme; }
+            else if (player === 'p3') { name = t.p3Name; theme = kingTheme; }
+            else { name = t.p4Name; theme = queenTheme; }
+
+            const textSize = is4P ? 'text-3xl font-black' : 'text-4xl lg:text-6xl';
+            const pizzaSizeClass = is4P ? 'w-[18vw] h-[18vw] max-w-[220px] max-h-[220px]' : 'w-[25vh] h-[25vh] max-w-[400px] max-h-[400px]';
+
+            return (
+                <div className={`flex-1 flex flex-col h-full relative ${theme.bg} ${is4P ? 'border-r-2 last:border-r-0' : 'border-x-4'} ${theme.border} overflow-hidden transition-colors duration-300`}>
+                    {state.delivering && (
+                        <div className="absolute inset-0 z-50 pointer-events-none flex items-center justify-center overflow-hidden">
+                            <div className={`absolute animate-drive-delivery filter drop-shadow-2xl ${is4P ? 'text-6xl' : 'text-9xl'}`}>
+                                <div className="flip-horizontal">🛵💨🍕</div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className={`${theme.headerBg} ${is4P ? 'py-4 px-2' : 'py-4 px-6'} shadow-md flex flex-col items-center border-b-2 ${theme.border} z-10 shrink-0`}>
+                        <div className={`${textSize} ${is4P ? 'mb-1' : 'mb-4'} font-bold ${theme.text}`}>{name}</div>
+                        <div className={`flex gap-1 ${is4P ? 'h-8' : 'gap-4 h-14'} items-center`}>
+                            {Array.from({ length: GOAL_SCORE }).map((_, i) => (
+                                <div key={i} className={`transition-all duration-500 ${i < (GOAL_SCORE - state.score) ? 'scale-100 opacity-100' : 'scale-50 opacity-20 grayscale'}`}>
+                                    <span className={`${is4P ? 'text-2xl' : 'text-4xl'} drop-shadow-sm`}>🍕</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="flex-1 flex flex-col items-center p-2 min-h-0 justify-between relative">
+                        <div className={`w-full max-w-[95%] rounded-2xl shadow-lg border-2 ${is4P ? 'p-2 mt-1' : 'p-4 mt-4'} flex flex-col items-center animate-in slide-in-from-top-4 ${theme.cardBg} ${theme.cardBorder} shrink-0`}>
+                            <div className={`text-lg font-bold uppercase tracking-widest ${is4P ? 'mb-1' : 'mb-2'} flex items-center gap-2 ${theme.text} opacity-50`}>
+                                <IconShoppingCart size={is4P ? 16 : 20} /> {t.order}
+                            </div>
+                            <div className={`flex flex-nowrap overflow-x-auto scrollbar-hide justify-center items-center ${is4P ? 'gap-1' : 'gap-4'} w-full px-1 ${theme.text}`}>
+                                {state.problem.order.map((item, idx) => {
+                                    const top = TOPPINGS.find(to => to.id === item.topping);
+                                    return (
+                                        <div key={idx} className={`flex items-center flex-shrink-0 ${is4P ? 'px-2 py-1 rounded-lg border' : 'px-5 py-2 rounded-xl border-2'} ${theme.ticketBg} ${theme.border}`}>
+                                            <span className={`${is4P ? 'text-xl mr-1' : 'text-3xl mr-3'}`}>{top.emoji}</span>
+                                            <FractionDisplay n={item.n} d={item.d} textColor={theme.fractionText} small={is4P} />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* 피자 영역 */}
+                        <div className={`flex-1 min-h-0 flex flex-col justify-center w-full items-center`}>
+                             <div className={`relative ${pizzaSizeClass} aspect-square transition-transform duration-500 flex items-center justify-center shrink ${state.delivering ? 'scale-0 rotate-180 opacity-0' : 'scale-100 rotate-0 opacity-100'}`}>
+                                <svg 
+                                    viewBox="0 0 100 100" 
+                                    className="absolute inset-0 w-full h-full transform -rotate-15 drop-shadow-lg"
+                                    onTouchMove={(e) => handleTouchMove(e, player)}
+                                    style={{ touchAction: 'none' }}
+                                >
+                                    <circle cx="50" cy="50" r="48" fill={theme.bg === 'bg-stone-900' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'} stroke={theme.pizzaBorderColor} strokeWidth="1.5" />
+                                    {state.slices.map((tid, i) => {
+                                        const start = (i * 360) / TOTAL_SLICES;
+                                        const end = ((i + 1) * 360) / TOTAL_SLICES;
+                                        const top = tid ? TOPPINGS.find(x => x.id === tid) : null;
+                                        return (
+                                            <g key={i}>
+                                                <path
+                                                    d={describeArc(50, 50, 48, start, end)}
+                                                    fill={top ? top.color : 'transparent'} 
+                                                    stroke={theme.strokeColor}
+                                                    strokeWidth="0.5"
+                                                    style={{ pointerEvents: 'all', cursor: 'pointer' }}
+                                                    data-index={i}
+                                                    data-player={player}
+                                                    onPointerDown={() => handlePointerDown(player, i)}
+                                                    onMouseEnter={() => handlePointerEnter(player, i)}
+                                                />
+                                                {top && (
+                                                    <text
+                                                        x={polarToCartesian(50, 50, 34, (i * 360 / TOTAL_SLICES) + (180 / TOTAL_SLICES)).x}
+                                                        y={polarToCartesian(50, 50, 34, (i * 360 / TOTAL_SLICES) + (180 / TOTAL_SLICES)).y}
+                                                        textAnchor="middle"
+                                                        dominantBaseline="central"
+                                                        fontSize="8"
+                                                        pointerEvents="none"
+                                                    >
+                                                        {top.emoji}
+                                                    </text>
+                                                )}
+                                            </g>
+                                        );
+                                    })}
+                                    {Array.from({ length: TOTAL_SLICES }).map((_, i) => (
+                                        <line
+                                            key={`l-${i}`}
+                                            x1="50" y1="50"
+                                            x2={polarToCartesian(50, 50, 48, (i * 360) / TOTAL_SLICES).x}
+                                            y2={polarToCartesian(50, 50, 48, (i * 360) / TOTAL_SLICES).y}
+                                            stroke={theme.strokeColor}
+                                            strokeWidth="0.3"
+                                            pointerEvents="none"
+                                        />
+                                    ))}
+                                </svg>
+                                
+                                {state.message.text && (
+                                    <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 ${is4P ? 'px-4 py-3 text-xl border-2' : 'px-8 py-6 text-3xl md:text-5xl border-4'} rounded-full shadow-2xl text-center font-black animate-pulse flex items-center justify-center whitespace-nowrap ${state.message.type === 'success' ? 'bg-green-600 text-white border-green-400' : 'bg-red-600 text-white border-red-400'}`}>
+                                                {state.message.text}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className={`${theme.headerBg} ${is4P ? 'p-2 pb-4' : 'p-3'} border-t ${theme.border} z-10 flex flex-col ${is4P ? 'gap-2' : 'gap-3'} shadow-[0_-5px_15px_rgba(0,0,0,0.1)] transition-opacity duration-300 shrink-0 ${state.delivering ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                            <div className="flex gap-2 w-full">
+                                <button 
+                                    onPointerDown={() => resetPlate(player)} 
+                                    className={`flex-[1] rounded-xl font-bold ${is4P ? 'text-sm py-2' : 'text-lg py-3'} shadow-lg active:translate-y-0.5 transition-all flex items-center justify-center ${theme.bg === 'bg-stone-900' || theme.bg === 'bg-slate-900' ? 'bg-white/10 text-white/70 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-200'}`}
+                                >
+                                    {t.reset}
+                                </button>
+                                <button 
+                                    onPointerDown={() => checkOrder(player)} 
+                                    className={`flex-[2] rounded-xl font-black ${is4P ? 'text-sm py-2' : 'text-xl py-3'} shadow-lg active:translate-y-0.5 transition-all flex items-center justify-center gap-2 ${theme.btnBg} ${theme.btnText} ${theme.btnHover} ${theme.btnShadow} border-2 ${theme.border}`}
+                                >
+                                    {t.deliver} {!is4P && <IconArrowRight size={24} strokeWidth={3} />}
+                                </button>
+                            </div>
+
+                            <div className={`grid grid-cols-6 ${is4P ? 'gap-1' : 'gap-2'} w-full`}>
+                                {TOPPINGS.map((top) => (
+                                    <button
+                                        key={top.id}
+                                        onPointerDown={() => updateTopping(player, top.id)}
+                                        className={`flex flex-col items-center justify-center p-1 rounded-lg border transition-all aspect-square ${
+                                            state.topping === top.id
+                                                ? `bg-opacity-20 shadow-md scale-105 ring-2 ring-offset-1 ${theme.ringColor} border-transparent bg-current`
+                                                : `border-transparent hover:bg-black/5`
+                                        }`}
+                                    >
+                                        <span className={`${is4P ? 'text-3xl' : 'text-3xl lg:text-4xl'} leading-none`}>{top.emoji}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        if (viewState === 'start') {
+            return (
+                <div className="flex flex-col items-center justify-center h-screen relative overflow-hidden">
+                    {/* 게임 메인 화면(Start)에서만 모달 UI가 보이도록 통합 */}
+                    <LanguageModal />
+
+                    <div className="absolute inset-0 flex">
+                        <div className="w-1/2 h-full bg-stone-950 border-r border-stone-800"></div>
+                        <div className="w-1/2 h-full bg-stone-100"></div>
+                    </div>
+
+                    <button onPointerDown={goHome} className="fixed left-4 top-1/2 transform -translate-y-1/2 z-50 bg-white p-3 rounded-full shadow-lg text-stone-500 hover:text-stone-900 border-2 border-stone-100 transition-all">
+                        <IconHome size={28} />
+                    </button>
+                    <button onPointerDown={toggleFullscreen} className="fixed right-4 top-1/2 transform -translate-y-1/2 z-50 bg-white p-3 rounded-full shadow-lg text-stone-500 hover:text-stone-900 border-2 border-stone-100 transition-all">
+                        {isFullscreen ? <IconMinimize size={28} /> : <IconMaximize size={28} />}
+                    </button>
+
+                    <div className="relative z-10 p-10 lg:p-14 mt-10 max-w-5xl w-full text-center bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border-4 border-stone-800 flex flex-col items-center justify-center gap-6">
+                        
+                        <a href="/" target="_self" className="inline-block px-8 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full font-black text-lg hover:from-amber-600 hover:to-yellow-600 transition-all shadow-lg transform hover:-translate-y-1">
+                            👑 {t.siteName}
+                        </a>
+                        
+                        <h1 className="text-6xl lg:text-8xl font-black tracking-tight mb-2 break-keep" style={{ fontSize: t.heroTitle1.length + t.heroTitle2.length > 15 ? 'clamp(2rem, 8vw, 4rem)' : '' }}>
+                            <span className="text-stone-900 text-stroke-white drop-shadow-lg mr-2">{t.heroTitle1}</span> 
+                            <span className="text-amber-500 text-stroke-white drop-shadow-lg">{t.heroTitle2}</span>
+                        </h1>
+
+                        <div className="bg-stone-900/90 text-white px-8 py-3 rounded-full shadow-lg mb-4">
+                            <p className="text-2xl font-bold">{t.heroSubtitle}</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full px-2 mb-6">
+                             <div className="bg-stone-900 text-white p-4 rounded-xl border border-stone-700">
+                                <div className="text-3xl mb-2">🌑</div>
+                                <div className="font-bold">{t.p1Name}</div>
+                             </div>
+                             <div className="bg-white text-stone-900 p-4 rounded-xl border border-stone-200">
+                                <div className="text-3xl mb-2">🌕</div>
+                                <div className="font-bold">{t.p2Name}</div>
+                             </div>
+                             <div className="bg-slate-900 text-amber-100 p-4 rounded-xl border border-amber-500">
+                                <div className="text-3xl mb-2">🤴</div>
+                                <div className="font-bold">{t.p3Name}</div>
+                             </div>
+                             <div className="bg-rose-50 text-rose-900 p-4 rounded-xl border border-rose-200">
+                                <div className="text-3xl mb-2">👸</div>
+                                <div className="font-bold">{t.p4Name}</div>
+                             </div>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row gap-4 w-full justify-center">
+                            <button 
+                                onPointerDown={() => startGame('2p')}
+                                className="flex-1 py-6 bg-stone-900 hover:bg-stone-800 text-white text-2xl font-black rounded-2xl shadow-xl hover:shadow-stone-900/30 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 border-b-4 border-stone-950 active:border-b-0 active:translate-y-1"
+                            >
+                                <span className="text-4xl">👥</span> {t.gameStart2}
+                            </button>
+                            <button 
+                                onPointerDown={() => startGame('4p')}
+                                className="flex-1 py-6 bg-amber-600 hover:bg-amber-500 text-white text-2xl font-black rounded-2xl shadow-xl hover:shadow-amber-600/30 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 border-b-4 border-amber-800 active:border-b-0 active:translate-y-1"
+                            >
+                                <span className="text-4xl">👨‍👩‍👧‍👦</span> {t.gameStart4}
+                            </button>
+                        </div>
+                        
+                        <div className="mt-4">
+                            <a 
+                                href="/" target="_self"
+                                className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-800 font-bold text-lg border-b-2 border-transparent hover:border-stone-800 transition-all"
+                            >
+                                {t.otherGames}
+                            </a>
+                        </div>
+                        
+                        <div className="mt-2">
+                            <button 
+                                onPointerDown={() => setSoundEnabled(!soundEnabled)}
+                                className="p-4 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 transition-colors shadow-md border border-stone-200"
+                            >
+                                {soundEnabled ? <IconVolume2 size={24} /> : <IconVolumeX size={24} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        if (viewState === 'winner') {
+            let winName, winDesc;
+            if(winner === 'p1') { winName = t.p1Name; winDesc = t.p1Desc; }
+            else if(winner === 'p2') { winName = t.p2Name; winDesc = t.p2Desc; }
+            else if(winner === 'p3') { winName = t.p3Name; winDesc = t.p3Desc; }
+            else { winName = t.p4Name; winDesc = t.p4Desc; }
+
+            const bgClass = winner === 'p1' ? 'bg-stone-900 text-white' : 
+                            winner === 'p2' ? 'bg-stone-100 text-stone-900' :
+                            winner === 'p3' ? 'bg-slate-900 text-amber-100' : 'bg-rose-50 text-rose-900';
+
+            return (
+                <div className={`flex flex-col items-center justify-center h-screen p-6 overflow-hidden relative ${bgClass}`}>
+                    <div className="absolute inset-0 opacity-20 pointer-events-none">
+                        {[...Array(30)].map((_, i) => (
+                            <div key={i} className="absolute text-4xl animate-pulse" style={{ left: `${Math.random()*100}%`, top: `${Math.random()*100}%`, animationDuration: `${1+Math.random()}s` }}>🎉</div>
+                        ))}
+                    </div>
+
+                    <div className="p-12 rounded-[3rem] shadow-2xl text-center max-w-2xl w-full z-10 animate-in zoom-in border-4 bg-white/10 backdrop-blur-md border-current">
+                        <IconTrophy className="w-32 h-32 mx-auto mb-6 drop-shadow-lg animate-bounce" />
+                        
+                        <h2 className="text-2xl font-bold mb-2 opacity-80">{t.winTitle}</h2>
+                        <h1 className="text-6xl font-black mb-6">{winName}!</h1>
+                        
+                        <p className="text-xl mb-10 font-medium">
+                            {t.winProof}<br/>
+                            {winDesc}
+                        </p>
+                        
+                        <div className="flex gap-4 justify-center">
+                            <button 
+                                onPointerDown={goHome}
+                                className="px-6 py-5 text-xl font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-lg bg-black/20 hover:bg-black/30 text-current"
+                            >
+                                <IconHome /> {t.home}
+                            </button>
+                            <button 
+                                onPointerDown={() => startGame(gameMode)}
+                                className="px-8 py-5 text-xl font-bold rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl bg-white text-stone-900 hover:bg-stone-50"
+                            >
+                                <IconRefreshCcw /> {t.replay}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        if (gameMode === '4p') {
+            return (
+                <div className="h-screen bg-stone-200 overflow-hidden relative flex flex-col pt-10">
+                    <CommonControls />
+                    
+                    {/* 4 Player Horizontal Layout (1 Row, 4 Columns) */}
+                    <div className="w-full h-full flex flex-row">
+                        {renderBoard('p1', '4p')}
+                        {renderBoard('p2', '4p')}
+                        {renderBoard('p3', '4p')}
+                        {renderBoard('p4', '4p')}
+                    </div>
+                </div>
+            )
+        }
+
+        // 2P Mode (Existing Layout)
+        return (
+            <div className="flex h-screen bg-stone-100 overflow-hidden relative">
+                <CommonControls />
+
+                {renderBoard('p1', '2p')}
+                
+                <div className="w-2 bg-stone-300 z-20 flex flex-col items-center justify-center relative shadow-inner">
+                    <div className="absolute w-12 h-12 bg-white rounded-full flex items-center justify-center border-4 border-stone-300 shadow-lg text-stone-900 font-black text-sm z-30">
+                        {t.vs}
+                    </div>
+                </div>
+                
+                {renderBoard('p2', '2p')}
+            </div>
+        );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+</script>
+</body>
+</html>

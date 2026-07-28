@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5YW0T2C109');
+    </script>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+    <title id="page-title">쌓기나무 킹: 초등 수학 3D 공간감각 키우기 | 4인용 멀티 게임</title>
+    <meta id="meta-desc" name="description" content="60초 타임어택! 3D 쌓기나무의 개수를 맞히며 공간지각능력을 키우는 최고의 초등 수학 게임입니다.">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #212529;
+            --p1-main: #1e88e5; --p1-dark: #0d47a1;
+            --p2-main: #fb8c00; --p2-dark: #e65100;
+            --p3-main: #d81b60; --p3-dark: #880e4f;
+            --p4-main: #43a047; --p4-dark: #1b5e20;
+        }
+
+        /* 멀티터치 최적화 및 폰트 설정 */
+        * { 
+            box-sizing: border-box; 
+            touch-action: none; 
+            user-select: none; 
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Jua', sans-serif, system-ui, -apple-system; /* 다국어 폰트 폴백 추가 */
+            font-weight: normal !important; 
+        }
+        
+        h1, h2, h3, h4, h5, h6, b, strong {
+            font-weight: normal !important;
+        }
+
+        body {
+            margin: 0; padding: 0; overflow: hidden;
+            background-color: var(--bg-color);
+            /* [수정됨] 모바일/태블릿 브라우저 바 대응 */
+            height: 100vh; 
+            height: 100dvh; 
+            display: flex; flex-direction: column;
+        }
+
+        header {
+            background-color: #111; color: #FFD93D;
+            height: 45px; flex-shrink: 0;
+            display: flex; justify-content: center; align-items: center;
+            position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.6); z-index: 10;
+        }
+        
+        .header-title { position: absolute; left: 20px; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
+        .header-title a { color: #fff; text-decoration: none; border-bottom: 1px solid #FFD93D; }
+        
+        #timer-container {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #timer-display {
+            font-size: 1.8rem; color: #fff; background: #c62828;
+            padding: 0px 15px; border-radius: 10px; border: 2px solid #ff8a80;
+            min-width: 80px; text-align: center;
+        }
+
+        /* [수정됨] 높이 제한 해제 및 반응형 패딩/높이 적용 */
+        #game-layout {
+            flex: 1; 
+            display: flex; 
+            width: 100%; 
+            padding: 1vh 2vw; /* 화면 크기에 따른 유동적 여백 */
+            gap: 10px;
+            justify-content: center; 
+            background-color: #212529;
+            overflow: hidden; 
+            height: 100%; /* 부모 높이를 꽉 채움 */
+            max-height: none; /* 높이 제한 해제 */
+            align-items: stretch; /* 세로로 꽉 차게 늘림 */
+        }
+
+        /* [수정됨] 높이 100% 적용 */
+        .player-panel {
+            flex: 1; 
+            max-width: 450px; 
+            border-radius: 15px;
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
+            border: 3px solid #444; 
+            background: #2c2c2c; 
+            position: relative;
+            height: 100%; 
+        }
+
+        .player-header {
+            padding: 2px 12px; text-align: center; color: white; font-size: 1.8rem;
+            display: flex; justify-content: space-between; border-bottom: 2px solid rgba(0,0,0,0.3);
+            flex-shrink: 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* [수정됨] Flex 비율 적용 (5.5 비율) */
+        .player-view-area { 
+            flex: 5.5; 
+            width: 100%; 
+            background: #1a1a1a; position: relative; border-bottom: 2px solid #444; 
+            touch-action: none; 
+            cursor: grab;
+            min-height: 0; /* Flexbox 오버플로우 방지 */
+        }
+        .player-view-area:active { cursor: grabbing; }
+
+        .canvas-3d-wrapper { width: 100%; height: 100%; touch-action: none; }
+
+        .feedback-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; justify-content: center; align-items: center;
+            font-size: 5rem; z-index: 20; pointer-events: none;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .rank-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 200; 
+            animation: fadeIn 0.5s forwards;
+            color: white; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            border-radius: 12px;
+        }
+
+        /* [수정됨] Flex 비율 적용 (4.5 비율) 및 유동적 확장 */
+        .button-grid {
+            flex: 4.5; 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            grid-template-rows: repeat(6, 1fr);    
+            gap: 6px; padding: 8px; background: #333;
+            flex-shrink: 0;
+            min-height: 0; /* Flexbox 오버플로우 방지 */
+        }
+
+        /* [수정됨] spacer는 flex layout에서 불필요하므로 숨김 */
+        .panel-footer-spacer { display: none; }
+
+        .ans-btn {
+            background: #f0f0f0; 
+            border: none;
+            border-radius: 10px;
+            font-size: 1.3rem; 
+            font-family: 'Jua', sans-serif; 
+            color: #333;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 0 #999; 
+            touch-action: none;
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+        .ans-btn:active {
+            box-shadow: 0 0 0 #999;
+            transform: translateY(4px);
+        }
+
+        .theme-0 { border-color: var(--p1-main); } 
+        .theme-0 .player-header { background: var(--p1-main); }
+        .theme-0 .ans-btn { background: var(--p1-main); color: white; box-shadow: 0 4px 0 var(--p1-dark); }
+        .theme-0 .ans-btn:active { box-shadow: 0 0 0 var(--p1-dark); }
+
+        .theme-1 { border-color: var(--p2-main); } 
+        .theme-1 .player-header { background: var(--p2-main); }
+        .theme-1 .ans-btn { background: var(--p2-main); color: white; box-shadow: 0 4px 0 var(--p2-dark); }
+        .theme-1 .ans-btn:active { box-shadow: 0 0 0 var(--p2-dark); }
+
+        .theme-2 { border-color: var(--p3-main); } 
+        .theme-2 .player-header { background: var(--p3-main); }
+        .theme-2 .ans-btn { background: var(--p3-main); color: white; box-shadow: 0 4px 0 var(--p3-dark); }
+        .theme-2 .ans-btn:active { box-shadow: 0 0 0 var(--p3-dark); }
+
+        .theme-3 { border-color: var(--p4-main); } 
+        .theme-3 .player-header { background: var(--p4-main); }
+        .theme-3 .ans-btn { background: var(--p4-main); color: white; box-shadow: 0 4px 0 var(--p4-dark); }
+        .theme-3 .ans-btn:active { box-shadow: 0 0 0 var(--p4-dark); }
+
+        .side-control {
+            position: fixed; top: 50%; transform: translateY(-50%);
+            display: flex; flex-direction: column; gap: 20px; z-index: 2000;
+        }
+        #left-ctrl { left: 10px; }
+        #right-ctrl { right: 10px; }
+        
+        .float-btn {
+            width: 45px; height: 45px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; cursor: pointer; border: 3px solid #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+        #home-btn { background: #d32f2f; color: white; }
+        #full-btn { background: #1976d2; color: white; }
+
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(20, 20, 20, 0.95); z-index: 3000;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .start-card {
+            background: #333; color: white; padding: 30px; border-radius: 30px;
+            text-align: center; border: 8px solid #FFD93D;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 500px;
+        }
+        .btn-option {
+            background: #555; padding: 10px 20px; border-radius: 12px;
+            font-size: 1.2rem; cursor: pointer; color: white; margin: 5px;
+            border-bottom: 4px solid #333;
+            transition: all 0.1s;
+        }
+        .btn-option:active { transform: translateY(4px); border-bottom: 0; }
+        .btn-option.selected { 
+            background: #FFD93D; color: black; 
+            border-bottom: 4px solid #c49000;
+            transform: scale(1.05); 
+        }
+        
+        #btn-start {
+            background: #2979ff; color: white; padding: 15px 40px;
+            font-size: 2rem; border-radius: 50px; border: none; margin-top: 25px;
+            font-family: 'Jua', sans-serif;
+            box-shadow: 0 6px 0 #1565c0;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        #btn-start:active { box-shadow: 0 0 0 #1565c0; transform: translateY(6px); }
+
+        .other-game-link {
+            display: block;
+            margin-top: 20px;
+            color: #ccc;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+        .other-game-link:hover {
+            color: #FFD93D;
+        }
+
+        #restart-container {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            z-index: 4000; display: none;
+        }
+        #restart-btn-text {
+            background: #00e676; color: #004d40; padding: 15px 50px;
+            font-size: 2rem; border-radius: 50px; border: 4px solid #fff; cursor: pointer;
+            font-family: 'Jua', sans-serif;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+        #restart-btn-text:active { transform: scale(0.95); }
+
+        #countdown-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 5000;
+            display: none; justify-content: center; align-items: center;
+            font-size: 12rem; color: #FFD93D;
+            text-shadow: 0 0 20px #FFD93D;
+        }
+
+        /* --- 다국어 버튼 스타일 (추가됨) --- */
+        .lang-switcher {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #aaaaaa52; /* 요청하신 반투명 회색 배경 */
+            border-radius: 20px;
+            padding: 5px 10px;
+            z-index: 6000;
+            display: flex;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            white-space: nowrap; /* 줄바꿈 방지 */
+        }
+        .lang-btn {
+            cursor: pointer;
+            font-size: 1.6rem;
+            line-height: 1.6rem;
+            border: none;
+            background: none;
+            padding: 0;
+            transition: transform 0.1s;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); /* 텍스트형 이모지 가독성 확보 */
+        }
+        .lang-btn:hover {
+            transform: scale(1.2);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .shake { animation: shake 0.3s; background: #ffcdd2 !important; color: #c62828 !important; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* [추가됨] 높이가 낮은 화면(작은 노트북, 태블릿 가로 등)을 위한 예외 처리 */
+        @media (max-height: 768px) {
+            header { height: 35px; } /* 헤더 줄임 */
+            .header-title { font-size: 0.9rem; }
+            #timer-display { font-size: 1.4rem; padding: 0 10px; }
+            
+            .player-header { font-size: 1.4rem; padding: 0 8px; }
+            
+            /* 버튼 영역 비율을 조금 줄여서 3D 공간 확보 */
+            .button-grid { gap: 4px; padding: 5px; }
+            .ans-btn { font-size: 1.1rem; border-radius: 6px; }
+            
+            #game-layout { padding: 5px 10px; gap: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="lang-switcher">
+    <button class="lang-btn" onclick="setLanguage('ko')" title="한국어">🇰🇷</button>
+    <button class="lang-btn" onclick="setLanguage('en')" title="English">🇺🇸</button>
+    <button class="lang-btn" onclick="setLanguage('zh')" title="中文">🇨🇳</button>
+    <button class="lang-btn" onclick="setLanguage('ja')" title="日本語">🇯🇵</button>
+    <button class="lang-btn" onclick="setLanguage('es')" title="Español">🇪🇸</button>
+    <button class="lang-btn" onclick="setLanguage('fr')" title="Français">🇫🇷</button>
+    <button class="lang-btn" onclick="setLanguage('ru')" title="Русский">🇷🇺</button>
+</div>
+
+<header>
+    <div class="header-title">
+        <span id="txt-header-slogan">게임으로 수학의 킹이 되어라. 👑</span> 
+        <a href="https://www.킹수학.com" target="_blank" id="link-header">킹수학.com</a>
+    </div>
+    <div id="timer-container">
+        <div id="timer-display">60</div>
+    </div>
+</header>
+
+<div id="game-layout"></div>
+
+<div id="left-ctrl" class="side-control">
+    <div id="home-btn" class="float-btn">🏠</div>
+</div>
+<div id="right-ctrl" class="side-control">
+    <div id="full-btn" class="float-btn">⛶</div>
+</div>
+
+<div id="restart-container">
+    <button id="restart-btn-text">🔄 다시 하기</button>
+</div>
+
+<div id="countdown-overlay">3</div>
+
+<div id="start-screen">
+    <div class="start-card">
+        <h1 id="txt-game-title" style="font-size: 2.5rem; margin-bottom: 15px;">🧊 쌓기나무 킹</h1>
+        <p style="font-size: 1.2rem; color: #ddd; margin-bottom: 25px; line-height: 1.6;">
+            <span id="txt-inst-1">👆 화면을 <span>터치</span>하여 도형을 돌려보세요.</span><br>
+            <span id="txt-inst-2">🔢 쌓기나무의 <span>총 개수</span>를 아래 정답판에 입력하세요!</span>
+        </p>
+
+        <div style="background:#444; padding:15px; border-radius:15px; margin-bottom: 15px;">
+            <h3 id="txt-select-players" style="color: #FFD93D;">👥 플레이어 수 선택</h3>
+            <div style="display: flex; justify-content: center;">
+                <div class="btn-option selected" data-value="1"><span id="txt-p1">1인</span></div>
+                <div class="btn-option" data-value="2"><span id="txt-p2">2인</span></div>
+                <div class="btn-option" data-value="3"><span id="txt-p3">3인</span></div>
+                <div class="btn-option" data-value="4"><span id="txt-p4">4인</span></div>
+            </div>
+        </div>
+        <button id="btn-start">게임 시작! 🚀</button>
+        <a href="https://www.킹수학.com" target="_blank" class="other-game-link" id="link-other-game">🎮 다른 게임 고르기</a>
+    </div>
+</div>
+
+<script>
+    /* --------------------------------------------------------------------------------
+       I18N (Internationalization) Logic
+       -------------------------------------------------------------------------------- */
+    const translations = {
+        ko: {
+            title: "쌓기나무 킹: 초등 수학 3D 공간감각 키우기 | 4인용 멀티 게임",
+            desc: "60초 타임어택! 3D 쌓기나무의 개수를 맞히며 공간지각능력을 키우는 최고의 초등 수학 게임입니다.",
+            headerSlogan: "게임으로 수학의 킹이 되어라. 👑",
+            brandName: "킹수학.com",
+            brandLink: "https://www.킹수학.com",
+            gameTitle: "🧊 쌓기나무 킹",
+            inst1: "👆 화면을 <span style='color:#FFD93D'>터치</span>하여 도형을 돌려보세요.",
+            inst2: "🔢 쌓기나무의 <span style='color:#FFD93D'>총 개수</span>를 맞히세요!",
+            selectPlayers: "👥 플레이어 수",
+            p1: "1인", p2: "2인", p3: "3인", p4: "4인",
+            startBtn: "게임 시작! 🚀",
+            otherGame: "🎮 다른 게임 고르기",
+            restartBtn: "🔄 다시 하기",
+            teams: ["🐶강아지", "🐱고양이", "🐰토끼", "🐹햄스터"],
+            scoreUnit: "점",
+            rank: "등",
+            medal1: "🥇", medal2: "🥈", medal3: "🥉"
+        },
+        en: {
+            title: "Counting Blocks King: 3D Math Game for Kids",
+            desc: "60s Time Attack! Count the blocks and become the King of Math. Best 3D spatial sense game.",
+            headerSlogan: "Be the King of Math! 👑",
+            brandName: "KingsMath.com",
+            brandLink: "http://www.kingsmath.com",
+            gameTitle: "🧊 Counting Blocks King",
+            inst1: "👆 <span style='color:#FFD93D'>Touch</span> to rotate the shape.",
+            inst2: "🔢 Count the <span style='color:#FFD93D'>Total Blocks</span>!",
+            selectPlayers: "👥 Players",
+            p1: "1P", p2: "2P", p3: "3P", p4: "4P",
+            startBtn: "Start Game! 🚀",
+            otherGame: "🎮 More Games",
+            restartBtn: "🔄 Play Again",
+            teams: ["🐶Puppy", "🐱Kitty", "🐰Bunny", "🐹Hamster"],
+            scoreUnit: "pts",
+            rank: "", 
+            medal1: "🥇", medal2: "🥈", medal3: "🥉"
+        },
+        zh: {
+            title: "数积木之王：小学生3D空间思维游戏",
+            desc: "60秒挑战！数一数积木的数量，培养空间思维能力。",
+            headerSlogan: "成为数学之王！👑",
+            brandName: "KingsMath.com",
+            brandLink: "http://www.kingsmath.com",
+            gameTitle: "🧊 数积木之王",
+            inst1: "👆 <span style='color:#FFD93D'>点击</span>屏幕旋转积木。",
+            inst2: "🔢 输入积木的<span style='color:#FFD93D'>总数</span>！",
+            selectPlayers: "👥 玩家人数",
+            p1: "1人", p2: "2人", p3: "3人", p4: "4人",
+            startBtn: "开始游戏！🚀",
+            otherGame: "🎮 更多游戏",
+            restartBtn: "🔄 再玩一次",
+            teams: ["🐶小狗", "🐱小猫", "🐰小兔", "🐹仓鼠"],
+            scoreUnit: "分",
+            rank: "名",
+            medal1: "🥇", medal2: "🥈", medal3: "🥉"
+        },
+        ja: {
+            title: "積み木キング：小学生向け3D空間図形ゲーム",
+            desc: "60秒タイムアタック！積み木の数を数えて空間認識力を鍛えよう。",
+            headerSlogan: "ゲームで数学のキングになろう！👑",
+            brandName: "KingsMath.com",
+            brandLink: "http://www.kingsmath.com",
+            gameTitle: "🧊 積み木キング",
+            inst1: "👆 画面を<span style='color:#FFD93D'>タッチ</span>して回転させよう。",
+            inst2: "🔢 積み木の<span style='color:#FFD93D'>合計</span>を答えてね！",
+            selectPlayers: "👥 プレイヤー数",
+            p1: "1人", p2: "2人", p3: "3人", p4: "4人",
+            startBtn: "スタート！🚀",
+            otherGame: "🎮 他のゲーム",
+            restartBtn: "🔄 もう一度",
+            teams: ["🐶イヌ", "🐱ネコ", "🐰ウサギ", "🐹ハムスター"],
+            scoreUnit: "点",
+            rank: "位",
+            medal1: "🥇", medal2: "🥈", medal3: "🥉"
+        },
+        es: {
+            title: "Rey de Bloques: Juego de Matemáticas 3D",
+            desc: "¡Ataque de 60 segundos! Cuenta los bloques y mejora tu sentido espacial.",
+            headerSlogan: "¡Sé el Rey de las Mates! 👑",
+            brandName: "KingsMath.com",
+            brandLink: "http://www.kingsmath.com",
+            gameTitle: "🧊 Rey de Bloques",
+            inst1: "👆 <span style='color:#FFD93D'>Toca</span> para girar la forma.",
+            inst2: "🔢 ¡Cuenta el <span style='color:#FFD93D'>Total</span> de bloques!",
+            selectPlayers: "👥 Jugadores",
+            p1: "1P", p2: "2P", p3: "3P", p4: "4P",
+            startBtn: "¡Empezar! 🚀",
+            otherGame: "🎮 Otros Juegos",
+            restartBtn: "🔄 Jugar de nuevo",
+            teams: ["🐶Perrito", "🐱Gatito", "🐰Conejito", "🐹Hámster"],
+            scoreUnit: "pts",
+            rank: "º",
+            medal1: "🥇", medal2: "🥈", medal3: "🥉"
+        },
+        fr: {
+            title: "Roi des Cubes: Jeu de Maths 3D",
+            desc: "60 secondes chrono! Comptez les cubes et devenez le Roi des Maths.",
+            headerSlogan: "Sois le Roi des Maths! 👑",
+            brandName: "KingsMath.com",
+            brandLink: "http://www.kingsmath.com",
+            gameTitle: "🧊 Roi des Cubes",
+            inst1: "👆 <span style='color:#FFD93D'>Touche</span> pour tourner.",
+            inst2: "🔢 Compte le <span style='color:#FFD93D'>Total</span> des cubes!",
+            selectPlayers: "👥 Joueurs",
+            p1: "1J", p2: "2J", p3: "3J", p4: "4J",
+            startBtn: "Jouer! 🚀",
+            otherGame: "🎮 Autres Jeux",
+            restartBtn: "🔄 Rejouer",
+            teams: ["🐶Chiot", "🐱Chaton", "🐰Lapin", "🐹Hamster"],
+            scoreUnit: "pts",
+            rank: "e",
+            medal1: "🥇", medal2: "🥈", medal3: "🥉"
+        },
+        ru: {
+            title: "Король Кубиков: 3D Математика для детей",
+            desc: "У вас 60 секунд! Посчитайте кубики и станьте Королем Математики.",
+            headerSlogan: "Стань Королем Математики! 👑",
+            brandName: "KingsMath.com",
+            brandLink: "http://www.kingsmath.com",
+            gameTitle: "🧊 Король Кубиков",
+            inst1: "👆 <span style='color:#FFD93D'>Нажми</span>, чтобы вращать.",
+            inst2: "🔢 Сколько всего <span style='color:#FFD93D'>Кубиков</span>?",
+            selectPlayers: "👥 Игроки",
+            p1: "1", p2: "2", p3: "3", p4: "4",
+            startBtn: "Старт! 🚀",
+            otherGame: "🎮 Другие игры",
+            restartBtn: "🔄 Заново",
+            teams: ["🐶Щенок", "🐱Котенок", "🐰Зайчик", "🐹Хомяк"],
+            scoreUnit: "очк",
+            rank: "",
+            medal1: "🥇", medal2: "🥈", medal3: "🥉"
+        }
+    };
+
+    let currentLang = 'en'; // Default
+    let teamConfig = []; // Will be populated dynamically
+
+    function detectLanguage() {
+        const params = new URLSearchParams(window.location.search);
+        const urlLang = params.get('lang');
+        if (urlLang && translations[urlLang]) return urlLang;
+
+        const storedLang = localStorage.getItem('kingsmath_lang');
+        if (storedLang && translations[storedLang]) return storedLang;
+
+        const browserLang = navigator.language.slice(0, 2);
+        if (translations[browserLang]) return browserLang;
+
+        return 'en';
+    }
+
+    function setLanguage(lang) {
+        if (!translations[lang]) return;
+        currentLang = lang;
+        localStorage.setItem('kingsmath_lang', lang);
+
+        // URL 업데이트 (페이지 리로드 없이)
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.set('lang', lang);
+        window.history.pushState({}, '', newUrl);
+
+        applyLanguage(lang);
+    }
+
+    function applyLanguage(lang) {
+        const t = translations[lang];
+
+        // SEO Meta Tags
+        document.title = t.title;
+        document.getElementById('meta-desc').setAttribute('content', t.desc);
+        document.documentElement.setAttribute('lang', lang);
+
+        // Text Content
+        document.getElementById('txt-header-slogan').innerText = t.headerSlogan;
+        
+        const linkHeader = document.getElementById('link-header');
+        linkHeader.innerText = t.brandName;
+        linkHeader.href = t.brandLink;
+
+        document.getElementById('txt-game-title').innerText = t.gameTitle;
+        document.getElementById('txt-inst-1').innerHTML = t.inst1;
+        document.getElementById('txt-inst-2').innerHTML = t.inst2;
+        document.getElementById('txt-select-players').innerText = t.selectPlayers;
+        
+        document.getElementById('txt-p1').innerText = t.p1;
+        document.getElementById('txt-p2').innerText = t.p2;
+        document.getElementById('txt-p3').innerText = t.p3;
+        document.getElementById('txt-p4').innerText = t.p4;
+        
+        document.getElementById('btn-start').innerText = t.startBtn;
+        
+        const linkOther = document.getElementById('link-other-game');
+        linkOther.innerText = t.otherGame;
+        linkOther.href = t.brandLink;
+
+        document.getElementById('restart-btn-text').innerText = t.restartBtn;
+
+        // Team Names Update (Global Variable)
+        teamConfig = [
+            { name: t.teams[0], class: "theme-0" },
+            { name: t.teams[1], class: "theme-1" },
+            { name: t.teams[2], class: "theme-2" },
+            { name: t.teams[3], class: "theme-3" }
+        ];
+
+        // 만약 게임 도중에 언어를 바꾸면 기존 UI 업데이트 (게임 중 아닐 때는 initGameUI가 처리)
+        if (document.querySelector('.player-panel')) {
+            // 현재 화면에 렌더링된 팀 이름들 업데이트
+            players.forEach(p => {
+                const header = document.querySelector(`.theme-${p.id} .player-header span:first-child`);
+                if(header) header.innerText = teamConfig[p.id].name;
+                
+                // 점수 단위 업데이트
+                const scoreSpan = document.getElementById(`score-${p.id}`);
+                if(scoreSpan) scoreSpan.innerText = `${players[p.id].score}${t.scoreUnit}`;
+            });
+        }
+    }
+
+    /* --------------------------------------------------------------------------------
+       Existing Game Logic (with minor tweaks for i18n variables)
+       -------------------------------------------------------------------------------- */
+    const GAME_DURATION = 60;
+    let playerCount = 1;
+    let timerValue = GAME_DURATION;
+    let timerInterval = null;
+    let isGameRunning = false;
+    let audioCtx = null;
+    let commonGeometry, commonMaterial, commonEdgeMat, commonEdgesGeo;
+    let players = [];
+    let playerInstances = [];
+
+    // teamConfig는 setLanguage 함수에서 초기화됨
+
+    window.onload = function() {
+        // Initialize Language First
+        const initialLang = detectLanguage();
+        setLanguage(initialLang);
+
+        commonGeometry = new THREE.BoxGeometry(0.99, 0.99, 0.99);
+        commonMaterial = new THREE.MeshLambertMaterial({ color: 0xffb74d });
+        commonEdgeMat = new THREE.LineBasicMaterial({ color: 0x5d4037 });
+        commonEdgesGeo = new THREE.EdgesGeometry(commonGeometry);
+        setupEvents();
+    };
+
+    function setupEvents() {
+        document.querySelectorAll('.btn-option').forEach(btn => {
+            btn.onpointerdown = (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.btn-option').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                playerCount = parseInt(btn.dataset.value);
+                playTone(800, 'sine', 0.05);
+            };
+        });
+
+        document.getElementById('btn-start').onclick = () => {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            startCountdown();
+        };
+
+        document.getElementById('home-btn').onpointerdown = () => window.location.reload();
+        document.getElementById('restart-btn-text').onpointerdown = () => window.location.reload();
+        document.getElementById('full-btn').onpointerdown = () => {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else document.exitFullscreen();
+        };
+    }
+
+    function playTone(freq, type, duration, vol=0.1) {
+        if(!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function startCountdown() {
+        document.getElementById('start-screen').style.display = 'none';
+        initGameUI();
+        const overlay = document.getElementById('countdown-overlay');
+        overlay.style.display = 'flex';
+        let count = 3;
+        overlay.innerText = count;
+        
+        const countInterval = setInterval(() => {
+            count--;
+            if(count > 0) {
+                overlay.innerText = count;
+                playTone(800, 'square', 0.1);
+            } else if (count === 0) {
+                overlay.innerText = "GO!";
+                playTone(1200, 'square', 0.4);
+            } else {
+                clearInterval(countInterval);
+                overlay.style.display = 'none';
+                startGame();
+            }
+        }, 1000);
+    }
+
+    function initGameUI() {
+        const t = translations[currentLang];
+        const layout = document.getElementById('game-layout');
+        layout.innerHTML = '';
+        players = []; playerInstances = [];
+
+        for(let i=0; i<playerCount; i++) {
+            players.push({ id: i, score: 0 });
+            const panel = document.createElement('div');
+            panel.className = `player-panel ${teamConfig[i].class}`;
+            panel.innerHTML = `
+                <div class="player-header"><span>${teamConfig[i].name}</span><span id="score-${i}">0${t.scoreUnit}</span></div>
+                <div class="player-view-area">
+                    <div class="canvas-3d-wrapper" id="canvas-${i}"></div>
+                    <div class="feedback-overlay" id="fb-${i}"></div>
+                </div>
+                <div class="button-grid" id="grid-${i}"></div>
+                <div class="panel-footer-spacer"></div>
+                <div class="rank-overlay" id="rank-${i}">
+                    <div style="font-size:4rem" id="medal-${i}"></div>
+                    <div style="font-size:2.5rem" id="ranktxt-${i}"></div>
+                    <div style="font-size:1.5rem" id="rankscore-${i}"></div>
+                </div>
+            `;
+            layout.appendChild(panel);
+
+            const canvasWrapper = panel.querySelector(`#canvas-${i}`);
+            const grid = panel.querySelector('.button-grid');
+            for(let n=1; n<=30; n++) {
+                const btn = document.createElement('div');
+                btn.className = 'ans-btn';
+                btn.textContent = n;
+                btn.onpointerdown = (e) => { 
+                    e.preventDefault(); 
+                    e.stopPropagation();
+                    handleAnswer(i, n, btn); 
+                };
+                grid.appendChild(btn);
+            }
+            init3D(i, canvasWrapper);
+        }
+        animate();
+    }
+
+    function init3D(pid, container) {
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a1a);
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth/container.clientHeight, 0.1, 100);
+        camera.position.set(6, 7, 6);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        
+        renderer.domElement.style.touchAction = 'none';
+        container.appendChild(renderer.domElement);
+
+        const group = new THREE.Group();
+        scene.add(group);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+        const sun = new THREE.DirectionalLight(0xffffff, 0.6);
+        sun.position.set(5, 10, 5); scene.add(sun);
+   // [기존] scene.add(new THREE.GridHelper(8, 8, 0x444444, 0x333333));
+// [변경] 바닥을 group에 추가하여 나무와 함께 회전하게 함
+const grid = new THREE.GridHelper(8, 8, 0x444444, 0x333333);
+group.add(grid);
+        let isDragging = false;
+        let previousTouch = { x: 0, y: 0 };
+
+        renderer.domElement.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            previousTouch = { x: e.clientX, y: e.clientY };
+            renderer.domElement.setPointerCapture(e.pointerId);
+        });
+
+        renderer.domElement.addEventListener('pointermove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - previousTouch.x;
+                const deltaY = e.clientY - previousTouch.y;
+                group.rotation.y += deltaX * 0.015;
+// 상하 회전 (X축 기준 회전) 추가
+                group.rotation.x += deltaY * 0.015;
+// 상하 회전 각도 제한 (너무 뒤집히지 않게 -Math.PI/4 ~ Math.PI/4 정도)
+                // 필요 없다면 아래 줄을 삭제하세요.
+
+
+                previousTouch = { x: e.clientX, y: e.clientY };
+            }
+        });
+
+        renderer.domElement.addEventListener('pointerup', (e) => {
+            isDragging = false;
+            renderer.domElement.releasePointerCapture(e.pointerId);
+        });
+
+        playerInstances.push({ scene, camera, renderer, group, container, currentAnswer: 0 });
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        playerInstances.forEach(inst => {
+            inst.renderer.render(inst.scene, inst.camera);
+        });
+    }
+
+    function startGame() {
+        isGameRunning = true;
+        playerInstances.forEach(inst => generateProblem(inst));
+        timerInterval = setInterval(() => {
+            timerValue--;
+            document.getElementById('timer-display').innerText = timerValue;
+            
+            if(timerValue <= 5 && timerValue > 0) {
+                playTone(1000, 'triangle', 0.1);
+            }
+
+            if(timerValue <= 0) endGame();
+        }, 1000);
+    }
+
+    function handleAnswer(pid, val, btn) {
+        if(!isGameRunning) return;
+        const t = translations[currentLang];
+        const inst = playerInstances[pid];
+        if(val === inst.currentAnswer) {
+            players[pid].score += 10;
+            showFeedback(pid, "⭕", "#00e676");
+            playTone(900, 'sine', 0.2);
+            generateProblem(inst);
+        } else {
+            players[pid].score = Math.max(0, players[pid].score - 5);
+            btn.classList.add('shake');
+            setTimeout(() => btn.classList.remove('shake'), 300);
+            showFeedback(pid, "❌", "#ff5252");
+            playTone(200, 'sawtooth', 0.3);
+            generateProblem(inst);
+        }
+        document.getElementById(`score-${pid}`).innerText = `${players[pid].score}${t.scoreUnit}`;
+    }
+
+    function showFeedback(pid, txt, col) {
+        const fb = document.getElementById(`fb-${pid}`);
+        fb.innerText = txt; fb.style.color = col; fb.style.display = 'flex';
+        setTimeout(() => fb.style.display = 'none', 500);
+    }
+function generateProblem(inst) {
+        while(inst.group.children.length > 0) inst.group.remove(inst.group.children[0]);
+        inst.group.rotation.set(0, 0, 0);
+        
+        // 1. 맵 크기를 3에서 4로 확장 (4x4x4 공간)
+        let map = Array(4).fill().map(() => Array(4).fill().map(() => Array(4).fill(0)));
+        
+        // 2. 타겟 개수 상한선을 높임 (예: 8~18개 사이)
+        let count = 0, target = Math.floor(Math.random() * 22) + 8; 
+        
+        // 초기 시작점 설정 (중앙 근처)
+        map[1][0][1] = 1; count = 1;
+        
+        while(count < target) {
+            // 3. 랜덤 좌표 범위를 3에서 4로 변경
+            let x = Math.floor(Math.random()*4), 
+                y = Math.floor(Math.random()*4), 
+                z = Math.floor(Math.random()*4);
+            
+            if(map[x][y][z] === 0 && (y===0 || map[x][y-1][z]===1)) {
+                map[x][y][z] = 1; count++;
+            }
+        }
+        
+        inst.currentAnswer = count;
+        
+        // 4. 렌더링 루프 범위 수정 및 위치 오프셋 조정
+        for(let x=0; x<4; x++) for(let y=0; y<4; y++) for(let z=0; z<4; z++) {
+            if(map[x][y][z]) {
+                const mesh = new THREE.Mesh(commonGeometry, commonMaterial);
+                // (x-1.5) 등을 사용하여 4x4 덩어리가 가운데 오도록 조정
+                mesh.position.set(x-1.5, y+0.5, z-1.5);
+                mesh.add(new THREE.LineSegments(commonEdgesGeo, commonEdgeMat));
+                inst.group.add(mesh);
+            }
+        }
+    }
+
+    function endGame() {
+        const t = translations[currentLang];
+        isGameRunning = false;
+        clearInterval(timerInterval);
+        document.getElementById('restart-container').style.display = 'block';
+        let sorted = [...players].sort((a,b) => b.score - a.score);
+        players.forEach(p => {
+            const rank = sorted.findIndex(s => s.score === p.score) + 1;
+            document.getElementById(`rank-${p.id}`).style.display = 'flex';
+            document.getElementById(`medal-${p.id}`).innerText = rank===1? t.medal1 :rank===2? t.medal2 : t.medal3;
+            document.getElementById(`ranktxt-${p.id}`).innerText = `${rank}${t.rank}`;
+            document.getElementById(`rankscore-${p.id}`).innerText = `${p.score}${t.scoreUnit}`;
+        });
+        playTone(600, 'sine', 0.5);
+    }
+</script>
+</body>
+</html>

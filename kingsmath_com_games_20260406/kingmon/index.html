@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5YW0T2C109');
+</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#E3350D">
+
+<title id="pageTitle">몬스터 골든벨</title>
+<meta id="pageDesc" name="description" content="전 세계 몬스터스터를 맞춰보세요! 몬스터 골든벨.">
+<meta id="pageKeywords" name="keywords" content="몬스터, 닌텐도, 골든벨, 교육게임, 퀴즈">
+<link rel="canonical" href="/">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+/* 기존 게임 기본 폰트 설정 */
+body { font-family: 'Jua', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: normal; }
+
+/* 폰트어썸 아이콘 깨짐 방지용 예외 처리 */
+i[class^="fa-"], i[class*=" fa-"] {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+:root {
+    --bg: #121212;
+    --panel-bg: #1e1e2e;
+    --dark: #e0e0e0;
+    --text-muted: #a0a0a0;
+    --border-color: #333333;
+
+    --dog-color: #332b00;
+    --cat-color: #1e1b2e;
+    --rabbit-color: #2e151a;
+    --hamster-color: #2e1e0f;
+    --panda-color: #0f2e26;
+    --monkey-color: #221826;
+
+    --correct: #69db7c;
+    --wrong: #ff6b6b;
+    --eliminated: #333333;
+}
+
+body {
+    margin: 0; background: var(--bg); color: var(--dark); overflow: hidden;
+    user-select: none; -webkit-user-select: none; 
+    touch-action: none; 
+    display: flex; flex-direction: column; height: 100vh; height: 100dvh;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* UI 모달 및 언어 선택 전용 CSS */
+#langModal, #langModal *, #langTriggerContainer, #langTriggerContainer *, #toastNotification, #toastNotification * {
+    box-sizing: border-box !important;
+}
+
+.lang-ui-text {
+    font-family: 'Noto Sans KR', sans-serif !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 8px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+.modal-overlay {
+    opacity: 0; visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.modal-overlay.active { opacity: 1; visibility: visible; }
+.modal-content {
+    transform: scale(0.95) translateY(-10px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.modal-overlay.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+
+.toast-anim {
+    transform: translateY(100%); opacity: 0;
+    transition: all 0.3s ease;
+}
+.toast-anim.show { transform: translateY(0); opacity: 1; }
+
+.dynamic-text-container {
+    display: inline-block;
+    white-space: nowrap;
+    transition: transform 0.2s;
+    transform-origin: left center;
+}
+
+/* --- Game UI Components --- */
+#overlay {
+    position: fixed; inset: 0; background: var(--bg); opacity: 0.98;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    z-index: 100; backdrop-filter: blur(15px);
+    text-align: center; overflow-y: auto; padding-bottom: 50px;
+}
+
+.title-area { margin: 30px 0 20px 0; }
+#msgTitle { font-size: 3.5rem; color: #ffcb05; -webkit-text-stroke: 1px #3b4cca; margin: 0; text-shadow: 0 4px 10px rgba(0,0,0,0.5); font-weight: normal; line-height: 1.2; padding: 0 10px; transition: font-size 0.3s;}
+.subtitle { color: var(--text-muted); font-size: 1.2rem; margin-top: 10px; font-weight: normal; }
+.top-link { color: #ffcb05; text-decoration: none; font-weight: normal; }
+
+#setupArea { width: 500px; max-width: 95vw; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.setup-group { text-align: left; }
+.setup-label { font-size: 1.3rem; color: var(--dark); margin-bottom: 8px; display: block; font-weight: normal; }
+
+.custom-select {
+    width: 100%; font-family: inherit; font-size: 1.2rem; padding: 15px;
+    border-radius: 15px; border: 2px solid var(--border-color);
+    background: var(--panel-bg); color: var(--dark); outline: none;
+    cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: normal;
+}
+
+.btn-large {
+    font-size: 2rem; padding: 15px 0; border-radius: 50px; border: none;
+    background: #e3350d; color: white; cursor: pointer;
+    box-shadow: 0 6px 0 #9e2308; transition: 0.1s; font-family: inherit;
+    width: 100%; margin-top: 20px; font-weight: normal; overflow: hidden;
+}
+.btn-large:active { transform: translateY(4px); box-shadow: 0 2px 0 #9e2308; }
+#otherGameLink { display: block; margin-top: 20px; color: var(--text-muted); text-decoration: underline; font-size: 1.1rem; }
+
+.side-btn {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    font-size: 2.1rem; background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 50%; width: 56px; height: 56px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 9999; color: #fff; text-decoration: none;
+    transition: 0.2s; -webkit-tap-highlight-color: transparent;
+}
+.side-btn:active { transform: translateY(-50%) scale(0.9); background: rgba(0,0,0,0.8); }
+.left-btn { left: 20px; } 
+.right-btn { right: 20px; } 
+
+@media (max-width: 768px) {
+    .side-btn { width: 45px; height: 45px; font-size: 1.5rem; }
+    .left-btn { left: 10px; }
+    .right-btn { right: 10px; }
+}
+
+/* --- Game Screen Structure --- */
+#topZone { position: relative; display: flex; flex-direction: column; z-index: 10; }
+#header { height: 100px; background: var(--panel-bg); display: flex; align-items: center; justify-content: center; padding: 0 20px; border-bottom: 2px solid var(--border-color); position: relative; }
+.header-title { font-size: 2rem; color: var(--dark); display: flex; align-items: center; gap: 10px; position: absolute; left: 90px; font-weight: normal; }
+.timer-box { font-size: 4rem; font-weight: normal; color: #ff6b6b; background: rgba(0,0,0,0.1); padding: 5px 30px; border-radius: 20px; min-width: 120px; text-align: center; }
+.timer-urgent { color: #fff; background: #ff6b6b; animation: pulse 0.5s infinite; }
+
+#mainQuestionBoard { background: var(--panel-bg); padding: 10px; text-align: center; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 250px; flex-grow: 1; position: relative; }
+#qNumber { font-size: 1.5rem; color: var(--text-muted); margin-bottom: 5px; font-weight: normal; }
+#bigQuestion { font-size: clamp(2.5rem, 6vw, 4rem); color: var(--dark); line-height: 1.2; font-family: inherit; font-weight: normal; }
+
+/* Result Popup */
+#resultPopup { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(30, 30, 46, 0.98); backdrop-filter: blur(10px); z-index: 100; flex-direction: column; align-items: center; justify-content: center; border-bottom: 4px solid var(--border-color); }
+#resultTitle { font-size: 3rem; margin: 0 0 20px 0; color: var(--dark); font-weight: normal; text-align: center; white-space: pre-line; }
+.result-list { list-style: none; padding: 0; margin: 0; width: 80%; max-width: 600px; max-height: 60%; overflow-y: auto; }
+.result-item { display: flex; justify-content: space-between; padding: 15px; background: rgba(128,128,128,0.1); margin-bottom: 8px; border-radius: 12px; font-size: 1.5rem; color: var(--dark); border: 1px solid var(--border-color); font-weight: normal; }
+.rank-1 { background: #ffd43b; color: #000; font-weight: normal; border: none; }
+
+/* Player Arena */
+#arena { display: flex; flex: 1; width: 100vw; overflow: hidden; background: var(--bg); }
+.player-col { flex: 1; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; padding: 10px 5px; position: relative; transition: opacity 0.3s; }
+.player-col:last-child { border-right: none; }
+.player-col.eliminated { opacity: 0.3; filter: grayscale(100%); pointer-events: none; }
+
+.p-header { text-align: center; margin-bottom: 5px; width: 100%; flex-shrink: 0;}
+.p-emoji { font-size: 3rem; display: block; }
+.p-name { font-size: 1.8rem; white-space: nowrap; font-weight: normal; margin-top: 5px; }
+.p-score { font-size: 1.4rem; color: #ffd43b; font-weight: normal; margin-top: 2px; display: block; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+.choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 260px; flex: 1; align-content: center; padding-bottom: 10px; }
+.choice-btn { background: var(--panel-bg); border: 2px solid var(--border-color); border-radius: 12px; color: var(--dark); font-size: 0.85rem; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 0 rgba(0,0,0,0.1); transition: 0.1s; word-break: break-all; padding: 10px; min-height: 70px; font-weight: normal; overflow: hidden; text-align: center; flex-direction: column; }
+.choice-btn:active { transform: translateY(2px); box-shadow: none; }
+.choice-btn.selected { background: #3b4cca; color: white; border-color: #2a3899; }
+.choice-btn.correct { background: var(--correct); color: #fff; border-color: #40c057; animation: bounce 0.5s; }
+.choice-btn.wrong { background: var(--wrong); color: #fff; border-color: #fa5252; opacity: 0.5; }
+
+/* Image Styles */
+.big-image { max-height: 180px; width: auto; height: auto; max-width: 90%; object-fit: contain; background: transparent; margin: 0 auto 15px auto; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
+.small-image { max-height: 60px; max-width: 100%; object-fit: contain; border-radius: 4px; display: inline-block; background: transparent; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));}
+.ox-name { font-size: 2.5rem; color: #ffcb05; font-weight: normal; margin-top: 5px; -webkit-text-stroke: 1px #3b4cca;}
+
+/* Feedback Overlay */
+.feedback-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; flex-direction: column; font-size: 5rem; z-index: 20; border-radius: 0; }
+.feedback-overlay.secret { background: #000000 !important; opacity: 1; display: flex; color: white; transition: none; animation: none; }
+.feedback-overlay.show-result { display: flex; animation: none; }
+.submitted-text { font-size: 1.5rem; margin-top: 15px; color: #fff; text-align: center; line-height: 1.5; font-weight: normal; }
+.final-status { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; box-sizing: border-box; background: rgba(0,0,0,0.85); padding: 15px 10px; border-radius: 15px; text-align: center; z-index: 50; border: 2px solid #fff; display: none; animation: popIn 0.5s; word-break: keep-all; overflow-wrap: break-word; }
+.final-status h3 { margin: 0; font-size: 1.2rem; color: #fff; font-weight: normal; }
+.final-status p { margin: 5px 0 0 0; font-size: 1.8rem; color: #ffd43b; font-weight: normal; line-height: 1.2;}
+
+/* Countdown */
+#countdownLayer { position: fixed; inset: 0; background: #000000; z-index: 2000; display: none; align-items: center; justify-content: center; }
+#countdownText { font-size: 25rem; color: #ffec99; text-shadow: 0 0 50px rgba(255, 212, 59, 0.8); font-weight: normal; opacity: 0; }
+@keyframes countPop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1.0); opacity: 0; } }
+.count-animate { animation: countPop 0.8s ease-in-out forwards; }
+
+@keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+
+/* 1920x1080 & Large Screen Optimization */
+@media (min-width: 1600px) {
+    #header { height: 140px; } .header-title { font-size: 3rem; left: 110px; } .timer-box { font-size: 6rem; padding: 10px 50px; } #mainQuestionBoard { min-height: 350px; padding: 20px; } #qNumber { font-size: 2rem; margin-bottom: 15px; } #bigQuestion { font-size: 5rem; } .p-emoji { font-size: 4rem; } .p-name { font-size: 2.2rem; } .p-score { font-size: 2rem; } .choice-grid { max-width: 350px; gap: 15px; } .choice-btn { font-size: 1.1rem; min-height: 90px; border-radius: 20px; border-width: 3px; } #resultTitle { font-size: 4rem; margin-bottom: 40px; } .result-item { font-size: 1.5rem; padding: 9px; } .btn-large { font-size: 2.5rem; padding: 20px 0; } #msgTitle { font-size: 5rem; } .setup-label { font-size: 1.8rem; } .custom-select { font-size: 1.5rem; padding: 20px; }
+    .big-image { max-height: 280px; } .small-image { max-height: 80px; } .ox-name { font-size: 4rem; margin-top: 15px; }
+}
+@media (max-width: 768px) {
+    #bigQuestion { font-size: 2rem; } .choice-btn { font-size: 0.65rem; min-height: 50px; padding: 5px; } .header-title span:last-child { display: none; } .p-name { display: none; } .p-score { font-size: 1.1rem; } .small-text-mobile { font-size: 0.9rem !important; }
+    .big-image { max-height: 120px; } .small-image { max-height: 40px; }
+}
+
+.bg-dog { background: var(--dog-color); } .bg-cat { background: var(--cat-color); } .bg-rabbit { background: var(--rabbit-color); } .bg-hamster { background: var(--hamster-color); } .bg-panda { background: var(--panda-color); } .bg-monkey { background: var(--monkey-color); }
+</style>
+</head>
+
+<body>
+
+    <div id="langTriggerContainer" class="absolute right-4 sm:right-6 top-[25px] sm:top-[25px] z-[99999]">
+        <button id="langTriggerBtn" class="flex items-center gap-2 bg-[rgba(0,0,0,0.5)] hover:bg-[rgba(0,0,0,0.8)] border-2 border-[rgba(255,255,255,0.2)] rounded-full px-4 py-2 transition-all duration-200 text-sm font-medium shadow-lg lang-ui-text" style="height: 56px;">
+            <i class="fa-solid fa-globe text-white"></i>
+            <img id="currentFlag" src="https://flagcdn.com/w40/kr.png" alt="KR" class="w-6 h-auto rounded-[2px] shadow-sm ml-1">
+            <span id="currentLangName" class="hidden sm:inline-block text-white text-lg ml-1">한국어</span>
+            <i class="fa-solid fa-chevron-down text-white ml-2 text-xs"></i>
+        </button>
+    </div>
+
+    <div id="langModal" class="modal-overlay fixed inset-0 z-[99999] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm pt-16 sm:pt-0 px-4">
+        <div class="modal-content lang-ui-text bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
+            
+            <div class="flex items-center justify-between p-5 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-language text-yellow-500"></i>
+                        <span id="ui-title">언어 / Language</span>
+                    </h2>
+                </div>
+                <button id="closeModalBtn" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-5 pb-2 bg-gray-900">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="Search / 검색 ..." 
+                        class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 block pl-11 p-3.5 outline-none transition-all placeholder-gray-500 lang-ui-text">
+                </div>
+            </div>
+
+            <div class="p-5 overflow-y-auto custom-scrollbar flex-1">
+                <div id="languageGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                </div>
+                <div id="noResult" class="hidden flex-col items-center justify-center py-12 text-gray-500">
+                    <i class="fa-regular fa-face-frown-open text-4xl mb-3"></i>
+                    <p id="ui-empty">No results / 검색 결과 없음</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastNotification" class="toast-anim fixed bottom-6 right-6 bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 flex items-center gap-3 z-[99999] lang-ui-text">
+        <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+            <p id="ui-toast" class="text-sm font-medium text-white">언어가 변경되었습니다.</p>
+            <p id="toastLangName" class="text-xs text-gray-400">Korean</p>
+        </div>
+    </div>
+    <div id="btn-home" class="side-btn left-btn" title="Home" style="cursor:pointer;">🏠</div>
+    <button id="fullscreenBtn" class="side-btn right-btn" title="Full Screen" style="top: calc(50% + 70px);">⛶</button>
+
+    <div id="overlay">
+        <div class="title-area">
+            <a href="/" target="_self" id="domainLink" class="top-link dynamic-font-target"></a><br>
+            <span style="font-size: 1.2rem; color: #ffcb05; margin-top:10px; display:inline-block;" class="dynamic-font-target">
+                <span data-lang-key="intro">실루엣이나 모습을 보고 몬스터을 맞춰보세요.</span> 
+            </span><br>
+            <h1 id="msgTitle" data-lang-key="title" class="dynamic-font-target">⚡ 몬스터 골든벨</h1>
+            <div class="subtitle dynamic-font-target" data-lang-key="slogan">당신은 진정한 몬스터 마스터인가요?</div>
+        </div>
+
+        <div id="setupArea">
+            <div class="setup-group">
+                <label class="setup-label dynamic-font-target" data-lang-key="label_diff">📚 세대/난이도 선택</label>
+                <select id="difficulty" class="custom-select dynamic-font-target"></select>
+            </div>
+            <div class="setup-group">
+                <label class="setup-label dynamic-font-target" data-lang-key="label_mode">🏆 게임 모드</label>
+                <select id="gameMode" class="custom-select dynamic-font-target"></select>
+            </div>
+            <div class="setup-group">
+                <label class="setup-label dynamic-font-target" data-lang-key="label_player">👥 인원</label> 
+                <select id="playerCount" class="custom-select dynamic-font-target"></select>
+            </div>
+            <button id="startBtn" class="btn-large">
+                <div class="dynamic-text-container" data-lang-key="btn_start">골든벨 시작하기</div>
+            </button>
+            <a id="otherGameLink" href="/" target="_self" class="dynamic-font-target" data-lang-key="link_other">🎮 다른 게임 고르기</a>
+        </div>
+    </div>
+
+    <div id="countdownLayer">
+        <div id="countdownText">3</div>
+    </div>
+
+    <div id="topZone">
+        <header id="header">
+            <div class="header-title dynamic-font-target">
+                <span style="font-size:2rem;">⚡</span>
+                <span data-lang-key="header_title">몬스터 골든벨</span>
+            </div>
+            <div id="mainTimer" class="timer-box">30</div>
+        </header>
+
+        <div id="mainQuestionBoard">
+            <div id="qNumber" class="dynamic-font-target">문제 1 / 10</div>
+            <div id="bigQuestion" class="dynamic-font-target">준비...</div>
+        </div>
+
+        <div id="resultPopup">
+            <h2 id="resultTitle" data-lang-key="result_title" class="dynamic-font-target">결과 발표</h2>
+            <ul id="finalResultList" class="result-list"></ul>
+            <button id="restartBtn" class="btn-large" style="margin-top:20px; font-size:1.5rem; width: auto; padding: 10px 40px;">
+                <div class="dynamic-text-container" data-lang-key="btn_restart">처음으로 돌아가기</div>
+            </button>
+        </div>
+    </div>
+
+    <div id="arena"></div>
+
+<script>
+/* =========================================
+   다국어 번역 데이터 (16개국) - 몬스터 테마
+   ========================================= */
+const STRINGS = {
+    ko: {
+        title: "⚡ 몬스터 골든벨", pageTitle: "몬스터 골든벨 - 최고를 향해", desc: "전 세계 몬스터를 맞춰보세요! 몬스터 골든벨.", keywords: "몬스터, 골든벨, 퀴즈",
+        intro: "실루엣이나 모습을 보고 몬스터를 맞춰보세요.", slogan: "당신은 진정한 몬스터 전문가인가요?", label_diff: "📚 난이도 선택", label_mode: "🏆 게임 모드", label_player: "👥 인원", 
+        btn_start: "골든벨 시작하기", btn_restart: "처음으로 돌아가기", link_other: "🎮 다른 게임 고르기", header_title: "몬스터 골든벨", result_title: "결과 발표",
+        q_num: "문제", ready: "준비...", submitted: "답안 제출 완료", score_pt: "점", survived_count: "문제 통과", eliminated: "탈락", winner: "우승!", rank: "위", final_score: "최종 점수", record: "기록",
+        diff_easy: "쉬움 (1세대 1~151)", diff_normal: "중간 (1~4세대)", diff_hard: "어려움 (전체 세대)", diff_mix: "모두 랜덤 출제",
+        mode_chall: "🏅 챌린지 (10문제 대결)", mode_surv: "☠️ 서바이벌 (최대 70문제)", p_1: "1인 연습", p_n: "인 플레이",
+        team_dog: "강아지", team_cat: "고양이", team_rabbit: "토끼", team_hamster: "햄스터", team_panda: "판다", team_monkey: "원숭이",
+        ui_title: '언어 및 지역 선택', ui_desc: '선호하는 언어와 지역을 선택하세요.', ui_search: '언어 검색', ui_empty: '검색 결과가 없습니다.', ui_toast: '언어가 변경되었습니다.', domain_txt: "KingsMath.com"
+    },
+    en: {
+        title: "⚡ Monster Golden Bell", pageTitle: "Monster Golden Bell", desc: "Guess the Monster!", keywords: "monster, golden bell, quiz",
+        intro: "Guess the monster from its appearance.", slogan: "Are you a true Monster Expert?", label_diff: "📚 Difficulty", label_mode: "🏆 Game Mode", label_player: "👥 Players", 
+        btn_start: "Start Golden Bell", btn_restart: "Go Back to Start", link_other: "🎮 Choose Another Game", header_title: "Monster Golden Bell", result_title: "Results",
+        q_num: "Question", ready: "Ready...", submitted: "Answer Submitted", score_pt: "pts", survived_count: "Passed", eliminated: "Eliminated", winner: "Winner!", rank: "st/nd/rd/th", final_score: "Final Score", record: "Record",
+        diff_easy: "Easy (Gen 1)", diff_normal: "Medium (Gen 1-4)", diff_hard: "Hard (All Gens)", diff_mix: "Random Mix",
+        mode_chall: "🏅 Challenge (10 Qs)", mode_surv: "☠️ Survival (Max 70 Qs)", p_1: "1 Player", p_n: " Players",
+        team_dog: "Dog", team_cat: "Cat", team_rabbit: "Rabbit", team_hamster: "Hamster", team_panda: "Panda", team_monkey: "Monkey",
+        ui_title: 'Select Language', ui_search: 'Search Language...', ui_empty: 'No results found.', ui_toast: 'Language changed.', domain_txt: "KingsMath.com"
+    },
+    zh: {
+        title: "⚡ 怪物金钟奖", pageTitle: "怪物金钟奖", desc: "猜猜怪物！", keywords: "怪物, 金钟奖, 问答",
+        intro: "通过外观猜出怪物。", slogan: "你是真正的怪物专家吗？", label_diff: "📚 难度选择", label_mode: "🏆 游戏模式", label_player: "👥 玩家人数", 
+        btn_start: "开始游戏", btn_restart: "返回首页", link_other: "🎮 选择其他游戏", header_title: "怪物金钟奖", result_title: "结果公布",
+        q_num: "问题", ready: "准备...", submitted: "提交答案", score_pt: "分", survived_count: "通过", eliminated: "淘汰", winner: "冠军！", rank: "名", final_score: "最终得分", record: "记录",
+        diff_easy: "简单 (第1世代)", diff_normal: "中等 (第1-4世代)", diff_hard: "困难 (所有世代)", diff_mix: "全部随机",
+        mode_chall: "🏅 挑战 (10题)", mode_surv: "☠️ 生存 (最多70题)", p_1: "单人练习", p_n: "人游戏",
+        team_dog: "小狗", team_cat: "小猫", team_rabbit: "兔子", team_hamster: "仓鼠", team_panda: "熊猫", team_monkey: "猴子",
+        ui_title: '选择语言', ui_search: '搜索语言...', ui_empty: '未找到结果。', ui_toast: '语言已更改。', domain_txt: "KingsMath.com"
+    },
+    ja: {
+        title: "⚡ モンスターゴールデンベル", pageTitle: "モンスターゴールデンベル", desc: "モンスターを当てよう！", keywords: "モンスター, ゴールデンベル, クイズ",
+        intro: "姿を見てモンスターを当ててください。", slogan: "あなたは真のモンスター専門家ですか？", label_diff: "📚 難易度", label_mode: "🏆 ゲームモード", label_player: "👥 プレイ人数", 
+        btn_start: "ゲーム開始", btn_restart: "最初に戻る", link_other: "🎮 他のゲームを選ぶ", header_title: "モンスターゴールデンベル", result_title: "結果発表",
+        q_num: "問題", ready: "準備...", submitted: "提出完了", score_pt: "点", survived_count: "クリア", eliminated: "脱落", winner: "優勝！", rank: "位", final_score: "最終スコア", record: "記録",
+        diff_easy: "簡単 (第1世代)", diff_normal: "普通 (第1〜4世代)", diff_hard: "難しい (全世代)", diff_mix: "すべてランダム",
+        mode_chall: "🏅 チャレンジ (10問)", mode_surv: "☠️ サバイバル (最大70問)", p_1: "1人練習", p_n: "人プレイ",
+        team_dog: "犬", team_cat: "猫", team_rabbit: "うさぎ", team_hamster: "ハムスター", team_panda: "パンダ", team_monkey: "猿",
+        ui_title: '言語の選択', ui_search: '言語を検索...', ui_empty: '結果が見つかりません。', ui_toast: '言語が変更されました。', domain_txt: "KingsMath.com"
+    },
+    es: {
+        title: "⚡ Campana Dorada de Monstruos", pageTitle: "Campana Dorada de Monstruos", desc: "¡Adivina el Monstruo!", keywords: "monstruo, campana dorada, quiz",
+        intro: "Adivina el Monstruo por su apariencia.", slogan: "¿Eres un verdadero Experto en Monstruos?", label_diff: "📚 Dificultad", label_mode: "🏆 Modo de Juego", label_player: "👥 Jugadores", 
+        btn_start: "Comenzar Juego", btn_restart: "Volver al Inicio", link_other: "🎮 Elegir Otro Juego", header_title: "Campana Dorada de Monstruos", result_title: "Resultados",
+        q_num: "Pregunta", ready: "Listo...", submitted: "Respuesta Enviada", score_pt: "pts", survived_count: "Pasado", eliminated: "Eliminado", winner: "¡Ganador!", rank: "°", final_score: "Puntaje Final", record: "Récord",
+        diff_easy: "Fácil (Gen 1)", diff_normal: "Medio (Gen 1-4)", diff_hard: "Difícil (Todas Gen)", diff_mix: "Mezcla Aleatoria",
+        mode_chall: "🏅 Desafío (10 P.)", mode_surv: "☠️ Supervivencia (70 P.)", p_1: "1 Jugador", p_n: " Jugadores",
+        team_dog: "Perro", team_cat: "Gato", team_rabbit: "Conejo", team_hamster: "Hámster", team_panda: "Panda", team_monkey: "Mono",
+        ui_title: 'Seleccionar Idioma', ui_search: 'Buscar Idioma...', ui_empty: 'No se encontraron resultados.', ui_toast: 'Idioma cambiado.', domain_txt: "KingsMath.com"
+    },
+    fr: {
+        title: "⚡ Cloche d'Or des Monstres", pageTitle: "Cloche d'Or des Monstres", desc: "Devinez le Monstre!", keywords: "monstre, cloche d'or, quiz",
+        intro: "Devinez le Monstre d'après son apparence.", slogan: "Es-tu un vrai Expert en Monstres?", label_diff: "📚 Difficulté", label_mode: "🏆 Mode de Jeu", label_player: "👥 Joueurs", 
+        btn_start: "Commencer", btn_restart: "Retour au Début", link_other: "🎮 Choisir un Autre Jeu", header_title: "Cloche d'Or des Monstres", result_title: "Résultats",
+        q_num: "Question", ready: "Prêt...", submitted: "Réponse Soumise", score_pt: "pts", survived_count: "Passé", eliminated: "Éliminé", winner: "Gagnant!", rank: "e", final_score: "Score Final", record: "Record",
+        diff_easy: "Facile (Gén 1)", diff_normal: "Moyen (Gén 1-4)", diff_hard: "Difficile (Toutes Gén)", diff_mix: "Aléatoire",
+        mode_chall: "🏅 Défi (10 Q.)", mode_surv: "☠️ Survie (Max 70 Q.)", p_1: "1 Joueur", p_n: " Joueurs",
+        team_dog: "Chien", team_cat: "Chat", team_rabbit: "Lapin", team_hamster: "Hamster", team_panda: "Panda", team_monkey: "Singe",
+        ui_title: 'Choisir la Langue', ui_search: 'Rechercher une Langue...', ui_empty: 'Aucun résultat.', ui_toast: 'Langue modifiée.', domain_txt: "KingsMath.com"
+    },
+    ru: {
+        title: "⚡ Золотой Колокол Монстров", pageTitle: "Золотой Колокол Монстров", desc: "Угадай монстра!", keywords: "монстр, золотой колокол, викторина",
+        intro: "Угадай монстра по внешнему виду.", slogan: "Ты настоящий Эксперт по Монстрам?", label_diff: "📚 Сложность", label_mode: "🏆 Режим Игры", label_player: "👥 Игроки", 
+        btn_start: "Начать", btn_restart: "В Начало", link_other: "🎮 Выбрать Другую Игру", header_title: "Золотой Колокол Монстров", result_title: "Результаты",
+        q_num: "Вопрос", ready: "Готов...", submitted: "Ответ Принят", score_pt: "оч.", survived_count: "Пройдено", eliminated: "Выбыл", winner: "Победитель!", rank: "место", final_score: "Итоговый Счет", record: "Рекорд",
+        diff_easy: "Легко (Поколение 1)", diff_normal: "Средне (Поколения 1-4)", diff_hard: "Сложно (Все)", diff_mix: "Случайно",
+        mode_chall: "🏅 Вызов (10 В.)", mode_surv: "☠️ Выживание (Макс 70 В.)", p_1: "1 Игрок", p_n: " Игрока(ов)",
+        team_dog: "Собака", team_cat: "Кошка", team_rabbit: "Кролик", team_hamster: "Хомяк", team_panda: "Панда", team_monkey: "Обезьяна",
+        ui_title: 'Выбрать Язык', ui_search: 'Поиск Языка...', ui_empty: 'Нет результатов.', ui_toast: 'Язык изменен.', domain_txt: "KingsMath.com"
+    },
+    id: {
+        title: "⚡ Bel Emas Monster", pageTitle: "Bel Emas Monster", desc: "Tebak Monster!", keywords: "monster, bel emas, kuis",
+        intro: "Tebak Monster dari penampilannya.", slogan: "Apakah kamu Ahli Monster sejati?", label_diff: "📚 Kesulitan", label_mode: "🏆 Mode Permainan", label_player: "👥 Pemain", 
+        btn_start: "Mulai Bermain", btn_restart: "Kembali ke Awal", link_other: "🎮 Pilih Game Lain", header_title: "Bel Emas Monster", result_title: "Hasil",
+        q_num: "Pertanyaan", ready: "Siap...", submitted: "Jawaban Terkirim", score_pt: "poin", survived_count: "Lulus", eliminated: "Tereliminasi", winner: "Pemenang!", rank: "Ke-", final_score: "Skor Akhir", record: "Rekor",
+        diff_easy: "Mudah (Gen 1)", diff_normal: "Sedang (Gen 1-4)", diff_hard: "Sulit (Semua Gen)", diff_mix: "Campak Acak",
+        mode_chall: "🏅 Tantangan (10 S.)", mode_surv: "☠️ Bertahan Hidup (70 S.)", p_1: "1 Pemain", p_n: " Pemain",
+        team_dog: "Anjing", team_cat: "Kucing", team_rabbit: "Kelinci", team_hamster: "Hamster", team_panda: "Panda", team_monkey: "Monyet",
+        ui_title: 'Pilih Bahasa', ui_search: 'Cari Bahasa...', ui_empty: 'Tidak ada hasil.', ui_toast: 'Bahasa telah diubah.', domain_txt: "KingsMath.com"
+    },
+    vi: {
+        title: "⚡ Chuông Vàng Quái Vật", pageTitle: "Chuông Vàng Quái Vật", desc: "Đoán Quái Vật!", keywords: "quái vật, chuông vàng, câu đố",
+        intro: "Đoán Quái Vật từ hình dáng.", slogan: "Bạn có phải là Chuyên gia Quái vật đích thực?", label_diff: "📚 Độ Khó", label_mode: "🏆 Chế Độ", label_player: "👥 Người Chơi", 
+        btn_start: "Bắt Đầu", btn_restart: "Quay Lại Từ Đầu", link_other: "🎮 Chọn Trò Chơi Khác", header_title: "Chuông Vàng Quái Vật", result_title: "Kết Quả",
+        q_num: "Câu Hỏi", ready: "Sẵn sàng...", submitted: "Đã Nộp", score_pt: "điểm", survived_count: "Vượt qua", eliminated: "Bị Loại", winner: "Chiến Thắng!", rank: "Hạng", final_score: "Điểm Cuối Cùng", record: "Kỷ Lục",
+        diff_easy: "Dễ (Thế hệ 1)", diff_normal: "Trung Bình (Thế hệ 1-4)", diff_hard: "Khó (Tất cả)", diff_mix: "Ngẫu Nhiên Tất Cả",
+        mode_chall: "🏅 Thử Thách (10 C.)", mode_surv: "☠️ Sinh Tồn (Tối Đa 70 C.)", p_1: "1 Người Chơi", p_n: " Người Chơi",
+        team_dog: "Chó", team_cat: "Mèo", team_rabbit: "Thỏ", team_hamster: "Chuột Hamster", team_panda: "Gấu Trúc", team_monkey: "Khỉ",
+        ui_title: 'Chọn Ngôn Ngữ', ui_search: 'Tìm Kiếm Ngôn Ngữ...', ui_empty: 'Không có kết quả.', ui_toast: 'Ngôn ngữ đã được thay đổi.', domain_txt: "KingsMath.com"
+    },
+    th: {
+        title: "⚡ มอนสเตอร์ โกลเด้นเบลล์", pageTitle: "มอนสเตอร์ โกลเด้นเบลล์", desc: "ทายชื่อมอนสเตอร์!", keywords: "มอนสเตอร์, โกลเด้นเบลล์, ควิซ",
+        intro: "ทายชื่อมอนสเตอร์จากรูปร่างหน้าตา", slogan: "คุณคือผู้เชี่ยวชาญด้านมอนสเตอร์ตัวจริงหรือเปล่า?", label_diff: "📚 ระดับความยาก", label_mode: "🏆 โหมดเกม", label_player: "👥 ผู้เล่น", 
+        btn_start: "เริ่มเกม", btn_restart: "กลับไปจุดเริ่มต้น", link_other: "🎮 เลือกเกมอื่น", header_title: "มอนสเตอร์ โกลเด้นเบลล์", result_title: "ผลลัพธ์",
+        q_num: "คำถาม", ready: "พร้อม...", submitted: "ส่งคำตอบแล้ว", score_pt: "คะแนน", survived_count: "ผ่าน", eliminated: "ถูกคัดออก", winner: "ผู้ชนะ!", rank: "อันดับ", final_score: "คะแนนรวม", record: "สถิติ",
+        diff_easy: "ง่าย (Gen 1)", diff_normal: "ปานกลาง (Gen 1-4)", diff_hard: "ยาก (ทุก Gen)", diff_mix: "สุ่มทั้งหมด",
+        mode_chall: "🏅 ความท้าทาย (10 ข.)", mode_surv: "☠️ เอาชีวิตรอด (สูงสุด 70 ข.)", p_1: "1 คน", p_n: " คน",
+        team_dog: "สุนัข", team_cat: "แมว", team_rabbit: "กระต่าย", team_hamster: "แฮมสเตอร์", team_panda: "แพนด้า", team_monkey: "ลิง",
+        ui_title: 'เลือกภาษา', ui_search: 'ค้นหาภาษา...', ui_empty: 'ไม่พบผลลัพธ์', ui_toast: 'เปลี่ยนภาษาเรียบร้อยแล้ว.', domain_txt: "KingsMath.com"
+    },
+    "pt-br": {
+        title: "⚡ Sino Dourado dos Monstros", pageTitle: "Sino Dourado dos Monstros", desc: "Adivinhe o Monstro!", keywords: "monstro, sino dourado, quiz",
+        intro: "Adivinhe o Monstro pela aparência.", slogan: "Você é um verdadeiro Especialista em Monstros?", label_diff: "📚 Dificuldade", label_mode: "🏆 Modo de Jogo", label_player: "👥 Jogadores", 
+        btn_start: "Começar Jogo", btn_restart: "Voltar ao Início", link_other: "🎮 Escolher Outro Jogo", header_title: "Sino Dourado dos Monstros", result_title: "Resultados",
+        q_num: "Pergunta", ready: "Pronto...", submitted: "Resposta Enviada", score_pt: "pts", survived_count: "Passou", eliminated: "Eliminado", winner: "Vencedor!", rank: "°", final_score: "Pontuação Final", record: "Recorde",
+        diff_easy: "Fácil (Gen 1)", diff_normal: "Médio (Gen 1-4)", diff_hard: "Difícil (Todas Gen)", diff_mix: "Mistura Aleatória",
+        mode_chall: "🏅 Desafio (10 P.)", mode_surv: "☠️ Sobrevivência (Máx 70 P.)", p_1: "1 Jogador", p_n: " Jogadores",
+        team_dog: "Cachorro", team_cat: "Gato", team_rabbit: "Coelho", team_hamster: "Hamster", team_panda: "Panda", team_monkey: "Macaco",
+        ui_title: 'Selecionar Idioma', ui_search: 'Pesquisar Idioma...', ui_empty: 'Nenhum resultado.', ui_toast: 'Idioma alterado.', domain_txt: "KingsMath.com"
+    },
+    hi: {
+        title: "⚡ मॉन्स्टर गोल्डन बेल", pageTitle: "मॉन्स्टर गोल्डन बेल", desc: "मॉन्स्टर का अनुमान लगाएं!", keywords: "मॉन्स्टर, गोल्डन बेल, क्विज़",
+        intro: "रूप-रंग से मॉन्स्टर का अनुमान लगाएं।", slogan: "क्या आप सच्चे मॉन्स्टर विशेषज्ञ हैं?", label_diff: "📚 कठिनाई", label_mode: "🏆 गेम मोड", label_player: "👥 खिलाड़ी", 
+        btn_start: "गेम शुरू करें", btn_restart: "शुरुआत पर लौटें", link_other: "🎮 दूसरा गेम चुनें", header_title: "मॉन्स्टर गोल्डन बेल", result_title: "परिणाम",
+        q_num: "प्रश्न", ready: "तैयार...", submitted: "उत्तर जमा किया", score_pt: "अंक", survived_count: "पार किया", eliminated: "बाहर", winner: "विजेता!", rank: "स्थान", final_score: "अंतिम स्कोर", record: "रिकॉर्ड",
+        diff_easy: "आसान (Gen 1)", diff_normal: "मध्यम (Gen 1-4)", diff_hard: "कठिन (सभी Gen)", diff_mix: "यादृच्छिक",
+        mode_chall: "🏅 चुनौती (10 प्र.)", mode_surv: "☠️ जीवन रक्षा (अधिकतम 70 प्र.)", p_1: "1 खिलाड़ी", p_n: " खिलाड़ी",
+        team_dog: "कुत्ता", team_cat: "बिल्ली", team_rabbit: "खरगोश", team_hamster: "हम्सटर", team_panda: "पांडा", team_monkey: "बंदर",
+        ui_title: 'भाषा चुनें', ui_search: 'भाषा खोजें...', ui_empty: 'कोई परिणाम नहीं।', ui_toast: 'भाषा बदल दी गई है।', domain_txt: "KingsMath.com"
+    },
+    bn: {
+        title: "⚡ মনস্টার গোল্ডেন বেল", pageTitle: "মনস্টার গোল্ডেন বেল", desc: "মনস্টার অনুমান করুন!", keywords: "মনস্টার, গোল্ডেন বেল, কুইজ",
+        intro: "চেহারা দেখে মনস্টার অনুমান করুন।", slogan: "আপনি কি একজন সত্যিকারের মনস্টার বিশেষজ্ঞ?", label_diff: "📚 কাঠিন্য", label_mode: "🏆 গেম মোড", label_player: "👥 খেলোয়াড়", 
+        btn_start: "গেম শুরু করুন", btn_restart: "শুরুতে ফিরে যান", link_other: "🎮 অন্য গেম বাছুন", header_title: "মনস্টার গোল্ডেন বেল", result_title: "ফলাফল",
+        q_num: "প্রশ্ন", ready: "প্রস্তুত...", submitted: "উত্তর জমা দেওয়া হয়েছে", score_pt: "পয়েন্ট", survived_count: "উত্তীর্ণ", eliminated: "বাদ", winner: "বিজয়ী!", rank: "ম", final_score: "চূড়ান্ত স্কোর", record: "রেকর্ড",
+        diff_easy: "সহজ (Gen 1)", diff_normal: "মাঝারি (Gen 1-4)", diff_hard: "কঠিন (সকল Gen)", diff_mix: "র‍্যান্ডম",
+        mode_chall: "🏅 চ্যালেঞ্জ (১০ প্র.)", mode_surv: "☠️ সারভাইভাল (সর্বোচ্চ ৭০ প্র.)", p_1: "১ জন", p_n: " জন",
+        team_dog: "কুকুর", team_cat: "বিড়াল", team_rabbit: "খরগোশ", team_hamster: "হ্যামস্টার", team_panda: "পান্ডা", team_monkey: "বানর",
+        ui_title: 'ভাষা নির্বাচন', ui_search: 'ভাষা খুঁজুন...', ui_empty: 'কোনো ফলাফল নেই।', ui_toast: 'ভাষা পরিবর্তন করা হয়েছে।', domain_txt: "KingsMath.com"
+    },
+    tr: {
+        title: "⚡ Canavar Altın Çanı", pageTitle: "Canavar Altın Çanı", desc: "Canavarı tahmin et!", keywords: "canavar, altın çan, bilgi yarışması",
+        intro: "Görünüşünden canavarı tahmin et.", slogan: "Gerçek bir Canavar Uzmanı mısın?", label_diff: "📚 Zorluk", label_mode: "🏆 Oyun Modu", label_player: "👥 Oyuncular", 
+        btn_start: "Oyuna Başla", btn_restart: "Başa Dön", link_other: "🎮 Başka Oyun Seç", header_title: "Canavar Altın Çanı", result_title: "Sonuçlar",
+        q_num: "Soru", ready: "Hazır...", submitted: "Cevap Gönderildi", score_pt: "puan", survived_count: "Geçti", eliminated: "Elendi", winner: "Kazanan!", rank: ".", final_score: "Final Skoru", record: "Rekor",
+        diff_easy: "Kolay (1. Nesil)", diff_normal: "Orta (1-4. Nesil)", diff_hard: "Zor (Tüm Nesiller)", diff_mix: "Rastgele",
+        mode_chall: "🏅 Meydan Okuma (10 S.)", mode_surv: "☠️ Hayatta Kalma (Maks 70 S.)", p_1: "1 Oyuncu", p_n: " Oyuncu",
+        team_dog: "Köpek", team_cat: "Kedi", team_rabbit: "Tavşan", team_hamster: "Hamster", team_panda: "Panda", team_monkey: "Maymun",
+        ui_title: 'Dil Seç', ui_search: 'Dil Ara...', ui_empty: 'Sonuç bulunamadı.', ui_toast: 'Dil değiştirildi.', domain_txt: "KingsMath.com"
+    },
+    de: {
+        title: "⚡ Monster Goldene Glocke", pageTitle: "Monster Goldene Glocke", desc: "Errate das Monster!", keywords: "monster, goldene glocke, quiz",
+        intro: "Errate das Monster anhand seines Aussehens.", slogan: "Bist du ein wahrer Monster-Experte?", label_diff: "📚 Schwierigkeit", label_mode: "🏆 Spielmodus", label_player: "👥 Spieler", 
+        btn_start: "Spiel Starten", btn_restart: "Zurück zum Start", link_other: "🎮 Anderes Spiel wählen", header_title: "Monster Goldene Glocke", result_title: "Ergebnisse",
+        q_num: "Frage", ready: "Bereit...", submitted: "Antwort Eingereicht", score_pt: "Pkt", survived_count: "Bestanden", eliminated: "Ausgeschieden", winner: "Gewinner!", rank: ".", final_score: "Endstand", record: "Rekord",
+        diff_easy: "Leicht (Gen 1)", diff_normal: "Mittel (Gen 1-4)", diff_hard: "Schwer (Alle Gen)", diff_mix: "Zufällig Gemischt",
+        mode_chall: "🏅 Herausforderung (10 F.)", mode_surv: "☠️ Überleben (Max 70 F.)", p_1: "1 Spieler", p_n: " Spieler",
+        team_dog: "Hund", team_cat: "Katze", team_rabbit: "Hase", team_hamster: "Hamster", team_panda: "Panda", team_monkey: "Affe",
+        ui_title: 'Sprache Auswählen', ui_search: 'Sprache Suchen...', ui_empty: 'Keine Ergebnisse.', ui_toast: 'Sprache geändert.', domain_txt: "KingsMath.com"
+    },
+    it: {
+        title: "⚡ Campana d'Oro dei Mostri", pageTitle: "Campana d'Oro dei Mostri", desc: "Indovina il Mostro!", keywords: "mostro, campana d'oro, quiz",
+        intro: "Indovina il Mostro dal suo aspetto.", slogan: "Sei un vero Esperto di Mostri?", label_diff: "📚 Difficoltà", label_mode: "🏆 Modalità di Gioco", label_player: "👥 Giocatori", 
+        btn_start: "Inizia Gioco", btn_restart: "Torna all'Inizio", link_other: "🎮 Scegli Altro Gioco", header_title: "Campana d'Oro dei Mostri", result_title: "Risultati",
+        q_num: "Domanda", ready: "Pronto...", submitted: "Risposta Inviata", score_pt: "pti", survived_count: "Passato", eliminated: "Eliminato", winner: "Vincitore!", rank: "°", final_score: "Punteggio Finale", record: "Record",
+        diff_easy: "Facile (Gen 1)", diff_normal: "Medio (Gen 1-4)", diff_hard: "Difficile (Tutte Gen)", diff_mix: "Misto Casuale",
+        mode_chall: "🏅 Sfida (10 D.)", mode_surv: "☠️ Sopravvivenza (Max 70 D.)", p_1: "1 Giocatore", p_n: " Giocatori",
+        team_dog: "Cane", team_cat: "Gatto", team_rabbit: "Coniglio", team_hamster: "Criceto", team_panda: "Panda", team_monkey: "Scimmia",
+        ui_title: 'Seleziona Lingua', ui_search: 'Cerca Lingua...', ui_empty: 'Nessun risultato.', ui_toast: 'Lingua cambiata.', domain_txt: "KingsMath.com"
+    }
+};
+const languagesList = [
+    { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+    { code: 'en', country: 'us', name: 'English', enName: 'English' },
+    { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)' },
+    { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+    { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+    { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+    { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+    { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' },
+    { code: 'pt-br', country: 'br', name: 'Português', enName: 'Portuguese (Brazil)' },
+    { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+    { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+    { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+    { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+    { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+    { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+    { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' }
+];
+
+/* =========================================
+   언어 설정 및 UI 초기화
+   ========================================= */
+let currentLang = 'en'; // 기본값 안전 보장
+function initLanguage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLang = urlParams.get('lang');
+    const savedLang = localStorage.getItem('kingsmath_lang');
+    const browserLang = navigator.language.slice(0, 2);
+
+    if (urlLang && languagesList.find(l => l.code === urlLang)) {
+        currentLang = urlLang;
+    } else if (savedLang && languagesList.find(l => l.code === savedLang)) {
+        currentLang = savedLang;
+    } else if (browserLang && languagesList.find(l => l.code === browserLang)) {
+        currentLang = browserLang;
+    } else {
+        currentLang = 'en'; 
+    }
+    
+    updateUIText(currentLang);
+}
+
+function updateUIText(langCode) {
+    const txt = STRINGS[langCode];
+    if (!txt) return;
+
+    // SEO Update
+    document.getElementById('pageTitle').innerText = txt.pageTitle;
+    document.getElementById('pageDesc').setAttribute('content', txt.desc);
+    document.getElementById('pageKeywords').setAttribute('content', txt.keywords);
+    document.getElementById('domainLink').innerText = txt.domain_txt;
+    
+    // HTML Text binding
+    document.querySelectorAll('[data-lang-key]').forEach(el => {
+        const key = el.getAttribute('data-lang-key');
+        if (txt[key]) el.innerHTML = txt[key];
+    });
+
+    if (langCode === 'vi') document.body.classList.add('lang-vi');
+    else document.body.classList.remove('lang-vi');
+
+    // Button Updates
+    const langObj = languagesList.find(l => l.code === langCode);
+    if(langObj) {
+        document.getElementById('currentFlag').src = `https://flagcdn.com/w40/${langObj.country}.png`;
+        document.getElementById('currentLangName').innerText = langObj.name;
+    }
+
+    // Modal UI Translate
+    document.getElementById('ui-title').innerText = txt.ui_title;
+    document.getElementById('searchInput').placeholder = txt.ui_search;
+    document.getElementById('ui-empty').innerText = txt.ui_empty;
+
+    updateSelectOptions();
+    resizeDynamicTexts(); 
+}
+
+function resizeDynamicTexts() {
+    document.querySelectorAll('.dynamic-text-container').forEach(el => {
+        el.style.transform = 'scale(1)'; 
+        const parent = el.parentElement;
+        if (parent && el.scrollWidth > parent.clientWidth) {
+            const scale = (parent.clientWidth - 20) / el.scrollWidth;
+            el.style.transform = `scale(${Math.max(scale, 0.5)})`;
+        }
+    });
+}
+window.addEventListener('resize', resizeDynamicTexts);
+
+const TEAM_DATA = [
+    { id: 'dog', icon: '🐶', color: 'bg-dog', key: 'team_dog' },
+    { id: 'cat', icon: '🐱', color: 'bg-cat', key: 'team_cat' },
+    { id: 'rabbit', icon: '🐰', color: 'bg-rabbit', key: 'team_rabbit' },
+    { id: 'hamster', icon: '🐹', color: 'bg-hamster', key: 'team_hamster' },
+    { id: 'panda', icon: '🐼', color: 'bg-panda', key: 'team_panda' },
+    { id: 'monkey', icon: '🐵', color: 'bg-monkey', key: 'team_monkey' }
+];
+
+const state = {
+    players: [], mode: 'challenge', difficulty: 'normal',
+    currentQ: 0, maxQ: 10, timer: 30, timerInterval: null,
+    phase: 'setup', problem: null, usedIds: new Set()
+};
+
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function initAudio() { if (!audioCtx) audioCtx = new AudioContext(); }
+
+function playSound(type) {
+    if(!audioCtx) return;
+    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const t = audioCtx.currentTime;
+    if (type === 'start') {
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(440, t); osc.frequency.linearRampToValueAtTime(880, t + 0.3);
+        gain.gain.setValueAtTime(0.3, t); gain.gain.linearRampToValueAtTime(0, t + 0.5);
+        osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t + 0.5);
+    } else if (type === 'count') {
+        osc.type = 'sine'; osc.frequency.setValueAtTime(600, t);
+        gain.gain.setValueAtTime(0.3, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+        osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t + 0.1);
+    } else if (type === 'click') {
+        osc.type = 'square'; osc.frequency.setValueAtTime(1200, t);
+        gain.gain.setValueAtTime(0.1, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
+        osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t + 0.05);
+    } else if (type === 'correct') {
+        const osc2 = audioCtx.createOscillator(); const gain2 = audioCtx.createGain();
+        osc.frequency.setValueAtTime(523.25, t); osc2.frequency.setValueAtTime(659.25, t + 0.1);
+        gain.gain.setValueAtTime(0.3, t); gain.gain.linearRampToValueAtTime(0, t + 0.4);
+        gain2.gain.setValueAtTime(0, t); gain2.gain.linearRampToValueAtTime(0.3, t + 0.1); gain2.gain.linearRampToValueAtTime(0, t + 0.5);
+        osc.connect(gain); gain.connect(audioCtx.destination); osc2.connect(gain2); gain2.connect(audioCtx.destination);
+        osc.start(t); osc.stop(t + 0.4); osc2.start(t); osc2.stop(t + 0.5);
+    } else if (type === 'wrong') {
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, t); osc.frequency.linearRampToValueAtTime(100, t + 0.3);
+        gain.gain.setValueAtTime(0.3, t); gain.gain.linearRampToValueAtTime(0, t + 0.3);
+        osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t + 0.3);
+    } else if (type === 'end') {
+        const freqs = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+        freqs.forEach((f, i) => {
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.type = 'triangle'; o.frequency.value = f;
+            g.gain.setValueAtTime(0.2, t + i*0.1); g.gain.linearRampToValueAtTime(0, t + i*0.1 + 0.5);
+            o.connect(g); g.connect(audioCtx.destination); o.start(t + i*0.1); o.stop(t + i*0.1 + 0.5);
+        });
+    }
+}
+
+function updateSelectOptions() {
+    const txt = STRINGS[currentLang];
+    const diffVal = document.getElementById('difficulty').value;
+    const modeVal = document.getElementById('gameMode').value;
+    const playerVal = document.getElementById('playerCount').value;
+
+    document.getElementById('difficulty').innerHTML = `
+        <option value="easy">${txt.diff_easy}</option>
+        <option value="normal">${txt.diff_normal}</option>
+        <option value="hard">${txt.diff_hard}</option>
+        <option value="mix">${txt.diff_mix}</option>
+    `;
+    document.getElementById('gameMode').innerHTML = `
+        <option value="challenge">${txt.mode_chall}</option>
+        <option value="survival">${txt.mode_surv}</option>
+    `;
+    const playerSelect = document.getElementById('playerCount');
+    playerSelect.innerHTML = '';
+    for(let i=1; i<=6; i++) {
+        const opt = document.createElement('option');
+        opt.value = i; opt.innerText = i === 1 ? txt.p_1 : `${i}${txt.p_n}`;
+        playerSelect.appendChild(opt);
+    }
+
+    if(diffVal) document.getElementById('difficulty').value = diffVal;
+    if(modeVal) document.getElementById('gameMode').value = modeVal;
+    if(playerVal) document.getElementById('playerCount').value = playerVal;
+    else document.getElementById('playerCount').value = '6'; 
+}
+
+/* =========================================
+   PokeAPI 연동 및 문제 생성기
+   ========================================= */
+
+async function fetchPokemonData(id, langCode) {
+    try {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`);
+        const data = await res.json();
+        
+        // PokeAPI에서 사용하는 언어 코드 매핑
+        const langMap = {
+            'ko': 'ko', 'en': 'en', 'ja': 'ja-Hrkt', // ja-Hrkt (가나), ja-Ro (로마자), ja (칸지)
+            'zh': 'zh-Hans', 'fr': 'fr', 'de': 'de', 'es': 'es', 'it': 'it'
+        };
+        let pokeLang = langMap[langCode] || 'en';
+        
+        let nameEntry = data.names.find(n => n.language.name === pokeLang);
+        if (!nameEntry && pokeLang === 'ja-Hrkt') nameEntry = data.names.find(n => n.language.name === 'ja');
+        if (!nameEntry) nameEntry = data.names.find(n => n.language.name === 'en'); // Fallback
+
+        return {
+            id: id,
+            name: nameEntry.name,
+            img: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`
+        };
+    } catch(e) {
+        // 네트워크 에러 시 안전한 Fallback (피카츄)
+        return { id: 25, name: "Pikachu", img: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" };
+    }
+}
+
+async function generatePokemonProblem(qNum) {
+    let poolType = state.difficulty;
+    
+    // 몬스터 세대별 ID 범위 (Gen 1~8)
+    const ranges = {
+        easy: [1, 151],      // 1세대
+        medium: [1, 493],    // 1~4세대
+        hard: [1, 898]       // 1~8세대
+    };
+
+    if (state.mode === 'survival') {
+        if (qNum <= 10) poolType = 'easy';
+        else if (qNum <= 20) poolType = 'medium';
+        else poolType = 'hard';
+    } else if (poolType === 'mix') {
+        const types = ['easy', 'medium', 'hard'];
+        poolType = types[Math.floor(Math.random() * types.length)];
+    } else if (poolType === 'normal') {
+        poolType = 'medium'; 
+    }
+
+    const [min, max] = ranges[poolType] || ranges['medium'];
+
+    let targetId, distractors = [];
+    
+    // 중복 출제 방지 (너무 많이 출제되었으면 Set 비우기)
+    if (state.usedIds.size > (max - min) * 0.8) state.usedIds.clear();
+
+    while (true) {
+        targetId = Math.floor(Math.random() * (max - min + 1)) + min;
+        if (!state.usedIds.has(targetId)) {
+            state.usedIds.add(targetId);
+            break;
+        }
+    }
+
+    while(distractors.length < 3) {
+        let dId = Math.floor(Math.random() * (max - min + 1)) + min;
+        if (dId !== targetId && !distractors.includes(dId)) {
+            distractors.push(dId);
+        }
+    }
+
+    // 4개의 몬스터 데이터를 병렬로 가져옴
+    const allIds = [targetId, ...distractors];
+    const fetchedData = await Promise.all(allIds.map(id => fetchPokemonData(id, currentLang)));
+
+    const target = fetchedData[0];
+    const distractorData = fetchedData.slice(1);
+
+    let qType = Math.floor(Math.random() * 3);
+    let qStr, aVal, options = [];
+
+    if (qType === 0) {
+        qStr = `<img src="${target.img}" class="big-image" alt="Pokemon">`;
+        aVal = target.name;
+        options = [target, ...distractorData].map(x => ({ label: x.name, value: x.name }));
+    } else if (qType === 1) {
+        qStr = `<div class="text-5xl sm:text-7xl text-white mb-4" style="line-height:1.5; font-family: 'Noto Sans KR', sans-serif;">${target.name}</div>`;
+        aVal = target.id.toString();
+        options = [target, ...distractorData].map(x => ({
+            label: `<img src="${x.img}" class="small-image">`,
+            value: x.id.toString()
+        }));
+    } else {
+        let isTrue = Math.random() < 0.5;
+        let displayTarget = isTrue ? target : distractorData[0];
+        
+        qStr = `<img src="${target.img}" class="big-image" alt="Pokemon">
+                <div class="ox-name" style="font-family: 'Noto Sans KR', sans-serif;">${displayTarget.name}</div>`;
+        aVal = isTrue ? "O" : "X";
+        options = [
+            { label: "<span class='text-blue-500 text-3xl font-bold'>O</span>", value: "O" },
+            { label: "<span class='text-red-500 text-3xl font-bold'>X</span>", value: "X" }
+        ];
+    }
+    
+    if (qType !== 2) options.sort(() => Math.random() - 0.5);
+    
+    return { q: qStr, aVal: aVal, options: options, type: qType, target: target };
+}
+
+/* =========================================
+   Game Lifecycle
+   ========================================= */
+function initGame() {
+    initAudio();
+    const pCount = parseInt(document.getElementById('playerCount').value);
+    state.difficulty = document.getElementById('difficulty').value;
+    state.mode = document.getElementById('gameMode').value;
+    state.currentQ = 0;
+    state.players = [];
+    state.usedIds.clear();
+
+    const arena = document.getElementById('arena');
+    arena.innerHTML = '';
+    
+    const txt = STRINGS[currentLang];
+
+    for(let i=0; i<pCount; i++) {
+        let teamInfo = TEAM_DATA[i];
+        let localizedName = txt[teamInfo.key]; 
+        state.players.push({ id: teamInfo.id, icon: teamInfo.icon, color: teamInfo.color, name: localizedName, score: 0, survived: 0, alive: true, answered: false, selected: null, isGoldenBellWinner: false, rank: 0, answerTime: 0 });
+        
+        const col = document.createElement('div');
+        col.className = `player-col ${state.players[i].color}`;
+        col.id = `p-${i}`;
+        col.innerHTML = `
+            <div class="p-header">
+                <span class="p-emoji">${state.players[i].icon}</span>
+                <span class="p-name dynamic-font-target">${state.players[i].name}</span>
+                <span class="p-score dynamic-font-target" id="p-score-${i}" style="display: ${state.mode === 'challenge' ? 'block' : 'none'};">0 ${txt.score_pt}</span>
+            </div>
+            <div class="choice-grid" id="p-choices-${i}"></div>
+            <div class="feedback-overlay" id="p-fb-${i}"></div>
+            <div class="final-status" id="p-final-${i}"></div>
+        `;
+        arena.appendChild(col);
+    }
+
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('resultPopup').style.display = 'none';
+    document.getElementById('langTriggerContainer').style.display = 'none';
+
+    playSound('start');
+    nextTurn();
+}
+
+async function nextTurn() {
+    const aliveCount = state.players.filter(p=>p.alive).length;
+
+    if (state.mode === 'survival' && aliveCount <= 1 && state.players.length > 1) { endGame(); return; }
+    if (state.mode === 'survival' && aliveCount === 0) { endGame(); return; }
+    if (state.mode === 'challenge' && state.currentQ >= 10) { endGame(); return; }
+
+    if (state.mode === 'survival' && state.currentQ >= 70 && aliveCount > 0) {
+        triggerGoldenBellWin();
+        return;
+    }
+
+    state.currentQ++;
+    state.phase = 'loading'; // API Fetch 중 상태
+    state.players.forEach((p, idx) => {
+        if(p.alive) {
+            p.answered = false; p.selected = null; p.answerTime = 0;
+            const fb = document.getElementById(`p-fb-${idx}`);
+            fb.className = 'feedback-overlay'; fb.innerHTML = '';
+        }
+    });
+
+    const maxQText = state.mode==='challenge' ? '10' : '70';
+    const txt = STRINGS[currentLang];
+    
+    document.getElementById('qNumber').innerText = `${txt.q_num} ${state.currentQ} / ${maxQText}`;
+    
+    // 로딩 UI 표시
+    let loadingTxt = currentLang === 'ko' ? "야생의 몬스터이 나타났다! <br>데이터를 불러오는 중..." : "A wild Pokémon appeared! <br>Loading...";
+    document.getElementById('bigQuestion').innerHTML = `<div style="font-size: 2rem; color:#ffcb05; margin-top:20px;">${loadingTxt} <br><i class="fa-solid fa-spinner fa-spin mt-4"></i></div>`;
+
+    // API 호출
+    state.problem = await generatePokemonProblem(state.currentQ);
+    
+    state.phase = 'counting';
+    document.getElementById('bigQuestion').innerText = txt.ready;
+    
+    await runCountdown();
+
+    state.phase = 'playing';
+    document.getElementById('bigQuestion').innerHTML = state.problem.q;
+
+    state.players.forEach((p, idx) => {
+        if(!p.alive) return;
+        const grid = document.getElementById(`p-choices-${idx}`);
+        grid.innerHTML = '';
+        
+        state.problem.options.forEach(optObj => {
+            const btn = document.createElement('div');
+            btn.className = 'choice-btn';
+            btn.innerHTML = `<span style="font-family: 'Noto Sans KR', sans-serif;">${optObj.label}</span>`;
+            btn.dataset.val = optObj.value;
+            btn.onpointerdown = (e) => { e.preventDefault(); handleAnswer(idx, optObj.value, btn); };
+            grid.appendChild(btn);
+        });
+    });
+    startTimer();
+}
+
+async function runCountdown() {
+    const layer = document.getElementById('countdownLayer');
+    const txt = document.getElementById('countdownText');
+    layer.style.display = 'flex';
+    for(let i=3; i>0; i--) {
+        txt.innerText = i; 
+        txt.classList.remove('count-animate');
+        void txt.offsetWidth; 
+        txt.classList.add('count-animate');
+        playSound('count'); 
+        await new Promise(r => setTimeout(r, 1000));
+    }
+    layer.style.display = 'none';
+}
+
+function startTimer() {
+    state.timer = 30;
+    const tBox = document.getElementById('mainTimer');
+    tBox.innerText = 30; tBox.classList.remove('timer-urgent');
+    if(state.timerInterval) clearInterval(state.timerInterval);
+    state.timerInterval = setInterval(() => {
+        state.timer--; tBox.innerText = state.timer;
+        if(state.timer <= 5) { tBox.classList.add('timer-urgent'); playSound('count'); }
+        if(state.timer <= 0) finishRound();
+    }, 1000);
+}
+
+function handleAnswer(pIdx, val, btnElem) {
+    if(state.phase !== 'playing') return;
+    const p = state.players[pIdx];
+    if(p.answered || !p.alive) return;
+
+    playSound('click');
+    p.answered = true; p.selected = val;
+    p.answerTime = state.timer; // 남은 시간 기록
+    
+    const allBtns = document.getElementById(`p-choices-${pIdx}`).children;
+    for(let b of allBtns) b.style.opacity = '0.5';
+    btnElem.style.opacity = '1'; btnElem.classList.add('selected');
+
+    const fb = document.getElementById(`p-fb-${pIdx}`);
+    const txt = STRINGS[currentLang];
+    fb.innerHTML = `
+        <div style="font-size:3rem; margin-bottom:10px;">🔒</div>
+        <div class="submitted-text">${txt.submitted}</div>
+    `;
+    fb.classList.add('secret'); 
+    
+    const living = state.players.filter(pl => pl.alive);
+    if(living.every(pl => pl.answered)) finishRound();
+}
+
+function finishRound() {
+    clearInterval(state.timerInterval);
+    state.phase = 'result';
+    const correctAns = state.problem.aVal;
+    let someoneWrong = false;
+
+    state.players.forEach((p, idx) => {
+        if(!p.alive) return;
+        const fb = document.getElementById(`p-fb-${idx}`);
+        const choices = document.getElementById(`p-choices-${idx}`).children;
+
+        fb.classList.remove('secret'); fb.innerHTML = '';
+        
+        for(let btn of choices) {
+            let bVal = btn.dataset.val;
+            if(bVal === correctAns) btn.classList.add('correct');
+            else if(p.selected === bVal) btn.classList.add('wrong');
+        }
+
+        if(p.selected === correctAns) {
+            fb.innerHTML = '<span style="color:#69db7c">⭕</span>'; fb.classList.add('show-result');
+            p.survived++;
+            if(state.mode === 'challenge') {
+                p.score += (10 + p.answerTime); // 기본 10점 + 남은 시간에 비례한 보너스 점수
+                document.getElementById(`p-score-${idx}`).innerText = `${p.score} ${STRINGS[currentLang].score_pt}`;
+            }
+        } else {
+            someoneWrong = true;
+            fb.innerHTML = '<span style="color:#ff6b6b">❌</span>'; fb.classList.add('show-result');
+            if(state.mode === 'survival') {
+                p.alive = false;
+                setTimeout(() => {
+                    document.getElementById(`p-${idx}`).classList.add('eliminated');
+                }, 1500);
+            }
+        }
+    });
+    if(!someoneWrong) playSound('correct'); else playSound('wrong');
+    setTimeout(() => nextTurn(), 3000);
+}
+
+function assignRanks() {
+    let ranked = [...state.players];
+    if(state.mode === 'challenge') {
+        ranked.sort((a,b) => b.score - a.score);
+    } else {
+        ranked.sort((a,b) => {
+            if (a.alive && !b.alive) return -1;
+            if (!a.alive && b.alive) return 1;
+            return b.survived - a.survived;
+        });
+    }
+    
+    let currentRank = 1;
+    ranked.forEach((p, i) => {
+        if (i > 0) {
+            const prev = ranked[i-1];
+            let isTie = false;
+            if (state.mode === 'challenge') {
+                if (p.score === prev.score) isTie = true;
+            } else {
+                if (p.alive && prev.alive) isTie = true;
+                else if (!p.alive && !prev.alive && p.survived === prev.survived) isTie = true;
+            }
+            if (!isTie) currentRank = i + 1;
+        } else {
+            currentRank = 1;
+        }
+        const originalPlayer = state.players.find(pl => pl.id === p.id);
+        originalPlayer.rank = currentRank;
+    });
+}
+
+function getRankEmojiHtml(rank) {
+    let rankEmoji = '';
+    if (rank === 1) rankEmoji = '🥇';
+    else if (rank === 2) rankEmoji = '🥈';
+    else if (rank === 3) rankEmoji = '🥉';
+    else if (rank === 4) rankEmoji = '<span style="font-size: 70%;">4️⃣</span>';
+    else if (rank === 5) rankEmoji = '<span style="font-size: 70%;">5️⃣</span>';
+    else if (rank === 6) rankEmoji = '<span style="font-size: 70%;">6️⃣</span>';
+    return `<div style="font-size: 3rem; margin-bottom: 5px;">${rankEmoji}</div>`;
+}
+
+function triggerGoldenBellWin() {
+    clearInterval(state.timerInterval);
+    state.phase = 'gameover';
+    playSound('end');
+
+    state.players.forEach(p => {
+        if(p.alive) p.isGoldenBellWinner = true;
+    });
+    
+    assignRanks();
+
+    const popup = document.getElementById('resultPopup');
+    const list = document.getElementById('finalResultList');
+    const txt = STRINGS[currentLang];
+    
+    document.getElementById('resultTitle').innerHTML = "🎉 골든벨 달성! 🎉<br><span style='font-size: 2rem; color: #ffd43b;'>생존자 전원 승리!</span>";
+    popup.style.display = 'flex'; list.innerHTML = '';
+    
+    state.players.forEach((p, idx) => {
+        const finalDiv = document.getElementById(`p-final-${idx}`);
+        finalDiv.style.display = 'block';
+        const rankHtml = getRankEmojiHtml(p.rank);
+
+        if (p.isGoldenBellWinner) {
+            finalDiv.innerHTML = `${rankHtml}<h3>영광의 우승</h3><p>🔔 몬스터 마스터 🔔</p>`;
+            finalDiv.style.border = "4px solid #ffd43b";
+            finalDiv.style.background = "rgba(255, 212, 59, 0.2)";
+        } else {
+            finalDiv.innerHTML = `${rankHtml}<h3>${txt.record}</h3><p>${p.survived} ${txt.survived_count}</p>`;
+        }
+    });
+
+    renderResultList(true);
+}
+
+function endGame() {
+    clearInterval(state.timerInterval);
+    state.phase = 'gameover';
+    playSound('end');
+    
+    assignRanks();
+
+    const popup = document.getElementById('resultPopup');
+    const txt = STRINGS[currentLang];
+    document.getElementById('resultTitle').innerText = txt.result_title;
+    popup.style.display = 'flex';
+    
+    state.players.forEach((p, idx) => {
+        const finalDiv = document.getElementById(`p-final-${idx}`);
+        finalDiv.style.display = 'block';
+        const rankHtml = getRankEmojiHtml(p.rank);
+
+        if (state.mode === 'challenge') { 
+            finalDiv.innerHTML = `${rankHtml}<h3>${txt.final_score}</h3><p>${p.score} ${txt.score_pt}</p>`; 
+        } else { 
+            finalDiv.innerHTML = p.alive ? `${rankHtml}<h3>${txt.record}</h3><p>${txt.winner}</p>` : `${rankHtml}<h3>${txt.record}</h3><p>${p.survived} ${txt.survived_count}</p>`; 
+            if(p.alive) finalDiv.style.border = "4px solid #ffd43b"; 
+        }
+    });
+
+    renderResultList(false);
+}
+
+function renderResultList(isGoldenBell) {
+    const list = document.getElementById('finalResultList');
+    list.innerHTML = '';
+    const txt = STRINGS[currentLang];
+
+    let ranked = [...state.players].sort((a,b) => a.rank - b.rank);
+
+    ranked.forEach((p, i) => {
+        const li = document.createElement('li');
+        li.className = `result-item ${p.rank === 1 ? 'rank-1' : ''}`;
+        
+        let status;
+        if (isGoldenBell && p.isGoldenBellWinner) status = "🔔 몬스터 마스터!";
+        else if (state.mode === 'challenge') status = `${p.score} ${txt.score_pt}`;
+        else status = p.alive ? txt.winner : `${p.survived} ${txt.survived_count}`;
+
+        li.innerHTML = `<span>${p.rank}${txt.rank} ${p.icon} ${p.name}</span><span>${status}</span>`;
+        list.appendChild(li);
+    });
+}
+
+document.getElementById('fullscreenBtn').addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => { console.log(err.message); });
+    } else { document.exitFullscreen(); }
+});
+
+document.getElementById('startBtn').addEventListener('click', initGame);
+document.getElementById('restartBtn').addEventListener('click', () => { 
+    document.getElementById('langTriggerContainer').style.display = 'block';
+    document.getElementById('overlay').style.display = 'flex'; 
+    document.getElementById('resultPopup').style.display = 'none'; 
+});
+
+// 터치 및 드래그 방지 (전자칠판 최적화)
+document.addEventListener('dblclick', function(event) { event.preventDefault(); }, { passive: false });
+document.addEventListener('contextmenu', event => event.preventDefault());
+document.addEventListener('dragstart', event => event.preventDefault());
+
+document.getElementById('btn-home').addEventListener('click', () => {
+    if (document.fullscreenElement) {
+        clearInterval(state.timerInterval);
+        state.phase = 'setup';
+        
+        document.getElementById('langTriggerContainer').style.display = 'block';
+        document.getElementById('resultPopup').style.display = 'none';
+        document.getElementById('countdownLayer').style.display = 'none';
+        document.getElementById('arena').innerHTML = '';
+        document.getElementById('mainTimer').innerText = '30';
+        document.getElementById('mainTimer').classList.remove('timer-urgent');
+        document.getElementById('bigQuestion').innerText = STRINGS[currentLang].ready;
+        document.getElementById('overlay').style.display = 'flex';
+        
+        if(window.playSound) window.playSound('click');
+    } else {
+        location.reload();
+    }
+});
+
+/* =========================================
+   언어 모달 이벤트 (변경 없음)
+   ========================================= */
+const triggerBtn = document.getElementById('langTriggerBtn');
+const modal = document.getElementById('langModal');
+const closeBtn = document.getElementById('closeModalBtn');
+const searchInput = document.getElementById('searchInput');
+const grid = document.getElementById('languageGrid');
+const noResult = document.getElementById('noResult');
+const toast = document.getElementById('toastNotification');
+const toastLangName = document.getElementById('toastLangName');
+let toastTimeout;
+
+function renderLanguages(filterText = '') {
+    grid.innerHTML = '';
+    const lowerFilter = filterText.toLowerCase();
+    
+    const filteredLangs = languagesList.filter(lang => 
+        lang.name.toLowerCase().includes(lowerFilter) || 
+        lang.enName.toLowerCase().includes(lowerFilter) ||
+        lang.code.toLowerCase().includes(lowerFilter)
+    );
+
+    if (filteredLangs.length === 0) {
+        grid.classList.add('hidden');
+        noResult.classList.remove('hidden');
+        noResult.classList.add('flex');
+    } else {
+        grid.classList.remove('hidden');
+        noResult.classList.add('hidden');
+        noResult.classList.remove('flex');
+
+        filteredLangs.forEach(lang => {
+            const isSelected = lang.code === currentLang;
+            
+            const baseClasses = "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 group relative overflow-hidden lang-ui-text";
+            const stateClasses = isSelected 
+                ? "bg-gray-800 border-yellow-500 ring-1 ring-yellow-500/50" 
+                : "bg-gray-800/40 border-gray-700 hover:bg-gray-700 hover:border-gray-500";
+
+            const flagUrl = `https://flagcdn.com/w40/${lang.country}.png`;
+
+            const btn = document.createElement('div');
+            btn.className = `${baseClasses} ${stateClasses}`;
+
+            btn.innerHTML = `
+                <div class="shrink-0 w-8 h-6 rounded overflow-hidden shadow-sm border border-gray-700/50">
+                    <img src="${flagUrl}" alt="${lang.country}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                </div>
+                <div class="flex-1 min-w-0 flex flex-col items-start">
+                    <span class="text-sm font-medium text-white truncate w-full ${isSelected ? 'text-yellow-400' : ''}">${lang.name}</span>
+                    <span class="text-xs text-gray-400 truncate w-full">${lang.enName}</span>
+                </div>
+                ${isSelected ? '<i class="fa-solid fa-circle-check text-yellow-500 text-lg ml-2"></i>' : ''}
+            `;
+
+            btn.addEventListener('click', () => selectLanguage(lang));
+            grid.appendChild(btn);
+        });
+    }
+}
+
+function selectLanguage(lang) {
+    currentLang = lang.code;
+    
+    localStorage.setItem('kingsmath_lang', currentLang);
+    const url = new URL(window.location);
+    url.searchParams.set('lang', currentLang);
+    window.history.pushState({}, '', url);
+
+    updateUIText(currentLang);
+    closeModal();
+    
+    document.getElementById('ui-toast').textContent = STRINGS[currentLang].ui_toast;
+    toastLangName.textContent = lang.name;
+    toast.classList.add('show');
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    
+    renderLanguages(searchInput.value);
+}
+
+function openModal() { modal.classList.add('active'); setTimeout(() => searchInput.focus(), 100); }
+function closeModal() { modal.classList.remove('active'); }
+
+triggerBtn.addEventListener('click', openModal);
+closeBtn.addEventListener('click', closeModal);
+modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
+searchInput.addEventListener('input', (e) => { renderLanguages(e.target.value); });
+
+window.addEventListener('DOMContentLoaded', () => {
+    initLanguage();      
+    renderLanguages();   
+    setTimeout(resizeDynamicTexts, 100); 
+});
+
+</script>
+</body>
+</html>

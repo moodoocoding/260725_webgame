@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 키 발급 모달 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 모달 내부 스크롤바 디자인 (웹킷 브라우저 용) */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* 모달 등장 애니메이션 */
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-animate {
+            animation: modalFadeIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-800/80 h-screen w-full flex items-center justify-center p-4 antialiased">
+
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[600px] overflow-hidden flex flex-col modal-animate">
+        
+        <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                </svg>
+                Google AI Studio API 발급
+            </h2>
+            <button class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <div class="px-6 py-6 overflow-y-auto custom-scrollbar max-h-[70vh]">
+            
+            <div class="mb-6 bg-blue-50/60 border border-blue-100 rounded-xl p-4">
+                <h3 class="text-sm font-bold text-blue-800 mb-2 flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    왜 개별 API 키가 필요한가요?
+                </h3>
+                <ul class="text-xs text-blue-700 space-y-2 ml-1">
+                    <li class="flex items-start gap-1.5">
+                        <span class="mt-0.5 font-bold">•</span>
+                        <span class="leading-relaxed"><strong>안정적인 사용량 확보:</strong> 공용 키를 사용하면 다른 사람의 사용량과 합산되어 한도 초과(Rate Limit)로 서비스가 멈출 수 있습니다. 개인 키를 쓰면 무료 할당량을 안정적으로 온전히 사용할 수 있습니다.</span>
+                    </li>
+                    <li class="flex items-start gap-1.5">
+                        <span class="mt-0.5 font-bold">•</span>
+                        <span class="leading-relaxed"><strong>개인정보 및 보안:</strong> 본인의 API 키를 사용하여 요청해야 데이터가 타인과 섞이지 않고 안전하게 처리됩니다.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <p class="text-sm text-gray-600 mb-5 leading-relaxed">
+                Gemini API를 사용하기 위해 무료로 API 키를 발급받는 과정입니다. 그림을 보고 순서대로 따라해 주세요.
+            </p>
+
+            <a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" 
+               class="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition-colors mb-8 shadow-sm">
+                Google AI Studio 바로가기
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            </a>
+
+            <div class="space-y-8">
+                
+                <div class="flex items-start gap-4">
+                    <div class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-600 font-bold text-xs shrink-0 border-2 border-white shadow-sm">1</div>
+                    <div class="pt-0.5">
+                        <h3 class="text-base font-bold text-gray-800 mb-1">구글 계정 로그인</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">위 버튼을 눌러 사이트에 접속한 후, 본인의 구글 계정으로 로그인합니다.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                    <div class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-600 font-bold text-xs shrink-0 border-2 border-white shadow-sm">2</div>
+                    <div class="pt-0.5 w-full">
+                        <h3 class="text-base font-bold text-gray-800 mb-1">API 키 메뉴 이동</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-3">화면 왼쪽 사이드바 하단에서 <span class="inline-block bg-gray-100 px-1.5 py-0.5 rounded text-gray-800 font-semibold border border-gray-200">Get API key</span> 메뉴를 클릭합니다.</p>
+                        <img src="1.png" alt="Get API key 메뉴 화면" class="w-full max-w-[500px] rounded-lg border border-gray-200 shadow-sm block">
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                    <div class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-600 font-bold text-xs shrink-0 border-2 border-white shadow-sm">3</div>
+                    <div class="pt-0.5">
+                        <h3 class="text-base font-bold text-gray-800 mb-1">API 키 선택</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">목록에 기본으로 생성되어 있는 <span class="font-semibold text-blue-600">파란색 글씨의 API 키(예: ..._8gE)</span>를 클릭합니다.<br>
+                        <span class="text-xs text-gray-500 mt-1 block">* 만약 목록이 비어있다면, 상단의 <span class="inline-block bg-blue-50 text-blue-700 px-1 py-0.5 rounded border border-blue-100">Create API key</span> 버튼을 눌러 새로 만들어주세요.</span></p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-4">
+                    <div class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-600 font-bold text-xs shrink-0 border-2 border-white shadow-sm">4</div>
+                    <div class="pt-0.5 w-full">
+                        <h3 class="text-base font-bold text-gray-800 mb-1">API 키 복사</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-3">API 키 세부정보 창이 나타나면, 우측 하단의 <span class="inline-block bg-gray-100 px-1.5 py-0.5 rounded text-gray-800 font-semibold border border-gray-200">키 복사</span> 버튼을 눌러 완료합니다.</p>
+                        <img src="2.png" alt="API 키 복사 화면" class="w-full max-w-[500px] rounded-lg border border-gray-200 shadow-sm block bg-white">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-10 bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3">
+                <svg class="w-6 h-6 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <div>
+                    <h4 class="text-sm font-bold text-amber-800 mb-1">보안 주의사항</h4>
+                    <p class="text-xs text-amber-700 leading-relaxed">API 키는 개인 비밀번호와 같습니다. 타인에게 공유하거나 깃허브(GitHub) 등 공개된 장소에 올리지 않도록 주의해 주세요.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+            <button class="px-5 py-2.5 bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                확인
+            </button>
+        </div>
+
+    </div>
+
+</body>
+</html>

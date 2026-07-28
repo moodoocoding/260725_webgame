@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5YW0T2C109');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>개구리킹 모바일 👑</title>
+    <meta name="description" id="meta-desc" content="모든 땅을 푸르게! 60초 안에 최대한 많은 퍼즐을 풀고 최고 점수에 도전하세요!">
+    <meta name="theme-color" content="#1a2e1a">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // Tailwind 기본 스타일 초기화(preflight) 비활성화
+        tailwind = {
+            config: {
+                corePlugins: { preflight: false }
+            }
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Fredoka+One&family=Noto+Sans+SC:wght@700&family=Noto+Sans+JP:wght@700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+        :root {
+            /* 개구리킹 숲 테마 색상 */
+            --bg-color: #1a2e1a;
+            --ui-base: #2d4a2d;
+            --primary-green: #8bc34a;
+            --deep-green: #3e6b3e;
+            --tile-dirt: #5d4037;
+            --tile-visited: #4caf50;
+            --tile-stone: #78909c;
+            --text-color: #f0f0f0;
+            --accent-color: #FFD93D;
+        }
+
+        * { box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; }
+        
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            font-family: 'Jua', 'Fredoka One', 'Noto Sans KR', sans-serif;
+            height: 100vh; 
+            height: 100dvh; 
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px; 
+            height: 100%;
+            background: var(--bg-color);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .hidden { display: none !important; }
+        .center { text-align: center; }
+        button { cursor: pointer; border: none; font-family: inherit; transition: transform 0.1s; outline: none;}
+        button:active { transform: scale(0.95); }
+
+        /* --- 1. 시작 화면 --- */
+        #start-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; 
+            padding-top: 2vh; 
+            padding-bottom: 5vh;
+            background: linear-gradient(180deg, #132213 0%, #1a2e1a 100%);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            z-index: 10;
+            touch-action: pan-y; 
+        }
+
+        #start-screen::-webkit-scrollbar { width: 8px; }
+        #start-screen::-webkit-scrollbar-track { background: #132213; border-radius: 4px; }
+        #start-screen::-webkit-scrollbar-thumb { background: #3e6b3e; border-radius: 4px; }
+        #start-screen::-webkit-scrollbar-thumb:hover { background: #4caf50; }
+        
+        #top-nav {
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            width: 100%;
+            padding: 0 20px;
+            margin-bottom: 1vh;
+            flex-shrink: 0;
+            z-index: 50;
+        }
+        
+        #kingsmath-link-btn, #langTriggerBtn {
+            font-size: 2.2vh; color: var(--accent-color); text-decoration: none; font-weight: bold;
+            background: rgba(0,0,0,0.4); padding: 5px 15px; border: 2px dashed #557755;
+            border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 6px;
+        }
+        #langTriggerBtn i { color: var(--accent-color); font-family: "Font Awesome 6 Free" !important; font-weight: 900; }
+
+        .main-title { 
+            font-size: 7vh; color: #fff; margin: 1vh 0; 
+            text-shadow: 3px 3px 0px #000; line-height: 1.1; text-align: center;
+            flex-shrink: 0; transition: font-size 0.3s ease;
+        }
+        .title-mobile { font-size: 40%; vertical-align: middle; color: var(--primary-green); text-shadow: 2px 2px 0px #000; }
+        
+        /* QR 코드 영역 */
+        #qr-area { margin: 2vh 0; display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+        #qrcode { padding: 10px; background: white; border: 3px dashed var(--primary-green); cursor: pointer; display: flex; justify-content: center; align-items: center; border-radius: 10px; }
+        #qrcode img, #qrcode canvas { display: block; }
+        .qr-help { font-size: 1.8vh; margin-top: 5px; color: #aaa; }
+
+        /* QR 확대 모달 */
+        #qr-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; display: none; justify-content: center; align-items: center; }
+        #qr-modal img { width: 90vw; height: 90vw; max-width: 500px; max-height: 500px; border: 10px solid #fff; object-fit: contain; background: #fff; border-radius: 10px; }
+
+        /* 닉네임 및 안내 영역 */
+        .input-guide { font-size: 2.3vh; color: #ccc; margin-bottom: 1vh; font-weight: bold; animation: bounce 2s infinite; text-align: center; flex-shrink: 0; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-5px);} 60% {transform: translateY(-3px);} }
+
+        input#nickname { width: 85%; padding: 2vh; font-size: 5vh; text-align: center; border: 4px dashed var(--primary-green); border-radius: 30px; font-family: inherit; margin-bottom: 2vh; color: #fff; background-color: #223322; flex-shrink: 0; }
+        input#nickname:focus { outline: none; border-color: var(--accent-color); border-style: solid; }
+        input#nickname::placeholder { color: #668866; }
+
+        .btn-start { width: 85%; padding: 1.5vh; font-size: 4.5vh; background-color: var(--primary-green); color: white; border: 3px dashed rgba(255,255,255,0.5); border-radius: 30px; box-shadow: 0 0.6vh #437d1d; margin-bottom: 1.5vh; flex-shrink: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 0.2vh #437d1d; }
+
+        .btn-link { width: 85%; padding: 1.2vh; font-size: 3vh; background-color: var(--deep-green); color: white; border: 2px dashed rgba(255,255,255,0.3); border-radius: 25px; box-shadow: 0 0.5vh #1a3a1a; margin-bottom: 2vh; text-decoration: none; display: inline-block; text-align: center; flex-shrink: 0; }
+        .btn-link:active { transform: translateY(4px); box-shadow: 0 0.2vh #1a3a1a; }
+
+        #ranking-board { margin-top: 1vh; width: 90%; background: #0f1c0f; border: 3px dashed #3e6b3e; border-radius: 15px; padding: 1vh; max-height: 30vh; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; flex-shrink: 0; margin-bottom: 2vh; color: #ddd; }
+        #ranking-board * { touch-action: pan-y; }
+        .rank-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8vh 0.5vh; border-bottom: 1px dashed #2d4a2d; font-size: 2.2vh; }
+
+        /* --- 2. 게임 화면 --- */
+        #game-screen { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-color); position: relative; overflow: hidden; width: 100%; }
+        #game-header { background-color: #0f1c0f; display: flex; flex-direction: column; padding: 10px 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 20; gap: 8px; border-bottom: 2px solid var(--deep-green); }
+        .header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .control-btn { font-size: 3vh; background: none; border: none; cursor: pointer; filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.5)); padding: 5px; }
+        .stat-box { background: #223322; padding: 5px 12px; border-radius: 8px; display: flex; align-items: center; border: 2px solid #557755; width: 45%; justify-content: space-between; }
+        .stat-label { font-size: 2vh; color: #aaa; font-weight: bold; margin-right: 5px; }
+        .stat-val { font-size: 3.5vh; color: #fff; font-weight: bold; }
+        #timer-box { background: #1a1a1a; border-color: #444; }
+        .timer-warning { color: #ff5252 !important; animation: blink 0.5s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        #board-wrapper { flex: 1; position: relative; overflow: hidden; width: 100%; display: flex; justify-content: center; align-items: center; background: var(--bg-color); touch-action: none; padding: 10px; }
+        
+        /* 개구리킹 그리드 디자인 */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            width: 95%;
+            max-width: 400px;
+            aspect-ratio: 1 / 1;
+            background-color: var(--ui-base);
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .tile {
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.5rem, 8vw, 2.5rem);
+            cursor: pointer;
+            transition: transform 0.1s;
+            border-radius: 6px;
+            position: relative;
+        }
+        .tile:active { transform: scale(0.9); }
+
+        .tile-dirt { background-color: var(--tile-dirt); border-bottom: 3px solid #3e2723; }
+        .tile-visited { background-color: var(--tile-visited); border-bottom: 3px solid #2e7d32; }
+        .tile-stone { background-color: var(--tile-stone); border-bottom: 3px solid #455a64; cursor: default; }
+        .tile-frog {
+            background-color: var(--primary-green);
+            z-index: 10;
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(139, 195, 74, 0.6);
+            border-bottom: 3px solid #689f38;
+        }
+
+        .tile-backtrackable::after {
+            content: '↩️';
+            position: absolute;
+            font-size: 0.8rem;
+            top: 2px;
+            right: 2px;
+            opacity: 0.8;
+            text-shadow: 1px 1px 0 #000;
+        }
+        .frog-anim { animation: frogPop 0.2s ease-out alternate; }
+        @keyframes frogPop { 0% { transform: scale(0.8); } 100% { transform: scale(1.1); } }
+
+        #game-footer { height: 10vh; background: #0f1c0f; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #eee; border-top: 2px solid var(--deep-green); z-index: 20; gap: 5px; }
+        #ingame-guide { font-size: 2vh; color: var(--accent-color); margin-bottom: 0.2vh; animation: bounce 2s infinite; }
+        #ingame-nickname { font-size: 3vh; font-weight: bold; }
+
+        #levelup-overlay { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; display: none; flex-direction: column; align-items: center; z-index: 50; }
+        #levelup-text { font-size: 6vh; color: var(--accent-color); text-shadow: 2px 2px 0 #000; font-weight: bold; animation: floatUp 1s ease-out forwards; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 50% { transform: translateY(-20px) scale(1.2); opacity: 1; } 100% { transform: translateY(-50px) scale(1); opacity: 0; } }
+
+        #countdown-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; display: flex; justify-content: center; align-items: center; }
+        #countdown-text { font-size: 15vh; font-weight: bold; color: var(--accent-color); text-shadow: 0 0 20px #ff5252; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* --- 3. 결과 화면 --- */
+        #result-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 46, 26, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; padding-bottom: 5vh; backdrop-filter: blur(5px); }
+        .result-score { font-size: 8vh; color: var(--accent-color); margin: 1vh 0; font-weight: bold; text-shadow: 2px 2px 0 #000; }
+        #result-ranking-board { margin-top: 2vh; width: 85%; background: #0f1c0f; border: 3px dashed var(--primary-green); border-radius: 15px; padding: 1vh; flex-shrink: 0; max-height: 25vh; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; color: #fff; }
+        #result-ranking-board * { touch-action: pan-y; }
+
+        /* --- 다국어 모달 UI 전용 CSS 영역 --- */
+        #langModal, #langModal * { box-sizing: border-box !important; font-family: 'Noto Sans KR', sans-serif; }
+        #langModal i, #toastNotification i { font-family: "Font Awesome 6 Free" !important; font-weight: 900; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        .modal-overlay { opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { transform: scale(0.95) translateY(-10px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+
+        .toast { transform: translateY(100%); opacity: 0; transition: all 0.3s ease; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+<div id="qr-modal" onclick="this.style.display='none'">
+    <div id="qr-modal-content"></div>
+</div>
+
+<div id="game-container">
+    <div id="start-screen">
+        <div id="top-nav">
+            <a id="kingsmath-link-btn" href="/" target="_self">KingsMath.com</a>
+            <div id="langTriggerContainer" style="z-index: 99999;">
+                <button id="langTriggerBtn">
+                    <i class="fa-solid fa-globe"></i>
+                    <img id="currentFlag" src="https://flagcdn.com/w40/us.png" alt="Flag" style="width:20px; height:auto; border-radius:2px;">
+                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="main-title" id="main-title-el">
+            <span data-i18n="title">Frog King</span>
+            <span class="title-mobile" data-i18n="subtitle">Mobile</span>
+        </div>
+
+        <div id="qr-area">
+            <div id="qrcode" onclick="showBigQR()"></div>
+            <div class="qr-help" data-i18n="qrHelp">Click QR to Share!</div>
+        </div>
+        
+        <div class="input-guide" data-i18n="guide">🐸 Fill all dirt with leaves! 🌿</div>
+
+        <input type="text" id="nickname" maxlength="8" placeholder="Enter Name" onfocus="this.select()" data-i18n-ph="placeholder">
+        
+        <button class="btn-start" onclick="checkNameAndStart()" data-i18n="startBtn">🚀 Start Game</button>
+        
+        <button class="btn-link" onclick="location.href='/'" data-i18n="moreGames">🎮 Other Games</button>
+        
+        <div id="ranking-board">
+            <div class="center" data-i18n="rankingLoading">Loading... 🏃‍♂️</div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div id="game-header">
+            <div class="header-row">
+                <button class="control-btn" onclick="goHome()">🏠</button>
+                <button class="control-btn" onclick="restartGame()">🔄</button>
+            </div>
+            <div class="header-row">
+                <div class="stat-box" id="timer-box">
+                    <span class="stat-label">TIME</span>
+                    <span class="stat-val" id="timer-val">60</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">SCORE</span>
+                    <span class="stat-val" id="score-val">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="board-wrapper">
+            <div id="grid-container" class="grid-container"></div>
+            <div id="levelup-overlay">
+                <div id="levelup-text">+100</div>
+            </div>
+        </div>
+        
+        <div id="game-footer">
+            <div id="ingame-guide" data-i18n="guide">🐸 Fill all dirt with leaves! 🌿</div>
+            <span id="ingame-nickname">Player</span>
+        </div>
+
+        <div id="countdown-screen" class="hidden">
+            <div id="countdown-text">3</div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <h2 style="font-size: 5vh; margin:0; color:#ff5252; text-shadow: 2px 2px 0px #000;" data-i18n="gameOver">Time Over! ⌛</h2>
+        <h3 id="res-nickname" style="font-size: 4vh; margin: 10px 0; color:#fff;">Player</h3>
+        <div style="font-size:2vh; color:#aaa;">FINAL SCORE</div>
+        <div class="result-score"><span id="res-score">0</span></div>
+        <div id="res-rank" style="font-size: 3vh; margin-bottom:20px; color:#8bc34a;" data-i18n="rankQuery">Checking Rank... 🤔</div>
+        
+        <button class="btn-start" onclick="restartGame()" data-i18n="restartBtn">🔄 Retry</button>
+        <button class="btn-start" onclick="goHome()" style="background:#2d4a2d; color:#fff; box-shadow: 0 0.6vh #0f1c0f;" data-i18n="homeBtn">🏠 Home</button>
+        
+        <div id="result-ranking-board"></div>
+    </div>
+</div>
+
+<div id="langModal" class="modal-overlay fixed inset-0 z-[99999] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm pt-16 sm:pt-0 px-4" style="z-index: 99999 !important;">
+    <div class="modal-content bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
+        
+        <div class="flex items-center justify-between p-5 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10">
+            <div>
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-language text-yellow-500"></i>
+                    <span>Language / 언어</span>
+                </h2>
+            </div>
+            <button id="closeModalBtn" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <div class="p-5 pb-2 bg-gray-900">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="searchInput" placeholder="Search / 검색 ..." 
+                    class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 block pl-11 p-3.5 outline-none transition-all placeholder-gray-500">
+            </div>
+        </div>
+
+        <div class="p-5 overflow-y-auto custom-scrollbar flex-1">
+            <div id="languageGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            </div>
+            <div id="noResult" class="hidden flex-col items-center justify-center py-12 text-gray-500">
+                <i class="fa-regular fa-face-frown-open text-4xl mb-3"></i>
+                <p>No results / 검색 결과 없음</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toastNotification" class="toast fixed bottom-6 right-6 bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 flex items-center gap-3 z-[99999]" style="z-index: 99999 !important;">
+    <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+        <i class="fa-solid fa-check"></i>
+    </div>
+    <div>
+        <p id="ui-toast" class="text-sm font-medium text-white">Language changed.</p>
+        <p id="toastLangName" class="text-xs text-gray-400">English</p>
+    </div>
+</div>
+
+<script>
+    // --- 설정 및 데이터 ---
+    const GAME_DURATION = 60;
+    const SCORE_PER_TILE = 10;
+    const SCORE_BONUS_CLEAR = 100;
+    const GRID_SIZE = 6;
+    const STONE_COUNT = 8;
+    const API_URL = "./ranking.php"; 
+
+    // --- 16개국 언어 데이터베이스 (개구리킹 맞춤형) ---
+    const i18n = {
+        ko: { title: "개구리킹", subtitle: "모바일", qrHelp: "QR을 눌러서 공유하세요!", guide: "🐸 빈칸을 연꽃잎(🌿)으로 채우세요!", placeholder: "닉네임 입력", startBtn: "🚀 게임 시작!", moreGames: "🎮 다른 게임 고르기", rankingLoading: "랭킹 로딩중... 🏃‍♂️", rankingEmpty: "아직 1등이 없어요. 도전! 👑", rankingError: "랭킹 오류 😭", gameOver: "시간 종료! ⌛", rankQuery: "순위 확인 중... 🤔", rankResult: "현재 {rank}등 입니다!", restartBtn: "🔄 다시 하기", homeBtn: "🏠 처음으로", alertName: "닉네임을 입력해주세요!", alertBad: "바른 말을 사용해주세요!", metaTitle: "개구리킹 모바일 👑 - 킹수학", metaDesc: "모든 땅을 푸르게! 60초 안에 최대한 많은 퍼즐을 풀고 최고 점수에 도전하세요!", toast: "언어가 변경되었습니다." },
+        en: { title: "Frog King", subtitle: "Mobile", qrHelp: "Click QR to Share!", guide: "🐸 Fill all dirt with leaves! 🌿", placeholder: "Enter Name", startBtn: "🚀 Start Game", moreGames: "🎮 Other Games", rankingLoading: "Loading... 🏃‍♂️", rankingEmpty: "No Ranker yet. Be the first! 👑", rankingError: "Error 😭", gameOver: "Time Over! ⌛", rankQuery: "Checking Rank... 🤔", rankResult: "You are Rank {rank}!", restartBtn: "🔄 Retry", homeBtn: "🏠 Home", alertName: "Please enter your name!", alertBad: "Nice words only!", metaTitle: "Frog King Mobile 👑 - KingsMath", metaDesc: "Turn all land green! Solve puzzles in 60s and get high scores!", toast: "Language changed." },
+        zh: { title: "青蛙王", subtitle: "手游", qrHelp: "点击二维码分享！", guide: "🐸 让所有土地变成荷叶(🌿)！", placeholder: "输入名字", startBtn: "🚀 开始游戏", moreGames: "🎮 更多游戏", rankingLoading: "加载中... 🏃‍♂️", rankingEmpty: "还没有第一名，挑战一下！ 👑", rankingError: "错误 😭", gameOver: "时间到！ ⌛", rankQuery: "查询排名中... 🤔", rankResult: "你是第 {rank} 名！", restartBtn: "🔄 再玩一次", homeBtn: "🏠 主页", alertName: "请输入你的名字！", alertBad: "请使用文明用语！", metaTitle: "青蛙王 手游 👑 - KingsMath", metaDesc: "让所有土地变绿！在60秒内挑战最高分！", toast: "语言已更改。" },
+        ja: { title: "カエルキング", subtitle: "スマホ", qrHelp: "QRを押して共有!", guide: "🐸 空き地を蓮の葉(🌿)で埋めよう!", placeholder: "名前を入力", startBtn: "🚀 スタート", moreGames: "🎮 他のゲーム", rankingLoading: "読み込み中... 🏃‍♂️", rankingEmpty: "まだ記録がありません 👑", rankingError: "エラー 😭", gameOver: "タイムオーバー! ⌛", rankQuery: "順位を確認中... 🤔", rankResult: "{rank}位です!", restartBtn: "🔄 もう一度", homeBtn: "🏠 ホーム", alertName: "名前を入力してください", alertBad: "きれいな言葉を使ってね", metaTitle: "カエルキング スマホ 👑 - KingsMath", metaDesc: "すべての土地を緑に！60秒のパズルタイムアタック！", toast: "言語が変更されました。" },
+        es: { title: "Rey Rana", subtitle: "Móvil", qrHelp: "¡Toca el QR para compartir!", guide: "🐸 ¡Llena la tierra con hojas(🌿)!", placeholder: "Tu Nombre", startBtn: "🚀 ¡Empezar!", moreGames: "🎮 Otros Juegos", rankingLoading: "Cargando... 🏃‍♂️", rankingEmpty: "¡Sé el primero! 👑", rankingError: "Error 😭", gameOver: "¡Tiempo Fuera! ⌛", rankQuery: "Revisando Ranking... 🤔", rankResult: "¡Eres el puesto {rank}!", restartBtn: "🔄 Reintentar", homeBtn: "🏠 Inicio", alertName: "¡Introduce tu nombre!", alertBad: "¡Solo palabras amables!", metaTitle: "Rey Rana Móvil 👑 - KingsMath", metaDesc: "¡Convierte todo en verde! Puzzle de 60s.", toast: "Idioma cambiado." },
+        fr: { title: "Roi Grenouille", subtitle: "Mobile", qrHelp: "Cliquez le QR pour partager !", guide: "🐸 Remplis la terre de feuilles(🌿) !", placeholder: "Ton Nom", startBtn: "🚀 Démarrer", moreGames: "🎮 Autres Jeux", rankingLoading: "Chargement... 🏃‍♂️", rankingEmpty: "Sois le premier ! 👑", rankingError: "Erreur 😭", gameOver: "Temps Écoulé ! ⌛", rankQuery: "Vérification... 🤔", rankResult: "Tu es rang {rank} !", restartBtn: "🔄 Rejouer", homeBtn: "🏠 Accueil", alertName: "Entrez votre nom !", alertBad: "Mots gentils seulement !", metaTitle: "Roi Grenouille Mobile 👑 - KingsMath", metaDesc: "Mets tout en vert ! Puzzle de 60s.", toast: "Langue modifiée." },
+        ru: { title: "Король Лягушек", subtitle: "Мобайл", qrHelp: "Нажми QR, чтобы поделиться!", guide: "🐸 Заполни землю листьями(🌿)!", placeholder: "Ваше Имя", startBtn: "🚀 Начать", moreGames: "🎮 Другие Игры", rankingLoading: "Загрузка... 🏃‍♂️", rankingEmpty: "Будь первым! 👑", rankingError: "Ошибка 😭", gameOver: "Время вышло! ⌛", rankQuery: "Проверка места... 🤔", rankResult: "Ты на {rank} месте!", restartBtn: "🔄 Еще раз", homeBtn: "🏠 Домой", alertName: "Введите ваше имя!", alertBad: "Только хорошие слова!", metaTitle: "Король Лягушек Мобайл 👑 - KingsMath", metaDesc: "Озелени все земли! 60 секунд на победу.", toast: "Язык изменен." },
+        id: { title: "Raja Katak", subtitle: "Seluler", qrHelp: "Klik QR untuk Bagikan!", guide: "🐸 Isi tanah dengan daun(🌿)!", placeholder: "Masukan Nama", startBtn: "🚀 Mulai", moreGames: "🎮 Game Lainnya", rankingLoading: "Memuat... 🏃‍♂️", rankingEmpty: "Jadilah yang pertama! 👑", rankingError: "Kesalahan 😭", gameOver: "Waktu Habis! ⌛", rankQuery: "Cek Peringkat... 🤔", rankResult: "Peringkat {rank}!", restartBtn: "🔄 Ulangi", homeBtn: "🏠 Beranda", alertName: "Masukkan nama!", alertBad: "Gunakan kata baik!", metaTitle: "Raja Katak Seluler 👑 - KingsMath", metaDesc: "Ubah semua tanah menjadi hijau dalam 60 detik!", toast: "Bahasa diubah." },
+        vi: { title: "Vua Ếch", subtitle: "Di động", qrHelp: "Bấm QR để Chia sẻ!", guide: "🐸 Phủ xanh đất bằng lá(🌿)!", placeholder: "Nhập Tên", startBtn: "🚀 Bắt đầu", moreGames: "🎮 Trò chơi khác", rankingLoading: "Đang tải... 🏃‍♂️", rankingEmpty: "Trở thành người đầu! 👑", rankingError: "Lỗi 😭", gameOver: "Hết giờ! ⌛", rankQuery: "Đang kiểm tra... 🤔", rankResult: "Xếp hạng {rank}!", restartBtn: "🔄 Thử lại", homeBtn: "🏠 Trang chủ", alertName: "Vui lòng nhập tên!", alertBad: "Chỉ dùng từ đẹp!", metaTitle: "Vua Ếch Di động 👑 - KingsMath", metaDesc: "Phủ xanh mọi vùng đất trong 60 giây!", toast: "Đã đổi ngôn ngữ." },
+        th: { title: "ราชากบ", subtitle: "มือถือ", qrHelp: "กด QR เพื่อแชร์!", guide: "🐸 เปลี่ยนดินให้เป็นใบไม้(🌿)!", placeholder: "ใส่ชื่อ", startBtn: "🚀 เริ่มเกม", moreGames: "🎮 เกมอื่นๆ", rankingLoading: "กำลังโหลด... 🏃‍♂️", rankingEmpty: "ยังไม่มีอันดับ! 👑", rankingError: "ข้อผิดพลาด 😭", gameOver: "หมดเวลา! ⌛", rankQuery: "เช็คอันดับ... 🤔", rankResult: "คุณได้อันดับ {rank}!", restartBtn: "🔄 เล่นอีกครั้ง", homeBtn: "🏠 หน้าแรก", alertName: "กรุณาใส่ชื่อ!", alertBad: "ใช้คำสุภาพนะ!", metaTitle: "ราชากบ มือถือ 👑 - KingsMath", metaDesc: "เปลี่ยนทุกพื้นที่ให้เป็นสีเขียวใน 60 วินาที!", toast: "เปลี่ยนภาษาแล้ว" },
+        'pt-br': { title: "Rei Sapo", subtitle: "Celular", qrHelp: "Clique no QR para Compartilhar!", guide: "🐸 Preencha a terra com folhas(🌿)!", placeholder: "Seu Nome", startBtn: "🚀 Iniciar Jogo", moreGames: "🎮 Outros Jogos", rankingLoading: "Carregando... 🏃‍♂️", rankingEmpty: "Seja o primeiro! 👑", rankingError: "Erro 😭", gameOver: "Fim do Tempo! ⌛", rankQuery: "Checando Rank... 🤔", rankResult: "Você é o rank {rank}!", restartBtn: "🔄 Tentar de novo", homeBtn: "🏠 Início", alertName: "Digite seu nome!", alertBad: "Apenas palavras boas!", metaTitle: "Rei Sapo Celular 👑 - KingsMath", metaDesc: "Transforme tudo em verde em 60s!", toast: "Idioma alterado." },
+        hi: { title: "मेंढक राजा", subtitle: "मोबाइल", qrHelp: "शेयर के लिए QR दबाएं!", guide: "🐸 मिट्टी को पत्तों(🌿) से भरें!", placeholder: "नाम दर्ज करें", startBtn: "🚀 शुरू करें", moreGames: "🎮 अन्य खेल", rankingLoading: "लोड हो रहा है... 🏃‍♂️", rankingEmpty: "पहले खिलाड़ी बनें! 👑", rankingError: "त्रुटि 😭", gameOver: "समय समाप्त! ⌛", rankQuery: "रैंक जांच रहे हैं... 🤔", rankResult: "आपका रैंक {rank} है!", restartBtn: "🔄 फिर से खेलें", homeBtn: "🏠 होम", alertName: "अपना नाम दर्ज करें!", alertBad: "केवल अच्छे शब्दों का प्रयोग करें!", metaTitle: "मेंढक राजा मोबाइल 👑 - KingsMath", metaDesc: "60 सेकंड में सारी ज़मीन हरी कर दें!", toast: "भाषा बदल दी गई।" },
+        bn: { title: "ব্যাঙ রাজা", subtitle: "মোবাইল", qrHelp: "শেয়ার করতে QR চাপুন!", guide: "🐸 পাতা(🌿) দিয়ে মাটি পূরণ করুন!", placeholder: "নাম লিখুন", startBtn: "🚀 শুরু করুন", moreGames: "🎮 অন্যান্য খেলা", rankingLoading: "লোড হচ্ছে... 🏃‍♂️", rankingEmpty: "প্রথম হন! 👑", rankingError: "ত্রুটি 😭", gameOver: "সময় শেষ! ⌛", rankQuery: "র‍্যাঙ্ক চেক হচ্ছে... 🤔", rankResult: "আপনার র‍্যাঙ্ক {rank}!", restartBtn: "🔄 আবার চেষ্টা করুন", homeBtn: "🏠 হোম", alertName: "আপনার নাম লিখুন!", alertBad: "শুধুমাত্র ভালো শব্দ ব্যবহার করুন!", metaTitle: "ব্যাঙ রাজা মোবাইল 👑 - KingsMath", metaDesc: "60 সেকেন্ডে সবুজ করে তুলুন!", toast: "ভাষা পরিবর্তিত।" },
+        tr: { title: "Kurbağa Kral", subtitle: "Mobil", qrHelp: "Paylaşmak için QR'a tıkla!", guide: "🐸 Toprağı yapraklarla(🌿) doldur!", placeholder: "Adını Gir", startBtn: "🚀 Oyuna Başla", moreGames: "🎮 Diğer Oyunlar", rankingLoading: "Yükleniyor... 🏃‍♂️", rankingEmpty: "Henüz kimse yok! 👑", rankingError: "Hata 😭", gameOver: "Süre Bitti! ⌛", rankQuery: "Sıralama Kontrolü... 🤔", rankResult: "Sıran {rank}!", restartBtn: "🔄 Tekrar Dene", homeBtn: "🏠 Ana Sayfa", alertName: "Lütfen adını gir!", alertBad: "Sadece güzel kelimeler!", metaTitle: "Kurbağa Kral Mobil 👑 - KingsMath", metaDesc: "60 saniyede her yeri yeşillendir!", toast: "Dil değiştirildi." },
+        de: { title: "Froschkönig", subtitle: "Mobil", qrHelp: "Klick auf QR zum Teilen!", guide: "🐸 Fülle die Erde mit Blättern(🌿)!", placeholder: "Dein Name", startBtn: "🚀 Spiel starten", moreGames: "🎮 Andere Spiele", rankingLoading: "Lädt... 🏃‍♂️", rankingEmpty: "Sei der Erste! 👑", rankingError: "Fehler 😭", gameOver: "Zeit abgelaufen! ⌛", rankQuery: "Rang wird geprüft... 🤔", rankResult: "Du bist Rang {rank}!", restartBtn: "🔄 Nochmal", homeBtn: "🏠 Startseite", alertName: "Bitte gib deinen Namen ein!", alertBad: "Nur nette Worte!", metaTitle: "Froschkönig Mobil 👑 - KingsMath", metaDesc: "Mach alles in 60s grün!", toast: "Sprache geändert." },
+        it: { title: "Re Ranocchio", subtitle: "Mobile", qrHelp: "Clicca il QR per Condividere!", guide: "🐸 Riempi la terra di foglie(🌿)!", placeholder: "Il tuo Nome", startBtn: "🚀 Inizia Gioco", moreGames: "🎮 Altri Giochi", rankingLoading: "Caricamento... 🏃‍♂️", rankingEmpty: "Sii il primo! 👑", rankingError: "Errore 😭", gameOver: "Tempo Scaduto! ⌛", rankQuery: "Controllo Classifica... 🤔", rankResult: "Sei al posto {rank}!", restartBtn: "🔄 Riprova", homeBtn: "🏠 Home", alertName: "Inserisci il tuo nome!", alertBad: "Solo belle parole!", metaTitle: "Re Ranocchio Mobile 👑 - KingsMath", metaDesc: "Rendi tutto verde in 60s!", toast: "Lingua cambiata." }
+    };
+
+    const languagesList = [
+        { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+        { code: 'en', country: 'us', name: 'English', enName: 'English' },
+        { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)' },
+        { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+        { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+        { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+        { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+        { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' },
+        { code: 'pt-br', country: 'br', name: 'Português', enName: 'Portuguese (Brazil)' },
+        { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+        { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+        { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+        { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+        { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+        { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+        { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' }
+    ];
+
+    let currentLang = 'en';
+    let myNickname = "";
+    let score = 0;
+    let timeLeft = GAME_DURATION;
+    let timerInterval = null;
+    let isPlaying = false;
+    
+    // --- 초기 언어 감지 및 모달 제어 로직 ---
+    const triggerBtn = document.getElementById('langTriggerBtn');
+    const modal = document.getElementById('langModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const searchInput = document.getElementById('searchInput');
+    const grid = document.getElementById('languageGrid');
+    const noResult = document.getElementById('noResult');
+    const currentFlagImg = document.getElementById('currentFlag');
+    
+    const toast = document.getElementById('toastNotification');
+    const toastLangName = document.getElementById('toastLangName');
+    let toastTimeout;
+
+    function getInitialLang() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const langParam = urlParams.get('lang');
+        if(langParam && i18n[langParam]) return langParam;
+
+        const savedLang = localStorage.getItem('kingsmath_lang');
+        if(savedLang && i18n[savedLang]) return savedLang;
+
+        const browserLang = navigator.language.slice(0, 2);
+        if(i18n[browserLang]) return browserLang;
+
+        return 'en';
+    }
+
+    function renderLanguages(filterText = '') {
+        grid.innerHTML = '';
+        const lowerFilter = filterText.toLowerCase();
+        
+        const filteredLangs = languagesList.filter(lang => 
+            lang.name.toLowerCase().includes(lowerFilter) || 
+            lang.enName.toLowerCase().includes(lowerFilter) ||
+            lang.code.toLowerCase().includes(lowerFilter)
+        );
+
+        if (filteredLangs.length === 0) {
+            grid.classList.add('hidden');
+            noResult.classList.remove('hidden');
+            noResult.classList.add('flex');
+        } else {
+            grid.classList.remove('hidden');
+            noResult.classList.add('hidden');
+            noResult.classList.remove('flex');
+
+            filteredLangs.forEach(lang => {
+                const isSelected = lang.code === currentLang;
+                const baseClasses = "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 group relative overflow-hidden";
+                const stateClasses = isSelected ? "bg-gray-800 border-yellow-500 ring-1 ring-yellow-500/50" : "bg-gray-800/40 border-gray-700 hover:bg-gray-700 hover:border-gray-500";
+                const flagUrl = `https://flagcdn.com/w40/${lang.country}.png`;
+                const btn = document.createElement('div');
+                btn.className = `${baseClasses} ${stateClasses}`;
+
+                btn.innerHTML = `
+                    <div class="shrink-0 w-8 h-6 rounded overflow-hidden shadow-sm border border-gray-700/50">
+                        <img src="${flagUrl}" alt="${lang.country}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                    </div>
+                    <div class="flex-1 min-w-0 flex flex-col items-start">
+                        <span class="text-sm font-medium text-white truncate w-full ${isSelected ? 'text-yellow-400' : ''}">${lang.name}</span>
+                        <span class="text-xs text-gray-400 truncate w-full">${lang.enName}</span>
+                    </div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check text-yellow-500 text-lg ml-2"></i>' : ''}
+                `;
+                btn.addEventListener('click', () => changeLang(lang.code, lang));
+                grid.appendChild(btn);
+            });
+        }
+    }
+
+    function openModal() {
+        modal.classList.add('active');
+        renderLanguages(searchInput.value);
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => searchInput.focus(), 100);
+    }
+
+    function closeModal() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function showToast(langName, langCode) {
+        const toastMsg = i18n[langCode].toast || "Language changed.";
+        document.getElementById('ui-toast').textContent = toastMsg;
+        toastLangName.textContent = langName;
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+
+    function changeLang(langCode, langObj = null) {
+        if(!i18n[langCode]) return;
+        currentLang = langCode;
+        const t = i18n[langCode];
+        
+        if (!langObj) langObj = languagesList.find(l => l.code === langCode);
+
+        document.querySelectorAll('[data-i18n]').forEach(el => { el.innerText = t[el.getAttribute('data-i18n')]; });
+        document.getElementById("nickname").placeholder = t.placeholder;
+        document.getElementById("nickname").setAttribute('data-i18n-ph', 'placeholder');
+        
+        currentFlagImg.src = `https://flagcdn.com/w40/${langObj.country}.png`;
+
+        const linkBtn = document.getElementById("kingsmath-link-btn");
+        if(langCode === 'ko') linkBtn.innerText = "킹수학.com";
+        else linkBtn.innerText = "KingsMath.com";
+
+        const mainTitle = document.getElementById('main-title-el');
+        if(['ru', 'es', 'fr', 'pt-br', 'de', 'it', 'id', 'vi'].includes(langCode)) {
+            mainTitle.style.fontSize = "5vh";
+        } else if(['th'].includes(langCode)) {
+            mainTitle.style.fontSize = "6vh";
+        } else {
+            mainTitle.style.fontSize = "7vh"; 
+        }
+
+        document.title = t.metaTitle;
+        document.getElementById("meta-desc").setAttribute("content", t.metaDesc);
+
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?lang=' + langCode;
+        window.history.pushState({path:newUrl}, '', newUrl);
+        localStorage.setItem("kingsmath_lang", langCode);
+
+        initQR(); 
+        loadRanking(); 
+
+        closeModal();
+        if (langObj) showToast(langObj.name, langCode); 
+    }
+
+    triggerBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
+    searchInput.addEventListener('input', (e) => { renderLanguages(e.target.value); });
+
+
+    // --- QR Code ---
+    let qrObject = null;
+    function initQR() {
+        const qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = ""; 
+        const url = window.location.href;
+        try {
+            qrObject = new QRCode(qrContainer, {
+                text: url, width: 128, height: 128, colorDark : "#1a2e1a", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
+            });
+        } catch(e) { console.error("QR Code 생성 실패", e); }
+    }
+
+    function showBigQR() {
+        const modal = document.getElementById("qr-modal");
+        const modalContent = document.getElementById("qr-modal-content");
+        modalContent.innerHTML = "";
+        
+        const qrCanvas = document.querySelector("#qrcode canvas");
+        const qrImg = document.querySelector("#qrcode img");
+        
+        let src = "";
+        if (qrCanvas) src = qrCanvas.toDataURL("image/png");
+        else if (qrImg) src = qrImg.src;
+
+        if (src) {
+            const newImg = new Image();
+            newImg.src = src;
+            modalContent.appendChild(newImg);
+            modal.style.display = "flex";
+        }
+    }
+
+    // --- Audio System ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+
+        if (type === 'move') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(600, now);
+            gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'back') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(400, now);
+            gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'levelup') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(523.25, now);
+            osc.frequency.setValueAtTime(783.99, now + 0.1); osc.frequency.setValueAtTime(1046.50, now + 0.2);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.6);
+            osc.start(now); osc.stop(now + 0.6);
+        } else if (type === 'tick') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+            osc.start(now); osc.stop(now + 0.05);
+        } else if (type === 'start') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(400, now); osc.frequency.linearRampToValueAtTime(800, now+0.3);
+            gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'end') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now); osc.frequency.linearRampToValueAtTime(100, now+0.5);
+            gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0, now + 0.5);
+            osc.start(now); osc.stop(now + 0.5);
+        }
+    }
+
+    // --- Frog King Board Logic ---
+    let board = [];
+    let frogPos = {x: 0, y: 0};
+    let moveHistory = [];
+    let totalTarget = (GRID_SIZE * GRID_SIZE) - STONE_COUNT;
+    let filledCount = 1;
+
+    function initGame() {
+        score = 0;
+        timeLeft = GAME_DURATION;
+        document.getElementById('score-val').innerText = score;
+        document.getElementById('timer-val').innerText = timeLeft;
+        document.getElementById('timer-val').classList.remove('timer-warning');
+        document.getElementById('ingame-nickname').innerText = myNickname;
+        
+        createNewLevel();
+        
+        isPlaying = true;
+        startTimer();
+    }
+
+    function createNewLevel() {
+        let valid = false;
+        while (!valid) {
+            board = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill('DIRT'));
+            let placed = 0;
+            while (placed < STONE_COUNT) {
+                const rx = Math.floor(Math.random() * GRID_SIZE);
+                const ry = Math.floor(Math.random() * GRID_SIZE);
+                if ((rx !== 0 || ry !== 0) && board[ry][rx] === 'DIRT') {
+                    board[ry][rx] = 'STONE'; placed++;
+                }
+            }
+            if (isWinnable(board, STONE_COUNT)) valid = true;
+        }
+        
+        board[0][0] = 'FROG';
+        frogPos = {x: 0, y: 0};
+        moveHistory = [];
+        filledCount = 1;
+        renderBoard();
+    }
+
+    function isWinnable(testBoard, stoneCount) {
+        const targetCount = (GRID_SIZE * GRID_SIZE) - stoneCount;
+        let visited = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(false));
+        let maxSteps = 2000; let steps = 0;
+
+        function dfs(x, y, count) {
+            if (count === targetCount) return true;
+            if (steps++ > maxSteps) return false;
+            visited[y][x] = true;
+
+            const dirs = [{x:0,y:1},{x:0,y:-1},{x:1,y:0},{x:-1,y:0}];
+            for (let d of dirs) {
+                const nx = x + d.x, ny = y + d.y;
+                if (nx>=0 && nx<GRID_SIZE && ny>=0 && ny<GRID_SIZE && !visited[ny][nx] && testBoard[ny][nx] === 'DIRT') {
+                    if (dfs(nx, ny, count + 1)) return true;
+                }
+            }
+            visited[y][x] = false;
+            return false;
+        }
+        return dfs(0, 0, 1);
+    }
+
+    function renderBoard() {
+        const boardEl = document.getElementById('grid-container');
+        boardEl.innerHTML = '';
+        const lastMove = moveHistory.length > 0 ? moveHistory[moveHistory.length - 1] : null;
+
+        for (let y = 0; y < GRID_SIZE; y++) {
+            for (let x = 0; x < GRID_SIZE; x++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.dataset.x = x; tile.dataset.y = y;
+
+                const state = board[y][x];
+                if (state === 'DIRT') { tile.classList.add('tile-dirt'); }
+                else if (state === 'STONE') { tile.classList.add('tile-stone'); tile.innerText = '⛰️'; }
+                else if (state === 'VISITED') {
+                    tile.classList.add('tile-visited'); tile.innerText = '🌿';
+                    if (lastMove && lastMove.x === x && lastMove.y === y) tile.classList.add('tile-backtrackable');
+                }
+                else if (state === 'FROG') { tile.classList.add('tile-frog', 'frog-anim'); tile.innerText = '🐸'; }
+
+                boardEl.appendChild(tile);
+            }
+        }
+    }
+
+    // 보드 터치 조작 로직
+    document.getElementById('grid-container').addEventListener('pointerdown', function(e) {
+        if (!isPlaying) return;
+        const tile = e.target.closest('.tile');
+        if (!tile) return;
+        e.preventDefault();
+
+        const x = parseInt(tile.dataset.x);
+        const y = parseInt(tile.dataset.y);
+        const dx = Math.abs(x - frogPos.x);
+        const dy = Math.abs(y - frogPos.y);
+
+        if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
+            if (board[y][x] === 'DIRT') {
+                moveHistory.push({ ...frogPos });
+                board[frogPos.y][frogPos.x] = 'VISITED';
+                frogPos = { x, y };
+                board[y][x] = 'FROG';
+                filledCount++;
+                score += SCORE_PER_TILE;
+                updateScoreUI();
+                playSound('move');
+                renderBoard();
+                checkClear();
+            } else if (board[y][x] === 'VISITED') {
+                const lastPos = moveHistory[moveHistory.length - 1];
+                if (lastPos && lastPos.x === x && lastPos.y === y) {
+                    board[frogPos.y][frogPos.x] = 'DIRT';
+                    moveHistory.pop();
+                    frogPos = { x, y };
+                    board[y][x] = 'FROG';
+                    filledCount--;
+                    score = Math.max(0, score - SCORE_PER_TILE); // 되돌아가면 점수 차감
+                    updateScoreUI();
+                    playSound('back');
+                    renderBoard();
+                }
+            }
+        }
+    });
+
+    function checkClear() {
+        if (filledCount === totalTarget) {
+            score += SCORE_BONUS_CLEAR;
+            updateScoreUI();
+            playSound('levelup');
+            showLevelUpEffect();
+            createNewLevel();
+        }
+    }
+
+    function updateScoreUI() {
+        document.getElementById('score-val').innerText = score;
+    }
+
+    function showLevelUpEffect() {
+        const el = document.getElementById('levelup-overlay');
+        const txt = document.getElementById('levelup-text');
+        
+        el.style.display = 'flex';
+        txt.style.animation = 'none';
+        el.offsetHeight; 
+        txt.style.animation = 'floatUp 0.8s ease-out forwards';
+        
+        setTimeout(() => { el.style.display = 'none'; }, 800);
+    }
+
+    function startTimer() {
+        if(timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if(!isPlaying) return;
+            timeLeft--;
+            const tVal = document.getElementById('timer-val');
+            tVal.innerText = timeLeft;
+            
+            if(timeLeft <= 10) tVal.classList.add('timer-warning');
+            if(timeLeft <= 5 && timeLeft > 0) playSound('tick');
+
+            if(timeLeft <= 0) endGame();
+        }, 1000);
+    }
+
+    function endGame() {
+        isPlaying = false;
+        clearInterval(timerInterval);
+        playSound('end');
+
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        
+        document.getElementById('res-nickname').innerText = myNickname;
+        document.getElementById('res-score').innerText = score;
+        
+        document.getElementById('result-ranking-board').innerHTML = "";
+        submitScore(myNickname, score);
+    }
+
+
+    // --- UI & Utils ---
+    function checkNameAndStart() {
+        const input = document.getElementById('nickname');
+        const val = input.value.trim();
+        const t = i18n[currentLang];
+
+        if(val.length < 1) { alert(t.alertName); return; }
+        // 금칙어 검증 로직 추가 (안전 강화)
+        const badWords = ["시발", "씨발", "개새끼", "fuck", "shit"];
+        if(badWords.some(w => val.includes(w))) { alert(t.alertBad); return; }
+
+        myNickname = val;
+        localStorage.setItem("kingsmaze_name", val);
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('langTriggerContainer').style.display = 'none'; 
+        
+        startCountdown();
+    }
+
+    function startCountdown() {
+        const screen = document.getElementById('countdown-screen');
+        const text = document.getElementById('countdown-text');
+        screen.classList.remove('hidden');
+        
+        let cnt = 3;
+        text.innerText = cnt;
+        playSound('tick');
+        
+        const intv = setInterval(() => {
+            cnt--;
+            if(cnt > 0) {
+                text.innerText = cnt;
+                text.style.animation = 'none';
+                text.offsetHeight; 
+                text.style.animation = 'pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                playSound('tick');
+            } else {
+                clearInterval(intv);
+                text.innerText = "GO!";
+                playSound('start');
+                setTimeout(() => {
+                    screen.classList.add('hidden');
+                    initGame();
+                }, 500);
+            }
+        }, 1000);
+    }
+
+    function restartGame() {
+        isPlaying = false;
+        clearInterval(timerInterval);
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('langTriggerContainer').style.display = 'none'; 
+        startCountdown();
+    }
+
+    function goHome() {
+        if (document.fullscreenElement) {
+            isPlaying = false;
+            clearInterval(timerInterval);
+            
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            
+            document.getElementById('langTriggerContainer').style.display = 'block'; 
+            
+            if(window.playSound) window.playSound('tick');
+            loadRanking();
+        } else {
+            location.reload();
+        }
+    }
+
+    // --- Ranking System ---
+    function submitScore(name, score) {
+        const t = i18n[currentLang];
+        const formData = new FormData();
+        formData.append('nickname', name);
+        formData.append('score', score);
+
+        fetch(API_URL + '?action=submit', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                document.getElementById("res-rank").innerText = t.rankResult.replace('{rank}', data.rank);
+                loadResultRanking();
+            } else {
+                document.getElementById("res-rank").innerText = "Ranking Error";
+            }
+        })
+        .catch(e => console.error(e));
+    }
+
+    function loadRanking() {
+        const list = document.getElementById("ranking-board");
+        const t = i18n[currentLang];
+        list.innerHTML = `<div class="center">${t.rankingLoading}</div>`;
+
+        fetch(API_URL + '?action=list')
+        .then(res => res.json())
+        .then(data => {
+            if(data.length === 0) {
+                list.innerHTML = `<div class="center" style="margin-top:20px;">${t.rankingEmpty}</div>`;
+                return;
+            }
+            let html = "";
+            data.forEach((item, idx) => {
+                let rankDisplay = (idx < 3) ? ["🥇","🥈","🥉"][idx] : (idx+1);
+                let style = (idx < 3) ? "font-size:1.5em;" : "color:#8bc34a; font-weight:bold;";
+                
+                html += `<div class="rank-item">
+                    <span style="width:15%; text-align:center; ${style}">${rankDisplay}</span>
+                    <span style="width:50%; padding-left:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.nickname}</span>
+                    <span style="width:35%; text-align:right; color:#ccc; font-weight:bold;">${item.score}</span>
+                </div>`;
+            });
+            list.innerHTML = html;
+        })
+        .catch(e => {
+            list.innerHTML = `<div class="center" style="color:#ff5252;">${t.rankingError}</div>`;
+        });
+    }
+
+    function loadResultRanking() {
+        const list = document.getElementById("result-ranking-board");
+        const t = i18n[currentLang];
+        list.innerHTML = `<div class="center" style="font-size:1.8vh; color:#888;">TOP 3 Loading...</div>`;
+
+        fetch(API_URL + '?action=list')
+        .then(res => res.json())
+        .then(data => {
+            if(data.length === 0) {
+                list.innerHTML = `<div class="center" style="font-size:1.8vh;">${t.rankingEmpty}</div>`;
+                return;
+            }
+            let html = "";
+            const limit = Math.min(data.length, 3);
+            for(let i=0; i<limit; i++) {
+                let item = data[i];
+                let rankIcon = ["🥇","🥈","🥉"][i];
+                html += `<div class="rank-item" style="font-size:2vh; padding:0.5vh;">
+                    <span style="width:15%; text-align:center;">${rankIcon}</span>
+                    <span style="width:50%; padding-left:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.nickname}</span>
+                    <span style="width:35%; text-align:right; font-weight:bold; color:#8bc34a;">${item.score}</span>
+                </div>`;
+            }
+            list.innerHTML = html;
+        })
+        .catch(e => {
+            list.style.display = 'none'; 
+        });
+    }
+
+    // --- Init ---
+    window.onload = function() {
+        const savedName = localStorage.getItem("kingsmaze_name"); // 로컬스토리지 공유용 (미로킹과 통합 시 필요)
+        if(savedName) document.getElementById("nickname").value = savedName;
+        
+        const initLang = getInitialLang();
+        changeLang(initLang);
+        renderLanguages(); 
+    };
+
+</script>
+</body>
+</html>

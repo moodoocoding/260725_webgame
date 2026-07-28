@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-5YW0T2C109');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>미로킹 과일탐험대</title>
+    
+    <meta name="description" content="미로킹 과일탐험대">
+    <meta name="theme-color" content="#2b2b2b">
+
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #2b2b2b;
+            --ui-bg: #3a3a3a;
+            --text-color: #f0f0f0;
+            --accent-color: #FFD93D;
+            --wall-color: #5d4037;
+            --floor-color: #8d6e63;
+            --p1-color: #ff6b6b;
+            --p2-color: #54a0ff;
+            --p3-color: #1dd1a1;
+            --p4-color: #feca57;
+        }
+
+        body {
+            margin: 0; padding: 0; overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Jua', 'Noto Sans KR', sans-serif;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header --- */
+        header {
+            height: 60px;
+            background-color: #1e1e1e;
+            display: flex; 
+            align-items: center;
+            justify-content: center; 
+            position: relative;
+            padding: 0 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+        
+        header a {
+            position: absolute;
+            left: 20px;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 1.5rem;
+            text-shadow: 1px 1px 0 #000;
+            white-space: nowrap;
+        }
+        
+        #header-timer-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #main-timer {
+            font-size: 2.0rem;
+            color: #fff;
+            background: #222;
+            padding: 2px 20px;
+            border-radius: 15px;
+            border: 2px solid #666;
+            min-width: 60px;
+            text-align: center;
+            font-family: 'Jua', sans-serif;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        /* --- Layout --- */
+        #app-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            height: calc(100% - 60px);
+            overflow: hidden; 
+            padding-bottom: 30px;
+            box-sizing: border-box;
+        }
+
+        /* --- Start Screen --- */
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            background: var(--ui-bg);
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 4px solid #555;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            min-width: 450px;
+            max-width: 90%;
+        }
+
+        h1 { margin: 0; font-size: 3rem; color: #fff; text-shadow: 3px 3px 0 #000; }
+        
+        .option-section { width: 100%; text-align: center; }
+        .label-text { color: #aaa; margin-bottom: 8px; font-size: 1.2rem; }
+        
+        select {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.3rem;
+            border-radius: 15px;
+            border: 2px solid #555;
+            background-color: #222;
+            color: #fff;
+            font-family: 'Jua', sans-serif;
+            cursor: pointer;
+            outline: none;
+            text-align: center;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFD93D%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 16px auto;
+        }
+        select:focus { border-color: var(--accent-color); }
+
+        #btn-start {
+            margin-top: 20px;
+            padding: 15px 80px;
+            font-size: 2.2rem;
+            background-color: #ff7675;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 8px 0 #d63031;
+            font-family: 'Jua', sans-serif;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        #btn-start:active { transform: translateY(6px); box-shadow: none; }
+
+        .guide-box {
+            background: rgba(0,0,0,0.2);
+            border: 2px dashed #666;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            color: #ccc;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        /* --- Game Screen (Canvas) --- */
+        #game-layer {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            background-color: #2b2b2b;
+            overflow: hidden;
+            width: 100%;
+            touch-action: none;
+        }
+        canvas {
+            display: block;
+            touch-action: none;
+        }
+
+        /* Floating Buttons */
+        .floating-btn {
+            position: fixed;
+            top: 40%;
+            transform: translateY(-50%);
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: #444;
+            color: white;
+            display: flex;
+            justify-content: center; align-items: center;
+            font-size: 1.8rem;
+            z-index: 200;
+            border: 2px solid #666;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+        .floating-btn:hover { opacity: 1; }
+        #btn-home { left: 20px; }
+        #btn-fullscreen { right: 20px; }
+
+        /* Popups */
+        .overlay-msg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            justify-content: flex-start; 
+            padding-top: 0px;
+            align-items: center;
+            z-index: 150;
+            color: white;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .msg-title { font-size: 3rem; color: var(--accent-color); margin-bottom: 20px; text-shadow: 0 0 20px gold;}
+        .msg-sub { font-size: 1.8rem; margin-bottom: 20px; white-space: pre-line; line-height: 1.6; }
+        
+        #btn-to-main {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            background: #0984e3;
+            color: white;
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 5px 0 #06528d;
+            font-family: 'Jua', sans-serif;
+            cursor: pointer;
+        }
+        #btn-to-main:active { transform: translateY(4px); box-shadow: none; }
+
+        /* Countdown Overlay */
+        #countdown-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 160;
+            pointer-events: none;
+        }
+        #countdown-text {
+            font-size: 8rem;
+            color: #fff;
+            text-shadow: 0 0 30px var(--p1-color);
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #countdown-sub {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-top: 20px;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#" onclick="location.reload()">게임으로 수학의 킹이 되어라. 👑킹수학.com</a>
+        
+        <div id="header-timer-area">
+            <div id="main-timer">60</div>
+        </div>
+    </header>
+
+    <div id="app-container">
+        <div id="start-screen">
+            <h1>👑 미로킹 과일대소동</h1>
+            
+            <div class="guide-box">
+                <b>💡 게임 방법:</b><br>
+                - 벽에 닿지 않게 길을 찾아 과일을 드세요.<br>
+                - 터치 & 드래그로 캐릭터를 움직입니다.<br>
+                - 과일을 모두 먹으면 맵 <b>정중앙</b>에 <b>화려한 성(🏰)</b>이 나타납니다.
+            </div>
+
+            <div class="option-section">
+                <div class="label-text">게임 모드 선택</div>
+                <select id="sel-mode">
+                    <option value="1p">1인용 (개인전 10x10)</option>
+                    <option value="2p">2인용 (개인전 10x10)</option>
+                    <option value="3p">3인용 (개인전 10x10)</option>
+                    <option value="4p" selected>4인용 (개인전 10x10)</option>
+                    <option value="team">2:2 팀전 (20x10 대형맵)</option>
+                    <option value="coop">4인 협동 (40x10 초대형맵)</option>
+                </select>
+            </div>
+
+            <div class="option-section">
+                <div class="label-text">난이도</div>
+                <select id="sel-diff">
+                    <option value="easy" selected>쉬움 (길이 많이 뚫려있음) 🐥</option>
+                    <option value="hard">어려움 (막힌 길이 많은 정석 미로) 🔥</option>
+                </select>
+            </div>
+
+            <button id="btn-start">게임 시작! 🚀</button>
+            <a href="https://kingmath.com" style="margin-top: 20px; color: #aaa; text-decoration: none; font-size: 1.2rem; border-bottom: 1px dashed #555; padding-bottom: 2px;">🎮 다른 게임 고르기</a>
+        </div>
+
+        <div id="game-layer">
+            <div id="canvas-container">
+                <canvas id="game-canvas"></canvas>
+            </div>
+            
+            <div id="countdown-overlay">
+                <div id="countdown-text">3</div>
+                <div id="countdown-sub">과일을 먹고 집으로 가세요!</div>
+            </div>
+
+            <div id="result-overlay" class="overlay-msg">
+                <div class="msg-title" id="res-title">SUCCESS!</div>
+                <div class="msg-sub" id="res-sub">기록: 50초</div>
+                <button id="btn-to-main">🏠 메인으로 (모드 선택)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="btn-home" class="floating-btn">🏠</div>
+    <div id="btn-fullscreen" class="floating-btn">⛶</div>
+
+    <script>
+        /**
+         * Maze King Fruit Chaos
+         */
+        
+        // --- Constants & Config ---
+        const COLORS = ['#ff6b6b', '#54a0ff', '#1dd1a1', '#feca57']; 
+        const EMOJIS = ['🐶', '🐱', '🐰', '🐹'];
+        const FRUITS = ['🍎', '🍌', '🍇', '🍓', '🍒', '🍑', '🍍', '🥝'];
+        
+        // --- Global State ---
+        let state = {
+            modeType: 'individual', 
+            difficulty: 'easy',
+            cols: 10, 
+            rows: 10,
+            playerCount: 4,
+            isPlaying: false,
+            isCountingDown: false,
+            timeLimit: 60,
+            remainingTime: 60,
+            timerInterval: null,
+            zones: [], 
+            mazes: [], 
+            players: [],
+            isFinished: false
+        };
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- Audio Context ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'eat') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(1000, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'win') {
+                osc.type = 'triangle';
+                [523, 659, 783, 1046].forEach((freq, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.type = 'triangle';
+                    o.frequency.value = freq;
+                    g.gain.setValueAtTime(0.2, now + i*0.1);
+                    g.gain.linearRampToValueAtTime(0, now + i*0.1 + 0.3);
+                    o.start(now + i*0.1); o.stop(now + i*0.1 + 0.3);
+                });
+            } else if (type === 'spawn') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.linearRampToValueAtTime(400, now + 0.2);
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+            } else if (type === 'beep') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(600, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.15);
+                osc.start(now); osc.stop(now + 0.15);
+            } else if (type === 'go') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.linearRampToValueAtTime(1200, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            }
+        }
+
+        // --- Maze Generator ---
+        class MazeCell {
+            constructor(c, r) {
+                this.c = c;
+                this.r = r;
+                this.visited = false;
+                this.walls = { top: true, right: true, bottom: true, left: true };
+            }
+        }
+
+        class Maze {
+            constructor(cols, rows) {
+                this.cols = cols;
+                this.rows = rows;
+                this.grid = [];
+                this.fruits = [];
+                this.goalSpawned = false;
+                this.goalRect = null;
+                this.initGrid();
+                this.generateDFS();
+            }
+
+            initGrid() {
+                for(let r=0; r<this.rows; r++) {
+                    const row = [];
+                    for(let c=0; c<this.cols; c++) {
+                        row.push(new MazeCell(c, r));
+                    }
+                    this.grid.push(row);
+                }
+            }
+
+            generateDFS() {
+                let stack = [];
+                let current = this.grid[0][0];
+                current.visited = true;
+                stack.push(current);
+
+                while(stack.length > 0) {
+                    current = stack[stack.length - 1];
+                    let neighbors = this.getUnvisitedNeighbors(current);
+
+                    if (neighbors.length > 0) {
+                        let next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                        this.removeWalls(current, next);
+                        next.visited = true;
+                        stack.push(next);
+                    } else {
+                        stack.pop();
+                    }
+                }
+
+                if (state.difficulty === 'easy') {
+                    this.braidMaze(0.5);
+                } else {
+                    this.braidMaze(0.1);
+                }
+            }
+
+            getUnvisitedNeighbors(cell) {
+                let neighbors = [];
+                const dirs = [[0,-1], [1,0], [0,1], [-1,0]];
+                for(let d of dirs) {
+                    let nc = cell.c + d[0];
+                    let nr = cell.r + d[1];
+                    if(nc >= 0 && nc < this.cols && nr >= 0 && nr < this.rows) {
+                        if(!this.grid[nr][nc].visited) {
+                            neighbors.push(this.grid[nr][nc]);
+                        }
+                    }
+                }
+                return neighbors;
+            }
+
+            removeWalls(a, b) {
+                let x = a.c - b.c;
+                let y = a.r - b.r;
+                if(x === 1) { a.walls.left = false; b.walls.right = false; }
+                else if(x === -1) { a.walls.right = false; b.walls.left = false; }
+                if(y === 1) { a.walls.top = false; b.walls.bottom = false; }
+                else if(y === -1) { a.walls.bottom = false; b.walls.top = false; }
+            }
+
+            braidMaze(factor) {
+                for(let r=0; r<this.rows; r++) {
+                    for(let c=0; c<this.cols; c++) {
+                        let cell = this.grid[r][c];
+                        let wallCount = (cell.walls.top?1:0) + (cell.walls.right?1:0) + (cell.walls.bottom?1:0) + (cell.walls.left?1:0);
+                        
+                        if (wallCount === 3 && Math.random() < factor) {
+                            let walls = [];
+                            if (cell.walls.top && r > 0) walls.push('top');
+                            if (cell.walls.right && c < this.cols-1) walls.push('right');
+                            if (cell.walls.bottom && r < this.rows-1) walls.push('bottom');
+                            if (cell.walls.left && c > 0) walls.push('left');
+
+                            if(walls.length > 0) {
+                                let pick = walls[Math.floor(Math.random() * walls.length)];
+                                if(pick === 'top') { cell.walls.top = false; this.grid[r-1][c].walls.bottom = false; }
+                                if(pick === 'right') { cell.walls.right = false; this.grid[r][c+1].walls.left = false; }
+                                if(pick === 'bottom') { cell.walls.bottom = false; this.grid[r+1][c].walls.top = false; }
+                                if(pick === 'left') { cell.walls.left = false; this.grid[r][c-1].walls.right = false; }
+                            }
+                        }
+                    }
+                }
+            }
+
+            populateFruits(count) {
+                this.fruits = [];
+                let placed = 0;
+                // Center safe zone (2x2)
+                const cX = Math.floor(this.cols/2);
+                const cY = Math.floor(this.rows/2);
+
+                while(placed < count) {
+                    const r = Math.floor(Math.random() * this.rows);
+                    const c = Math.floor(Math.random() * this.cols);
+                    
+                    // Exclude center 2x2
+                    const isCenter = (r >= cY-1 && r <= cY && c >= cX-1 && c <= cX);
+                    
+                    if(!this.fruits.find(f => f.r === r && f.c === c) && !isCenter) {
+                        this.fruits.push({
+                            id: placed, r: r, c: c,
+                            type: FRUITS[Math.floor(Math.random() * FRUITS.length)],
+                            eaten: false
+                        });
+                        placed++;
+                    }
+                }
+            }
+        }
+
+        // --- Player Class ---
+        class Player {
+            constructor(id, zoneIndex, maze, startPos) {
+                this.id = id;
+                this.zoneIndex = zoneIndex;
+                this.maze = maze;
+                this.color = COLORS[id];
+                this.emoji = EMOJIS[id];
+                this.x = startPos.c + 0.5; 
+                this.y = startPos.r + 0.5;
+                // 수정 1: 물리 충돌 반경(radius)을 0.2로 줄여서 벽에 잘 안 끼게 함 (시각적 크기는 유지)
+                this.radius = 0.3; 
+                this.active = false;
+                this.score = 0;
+                this.finished = false;
+                this.rank = 0; // Final Rank
+                
+                // For rendering logic
+                this.renderRect = null; // {x, y, w, h}
+            }
+        }
+
+        // --- Core Game Functions ---
+
+        function initGame() {
+            // Read UI Options
+            const modeVal = document.getElementById('sel-mode').value;
+            state.difficulty = document.getElementById('sel-diff').value;
+
+            // Configure
+            if(modeVal === '1p') { state.modeType = 'individual'; state.playerCount = 1; state.cols = 10; state.rows = 10; }
+            else if(modeVal === '2p') { state.modeType = 'individual'; state.playerCount = 2; state.cols = 10; state.rows = 10; }
+            else if(modeVal === '3p') { state.modeType = 'individual'; state.playerCount = 3; state.cols = 10; state.rows = 10; }
+            else if(modeVal === '4p') { state.modeType = 'individual'; state.playerCount = 4; state.cols = 10; state.rows = 10; }
+            else if(modeVal === 'team') { state.modeType = 'team'; state.playerCount = 4; state.cols = 20; state.rows = 10; }
+            else if(modeVal === 'coop') { state.modeType = 'coop'; state.playerCount = 4; state.cols = 40; state.rows = 10; }
+
+            state.remainingTime = 60;
+            state.isPlaying = false; // Wait for countdown
+            state.isCountingDown = true;
+            state.isFinished = false;
+            state.players = [];
+            state.zones = [];
+            state.mazes = [];
+
+            // Master Maze
+            const masterMaze = new Maze(state.cols, state.rows);
+            const fruitCount = Math.floor((state.cols * state.rows) * 0.15);
+            masterMaze.populateFruits(fruitCount);
+
+            // Zones
+            if (state.modeType === 'individual') {
+                const zoneW = 1 / state.playerCount;
+                for(let i=0; i<state.playerCount; i++) {
+                    state.zones.push({ x: i*zoneW, y: 0, w: zoneW, h: 1, mazeIdx: i });
+                    const m = new Maze(state.cols, state.rows);
+                    m.grid = JSON.parse(JSON.stringify(masterMaze.grid));
+                    m.fruits = JSON.parse(JSON.stringify(masterMaze.fruits));
+                    state.mazes.push(m);
+                    state.players.push(new Player(i, i, m, {r: state.rows-1, c: 0}));
+                }
+            } else if (state.modeType === 'team') {
+                const teamCount = 2; 
+                const zoneW = 0.5;
+                for(let t=0; t<teamCount; t++) {
+                    state.zones.push({ x: t*zoneW, y: 0, w: zoneW, h: 1, mazeIdx: t });
+                    const m = new Maze(state.cols, state.rows);
+                    m.grid = JSON.parse(JSON.stringify(masterMaze.grid));
+                    m.fruits = JSON.parse(JSON.stringify(masterMaze.fruits));
+                    state.mazes.push(m);
+                }
+                for(let i=0; i<4; i++) {
+                    const t = (i < 2) ? 0 : 1;
+                    const startC = (i % 2 === 0) ? 0 : state.cols - 1;
+                    state.players.push(new Player(i, t, state.mazes[t], {r: state.rows-1, c: startC}));
+                }
+            } else { // Coop
+                state.zones.push({ x: 0, y: 0, w: 1, h: 1, mazeIdx: 0 });
+                state.mazes.push(masterMaze);
+                const positions = [
+                    {r: state.rows-1, c: 0}, 
+                    {r: state.rows-1, c: state.cols-1}, 
+                    {r: state.rows-1, c: Math.floor(state.cols/3)}, 
+                    {r: state.rows-1, c: Math.floor(state.cols*2/3)}
+                ];
+                for(let i=0; i<4; i++) {
+                    state.players.push(new Player(i, 0, masterMaze, positions[i]));
+                }
+            }
+            
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-layer').style.display = 'flex';
+            document.getElementById('result-overlay').style.display = 'none';
+            
+            resizeCanvas(); 
+
+            // Start Countdown
+            startCountdownSequence();
+        }
+
+        function startCountdownSequence() {
+            const overlay = document.getElementById('countdown-overlay');
+            const text = document.getElementById('countdown-text');
+            overlay.style.display = 'flex';
+            
+            let count = 3;
+            text.innerText = count;
+            playSound('beep');
+
+            const interval = setInterval(() => {
+                count--;
+                if(count > 0) {
+                    text.innerText = count;
+                    text.style.animation = 'none';
+                    text.offsetHeight; /* trigger reflow */
+                    text.style.animation = 'pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    playSound('beep');
+                } else if(count === 0) {
+                    text.innerText = "GO!";
+                    text.style.color = "#FFD93D";
+                    playSound('go');
+                } else {
+                    clearInterval(interval);
+                    overlay.style.display = 'none';
+                    state.isCountingDown = false;
+                    state.isPlaying = true;
+                    startTimer();
+                }
+            }, 1000);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startTimer() {
+            if (state.timerInterval) clearInterval(state.timerInterval);
+            const timerEl = document.getElementById('main-timer');
+            timerEl.innerText = state.remainingTime;
+            
+            state.timerInterval = setInterval(() => {
+                if(!state.isPlaying) return;
+                state.remainingTime--;
+                timerEl.innerText = state.remainingTime;
+                if (state.remainingTime <= 0) endGame(false);
+            }, 1000);
+        }
+
+        function calculateRank() {
+            // 수정 2: 2:2 팀전 랭킹 로직 변경
+            if (state.modeType === 'team') {
+                // 팀 정의: 0팀(Player 0,1), 1팀(Player 2,3)
+                const t0 = [state.players[0], state.players[1]];
+                const t1 = [state.players[2], state.players[3]];
+
+                // 팀 완주 여부 확인 (팀원 2명 모두 finished 상태여야 완주)
+                const t0Fin = t0.every(p => p.finished);
+                const t1Fin = t1.every(p => p.finished);
+                
+                // 팀 점수 합산
+                const t0Score = t0.reduce((acc, p) => acc + p.score, 0);
+                const t1Score = t1.reduce((acc, p) => acc + p.score, 0);
+
+                let t0Rank, t1Rank;
+
+                // 랭킹 산정 로직:
+                // 1. 둘 다 완주한 팀이 우선
+                // 2. 둘 다 완주하지 못했다면 점수가 높은 팀이 우선
+                if (t0Fin && !t1Fin) {
+                    t0Rank = 1; t1Rank = 2;
+                } else if (!t0Fin && t1Fin) {
+                    t0Rank = 2; t1Rank = 1;
+                } else if (t0Fin && t1Fin) {
+                     // 희박하지만 동시에 들어온 경우 (동점)
+                    t0Rank = 1; t1Rank = 1;
+                } else {
+                    // 둘 다 완주 못함 -> 점수 비교
+                    if (t0Score > t1Score) { t0Rank = 1; t1Rank = 2; }
+                    else if (t1Score > t0Score) { t0Rank = 2; t1Rank = 1; }
+                    else { t0Rank = 1; t1Rank = 1; }
+                }
+
+                t0.forEach(p => p.rank = t0Rank);
+                t1.forEach(p => p.rank = t1Rank);
+
+                return [...t0, ...t1]; // 결과 표시는 기존 로직 활용을 위해 리스트 반환
+            } 
+            
+            // 기존 개인전/협동전 로직
+            const sorted = [...state.players].sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                if (b.finished !== a.finished) return (b.finished ? 1 : 0) - (a.finished ? 1 : 0);
+                return a.id - b.id;
+            });
+            
+            for (let i = 0; i < sorted.length; i++) {
+                if (i > 0) {
+                    const prev = sorted[i - 1];
+                    const curr = sorted[i];
+                    if (prev.score === curr.score && prev.finished === curr.finished) {
+                        curr.rank = prev.rank;
+                    } else {
+                        curr.rank = i + 1;
+                    }
+                } else {
+                    sorted[i].rank = 1;
+                }
+            }
+            return sorted;
+        }
+
+        function endGame(success) {
+            state.isPlaying = false;
+            state.isFinished = true;
+            clearInterval(state.timerInterval);
+            
+            const overlay = document.getElementById('result-overlay');
+            const title = document.getElementById('res-title');
+            const sub = document.getElementById('res-sub');
+            
+            const rankedPlayers = calculateRank();
+            
+            overlay.style.display = 'flex';
+            if (success) {
+                title.innerText = "GAME CLEAR! 🎉";
+                title.style.color = "var(--accent-color)";
+                playSound('win');
+            } else {
+                title.innerText = "TIME OVER ⌛";
+                title.style.color = "#ff7675";
+            }
+
+            let rankStr = "";
+            
+            // 팀전일 경우 결과 표시를 팀 단위로 묶어서 보여줌
+            if (state.modeType === 'team') {
+                // 팀별로 그룹화
+                const t0 = state.players.filter(p => p.id < 2);
+                const t1 = state.players.filter(p => p.id >= 2);
+                
+                const printTeam = (teamName, teamArr) => {
+                    const rank = teamArr[0].rank;
+                    let medal = (rank === 1) ? "🥇" : (rank === 2 ? "🥈" : "🥉");
+                    let scoreSum = teamArr.reduce((a,b)=>a+b.score,0);
+                    return `${medal} ${teamName} (${teamArr[0].emoji}${teamArr[1].emoji}) : 🍎${scoreSum}\n`;
+                };
+                
+                // 1등 팀을 먼저 출력하기 위해 정렬
+                const teams = [ {name:"A팀", arr:t0}, {name:"B팀", arr:t1} ];
+                teams.sort((a,b) => a.arr[0].rank - b.arr[0].rank);
+                
+                teams.forEach(t => {
+                    rankStr += printTeam(t.name, t.arr);
+                });
+
+            } else {
+                // 개인전 출력
+                rankedPlayers.forEach(p => {
+                    let medal = "";
+                    if(p.rank === 1) medal = "🥇";
+                    else if(p.rank === 2) medal = "🥈";
+                    else if(p.rank === 3) medal = "🥉";
+                    else medal = `${p.rank}등`;
+                    
+                    rankStr += `${medal} : ${p.emoji} 🍎${p.score}\n`;
+                });
+            }
+
+            sub.innerText = rankStr;
+        }
+
+        // --- Interaction Logic (Multi-Touch Optimized) ---
+        let activePointers = {};
+
+        // Pointer Down: 터치 즉시 반응
+        canvas.addEventListener('pointerdown', e => {
+            if(!state.isPlaying || state.isCountingDown) return;
+            e.preventDefault(); 
+            
+            const rect = canvas.getBoundingClientRect();
+            const tx = e.clientX - rect.left;
+            const ty = e.clientY - rect.top;
+
+            let grabbed = null;
+            for(let p of state.players) {
+                if(!p.renderRect) continue;
+                
+                const cellW = p.renderRect.w / p.maze.cols;
+                const cellH = p.renderRect.h / p.maze.rows;
+                const pScreenX = p.renderRect.x + p.x * cellW;
+                const pScreenY = p.renderRect.y + p.y * cellH;
+
+                if (Math.hypot(tx - pScreenX, ty - pScreenY) < cellW * 2) {
+                    grabbed = p; 
+                    break;
+                }
+            }
+
+            if (grabbed) {
+                activePointers[e.pointerId] = { pid: grabbed.id };
+                grabbed.active = true;
+                canvas.setPointerCapture(e.pointerId);
+            }
+        });
+
+        // Pointer Move
+        canvas.addEventListener('pointermove', e => {
+            if(!state.isPlaying || state.isCountingDown) return;
+            e.preventDefault();
+            
+            if (activePointers[e.pointerId]) {
+                const pid = activePointers[e.pointerId].pid;
+                const player = state.players[pid];
+                const rect = canvas.getBoundingClientRect();
+                movePlayer(player, e.clientX - rect.left, e.clientY - rect.top);
+            }
+        });
+
+        // Pointer Up/Cancel
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(evt => {
+            canvas.addEventListener(evt, e => {
+                e.preventDefault();
+                if (activePointers[e.pointerId]) {
+                    const pid = activePointers[e.pointerId].pid;
+                    state.players[pid].active = false;
+                    delete activePointers[e.pointerId];
+                    try {
+                        if (canvas.hasPointerCapture(e.pointerId)) {
+                            canvas.releasePointerCapture(e.pointerId);
+                        }
+                    } catch(err) {}
+                }
+            });
+        });
+
+        function movePlayer(player, targetScreenX, targetScreenY) {
+            if(player.finished || !player.renderRect) return;
+
+            const rRect = player.renderRect;
+            const cellW = rRect.w / player.maze.cols;
+            const cellH = rRect.h / player.maze.rows;
+
+            const relX = targetScreenX - rRect.x;
+            const relY = targetScreenY - rRect.y;
+
+            const safeX = Math.max(0, Math.min(rRect.w, relX));
+            const safeY = Math.max(0, Math.min(rRect.h, relY));
+
+            const gridTx = (safeX / rRect.w) * player.maze.cols;
+            const gridTy = (safeY / rRect.h) * player.maze.rows;
+
+            const dx = gridTx - player.x;
+            const dy = gridTy - player.y;
+            const dist = Math.hypot(dx, dy);
+            // 수정 1 보완: 이동 스텝을 더 잘게 쪼개어(0.2 -> 0.1) 끼임 현상 완화
+            const step = 0.1; 
+            const steps = Math.ceil(dist / step);
+            const dirX = dx/dist || 0;
+            const dirY = dy/dist || 0;
+
+            let currX = player.x;
+            let currY = player.y;
+
+            for(let i=0; i<steps; i++) {
+                let nextX = currX + dirX * Math.min(step, dist - i*step);
+                let nextY = currY + dirY * Math.min(step, dist - i*step);
+
+                if (!checkWall(player.maze, currX, currY, nextX, currY, player.radius)) {
+                    currX = nextX;
+                }
+                if (!checkWall(player.maze, currX, currY, currX, nextY, player.radius)) {
+                    currY = nextY;
+                }
+            }
+            player.x = currX;
+            player.y = currY;
+
+            checkFruit(player);
+            checkGoal(player);
+        }
+
+        function checkWall(maze, x1, y1, x2, y2, r) {
+            const minX = Math.min(x1, x2) - r;
+            const maxX = Math.max(x1, x2) + r;
+            const minY = Math.min(y1, y2) - r;
+            const maxY = Math.max(y1, y2) + r;
+
+            const c1 = Math.floor(minX + r);
+            const r1 = Math.floor(minY + r);
+
+            if (c1 < 0 || c1 >= maze.cols || r1 < 0 || r1 >= maze.rows) return true;
+            
+            const cell = maze.grid[r1][c1];
+
+            if (cell.walls.right && (maxX > c1 + 1)) return true;
+            if (cell.walls.left && (minX < c1)) return true;
+            if (cell.walls.bottom && (maxY > r1 + 1)) return true;
+            if (cell.walls.top && (minY < r1)) return true;
+
+            // 코너 체크 보강
+            if (Math.floor(x2+r) > Math.floor(x1+r)) { 
+                 if (maze.grid[Math.floor(y1)][Math.floor(x1)].walls.right) return true;
+            }
+            if (Math.floor(x2-r) < Math.floor(x1-r)) { 
+                 if (maze.grid[Math.floor(y1)][Math.floor(x1)].walls.left) return true;
+            }
+            if (Math.floor(y2+r) > Math.floor(y1+r)) { 
+                 if (maze.grid[Math.floor(y1)][Math.floor(x1)].walls.bottom) return true;
+            }
+            if (Math.floor(y2-r) < Math.floor(y1-r)) { 
+                 if (maze.grid[Math.floor(y1)][Math.floor(x1)].walls.top) return true;
+            }
+
+            return false;
+        }
+
+        function checkFruit(player) {
+            const maze = player.maze;
+            maze.fruits.forEach(f => {
+                if(!f.eaten) {
+                    if(Math.hypot(player.x - (f.c+0.5), player.y - (f.r+0.5)) < 0.5) {
+                        f.eaten = true;
+                        player.score++;
+                        playSound('eat');
+                        checkSpawnGoal(maze);
+                    }
+                }
+            });
+        }
+
+        function checkSpawnGoal(maze) {
+            const total = maze.fruits.length;
+            const eaten = maze.fruits.filter(f => f.eaten).length;
+            
+            if (eaten === total && !maze.goalSpawned) {
+                maze.goalSpawned = true;
+                const centerC = Math.floor(maze.cols / 2) - 1;
+                const centerR = Math.floor(maze.rows / 2) - 1;
+                maze.goalRect = { c: centerC, r: centerR, w: 2, h: 2 };
+                playSound('spawn');
+            }
+        }
+
+        function checkGoal(player) {
+            if(!player.maze.goalSpawned) return;
+            const g = player.maze.goalRect;
+            if (player.x > g.c && player.x < g.c + g.w &&
+                player.y > g.r && player.y < g.r + g.h) {
+                player.finished = true;
+                player.active = false;
+                
+                const playersInMaze = state.players.filter(p => p.maze === player.maze);
+                if(playersInMaze.every(p => p.finished)) {
+                    endGame(true);
+                }
+            }
+        }
+
+        // --- Rendering ---
+        function resizeCanvas() {
+            const container = document.getElementById('canvas-container');
+            if(container.clientWidth > 0) {
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawRoundedRect(ctx, x, y, width, height, radius, fillStyle, strokeStyle) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            if(fillStyle) {
+                ctx.fillStyle = fillStyle;
+                ctx.fill();
+            }
+            if(strokeStyle) {
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = strokeStyle;
+                ctx.stroke();
+            }
+        }
+
+        function gameLoop() {
+            if (!state.isPlaying && !state.isCountingDown && !state.isFinished) return;
+            
+            if (canvas.width === 0) resizeCanvas();
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw each zone
+            state.zones.forEach(zone => {
+                const zX = zone.x * canvas.width;
+                const zY = zone.y * canvas.height;
+                const zW = zone.w * canvas.width;
+                const zH = zone.h * canvas.height;
+                
+                // Draw Zone Border
+                ctx.strokeStyle = '#222'; 
+                ctx.lineWidth = 2;
+                ctx.strokeRect(zX, zY, zW, zH);
+
+                const maze = state.mazes[zone.mazeIdx];
+                const mapRatio = maze.cols / maze.rows;
+                
+                const headerH = 100; // 헤더 높이 확보
+                const availableW = zW;
+                const availableH = zH - headerH;
+
+                let drawW, drawH;
+                let widthFactor = 0.95; 
+                if (state.playerCount >= 3) widthFactor = 0.9; 
+
+                drawW = availableW * widthFactor;
+                drawH = drawW / mapRatio;
+
+                if (drawH > availableH) {
+                    drawH = availableH * 0.95;
+                    drawW = drawH * mapRatio;
+                }
+
+                const drawX = zX + (zW - drawW) / 2;
+                const drawY = zY + availableH - drawH + (headerH * 0.5);
+
+                // Assign renderRect
+                const playersInZone = state.players.filter(p => p.maze === maze);
+                playersInZone.forEach(p => {
+                    p.renderRect = { x: drawX, y: drawY, w: drawW, h: drawH };
+                });
+
+                // 수정 3 & 4: 스코어보드 박스로 꾸미기 및 팀전 합산 점수 표시
+                const centerX = drawX + drawW/2;
+                const boxY = drawY - 90;
+                const boxH = 80;
+                const boxW = Math.min(250, zW * 0.8);
+                
+                // 박스 그리기
+                drawRoundedRect(ctx, centerX - boxW/2, boxY, boxW, boxH, 15, "rgba(0,0,0,0.6)", "#fff");
+
+                ctx.fillStyle = '#fff';
+                ctx.textAlign = 'center'; 
+                ctx.textBaseline = 'middle';
+
+                if (state.modeType === 'team') {
+                    // 팀전: 이모지 2개 위쪽, 합산 점수 아래쪽
+                    const emojis = playersInZone.map(p => p.emoji).join(" ");
+                    const totalScore = playersInZone.reduce((a, b) => a + b.score, 0);
+                    
+                    ctx.font = '24px "Jua"';
+                    ctx.fillText(emojis, centerX, boxY + 25);
+                    
+                    ctx.font = 'bold 30px "Jua"';
+                    ctx.fillStyle = '#FFD93D';
+                    ctx.fillText(`🍎 ${totalScore}`, centerX, boxY + 55);
+
+                } else {
+                    // 개인전: 기존 방식에 박스만 추가
+                    let headerText = "";
+                    playersInZone.forEach(p => {
+                          headerText += `${p.emoji}${p.score} `;
+                    });
+                    
+                    // 글자 크기 자동 조절
+                    ctx.font = 'bold 30px "Jua"';
+                    if (state.playerCount >= 3) ctx.font = 'bold 24px "Jua"';
+                    
+                    ctx.fillText(headerText, centerX, boxY + boxH/2);
+                }
+
+                // Draw Map Background
+                ctx.save();
+                ctx.translate(drawX, drawY);
+                
+                ctx.fillStyle = '#8d6e63'; 
+                ctx.fillRect(0, 0, drawW, drawH);
+
+                const cw = drawW / maze.cols;
+                const ch = drawH / maze.rows;
+
+                // Draw Walls
+                ctx.strokeStyle = '#5d4037';
+                // 수정 1 보완: 시각적으로 선을 굵게 표현하여 끼임 해결과 시각적 통일성 맞춤
+                ctx.lineWidth = Math.max(4, cw * 0.15); 
+                ctx.lineCap = 'round';
+
+                ctx.beginPath();
+                for(let r=0; r<maze.rows; r++) {
+                    for(let c=0; c<maze.cols; c++) {
+                        const cell = maze.grid[r][c];
+                        const cx = c * cw;
+                        const cy = r * ch;
+                        
+                        if(cell.walls.top) { ctx.moveTo(cx, cy); ctx.lineTo(cx+cw, cy); }
+                        if(cell.walls.bottom) { ctx.moveTo(cx, cy+ch); ctx.lineTo(cx+cw, cy+ch); }
+                        if(cell.walls.left) { ctx.moveTo(cx, cy); ctx.lineTo(cx, cy+ch); }
+                        if(cell.walls.right) { ctx.moveTo(cx+cw, cy); ctx.lineTo(cx+cw, cy+ch); }
+                    }
+                }
+                ctx.stroke();
+
+                // Draw Goal
+                if(maze.goalSpawned) {
+                    const g = maze.goalRect;
+                    const time = performance.now() / 300;
+                    const hue = (time * 100) % 360;
+                    const pulse = 1 + Math.sin(time * 2) * 0.05;
+
+                    ctx.fillStyle = `hsla(${hue}, 80%, 60%, 0.6)`;
+                    const gx = g.c * cw;
+                    const gy = g.r * ch;
+                    const gw = g.w * cw;
+                    const gh = g.h * ch;
+                    
+                    const cx = gx + gw/2;
+                    const cy = gy + gh/2;
+                    
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.scale(pulse, pulse);
+                    ctx.fillRect(-gw/2, -gh/2, gw, gh);
+                    
+                    ctx.font = `${Math.min(cw, ch) * 1.5}px serif`;
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText('🏰', 0, 0);
+                    ctx.restore();
+                }
+
+                // Draw Fruits
+                ctx.font = `${Math.min(cw, ch) * 0.7}px serif`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                maze.fruits.forEach(f => {
+                    if(!f.eaten) ctx.fillText(f.type, (f.c+0.5)*cw, (f.r+0.5)*ch);
+                });
+
+                // Draw Players
+                playersInZone.forEach(pl => {
+                    const px = pl.x * cw;
+                    const py = pl.y * ch;
+                    
+                    if(pl.active) {
+                        ctx.shadowBlur = 10; ctx.shadowColor = pl.color;
+                    } else {
+                        ctx.shadowBlur = 0;
+                    }
+
+                    ctx.fillStyle = pl.color;
+                    ctx.beginPath();
+                    // 수정 1 보완: 시각적으로는 충돌체보다 조금 더 크게 그려서(0.35) 둥글고 귀엽게, 실제 충돌은 작게(0.2)
+                    ctx.arc(px, py, Math.min(cw, ch) * 0.35, 0, Math.PI*2);
+                    ctx.fill();
+
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#000';
+                    ctx.font = `${Math.min(cw, ch) * 0.5}px serif`;
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText(pl.emoji, px, py + 2);
+
+                    // Show Rank if Finished
+                    if(state.isFinished && pl.rank > 0) {
+                        ctx.fillStyle = '#FFD93D';
+                        ctx.font = `bold ${Math.min(cw, ch) * 0.8}px "Jua"`; 
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth = 4;
+                        ctx.strokeText(`${pl.rank}등`, px, py - ch*1);
+                        ctx.fillText(`${pl.rank}등`, px, py - ch*1);
+                    } else if(pl.finished) {
+                        ctx.font = `${Math.min(cw, ch) * 0.5}px serif`;
+                        ctx.fillText('🚩', px, py - ch*0.5);
+                    }
+                });
+
+                ctx.restore();
+            });
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- Button Events ---
+        document.getElementById('btn-start').addEventListener('click', () => {
+            initGame();
+        });
+        document.getElementById('btn-to-main').addEventListener('click', () => {
+            state.isPlaying = false;
+            state.isCountingDown = false;
+            state.isFinished = false;
+            document.getElementById('game-layer').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+        });
+        document.getElementById('btn-home').addEventListener('click', () => {
+            state.isPlaying = false;
+            state.isCountingDown = false;
+            state.isFinished = false;
+            document.getElementById('game-layer').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+        });
+        document.getElementById('btn-fullscreen').addEventListener('click', () => {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else if (document.exitFullscreen) document.exitFullscreen();
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>한메킹수학교사</title>
+    <style>
+        @font-face {
+            font-family: 'DosMyungjo';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_eight@1.0/DOSMyungjo.woff') format('woff');
+            font-weight: normal;
+            font-display: swap;
+        }
+
+        :root {
+            --win-bg: #208585;
+            --dos-blue: #0000A8;
+            --dos-gray: #C0C0C0;
+            --key-purple: #d6bcfa;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: #000;
+            font-family: 'DosMyungjo', sans-serif;
+            overflow: hidden;
+            touch-action: none; 
+        }
+
+        #app-container {
+            width: 800px; 
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #000;
+            box-shadow: 0 0 0 2px #333;
+            transform-origin: center center;
+        }
+
+        /* --- 상단 바 --- */
+        #top-bar {
+            height: 32px;
+            background-color: var(--dos-blue);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            color: white;
+            font-size: 20px;
+            box-sizing: border-box;
+            z-index: 50;
+        }
+
+        .deco-box {
+            width: 16px; 
+            height: 16px; 
+            background-color: #fff;
+            display: inline-block;
+        }
+
+        #title-text {
+            letter-spacing: 4px;
+            font-weight: bold;
+        }
+
+        /* --- 게임 영역 --- */
+        #game-viewport {
+            flex: 1;
+            position: relative;
+            background-color: var(--win-bg);
+            overflow: hidden;
+        }
+
+        #info-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background-color: transparent;
+            color: black;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: center;
+            font-size: 24px;
+            z-index: 60;
+            pointer-events: none;
+            padding-top: 10px;
+        }
+
+        #ui-score-container {
+            font-weight: bold;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+        }
+
+        #item-message {
+            margin-top: 5px;
+            color: #ffe200;
+            font-size: 20px;
+            text-shadow: 1px 1px 0 #000;
+            height: 24px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #clock-container {
+            position: absolute;
+            right: 0px;
+            top: 0px;
+            width: 100px;
+            height: 100px;
+            background-color: #ffe200;
+            box-sizing: border-box;
+            pointer-events: auto;
+        }
+
+        canvas#analog-clock {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        canvas#gameCanvas { display: block; width: 100%; height: 100%; }
+
+        /* 컨트롤 패널 */
+        #control-panel {
+            position: absolute;
+            bottom: 0px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 20;
+        }
+
+        #lcd-screen {
+            width: 197px;
+            height: 73px;
+            background-color: #eee;
+            border: 2px solid #555;
+            margin-bottom: -1px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(0,0,0,0.9);
+            font-size: 32px;
+            letter-spacing: 2px;
+            box-shadow: inset 0 0 10px rgba(0,255,0,0.2);
+        }
+
+        #keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0px;
+            width: 180px;
+        }
+
+        .key {
+            height: 46px;
+            background-color: var(--key-purple);
+            border: 2px solid rgba(107, 70, 193, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            color: #2d1b4d;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 3px 0 #553c9a;
+            transition: transform 0.05s;
+        }
+
+        .key:active { transform: translateY(2px); box-shadow: 0 1px 0 #553c9a; }
+        .key-enter { background-color: #f687b3; box-shadow: 0 3px 0 #b83280; color: white; }
+        .key-clear { background-color: #63b3ed; box-shadow: 0 3px 0 #2b6cb0; color: white; }
+
+        .key.broken {
+            background-color: #2d1b4d !important;
+            color: #7c6ba3 !important;
+            box-shadow: none !important;
+            background-image: repeating-linear-gradient(45deg, #000 0, #000 1px, transparent 1px, transparent 4px);
+            transform: translateY(2px);
+        }
+
+        /* --- 하단 바 --- */
+        #bottom-bar {
+            height: 36px;
+            background-color: var(--dos-gray);
+            border-top: 2px solid #fff;
+            display: flex;
+            align-items: stretch;
+            font-size: 18px;
+            color: #000;
+            box-sizing: border-box;
+            z-index: 50;
+        }
+
+        #bottom-left {
+            flex: 2;
+            display: flex;
+            align-items: center;
+            padding-left: 15px;
+            border-right: 2px solid #888;
+        }
+
+        #bottom-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 20px;
+        }
+
+        /* 오버레이 */
+        .overlay-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            text-align: center;
+        }
+        
+        .overlay-screen h2 {
+            font-size: 40px; 
+            margin: 0 0 30px 0;
+            text-shadow: 4px 4px 0 #000;
+            color: #ff5555;
+        }
+
+        .overlay-screen p { 
+            font-size: 24px; 
+            margin: 20px 0; 
+        }
+
+        .overlay-btn {
+            padding: 15px 40px;
+            font-family: 'DosMyungjo';
+            font-size: 24px;
+            background-color: #0000A8;
+            color: #fff;
+            border: 4px solid #fff;
+            cursor: pointer;
+            box-shadow: 6px 6px 0 #000;
+        }
+        .overlay-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: 2px 2px 0 #000;
+        }
+        
+        #start-screen { display: flex; }
+        #game-over-screen { display: none; }
+
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <div id="top-bar">
+        <div class="deco-box"></div>
+        <div id="title-text">한 메 킹 수 학 교 사</div>
+        <div class="deco-box"></div>
+    </div>
+
+    <div id="game-viewport">
+        <div id="info-bar">
+            <span id="ui-score-container">점 수 : <span id="ui-score">0</span></span>
+            <div id="item-message"></div>
+            
+            <div id="clock-container">
+                <canvas id="analog-clock" width="40" height="40"></canvas>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="control-panel">
+            <div id="lcd-screen"></div>
+            <div id="keypad">
+                <div class="key" onclick="keyInput('1')">1</div>
+                <div class="key" onclick="keyInput('2')">2</div>
+                <div class="key" onclick="keyInput('3')">3</div>
+                <div class="key" onclick="keyInput('4')">4</div>
+                <div class="key" onclick="keyInput('5')">5</div>
+                <div class="key" onclick="keyInput('6')">6</div>
+                <div class="key" onclick="keyInput('7')">7</div>
+                <div class="key" onclick="keyInput('8')">8</div>
+                <div class="key" onclick="keyInput('9')">9</div>
+                <div class="key key-clear" onclick="keyInput('C')">C</div>
+                <div class="key" onclick="keyInput('0')">0</div>
+                <div class="key key-enter" onclick="keyInput('E')">↵</div>
+            </div>
+        </div>
+
+        <div id="start-screen" class="overlay-screen">
+            <h2>연산 베네치아</h2>
+            <p>키보드나 터치패드로 정답을 넣으세요!</p>
+            <button class="overlay-btn" onclick="initGame()">게임 시작</button>
+        </div>
+
+        <div id="game-over-screen" class="overlay-screen">
+            <h2>게임 종료</h2>
+            <p>최종 점수: <span id="final-score">0</span></p>
+            <button class="overlay-btn" onclick="initGame()">다시 시작</button>
+        </div>
+    </div>
+
+    <div id="bottom-bar">
+        <div id="bottom-left">대화면 전용입니다. 소형 통신 기기는 사용이 불가합니다.</div>
+        <div id="bottom-right">정보화 시대의 동반자 킹수학.com</div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('app-container');
+    const viewport = document.getElementById('game-viewport');
+    const lcd = document.getElementById('lcd-screen');
+    const scoreUI = document.getElementById('ui-score');
+    const startUI = document.getElementById('start-screen');
+    const gameOverUI = document.getElementById('game-over-screen');
+    const finalScoreUI = document.getElementById('final-score');
+    const panel = document.getElementById('control-panel');
+    const itemMsgUI = document.getElementById('item-message');
+
+    let gameActive = false;
+    let score = 0;
+    let energy = 12;
+    let inputStr = "";
+    let enemies = [];
+    let sprinkles = [];
+    let gameStartTime = 0;
+    let lastSpawnTime = 0;
+    let waveOffset = 0;
+    let lastTime = 0; 
+    let lastWaveTime = 0;
+    const waveInterval = 500;
+
+    let enemySpawnCount = 0;
+    let nextItemTarget = rand(20, 30);
+    let activeEffects = { hidden: false, speedUp: false, speedDown: false, frozen: false };
+    let effectTimers = {}; 
+    let itemMsgTimer = null;
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = new AudioContext();
+
+    const SoundFX = {
+        playTone: function(freq, type, duration) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        },
+        click: function() { this.playTone(800, 'square', 0.05); },
+        correct: function() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            this.scheduleTone(523.25, 'square', now, 0.1); 
+            this.scheduleTone(659.25, 'square', now + 0.1, 0.1); 
+            this.scheduleTone(783.99, 'square', now + 0.2, 0.2); 
+        },
+        itemGet: function() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            this.scheduleTone(880, 'sine', now, 0.1);
+            this.scheduleTone(1108, 'sine', now+0.1, 0.1);
+            this.scheduleTone(1318, 'sine', now+0.2, 0.1);
+            this.scheduleTone(1760, 'sine', now+0.3, 0.2);
+        },
+        damage: function() { this.playTone(150, 'sawtooth', 0.3); },
+        start: function() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            this.scheduleTone(440, 'square', now, 0.1);
+            this.scheduleTone(554, 'square', now + 0.1, 0.1);
+            this.scheduleTone(659, 'square', now + 0.2, 0.3);
+        },
+        gameOver: function() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            this.scheduleTone(659, 'sawtooth', now, 0.2);
+            this.scheduleTone(554, 'sawtooth', now + 0.2, 0.2);
+            this.scheduleTone(440, 'sawtooth', now + 0.4, 0.4);
+        },
+        scheduleTone: function(freq, type, time, duration) {
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, time);
+            gainNode.gain.setValueAtTime(0.1, time);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, time + duration);
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start(time);
+            osc.stop(time + duration);
+        }
+    };
+
+    function drawAnalogClock() {
+        const clockCanvas = document.getElementById('analog-clock');
+        const cCtx = clockCanvas.getContext('2d');
+        const w = clockCanvas.width;
+        const h = clockCanvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = w / 2 - 2;
+
+        const now = new Date();
+        const min = now.getMinutes();
+        const hour = now.getHours() % 12;
+        const sec = now.getSeconds(); 
+
+        cCtx.clearRect(0, 0, w, h);
+        cCtx.fillStyle = "#ffe200"; 
+        cCtx.fillRect(0, 0, w, h);
+
+        cCtx.fillStyle = "#000";
+        for (let i = 1; i <= 12; i++) {
+            const angle = (i * 30) * Math.PI / 180;
+            const dist = radius * 0.75;
+            const dx = cx + Math.sin(angle) * dist;
+            const dy = cy - Math.cos(angle) * dist;
+            cCtx.beginPath();
+            cCtx.arc(dx, dy, 1.5, 0, Math.PI*2); 
+            cCtx.fill();
+        }
+
+        cCtx.save();
+        cCtx.translate(cx, cy);
+        cCtx.rotate(((hour + min/60) * 30) * Math.PI / 180);
+        cCtx.strokeStyle = "#000"; 
+        cCtx.lineWidth = 1; 
+        cCtx.lineCap = "round";
+        cCtx.beginPath();
+        cCtx.moveTo(0, 0);
+        cCtx.lineTo(0, -radius * 0.6); 
+        cCtx.stroke();
+        cCtx.restore();
+
+        cCtx.save();
+        cCtx.translate(cx, cy);
+        cCtx.rotate(((min + sec/60) * 6) * Math.PI / 180);
+        cCtx.strokeStyle = "#000"; 
+        cCtx.lineWidth = 1;
+        cCtx.lineCap = "round";
+        cCtx.beginPath();
+        cCtx.moveTo(0, 0);
+        cCtx.lineTo(0, -radius * 0.9); 
+        cCtx.stroke();
+        cCtx.restore();
+        
+        cCtx.beginPath();
+        cCtx.arc(cx, cy, 2, 0, Math.PI*2);
+        cCtx.fillStyle = "#000";
+        cCtx.fill();
+    }
+    
+    setInterval(drawAnalogClock, 1000);
+    drawAnalogClock();
+
+    function resize() {
+        const ww = window.innerWidth;
+        const wh = window.innerHeight;
+        const targetRatio = 4/3;
+        
+        let availableWidth = ww;
+        let availableHeight = wh;
+        let rotation = 0;
+
+        if (wh > ww) {
+            availableWidth = wh;
+            availableHeight = ww;
+            rotation = 90;
+        }
+
+        let newW, newH;
+        if (availableWidth / availableHeight > targetRatio) {
+            newH = availableHeight;
+            newW = newH * targetRatio;
+        } else {
+            newW = availableWidth;
+            newH = newW / targetRatio;
+        }
+
+        container.style.width = newW + 'px';
+        container.style.height = newH + 'px';
+
+        if (rotation === 90) {
+            container.style.transform = `translate(-50%, -50%) rotate(90deg)`;
+        } else {
+            container.style.transform = `translate(-50%, -50%)`;
+        }
+
+        canvas.width = viewport.clientWidth;
+        canvas.height = viewport.clientHeight;
+    }
+    window.addEventListener('resize', resize);
+
+    function initGame() {
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        startUI.style.display = 'none';
+        gameOverUI.style.display = 'none';
+        SoundFX.start();
+        restartGame();
+    }
+
+    function restartGame() {
+        score = 0;
+        energy = 12;
+        inputStr = "";
+        enemies = [];
+        sprinkles = [];
+        gameStartTime = performance.now();
+        lastTime = gameStartTime;
+        gameActive = true;
+        scoreUI.innerText = score;
+        lcd.innerText = "";
+        itemMsgUI.style.opacity = '0';
+        
+        enemySpawnCount = 0;
+        nextItemTarget = rand(10, 20);
+        
+        activeEffects = { hidden: false, speedUp: false, speedDown: false, frozen: false };
+        for (let key in effectTimers) clearTimeout(effectTimers[key]);
+        effectTimers = {};
+        
+        document.querySelectorAll('.key').forEach(k => k.classList.remove('broken'));
+
+        for(let i=0; i<3; i++) {
+            spawnEnemy(true);
+        }
+        
+        requestAnimationFrame(update);
+    }
+
+    function spawnEnemy(isInitial = false) {
+        let attempts = 0;
+        const maxAttempts = 50;
+        
+        let isItem = false;
+        if (!isInitial) {
+            enemySpawnCount++;
+            if (enemySpawnCount >= nextItemTarget) {
+                isItem = true;
+                enemySpawnCount = 0;
+                nextItemTarget = rand(10, 20);
+            }
+        }
+
+        const centerX = canvas.width / 2;
+        const safeMargin = 110; 
+        const padding = 60; 
+
+        while (attempts < maxAttempts) {
+            let side = Math.random() > 0.5 ? 'left' : 'right';
+            let x;
+
+            if (side === 'left') {
+                const leftWidth = (centerX - safeMargin) - padding;
+                if (leftWidth > 0) {
+                    x = Math.random() * leftWidth + padding;
+                } else {
+                    x = padding; 
+                }
+            } else {
+                const rightStart = centerX + safeMargin;
+                const rightWidth = (canvas.width - padding) - rightStart;
+                if (rightWidth > 0) {
+                    x = Math.random() * rightWidth + rightStart;
+                } else {
+                    x = canvas.width - padding;
+                }
+            }
+
+            let rawY = isInitial ? Math.random() * (canvas.height * 0.3) + 60 : -40;
+            let y = Math.floor(rawY / 40) * 40; 
+            
+            let overlap = false;
+            for (let e of enemies) {
+                if (Math.abs(e.x - x) < 140 && Math.abs(e.y - y) < 40) {
+                    overlap = true;
+                    break;
+                }
+            }
+            if (!overlap) {
+                enemies.push(new Enemy(x, y, isItem));
+                return;
+            }
+            attempts++;
+        }
+    }
+
+    function generateProblem(elapsed) {
+        // [난이도별 문제 정의]
+        const lv1 = ['add_s1', 'sub_s1', 'mul_s1']; // 3+5, 8-2, 3x4
+        const lv2 = ['add_s2', 'sub_s2', 'mul_s2']; // 7+8, 15-6, 8x9
+        const lv3 = ['add_2_1', 'sub_2_1', 'mul_tens', 'div_basic', 'add_2_2_easy', 'sub_2_2_easy']; 
+
+        let selectedPool = [];
+
+        // [단계별 출제 확률 로직 - 시간 여유를 둠]
+        if (elapsed < 40) {
+            // 1구간 (0~40초): 무조건 1단계 (몸풀기)
+            selectedPool = lv1;
+        } else if (elapsed < 80) {
+            // 2구간 (40~80초): 1단계(50%) vs 2단계(50%)
+            if (Math.random() < 0.5) selectedPool = lv1;
+            else selectedPool = lv2;
+        } else {
+            // 3구간 (80초~): 1, 2, 3단계 골고루 (33%씩)
+            const dice = Math.floor(Math.random() * 3);
+            if (dice === 0) selectedPool = lv1;
+            else if (dice === 1) selectedPool = lv2;
+            else selectedPool = lv3;
+        }
+
+        const type = selectedPool[Math.floor(Math.random() * selectedPool.length)];
+        let a, b, op, ans;
+
+        switch(type) {
+            // === 1단계 ===
+            case 'add_s1': ans=rand(2,9); a=rand(1,ans-1); b=ans-a; op='+'; break;
+            case 'sub_s1': a=rand(2,9); b=rand(1,a-1); op='-'; ans=a-b; break;
+            case 'mul_s1': a=rand(2,5); b=rand(1,9); op='×'; ans=a*b; break;
+
+            // === 2단계 ===
+            case 'add_s2': a=rand(2,9); b=rand(10-a,9); op='+'; ans=a+b; break;
+            case 'sub_s2': a=rand(11,18); b=rand(a-9,9); op='-'; ans=a-b; break;
+            case 'mul_s2': a=rand(6,9); b=rand(2,9); op='×'; ans=a*b; break;
+
+            // === 3단계 ===
+            case 'add_2_1': a=rand(10,89); b=rand(1,9); op='+'; ans=a+b; break;
+            case 'sub_2_1': a=rand(11,99); b=rand(1,9); op='-'; ans=a-b; break;
+            case 'mul_tens': a=rand(2,9)*10; b=rand(2,9); op='×'; ans=a*b; break;
+            case 'div_basic': b=rand(2,9); ans=rand(2,9); a=b*ans; op='÷'; break;
+            case 'add_2_2_easy': a=rand(10,40); b=rand(10,40); op='+'; ans=a+b; break;
+            case 'sub_2_2_easy': a=rand(30,80); b=rand(10,a-10); op='-'; ans=a-b; break;
+        }
+
+        return { text: `${a}${op}${b}`, answer: ans };
+    }
+
+    class Enemy {
+        constructor(x, y, isItem = false) {
+            this.x = x;
+            this.y = y;
+            this.stepSize = 40; 
+            this.accumulatedTime = 0; 
+            this.isItem = isItem;
+
+            const elapsed = (performance.now() - gameStartTime) / 1000;
+            const prob = generateProblem(elapsed);
+            this.text = prob.text;
+            this.answer = prob.answer;
+            
+            ctx.font = "normal 28px 'DosMyungjo'"; 
+            this.width = ctx.measureText(this.text).width;
+            
+            this.height = 30;
+
+            // [속도 조절] 120초(2분)가 지나야 속도가 2배가 됨. 아주 천천히 빨라짐.
+            const speedMultiplier = 1.0 + (elapsed / 120); 
+            
+            const baseInterval = 1000; 
+            this.baseMoveInterval = baseInterval / speedMultiplier; 
+            this.moveInterval = this.baseMoveInterval;
+        }
+
+        update(dt) {
+            if (activeEffects.frozen) return;
+
+            let currentInterval = this.baseMoveInterval;
+            if (activeEffects.speedUp) currentInterval /= 1.3;
+            if (activeEffects.speedDown) currentInterval /= 0.7;
+
+            this.moveInterval = currentInterval;
+
+            this.accumulatedTime += dt;
+            if (this.accumulatedTime >= this.moveInterval) {
+                this.y += this.stepSize;
+                this.accumulatedTime = 0; 
+            }
+        }
+
+        draw() {
+            ctx.font = "normal 28px 'DosMyungjo'";
+            ctx.textAlign = "center";
+            
+            if (activeEffects.hidden) {
+                ctx.fillStyle = "#808080"; 
+            } else if (this.isItem) {
+                ctx.fillStyle = "#ffe200";
+            } else {
+                ctx.fillStyle = "#fff";
+            }
+            
+            if (this.isItem) {
+                ctx.shadowColor = "#ffa500";
+                ctx.shadowBlur = 5;
+            } else {
+                ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.shadowBlur = 0;
+            }
+
+            ctx.fillText(this.text, this.x, this.y);
+            
+            ctx.shadowBlur = 0;
+        }
+    }
+
+    function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    function keyInput(val) {
+        if (!gameActive) return;
+        SoundFX.click(); 
+        
+        if (val === 'C') {
+            inputStr = "";
+        } else if (val === 'E') {
+            checkAnswer();
+            inputStr = "";
+        } else {
+            if (inputStr.length < 5) inputStr += val;
+        }
+        lcd.innerText = inputStr;
+    }
+
+    function checkAnswer() {
+        const userVal = parseInt(inputStr);
+        let found = false;
+        
+        for (let i = 0; i < enemies.length; i++) {
+            if (enemies[i].answer === userVal) {
+                const target = enemies[i];
+                score += 10;
+                scoreUI.innerText = score;
+                createVintageEffect(target.x, target.y, "success");
+                enemies.splice(i, 1);
+                
+                if (target.isItem) {
+                    SoundFX.itemGet();
+                    applyRandomItem();
+                } else {
+                    SoundFX.correct();
+                }
+                
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found && userVal) {
+            SoundFX.playTone(100, 'sawtooth', 0.1); 
+        }
+    }
+
+    function applyRandomItem() {
+        const items = [
+            { name: "싹쓸이", type: "clearAll" },
+            { name: "숨바꼭질 바이러스", type: "virus" },
+            { name: "속도 증가", type: "speedUp" },
+            { name: "속도 감소", type: "speedDown" },
+            { name: "체력 회복", type: "heal" },
+            { name: "시간 멈춤", type: "freeze" }
+        ];
+        
+        const item = items[rand(0, items.length - 1)];
+        showItemMessage(item.name);
+        activateItemEffect(item.type);
+    }
+
+    function showItemMessage(name) {
+        itemMsgUI.innerText = name;
+        itemMsgUI.style.opacity = '1';
+        
+        if (itemMsgTimer) clearTimeout(itemMsgTimer);
+        itemMsgTimer = setTimeout(() => {
+            itemMsgUI.style.opacity = '0';
+        }, 5000); 
+    }
+
+    function activateItemEffect(type) {
+        switch(type) {
+            case "clearAll":
+                enemies.forEach(e => {
+                    score += 10;
+                    createVintageEffect(e.x, e.y, "success");
+                });
+                enemies = [];
+                scoreUI.innerText = score;
+                break;
+                
+            case "virus":
+                if(effectTimers.hidden) clearTimeout(effectTimers.hidden);
+                activeEffects.hidden = true;
+                effectTimers.hidden = setTimeout(() => { activeEffects.hidden = false; }, 10000);
+                break;
+                
+            case "speedUp":
+                if(effectTimers.speedUp) clearTimeout(effectTimers.speedUp);
+                activeEffects.speedUp = true;
+                effectTimers.speedUp = setTimeout(() => { activeEffects.speedUp = false; }, 10000);
+                break;
+                
+            case "speedDown":
+                if(effectTimers.speedDown) clearTimeout(effectTimers.speedDown);
+                activeEffects.speedDown = true;
+                effectTimers.speedDown = setTimeout(() => { activeEffects.speedDown = false; }, 10000);
+                break;
+                
+            case "heal":
+                energy = 12;
+                document.querySelectorAll('.key').forEach(k => k.classList.remove('broken'));
+                break;
+                
+            case "freeze":
+                if(effectTimers.frozen) clearTimeout(effectTimers.frozen);
+                activeEffects.frozen = true;
+                effectTimers.frozen = setTimeout(() => { activeEffects.frozen = false; }, 5000);
+                break;
+        }
+    }
+
+    function takeDamage(x, y) {
+        if (energy > 0) {
+            energy--;
+            SoundFX.damage(); 
+            const keyNodes = document.querySelectorAll('.key');
+            const targetKey = keyNodes[energy];
+            if (targetKey) targetKey.classList.add('broken');
+            
+            createVintageEffect(x, y, "fail");
+            
+            if (energy <= 0) endGame();
+        }
+    }
+
+    function endGame() {
+        gameActive = false;
+        SoundFX.gameOver(); 
+        finalScoreUI.innerText = score;
+        gameOverUI.style.display = 'flex';
+    }
+
+    function createVintageEffect(x, y, type) {
+        if (type === "success") {
+            for(let i=0; i<10; i++) {
+                sprinkles.push({
+                    x, y,
+                    vx: Math.cos(i) * 5,
+                    vy: Math.sin(i) * 5,
+                    life: 15,
+                    color: "#fff",
+                    size: 4
+                });
+            }
+        } else {
+            sprinkles.push({
+                x, y, vx: 0, vy: 0, life: 8, color: "#f00", size: 50
+            });
+        }
+    }
+
+    function update(now) {
+        if (!gameActive) return; 
+        
+        requestAnimationFrame(update); 
+
+        const dt = now - lastTime;
+        lastTime = now;
+
+        const spawnDt = now - lastSpawnTime;
+        const elapsed = (now - gameStartTime) / 1000;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        drawWater(now);
+
+        // [물량 조절] 90초(1분 30초) 지나야 스폰 간격이 2배로 빨라짐
+        const spawnMultiplier = 1.0 + (elapsed / 90);
+        
+        // 최소 0.3초(300ms) 간격까지 줄어듦 (처음엔 1.8초)
+        let spawnInterval = Math.max(300, 1800 / spawnMultiplier);
+        
+        if (!activeEffects.frozen) {
+            if (spawnDt > spawnInterval) {
+                spawnEnemy();
+                lastSpawnTime = now;
+            }
+        }
+
+        const p = panel.getBoundingClientRect();
+        const vRect = viewport.getBoundingClientRect();
+        const pLeft = p.left - vRect.left;
+        const pRight = p.right - vRect.left;
+        const pTop = p.top - vRect.top;
+        const pBottom = p.bottom - vRect.top;
+
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            const e = enemies[i];
+            e.update(dt); 
+            e.draw();
+
+            const enemyHalfW = e.width / 2;
+            const enemyTop = e.y - 24; 
+            const enemyBottom = e.y;    
+            const enemyLeft = e.x - enemyHalfW;
+            const enemyRight = e.x + enemyHalfW;
+
+            const hitPanel = (
+                enemyRight > pLeft &&
+                enemyLeft < pRight &&
+                enemyBottom > pTop &&
+                enemyTop < pBottom
+            );
+
+            if (e.y > canvas.height - 40 || hitPanel) {
+                takeDamage(e.x, e.y);
+                enemies.splice(i, 1);
+            }
+        }
+
+        for (let i = sprinkles.length - 1; i >= 0; i--) {
+            const s = sprinkles[i];
+            s.x += s.vx; s.y += s.vy; s.life--;
+            ctx.fillStyle = s.color;
+            ctx.fillRect(s.x - s.size/2, s.y - s.size/2, s.size, s.size);
+            if (s.life <= 0) sprinkles.splice(i, 1);
+        }
+    }
+
+    function drawWater(now) {
+        if (now - lastWaveTime > waveInterval) {
+            waveOffset += 0.5; 
+            lastWaveTime = now;
+        }
+
+        ctx.fillStyle = "rgba(0, 70, 160, 0.6)";
+        ctx.beginPath();
+        const y = canvas.height - 40;
+        ctx.moveTo(0, y);
+        
+        for (let x = 0; x <= canvas.width; x += 5) {
+            ctx.lineTo(x, y + Math.sin(x * 0.1 + waveOffset) * 6);
+        }
+        ctx.lineTo(canvas.width, canvas.height);
+        ctx.lineTo(0, canvas.height);
+        ctx.fill();
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (!gameActive) return;
+        if (e.key >= '0' && e.key <= '9') keyInput(e.key);
+        else if (e.key === 'Enter') keyInput('E');
+        else if (e.key === 'Backspace' || e.key === 'Escape') keyInput('C');
+    });
+
+    setTimeout(() => {
+        resize();
+    }, 100);
+</script>
+
+</body>
+</html>

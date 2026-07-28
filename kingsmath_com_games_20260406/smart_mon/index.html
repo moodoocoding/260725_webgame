@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+ 
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5YW0T2C109');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Monster King Mobile 👑</title>
+    <meta name="description" content="몬스터 골든벨 모바일 - 재미있는 포켓몬 퀴즈 게임!">
+    <meta name="keywords" content="킹수학, 수학게임, 포켓몬 퀴즈, 교육용 게임">
+    
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        
+        :root {
+            --pika-yellow: #FFD93D;
+            --pika-red: #FF6B6B;
+            --pika-brown: #5d4037;
+            --bg-color: #faf8ef;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: #333;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* ===== 게임 전용 CSS (폰트 독립) ===== */
+        #game-container {
+            font-weight: normal; 
+            width: 100%; max-width: 600px;
+            height: 100vh; height: 100dvh;
+            margin: 0 auto;
+            background: var(--bg-color);
+            position: relative;
+            box-shadow: 0 0 25px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
+        }
+
+        #game-container.font-ko { font-family: 'Jua', sans-serif; }
+        #game-container.font-other { font-family: sans-serif; }
+        #game-container h1, #game-container h2, #game-container h3, 
+        #game-container p, #game-container span:not(.fa-solid):not(.fa-brands):not(.fa-regular), 
+        #game-container button, #game-container input {
+            font-weight: normal !important;
+        }
+
+        .btn-main {
+            background-color: var(--pika-brown);
+            color: white;
+            border: 3px dashed rgba(255,255,255,0.4);
+            border-radius: 20px; 
+            box-shadow: 0 6px 0 #3e2723;
+            transition: all 0.1s;
+        }
+        .btn-main:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #3e2723;
+        }
+
+        .ranking-box {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px dashed #d7ccc8;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0; 
+        }
+        
+        .ranking-content {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-right: 5px;
+        }
+
+        .ranking-content::-webkit-scrollbar { width: 6px; }
+        .ranking-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.03); border-radius: 10px; }
+        .ranking-content::-webkit-scrollbar-thumb { background: #ffcc80; border-radius: 10px; }
+
+        .silhouette { filter: brightness(0) opacity(0.8); }
+
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        @keyframes scaleFade {
+            0% { transform: scale(0.5); opacity: 0; }
+            20% { transform: scale(1); opacity: 1; }
+            80% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.2); opacity: 0; }
+        }
+        .animate-scaleFade { animation: scaleFade 1s ease-in-out forwards; }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slideUp { animation: slideUp 0.3s ease-out forwards; }
+
+        .dynamic-text {
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            word-break: keep-all;
+        }
+
+        /* ===== 다국어 모달 전용 CSS (완벽 격리) ===== */
+        .lang-modal-wrapper {
+            font-family: 'Noto Sans KR', sans-serif !important;
+        }
+        .lang-modal-wrapper * {
+            box-sizing: border-box !important;
+        }
+        .lang-modal-wrapper i {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+            font-weight: 900;
+        }
+        .lang-modal-wrapper .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .lang-modal-wrapper .custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        .lang-modal-wrapper .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        .lang-modal-wrapper .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        .lang-modal-overlay {
+            opacity: 0; visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .lang-modal-overlay.active {
+            opacity: 1; visibility: visible;
+        }
+        .lang-modal-content {
+            transform: scale(0.95) translateY(-10px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .lang-modal-overlay.active .lang-modal-content {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+        .lang-toast {
+            transform: translateY(100%); opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .lang-toast.show {
+            transform: translateY(0); opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        const API_URL = "./ranking.php"; 
+
+        // 16개국 언어 데이터베이스
+        const LANGUAGES = [
+            { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+            { code: 'en', country: 'us', name: 'English', enName: 'English' },
+            { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)' },
+            { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+            { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+            { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+            { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+            { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' },
+            { code: 'pt-br', country: 'br', name: 'Português', enName: 'Portuguese (Brazil)' },
+            { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+            { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+            { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+            { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+            { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+            { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+            { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' }
+        ];
+
+        const POKEAPI_LANG_MAP = {
+            'ko': 'ko', 'en': 'en', 'zh': 'zh-Hans', 'ja': 'ja', 'es': 'es', 
+            'fr': 'fr', 'de': 'de', 'it': 'it'
+        };
+
+        const TRANSLATIONS = {
+            'ko': {
+                siteName: '킹수학.com', gameTitle1: '몬스터 골든벨', gameTitle2: '모바일 👑',
+                nickname: '닉네임을 입력하세요', start: '🚀 시작하기', otherGames: '🎮 다른 게임 고르기',
+                hof: '🏆 실시간 명예의 전당', loadingRank: '랭킹을 불러오는 중입니다...',
+                timeLeft: '남은 시간', score: 'SCORE', round: 'Round',
+                correct: '정답입니다!', wrong: '틀렸어요!', baseScore: '기본 점수:', timeBonus: '시간 보너스:',
+                totalPts: '총 +{0}점!', answerIs: '정답은 [{0}] 입니다.',
+                complete: '탐험 완료!', finalScore: '{0} 트레이너님의 최종 점수', rankMsg: '👑 현재 {0}위 입니다!',
+                top3: '🏆 오늘의 TOP 3', playAgain: '🔄 다시 하기', home: '🏠 홈으로',
+                q1: '이 몬스터의 이름은?', q2: '[{0}]의 모습은?', q3: '이 뒷모습의 주인공은?',
+                q4: '[{0}]의 뒷모습은?', q5: '이 실루엣의 주인공은?', q6: '[{0}]의 실루엣은?',
+                q7: '[{0}]와(과) 속성이 같은 몬스터는?', q8: '이 몬스터와 속성이 같은 몬스터는?',
+                q9: '다음 중 \'공격력\'이 가장 높은 몬스터는?', q10: '다음 중 \'키\'가 가장 큰 몬스터는?',
+                q11: '[{0}] 기술을 배우는 몬스터는?', q12: '[{0}]이(가) 배우는 기술은?',
+                q13: '다음 중 \'속성\'이 다른 몬스터 하나는?', q14: '다음 중 \'몸무게\'가 가장 무거운 몬스터는?',
+                toastMsg: '언어가 변경되었습니다.'
+            },
+            'en': {
+                siteName: 'KingsMath.com', gameTitle1: 'Monster Math', gameTitle2: 'King 👑',
+                nickname: 'Enter your nickname', start: '🚀 Start Game', otherGames: '🎮 Choose Another Game',
+                hof: '🏆 Real-time Hall of Fame', loadingRank: 'Loading rankings...',
+                timeLeft: 'Time Left', score: 'SCORE', round: 'Round',
+                correct: 'Correct!', wrong: 'Wrong!', baseScore: 'Base Score:', timeBonus: 'Time Bonus:',
+                totalPts: 'Total +{0} pts!', answerIs: 'The answer is [{0}].',
+                complete: 'Exploration Complete!', finalScore: 'Trainer {0}\'s Final Score', rankMsg: '👑 You are rank {0}!',
+                top3: '🏆 Today\'s TOP 3', playAgain: '🔄 Play Again', home: '🏠 Home',
+                q1: 'What is this monster\'s name?', q2: 'What does [{0}] look like?', q3: 'Who is this from behind?',
+                q4: 'What does [{0}] look like from behind?', q5: 'Who is this silhouette?', q6: 'What is the silhouette of [{0}]?',
+                q7: 'Which monster shares a type with [{0}]?', q8: 'Which monster shares a type with this one?',
+                q9: 'Which has the highest Attack?', q10: 'Which is the tallest?',
+                q11: 'Which monster learns [{0}]?', q12: 'Which move does [{0}] learn?',
+                q13: 'Which has a different type?', q14: 'Which is the heaviest?',
+                toastMsg: 'Language changed.'
+            },
+            'zh': {
+                siteName: 'KingsMath.com', gameTitle1: '怪兽数学', gameTitle2: '国王 👑',
+                nickname: '输入昵称', start: '🚀 开始', otherGames: '🎮 选择其他游戏',
+                hof: '🏆 实时名人堂', loadingRank: '正在加载排名...',
+                timeLeft: '剩余时间', score: '得分', round: '回合',
+                correct: '正确!', wrong: '错误!', baseScore: '基础分:', timeBonus: '时间奖励:',
+                totalPts: '总计 +{0} 分!', answerIs: '答案是 [{0}]。',
+                complete: '探索完成!', finalScore: '训练家 {0} 的最终得分', rankMsg: '👑 当前排名第 {0}!',
+                top3: '🏆 今日前 3 名', playAgain: '🔄 再玩一次', home: '🏠 回首页',
+                q1: '这只怪兽叫什么名字？', q2: '[{0}] 长什么样？', q3: '这是谁的背影？',
+                q4: '[{0}] 的背影是哪个？', q5: '这个剪影是谁？', q6: '[{0}] 的剪影是哪个？',
+                q7: '哪只怪兽和 [{0}] 属性相同？', q8: '哪只怪兽和这只属性相同？',
+                q9: '以下哪只攻击力最高？', q10: '以下哪只最高？',
+                q11: '哪只怪兽能学会 [{0}]？', q12: '[{0}] 能学会什么技能？',
+                q13: '以下哪只属性不同？', q14: '以下哪只最重？',
+                toastMsg: '语言已更改。'
+            },
+            'ja': {
+                siteName: 'KingsMath.com', gameTitle1: 'モンスター数学', gameTitle2: 'キング 👑',
+                nickname: 'ニックネームを入力', start: '🚀 スタート', otherGames: '🎮 他のゲームを選ぶ',
+                hof: '🏆 リアルタイム殿堂入り', loadingRank: 'ランキングを読み込み中...',
+                timeLeft: '残り時間', score: 'スコア', round: 'ラウンド',
+                correct: '正解！', wrong: '不正解！', baseScore: '基本スコア:', timeBonus: 'タイムボーナス:',
+                totalPts: '合計 +{0} 点!', answerIs: '正解は [{0}] です。',
+                complete: '探検完了！', finalScore: 'トレーナー {0} の最終スコア', rankMsg: '👑 現在 {0} 位です！',
+                top3: '🏆 今日のトップ 3', playAgain: '🔄 もう一度', home: '🏠 ホームへ',
+                q1: 'このモンスターの名前は？', q2: '[{0}] の姿はどれ？', q3: 'この後ろ姿は誰？',
+                q4: '[{0}] の後ろ姿はどれ？', q5: 'このシルエットは誰？', q6: '[{0}] のシルエットはどれ？',
+                q7: '[{0}] と同じタイプのモンスターは？', q8: 'このモンスターと同じタイプのモンスターは？',
+                q9: '「攻撃力」が一番高いのは？', q10: '「身長」が一番高いのは？',
+                q11: '[{0}] を覚えるモンスターは？', q12: '[{0}] が覚える技は？',
+                q13: '「タイプ」が違うモンスターは？', q14: '「体重」が一番重いのは？',
+                toastMsg: '言語が変更されました。'
+            },
+            'es': {
+                siteName: 'KingsMath.com', gameTitle1: 'Rey de las Matemáticas', gameTitle2: 'Monstruos 👑',
+                nickname: 'Introduce tu apodo', start: '🚀 Empezar', otherGames: '🎮 Elegir otro juego',
+                hof: '🏆 Salón de la Fama', loadingRank: 'Cargando ranking...',
+                timeLeft: 'Tiempo', score: 'PUNTOS', round: 'Ronda',
+                correct: '¡Correcto!', wrong: '¡Incorrecto!', baseScore: 'Puntos Base:', timeBonus: 'Bono de Tiempo:',
+                totalPts: '¡Total +{0} pts!', answerIs: 'La respuesta es [{0}].',
+                complete: '¡Exploración completa!', finalScore: 'Puntuación final del entrenador {0}', rankMsg: '👑 ¡Eres el rango {0}!',
+                top3: '🏆 TOP 3 de Hoy', playAgain: '🔄 Jugar de nuevo', home: '🏠 Inicio',
+                q1: '¿Cuál es el nombre de este monstruo?', q2: '¿Cómo se ve [{0}]?', q3: '¿De quién es esta espalda?',
+                q4: '¿Cómo se ve [{0}] por detrás?', q5: '¿De quién es esta silueta?', q6: '¿Cuál es la silueta de [{0}]?',
+                q7: '¿Qué monstruo comparte tipo con [{0}]?', q8: '¿Qué monstruo comparte tipo con este?',
+                q9: '¿Cuál tiene mayor ataque?', q10: '¿Cuál es el más alto?',
+                q11: '¿Qué monstruo aprende [{0}]?', q12: '¿Qué movimiento aprende [{0}]?',
+                q13: '¿Cuál tiene un tipo diferente?', q14: '¿Cuál es el más pesado?',
+                toastMsg: 'Idioma cambiado.'
+            },
+            'fr': {
+                siteName: 'KingsMath.com', gameTitle1: 'Roi des Maths', gameTitle2: 'Monstres 👑',
+                nickname: 'Entrez votre pseudo', start: '🚀 Commencer', otherGames: '🎮 Autre jeu',
+                hof: '🏆 Temple de la renommée', loadingRank: 'Chargement du classement...',
+                timeLeft: 'Temps', score: 'SCORE', round: 'Manche',
+                correct: 'Correct !', wrong: 'Faux !', baseScore: 'Score de base :', timeBonus: 'Bonus temps :',
+                totalPts: 'Total +{0} pts !', answerIs: 'La réponse est [{0}].',
+                complete: 'Exploration terminée !', finalScore: 'Score final de l\'entraîneur {0}', rankMsg: '👑 Vous êtes rang {0} !',
+                top3: '🏆 TOP 3 du jour', playAgain: '🔄 Rejouer', home: '🏠 Accueil',
+                q1: 'Quel est le nom de ce monstre ?', q2: 'À quoi ressemble [{0}] ?', q3: 'Qui est-ce de dos ?',
+                q4: 'À quoi ressemble [{0}] de dos ?', q5: 'Qui est cette silhouette ?', q6: 'Quelle est la silhouette de [{0}] ?',
+                q7: 'Quel monstre a le même type que [{0}] ?', q8: 'Quel monstre a le même type que celui-ci ?',
+                q9: 'Lequel a la plus grande attaque ?', q10: 'Lequel est le plus grand ?',
+                q11: 'Quel monstre apprend [{0}] ?', q12: 'Quelle capacité apprend [{0}] ?',
+                q13: 'Lequel a un type différent ?', q14: 'Lequel est le plus lourd ?',
+                toastMsg: 'Langue modifiée.'
+            },
+            'de': {
+                siteName: 'KingsMath.com', gameTitle1: 'Mathe-König', gameTitle2: 'Monster 👑',
+                nickname: 'Spitzname eingeben', start: '🚀 Starten', otherGames: '🎮 Anderes Spiel',
+                hof: '🏆 Ruhmeshalle', loadingRank: 'Lade Rangliste...',
+                timeLeft: 'Zeit übrig', score: 'PUNKTE', round: 'Runde',
+                correct: 'Richtig!', wrong: 'Falsch!', baseScore: 'Basispunkte:', timeBonus: 'Zeitbonus:',
+                totalPts: 'Gesamt +{0} Pkt!', answerIs: 'Die Antwort ist [{0}].',
+                complete: 'Erkundung abgeschlossen!', finalScore: 'Endstand von Trainer {0}', rankMsg: '👑 Du bist auf Rang {0}!',
+                top3: '🏆 TOP 3 heute', playAgain: '🔄 Noch einmal', home: '🏠 Startseite',
+                q1: 'Wie heißt dieses Monster?', q2: 'Wie sieht [{0}] aus?', q3: 'Wer ist das von hinten?',
+                q4: 'Wie sieht [{0}] von hinten aus?', q5: 'Wer ist diese Silhouette?', q6: 'Was ist die Silhouette von [{0}]?',
+                q7: 'Welches Monster hat denselben Typ wie [{0}]?', q8: 'Welches Monster hat denselben Typ wie dieses?',
+                q9: 'Welches hat den höchsten Angriff?', q10: 'Welches ist das größte?',
+                q11: 'Welches Monster lernt [{0}]?', q12: 'Welche Attacke lernt [{0}]?',
+                q13: 'Welches hat einen anderen Typ?', q14: 'Welches ist das schwerste?',
+                toastMsg: 'Sprache geändert.'
+            },
+            'it': {
+                siteName: 'KingsMath.com', gameTitle1: 'Re della Matematica', gameTitle2: 'Mostri 👑',
+                nickname: 'Inserisci nickname', start: '🚀 Inizia', otherGames: '🎮 Altro gioco',
+                hof: '🏆 Hall of Fame', loadingRank: 'Caricamento classifica...',
+                timeLeft: 'Tempo', score: 'PUNTI', round: 'Round',
+                correct: 'Corretto!', wrong: 'Sbagliato!', baseScore: 'Punti base:', timeBonus: 'Bonus tempo:',
+                totalPts: 'Totale +{0} punti!', answerIs: 'La risposta è [{0}].',
+                complete: 'Esplorazione completata!', finalScore: 'Punteggio finale dell\'allenatore {0}', rankMsg: '👑 Sei al rango {0}!',
+                top3: '🏆 TOP 3 di oggi', playAgain: '🔄 Gioca ancora', home: '🏠 Home',
+                q1: 'Come si chiama questo mostro?', q2: 'Che aspetto ha [{0}]?', q3: 'Chi è da dietro?',
+                q4: 'Com\'è [{0}] da dietro?', q5: 'Di chi è questa silhouette?', q6: 'Qual è la silhouette di [{0}]?',
+                q7: 'Quale mostro ha lo stesso tipo di [{0}]?', q8: 'Quale mostro ha lo stesso tipo di questo?',
+                q9: 'Quale ha l\'attacco più alto?', q10: 'Quale è il più alto?',
+                q11: 'Quale mostro impara [{0}]?', q12: 'Quale mossa impara [{0}]?',
+                q13: 'Quale ha un tipo diverso?', q14: 'Quale è il più pesante?',
+                toastMsg: 'Lingua cambiata.'
+            },
+            'pt-br': {
+                siteName: 'KingsMath.com', gameTitle1: 'Rei da Matemática', gameTitle2: 'Monstros 👑',
+                nickname: 'Digite seu apelido', start: '🚀 Começar', otherGames: '🎮 Outro jogo',
+                hof: '🏆 Hall da Fama', loadingRank: 'Carregando ranking...',
+                timeLeft: 'Tempo', score: 'PONTOS', round: 'Rodada',
+                correct: 'Correto!', wrong: 'Incorreto!', baseScore: 'Pontos Base:', timeBonus: 'Bônus de Tempo:',
+                totalPts: 'Total +{0} pts!', answerIs: 'A resposta é [{0}].',
+                complete: 'Exploração Concluída!', finalScore: 'Pontuação final do treinador {0}', rankMsg: '👑 Você é o rank {0}!',
+                top3: '🏆 TOP 3 de Hoje', playAgain: '🔄 Jogar novamente', home: '🏠 Início',
+                q1: 'Qual é o nome deste monstro?', q2: 'Como é o [{0}]?', q3: 'Quem é este de costas?',
+                q4: 'Como é o [{0}] de costas?', q5: 'De quem é essa silhueta?', q6: 'Qual é a silhueta do [{0}]?',
+                q7: 'Qual monstro tem o mesmo tipo que [{0}]?', q8: 'Qual monstro tem o mesmo tipo que este?',
+                q9: 'Qual tem o maior Ataque?', q10: 'Qual é o mais alto?',
+                q11: 'Qual monstro aprende [{0}]?', q12: 'Qual movimento [{0}] aprende?',
+                q13: 'Qual tem um tipo diferente?', q14: 'Qual é o mais pesado?',
+                toastMsg: 'Idioma alterado.'
+            },
+            'ru': {
+                siteName: 'KingsMath.com', gameTitle1: 'Король Математики', gameTitle2: 'Монстры 👑',
+                nickname: 'Введите никнейм', start: '🚀 Начать', otherGames: '🎮 Другая игра',
+                hof: '🏆 Зал славы', loadingRank: 'Загрузка рейтинга...',
+                timeLeft: 'Время', score: 'СЧЕТ', round: 'Раунд',
+                correct: 'Правильно!', wrong: 'Неправильно!', baseScore: 'Базовые очки:', timeBonus: 'Бонус времени:',
+                totalPts: 'Всего +{0} очков!', answerIs: 'Ответ: [{0}].',
+                complete: 'Исследование завершено!', finalScore: 'Итоговый счет тренера {0}', rankMsg: '👑 Ваш ранг: {0}!',
+                top3: '🏆 ТОП 3 за сегодня', playAgain: '🔄 Играть снова', home: '🏠 Главная',
+                q1: 'Как зовут этого монстра?', q2: 'Как выглядит [{0}]?', q3: 'Кто это со спины?',
+                q4: 'Как выглядит [{0}] со спины?', q5: 'Чей это силуэт?', q6: 'Какой силуэт у [{0}]?',
+                q7: 'У какого монстра такой же тип, как у [{0}]?', q8: 'У какого монстра такой же тип, как у этого?',
+                q9: 'У кого самая высокая атака?', q10: 'Кто самый высокий?',
+                q11: 'Какой монстр учит [{0}]?', q12: 'Какую атаку учит [{0}]?',
+                q13: 'У кого другой тип?', q14: 'Кто самый тяжелый?',
+                toastMsg: 'Язык изменен.'
+            },
+            'hi': {
+                siteName: 'KingsMath.com', gameTitle1: 'मैथ किंग', gameTitle2: 'मॉन्स्टर्स 👑',
+                nickname: 'उपनाम दर्ज करें', start: '🚀 शुरू करें', otherGames: '🎮 दूसरा गेम चुनें',
+                hof: '🏆 हॉल ऑफ फेम', loadingRank: 'रैंकिंग लोड हो रही है...',
+                timeLeft: 'समय शेष', score: 'स्कोर', round: 'राउंड',
+                correct: 'सही!', wrong: 'गलत!', baseScore: 'बेस स्कोर:', timeBonus: 'समय बोनस:',
+                totalPts: 'कुल +{0} अंक!', answerIs: 'उत्तर है [{0}].',
+                complete: 'अन्वेषण पूर्ण!', finalScore: 'ट्रेनर {0} का अंतिम स्कोर', rankMsg: '👑 आप रैंक {0} हैं!',
+                top3: '🏆 आज के टॉप 3', playAgain: '🔄 फिर से खेलें', home: '🏠 होम',
+                q1: 'इस राक्षस का नाम क्या है?', q2: '[{0}] कैसा दिखता है?', q3: 'पीछे से यह कौन है?',
+                q4: 'पीछे से [{0}] कैसा दिखता है?', q5: 'यह किसकी छाया है?', q6: '[{0}] की छाया कौन सी है?',
+                q7: 'किस राक्षस का प्रकार [{0}] के समान है?', q8: 'किस राक्षस का प्रकार इसके समान है?',
+                q9: 'किसका आक्रमण सबसे अधिक है?', q10: 'सबसे लंबा कौन है?',
+                q11: 'कौन सा राक्षस [{0}] सीखता है?', q12: '[{0}] कौन सी चाल सीखता है?',
+                q13: 'किसका प्रकार अलग है?', q14: 'सबसे भारी कौन है?',
+                toastMsg: 'भाषा बदल दी गई है।'
+            },
+            'bn': {
+                siteName: 'KingsMath.com', gameTitle1: 'ম্যাথ কিং', gameTitle2: 'মনস্টার 👑',
+                nickname: 'ডাকনাম লিখুন', start: '🚀 শুরু করুন', otherGames: '🎮 অন্য খেলা বাছুন',
+                hof: '🏆 হল অফ ফেম', loadingRank: 'র‍্যাঙ্কিং লোড হচ্ছে...',
+                timeLeft: 'সময় বাকি', score: 'স্কোর', round: 'রাউন্ড',
+                correct: 'সঠিক!', wrong: 'ভুল!', baseScore: 'বেস স্কোর:', timeBonus: 'সময় বোনাস:',
+                totalPts: 'মোট +{0} পয়েন্ট!', answerIs: 'উত্তর হলো [{0}].',
+                complete: 'অনুসন্ধান সম্পূর্ণ!', finalScore: 'ট্রেইনার {0} এর চূড়ান্ত স্কোর', rankMsg: '👑 আপনার র‍্যাঙ্ক {0}!',
+                top3: '🏆 আজকের সেরা ৩', playAgain: '🔄 আবার খেলুন', home: '🏠 হোম',
+                q1: 'এই মনস্টারের নাম কী?', q2: '[{0}] দেখতে কেমন?', q3: 'পিছন থেকে এটি কে?',
+                q4: 'পিছন থেকে [{0}] দেখতে কেমন?', q5: 'এটি কার সিলুয়েট?', q6: '[{0}] এর সিলুয়েট কোনটি?',
+                q7: 'কোন মনস্টারের ধরন [{0}] এর মতো?', q8: 'কোন মনস্টারের ধরন এর মতো?',
+                q9: 'কার আক্রমণ সবচেয়ে বেশি?', q10: 'সবচেয়ে লম্বা কে?',
+                q11: 'কোন মনস্টার [{0}] শেখে?', q12: '[{0}] কী মুভ শেখে?',
+                q13: 'কার ধরন আলাদা?', q14: 'সবচেয়ে ভারী কে?',
+                toastMsg: 'ভাষা পরিবর্তন করা হয়েছে।'
+            },
+            'id': {
+                siteName: 'KingsMath.com', gameTitle1: 'Raja Matematika', gameTitle2: 'Monster 👑',
+                nickname: 'Masukkan nama', start: '🚀 Mulai', otherGames: '🎮 Pilih Game Lain',
+                hof: '🏆 Aula Ketenaran', loadingRank: 'Memuat peringkat...',
+                timeLeft: 'Sisa Waktu', score: 'SKOR', round: 'Ronde',
+                correct: 'Benar!', wrong: 'Salah!', baseScore: 'Skor Dasar:', timeBonus: 'Bonus Waktu:',
+                totalPts: 'Total +{0} poin!', answerIs: 'Jawabannya adalah [{0}].',
+                complete: 'Eksplorasi Selesai!', finalScore: 'Skor Akhir Pelatih {0}', rankMsg: '👑 Peringkat Anda: {0}!',
+                top3: '🏆 TOP 3 Hari Ini', playAgain: '🔄 Main Lagi', home: '🏠 Beranda',
+                q1: 'Siapa nama monster ini?', q2: 'Seperti apa bentuk [{0}]?', q3: 'Siapa ini dari belakang?',
+                q4: 'Seperti apa bentuk [{0}] dari belakang?', q5: 'Siluet siapa ini?', q6: 'Mana siluet dari [{0}]?',
+                q7: 'Monster mana yang tipenya sama dengan [{0}]?', q8: 'Monster mana yang tipenya sama dengan ini?',
+                q9: 'Mana yang serangannya paling tinggi?', q10: 'Mana yang paling tinggi badannya?',
+                q11: 'Monster mana yang mempelajari [{0}]?', q12: 'Jurus apa yang dipelajari [{0}]?',
+                q13: 'Mana yang tipenya berbeda?', q14: 'Mana yang paling berat?',
+                toastMsg: 'Bahasa telah diubah.'
+            },
+            'vi': {
+                siteName: 'KingsMath.com', gameTitle1: 'Vua Toán', gameTitle2: 'Quái vật 👑',
+                nickname: 'Nhập biệt danh', start: '🚀 Bắt đầu', otherGames: '🎮 Chọn trò chơi khác',
+                hof: '🏆 Đại sảnh Danh vọng', loadingRank: 'Đang tải bảng xếp hạng...',
+                timeLeft: 'Thời gian', score: 'ĐIỂM', round: 'Vòng',
+                correct: 'Chính xác!', wrong: 'Sai rồi!', baseScore: 'Điểm cơ bản:', timeBonus: 'Điểm thưởng giờ:',
+                totalPts: 'Tổng cộng +{0} điểm!', answerIs: 'Đáp án là [{0}].',
+                complete: 'Hoàn thành khám phá!', finalScore: 'Điểm cuối cùng của huấn luyện viên {0}', rankMsg: '👑 Bạn xếp hạng {0}!',
+                top3: '🏆 TOP 3 Hôm nay', playAgain: '🔄 Chơi lại', home: '🏠 Trang chủ',
+                q1: 'Tên của quái vật này là gì?', q2: '[{0}] trông như thế nào?', q3: 'Đây là ai nhìn từ phía sau?',
+                q4: '[{0}] nhìn từ phía sau trông như thế nào?', q5: 'Đây là bóng của ai?', q6: 'Bóng của [{0}] là gì?',
+                q7: 'Quái vật nào có cùng hệ với [{0}]?', q8: 'Quái vật nào có cùng hệ với quái vật này?',
+                q9: 'Con nào có sức tấn công cao nhất?', q10: 'Con nào cao nhất?',
+                q11: 'Quái vật nào học được [{0}]?', q12: '[{0}] học được chiêu thức nào?',
+                q13: 'Con nào có hệ khác biệt?', q14: 'Con nào nặng nhất?',
+                toastMsg: 'Ngôn ngữ đã được thay đổi.'
+            },
+            'th': {
+                siteName: 'KingsMath.com', gameTitle1: 'ราชาคณิตศาสตร์', gameTitle2: 'มอนสเตอร์ 👑',
+                nickname: 'ใส่ชื่อเล่น', start: '🚀 เริ่มเกม', otherGames: '🎮 เลือกเกมอื่น',
+                hof: '🏆 หอเกียรติยศ', loadingRank: 'กำลังโหลดอันดับ...',
+                timeLeft: 'เวลาเหลือ', score: 'คะแนน', round: 'รอบ',
+                correct: 'ถูกต้อง!', wrong: 'ผิด!', baseScore: 'คะแนนพื้นฐาน:', timeBonus: 'โบนัสเวลา:',
+                totalPts: 'รวม +{0} คะแนน!', answerIs: 'คำตอบคือ [{0}]',
+                complete: 'การสำรวจเสร็จสิ้น!', finalScore: 'คะแนนสุดท้ายของเทรนเนอร์ {0}', rankMsg: '👑 คุณอยู่อันดับ {0}!',
+                top3: '🏆 ท็อป 3 วันนี้', playAgain: '🔄 เล่นอีกครั้ง', home: '🏠 หน้าแรก',
+                q1: 'มอนสเตอร์ตัวนี้ชื่ออะไร?', q2: '[{0}] หน้าตาเป็นอย่างไร?', q3: 'นี่คือใครจากด้านหลัง?',
+                q4: '[{0}] จากด้านหลังหน้าตาเป็นอย่างไร?', q5: 'นี่คือเงาของใคร?', q6: 'เงาของ [{0}] คืออะไร?',
+                q7: 'มอนสเตอร์ตัวไหนมีธาตุเดียวกับ [{0}]?', q8: 'มอนสเตอร์ตัวไหนมีธาตุเดียวกับตัวนี้?',
+                q9: 'ตัวไหนมีพลังโจมตีสูงสุด?', q10: 'ตัวไหนสูงที่สุด?',
+                q11: 'มอนสเตอร์ตัวไหนเรียนรู้ [{0}]?', q12: '[{0}] เรียนรู้ท่าอะไร?',
+                q13: 'ตัวไหนมีธาตุต่างจากพวก?', q14: 'ตัวไหนหนักที่สุด?',
+                toastMsg: 'เปลี่ยนภาษาเรียบร้อยแล้ว'
+            },
+            'tr': {
+                siteName: 'KingsMath.com', gameTitle1: 'Matematik Kralı', gameTitle2: 'Canavarlar 👑',
+                nickname: 'Takma ad gir', start: '🚀 Başla', otherGames: '🎮 Başka Oyun Seç',
+                hof: '🏆 Şöhretler Salonu', loadingRank: 'Sıralama yükleniyor...',
+                timeLeft: 'Kalan Süre', score: 'SKOR', round: 'Tur',
+                correct: 'Doğru!', wrong: 'Yanlış!', baseScore: 'Taban Puan:', timeBonus: 'Süre Bonusu:',
+                totalPts: 'Toplam +{0} puan!', answerIs: 'Cevap: [{0}].',
+                complete: 'Keşif Tamamlandı!', finalScore: 'Eğitmen {0}\'in Son Skoru', rankMsg: '👑 Sıralamanız {0}!',
+                top3: '🏆 Bugünün İLK 3\'ü', playAgain: '🔄 Tekrar Oyna', home: '🏠 Ana Sayfa',
+                q1: 'Bu canavarın adı ne?', q2: '[{0}] neye benziyor?', q3: 'Arkasından bu kim?',
+                q4: '[{0}] arkadan neye benziyor?', q5: 'Bu kimin silueti?', q6: '[{0}] silueti hangisi?',
+                q7: 'Hangi canavar [{0}] ile aynı türe sahip?', q8: 'Hangi canavar bununla aynı türe sahip?',
+                q9: 'Hangisinin saldırısı en yüksek?', q10: 'Hangisi en uzun?',
+                q11: 'Hangi canavar [{0}] öğrenir?', q12: '[{0}] hangi hareketi öğrenir?',
+                q13: 'Hangisinin türü farklı?', q14: 'Hangisi en ağır?',
+                toastMsg: 'Dil değiştirildi.'
+            }
+        };
+
+        function getLang() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('lang')) return params.get('lang').toLowerCase();
+            const stored = localStorage.getItem('kingsmath_lang');
+            if (stored) return stored;
+            const nav = navigator.language.split('-')[0].toLowerCase();
+            if (LANGUAGES.some(l => l.code === nav)) return nav;
+            return 'en';
+        }
+
+        const t = (lang, key, ...args) => {
+            let str = TRANSLATIONS[lang][key] || TRANSLATIONS['en'][key];
+            args.forEach((arg, i) => {
+                str = str.replace(`{${i}}`, arg);
+            });
+            return str;
+        };
+
+        // --- Language Modal Component ---
+        function LanguageModal({ currentLang, onSelect, onClose }) {
+            const [filterText, setFilterText] = useState('');
+            const filteredLangs = LANGUAGES.filter(l => 
+                l.name.toLowerCase().includes(filterText.toLowerCase()) || 
+                l.enName.toLowerCase().includes(filterText.toLowerCase()) ||
+                l.code.toLowerCase().includes(filterText.toLowerCase())
+            );
+
+            return (
+                <div className="lang-modal-wrapper">
+                    <div id="langModalOverlay" className="lang-modal-overlay active fixed inset-0 z-[99999] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm pt-16 sm:pt-0 px-4" onClick={(e) => e.target.id === 'langModalOverlay' && onClose()}>
+                        <div className="lang-modal-content bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
+                            <div className="flex items-center justify-between p-5 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10">
+                                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <i className="fa-solid fa-language text-yellow-500"></i>
+                                    <span>Language / 언어</span>
+                                </h2>
+                                <button onClick={onClose} className="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                                    <i className="fa-solid fa-xmark text-lg"></i>
+                                </button>
+                            </div>
+                            <div className="p-5 pb-2 bg-gray-900">
+                                <div className="relative">
+                                    <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    <input type="text" placeholder="Search / 검색 ..." 
+                                        value={filterText} onChange={e => setFilterText(e.target.value)}
+                                        className="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 block pl-11 p-3.5 outline-none transition-all placeholder-gray-500" />
+                                </div>
+                            </div>
+                            <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
+                                {filteredLangs.length > 0 ? (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                                        {filteredLangs.map(lang => {
+                                            const isSelected = lang.code === currentLang;
+                                            return (
+                                                <div key={lang.code} onClick={() => onSelect(lang)} 
+                                                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 group relative overflow-hidden ${isSelected ? 'bg-gray-800 border-yellow-500 ring-1 ring-yellow-500/50' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-700 hover:border-gray-500'}`}>
+                                                    <div className="shrink-0 w-8 h-6 rounded overflow-hidden shadow-sm border border-gray-700/50">
+                                                        <img src={`https://flagcdn.com/w40/${lang.country}.png`} alt={lang.country} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0 flex flex-col items-start">
+                                                        <span className={`text-sm font-medium truncate w-full ${isSelected ? 'text-yellow-400' : 'text-white'}`}>{lang.name}</span>
+                                                        <span className="text-xs text-gray-400 truncate w-full">{lang.enName}</span>
+                                                    </div>
+                                                    {isSelected && <i className="fa-solid fa-circle-check text-yellow-500 text-lg ml-2"></i>}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                                        <i className="fa-regular fa-face-frown-open text-4xl mb-3"></i>
+                                        <p>No results / 검색 결과 없음</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // --- Main App ---
+        function App() {
+            const [lang, setLang] = useState(getLang());
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [toastInfo, setToastInfo] = useState({ show: false, msg: '', name: '' });
+
+            const [gameState, setGameState] = useState('start'); 
+            const [score, setScore] = useState(0);
+            const [round, setRound] = useState(1);
+            const [nickname, setNickname] = useState(localStorage.getItem('monster_king_name') || '');
+            const [ranking, setRanking] = useState([]);
+            const [options, setOptions] = useState([]);
+            const [questionData, setQuestionData] = useState(null);
+            
+            const [timeLeft, setTimeLeft] = useState(10000); 
+            const [countdown, setCountdown] = useState(3);
+            const [myRank, setMyRank] = useState(null);
+            const [isLoading, setIsLoading] = useState(false);
+            
+            const [lastResult, setLastResult] = useState({ isCorrect: false, points: 0, timeBonus: 0 });
+            const [qrUrl, setQrUrl] = useState('');
+
+            const MAX_ROUNDS = 14; 
+            const timerRef = useRef(null);
+            const timeLeftRef = useRef(10000); 
+
+            const shuffle = (array) => [...array].sort(() => Math.random() - 0.5);
+
+            useEffect(() => {
+                // SEO Update
+                document.title = `${t(lang, 'gameTitle1')} ${t(lang, 'gameTitle2')} | ${t(lang, 'siteName')}`;
+            }, [lang]);
+
+            useEffect(() => {
+                if (typeof window !== 'undefined') {
+                    setQrUrl(encodeURIComponent(window.location.href));
+                }
+                loadRanking();
+            }, []);
+
+            const loadRanking = () => {
+                fetch(API_URL + '?action=list')
+                    .then(res => res.json())
+                    .then(data => setRanking(data))
+                    .catch(e => console.error("Ranking load error", e));
+            };
+
+            const changeLanguage = (selectedLang) => {
+                setLang(selectedLang.code);
+                localStorage.setItem('kingsmath_lang', selectedLang.code);
+                const url = new URL(window.location);
+                url.searchParams.set('lang', selectedLang.code);
+                window.history.pushState({}, '', url);
+                
+                setIsModalOpen(false);
+                setToastInfo({ 
+                    show: true, 
+                    msg: t(selectedLang.code, 'toastMsg'), 
+                    name: selectedLang.name 
+                });
+                setTimeout(() => setToastInfo(prev => ({ ...prev, show: false })), 3000);
+            };
+
+            const fetchRoundData = async () => {
+                setIsLoading(true);
+                try {
+                    const count = (round === 7 || round === 8 || round === 13) ? 30 : 5;
+                    const ids = Array.from({length: count}, () => Math.floor(Math.random() * 493) + 1);
+                    
+                    const pkmnResponses = await Promise.all(ids.map(id => fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)));
+                    const pkmnData = await Promise.all(pkmnResponses.map(r => r.json()));
+                    
+                    const speciesResponses = await Promise.all(ids.map(id => fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`)));
+                    const speciesData = await Promise.all(speciesResponses.map(r => r.json()));
+
+                    const targetLang = POKEAPI_LANG_MAP[lang] || 'en';
+
+                    let pool = pkmnData.map((pkmn, i) => {
+                        const localName = speciesData[i].names.find(n => n.language.name === targetLang)?.name || pkmn.name;
+                        return {
+                            id: pkmn.id,
+                            name: localName,
+                            front: pkmn.sprites.other['official-artwork'].front_default || pkmn.sprites.front_default,
+                            back: pkmn.sprites.back_default || pkmn.sprites.front_default,
+                            types: pkmn.types.map(t => t.type.name),
+                            attack: pkmn.stats.find(s => s.stat.name === 'attack')?.base_stat || 0,
+                            height: pkmn.height,
+                            weight: pkmn.weight,
+                            moves: pkmn.moves.map(m => m.move)
+                        };
+                    });
+
+                    let qData = {};
+                    let selectedOptions = [];
+                    let target = null;
+                    let answer = null;
+
+                    switch(round) {
+                        case 1:
+                            selectedOptions = shuffle(pool.slice(0, 4));
+                            target = selectedOptions[Math.floor(Math.random() * 4)];
+                            qData = { text: t(lang, 'q1'), mainImage: target.front, isMainSilhouette: false, optionType: 'text', answer: target };
+                            break;
+                        case 2:
+                            selectedOptions = shuffle(pool.slice(0, 4));
+                            target = selectedOptions[Math.floor(Math.random() * 4)];
+                            qData = { text: t(lang, 'q2', target.name), mainImage: null, isMainSilhouette: false, optionType: 'front', answer: target };
+                            break;
+                        case 3:
+                            selectedOptions = shuffle(pool.slice(0, 4));
+                            target = selectedOptions[Math.floor(Math.random() * 4)];
+                            qData = { text: t(lang, 'q3'), mainImage: target.back, isMainSilhouette: false, optionType: 'text', answer: target };
+                            break;
+                        case 4:
+                            selectedOptions = shuffle(pool.slice(0, 4));
+                            target = selectedOptions[Math.floor(Math.random() * 4)];
+                            qData = { text: t(lang, 'q4', target.name), mainImage: null, isMainSilhouette: false, optionType: 'back', answer: target };
+                            break;
+                        case 5:
+                            selectedOptions = shuffle(pool.slice(0, 4));
+                            target = selectedOptions[Math.floor(Math.random() * 4)];
+                            qData = { text: t(lang, 'q5'), mainImage: target.front, isMainSilhouette: true, optionType: 'text', answer: target };
+                            break;
+                        case 6:
+                            selectedOptions = shuffle(pool.slice(0, 4));
+                            target = selectedOptions[Math.floor(Math.random() * 4)];
+                            qData = { text: t(lang, 'q6', target.name), mainImage: null, isMainSilhouette: false, optionType: 'silhouette', answer: target };
+                            break;
+                        case 7:
+                        case 8:
+                            let typeGroups = {};
+                            pool.forEach(p => {
+                                let tType = p.types[0];
+                                if(!typeGroups[tType]) typeGroups[tType] = [];
+                                typeGroups[tType].push(p);
+                            });
+                            let validTypes = Object.keys(typeGroups).filter(tType => typeGroups[tType].length >= 2);
+                            if(validTypes.length === 0) return fetchRoundData();
+                            let chosenType = validTypes[0];
+                            let sameTypePkmn = typeGroups[chosenType].slice(0, 2);
+                            target = sameTypePkmn[0];
+                            answer = sameTypePkmn[1];
+                            let otherTypes = pool.filter(p => !p.types.includes(chosenType)).slice(0, 3);
+                            if(otherTypes.length < 3) return fetchRoundData(); 
+                            selectedOptions = shuffle([answer, ...otherTypes]);
+                            if (round === 7) {
+                                qData = { text: t(lang, 'q7', target.name), mainImage: null, isMainSilhouette: false, optionType: 'front', answer: answer };
+                            } else {
+                                qData = { text: t(lang, 'q8'), mainImage: target.front, isMainSilhouette: false, optionType: 'text', answer: answer };
+                            }
+                            break;
+                        case 9:
+                            selectedOptions = pool.slice(0, 4);
+                            let maxAtk = Math.max(...selectedOptions.map(o => o.attack));
+                            answer = selectedOptions.find(o => o.attack === maxAtk);
+                            selectedOptions = shuffle(selectedOptions);
+                            qData = { text: t(lang, 'q9'), mainImage: null, isMainSilhouette: false, optionType: 'front', answer: answer };
+                            break;
+                        case 10:
+                            selectedOptions = pool.slice(0, 4);
+                            let maxHt = Math.max(...selectedOptions.map(o => o.height));
+                            answer = selectedOptions.find(o => o.height === maxHt);
+                            selectedOptions = shuffle(selectedOptions);
+                            qData = { text: t(lang, 'q10'), mainImage: null, isMainSilhouette: false, optionType: 'front', answer: answer };
+                            break;
+
+                        case 11:
+                            selectedOptions = shuffle(pool.slice(0, 4));
+                            target = selectedOptions[Math.floor(Math.random() * 4)];
+                            let randomMove = target.moves[Math.floor(Math.random() * target.moves.length)];
+                            let moveRes = await fetch(randomMove.url);
+                            let moveData = await moveRes.json();
+                            let localMoveName = moveData.names.find(n => n.language.name === targetLang)?.name || moveData.name;
+                            qData = { text: t(lang, 'q11', localMoveName), mainImage: null, isMainSilhouette: false, optionType: 'front', answer: target };
+                            break;
+                            
+                        case 12: 
+                            selectedOptions = shuffle(pool.slice(0, 4));
+                            target = selectedOptions[Math.floor(Math.random() * 4)];
+                            
+                            let movePromises = selectedOptions.map(opt => {
+                                let m = opt.moves[Math.floor(Math.random() * opt.moves.length)];
+                                return fetch(m.url).then(r => r.json());
+                            });
+                            let movesData = await Promise.all(movePromises);
+                            
+                            let optionMoves = movesData.map((mData, idx) => {
+                                let localName = mData.names.find(n => n.language.name === targetLang)?.name || mData.name;
+                                return {
+                                    id: selectedOptions[idx].id, 
+                                    name: localName,
+                                    front: selectedOptions[idx].front 
+                                };
+                            });
+                            
+                            answer = optionMoves.find(o => o.id === target.id);
+                            selectedOptions = shuffle(optionMoves);
+                            qData = { text: t(lang, 'q12', target.name), mainImage: target.front, isMainSilhouette: false, optionType: 'text', answer: answer };
+                            break;
+
+                        case 13:
+                            let tGroups = {};
+                            pool.forEach(p => {
+                                let tType = p.types[0];
+                                if(!tGroups[tType]) tGroups[tType] = [];
+                                tGroups[tType].push(p);
+                            });
+                            let vTypes = Object.keys(tGroups).filter(tType => tGroups[tType].length >= 3);
+                            if(vTypes.length === 0) return fetchRoundData(); 
+                            
+                            let cType = vTypes[0];
+                            let sTypePkmn = tGroups[cType].slice(0, 3);
+                            let oTypes = pool.filter(p => !p.types.includes(cType));
+                            
+                            if(oTypes.length < 1) return fetchRoundData();
+                            answer = oTypes[0];
+                            
+                            selectedOptions = shuffle([...sTypePkmn, answer]);
+                            qData = { text: t(lang, 'q13'), mainImage: null, isMainSilhouette: false, optionType: 'front', answer: answer };
+                            break;
+
+                        case 14:
+                            selectedOptions = pool.slice(0, 4);
+                            let maxWt = Math.max(...selectedOptions.map(o => o.weight));
+                            answer = selectedOptions.find(o => o.weight === maxWt);
+                            selectedOptions = shuffle(selectedOptions);
+                            qData = { text: t(lang, 'q14'), mainImage: null, isMainSilhouette: false, optionType: 'front', answer: answer };
+                            break;
+                    }
+                    setOptions(selectedOptions);
+                    setQuestionData(qData);
+
+                    const imagesToLoad = [];
+                    if (qData.mainImage) imagesToLoad.push(qData.mainImage);
+                    if (qData.optionType !== 'text') {
+                        selectedOptions.forEach(opt => {
+                            imagesToLoad.push(qData.optionType === 'back' ? opt.back : opt.front);
+                        });
+                    }
+                    await Promise.all(imagesToLoad.map(src => new Promise(res => {
+                        const img = new Image();
+                        img.onload = res;
+                        img.onerror = res;
+                        img.src = src;
+                    })));
+
+                } catch (e) { 
+                    console.error("Data load failed, retrying...", e); 
+                    fetchRoundData(); 
+                }
+                setIsLoading(false);
+            };
+
+            const startGame = () => {
+                if (!nickname.trim()) { alert("Please enter nickname!"); return; }
+                localStorage.setItem('monster_king_name', nickname);
+                setScore(0);
+                setRound(1);
+                startNewRound();
+            };
+
+            const startNewRound = () => {
+                setGameState('countdown');
+                setCountdown(3);
+                setQuestionData(null);
+                fetchRoundData();
+            };
+
+            useEffect(() => {
+                if (gameState === 'countdown') {
+                    if (countdown > 0) {
+                        const tId = setTimeout(() => setCountdown(c => c - 1), 1000);
+                        return () => clearTimeout(tId);
+                    } else {
+                        setGameState('playing');
+                        setTimeLeft(10000);
+                        timeLeftRef.current = 10000;
+                    }
+                }
+            }, [gameState, countdown]);
+
+            useEffect(() => {
+                if (gameState === 'playing') {
+                    const startTime = Date.now();
+                    const maxDuration = 10000;
+                    
+                    const tick = () => {
+                        const passed = Date.now() - startTime;
+                        const remaining = Math.max(0, maxDuration - passed);
+                        
+                        timeLeftRef.current = remaining;
+                        setTimeLeft(remaining);
+
+                        if (remaining > 0) {
+                            timerRef.current = requestAnimationFrame(tick);
+                        } else {
+                            handleAnswer(null);
+                        }
+                    };
+                    timerRef.current = requestAnimationFrame(tick);
+                    
+                    return () => cancelAnimationFrame(timerRef.current);
+                }
+            }, [gameState]);
+
+            const handleAnswer = (option) => {
+                cancelAnimationFrame(timerRef.current);
+                const currentTimeLeft = timeLeftRef.current; 
+                const isCorrect = option && option.id === questionData.answer.id;
+                
+                const timeBonus = isCorrect ? Math.floor(currentTimeLeft / 100) : 0;
+                const points = isCorrect ? 100 : 0;
+                
+                setLastResult({ isCorrect, points, timeBonus });
+                
+                if (isCorrect) {
+                    setScore(s => s + points + timeBonus);
+                }
+
+                setGameState('result');
+                setTimeout(() => {
+                    if (round >= MAX_ROUNDS) {
+                        finishGame();
+                    } else {
+                        setRound(r => r + 1);
+                        startNewRound();
+                    }
+                }, 2000); 
+            };
+
+            const finishGame = () => {
+                setGameState('gameover');
+                const formData = new FormData();
+                formData.append('nickname', nickname);
+                formData.append('score', score);
+
+                fetch(API_URL + '?action=submit', { method: 'POST', body: formData })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            setMyRank(data.rank);
+                            loadRanking();
+                        }
+                    })
+                    .catch(e => console.error(e));
+            };
+
+            const handleHomeClick = () => {
+                if (document.fullscreenElement) {
+                    setGameState('start');
+                } else {
+                    window.location.href = '/';
+                }
+            };
+
+            const currentLangObj = LANGUAGES.find(l => l.code === lang) || LANGUAGES[1];
+            const fontClass = lang === 'ko' ? 'font-ko' : 'font-other';
+
+            return (
+                <div id="game-container" className={fontClass}>
+                    {gameState === 'start' && (
+                        <div className="absolute top-4 right-4 sm:top-5 sm:right-5 z-[99999]">
+                            <button onClick={() => setIsModalOpen(true)} className="bg-white/90 border border-amber-900/20 rounded-full px-3 py-1.5 text-xs text-amber-900 shadow-sm flex items-center gap-2 hover:bg-white transition-colors">
+                                <i className="fa-solid fa-globe"></i>
+                                <img src={`https://flagcdn.com/w40/${currentLangObj.country}.png`} alt={currentLangObj.country} className="w-4 h-auto rounded-[2px]" />
+                                <span className="font-bold uppercase">{currentLangObj.code}</span>
+                                <i className="fa-solid fa-chevron-down text-[10px]"></i>
+                            </button>
+                        </div>
+                    )}
+
+                    {isModalOpen && <LanguageModal currentLang={lang} onSelect={changeLanguage} onClose={() => setIsModalOpen(false)} />}
+                    
+                    <div className={`lang-toast fixed bottom-6 right-6 bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 flex items-center gap-3 z-[99999] ${toastInfo.show ? 'show' : ''}`}>
+                        <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+                            <i className="fa-solid fa-check"></i>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-white">{toastInfo.msg}</p>
+                            <p className="text-xs text-gray-400">{toastInfo.name}</p>
+                        </div>
+                    </div>
+
+                    {gameState === 'start' && (
+                        <div className="flex flex-col items-center p-5 w-full h-full animate-pop overflow-y-auto pt-16">
+                            <div className="flex justify-between w-full mb-3 flex-shrink-0 absolute top-4 left-4">
+                                <span className="bg-white/90 border border-amber-900/20 rounded-full px-3 py-1.5 text-xs text-amber-900 shadow-sm font-bold flex items-center">{t(lang, 'siteName')}</span>
+                            </div>
+                            
+                            <h1 className="text-3xl md:text-4xl text-amber-900 text-center mb-4 drop-shadow-sm flex items-center justify-center gap-3 flex-shrink-0">
+                                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" className="w-14 h-14 object-contain" alt="Pikachu" />
+                                <div className="leading-tight">{t(lang, 'gameTitle1')}<br/><span className="text-2xl text-amber-700">{t(lang, 'gameTitle2')}</span></div>
+                            </h1>
+                            
+                            <div className="w-28 h-28 bg-white border-2 border-dashed border-amber-500 rounded-2xl flex items-center justify-center mb-4 relative shadow-sm overflow-hidden flex-shrink-0">
+                                {qrUrl && <img src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${qrUrl}`} className="w-20 h-20 object-contain z-10" alt="QR Code" />}
+                                <div className="absolute inset-0 bg-yellow-50 opacity-50"></div>
+                            </div>
+                            
+                            <input 
+                                type="text" 
+                                className="w-full p-3 text-xl text-center border-2 border-amber-800 rounded-2xl mb-3 outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-200 transition-colors shadow-inner flex-shrink-0" 
+                                placeholder={t(lang, 'nickname')}
+                                value={nickname}
+                                onChange={(e) => setNickname(e.target.value)}
+                            />
+                            
+                            <button onClick={startGame} className="w-full p-3 text-2xl btn-main mb-3 font-bold tracking-wide flex-shrink-0">{t(lang, 'start')}</button>
+                            <a href="/" target="_self" className="w-full py-2 text-lg bg-white/80 border-2 border-amber-900/60 text-amber-900 rounded-xl text-center mb-4 block font-bold shadow-sm flex-shrink-0" style={{textDecoration: 'none'}}>{t(lang, 'otherGames')}</a>
+                            
+                            <div className="w-full ranking-box flex-shrink-0 pt-3 pb-2 px-3 mb-6" style={{ height: '350px' }}>
+                                <p className="text-center text-amber-900 mb-2 font-bold border-b border-amber-200 pb-2 flex-shrink-0">{t(lang, 'hof')}</p>
+                                <div className="ranking-content flex-1 space-y-1">
+                                    {ranking.length > 0 ? ranking.slice(0, 100).map((r, i) => (
+                                        <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100 hover:bg-amber-50 rounded px-1 transition-colors">
+                                            <span className="text-base flex items-center gap-2">
+                                                <span className={`w-6 text-center ${i < 3 ? 'text-lg' : 'text-sm text-gray-500'}`}>{i+1 === 1 ? '🥇' : i+1 === 2 ? '🥈' : i+1 === 3 ? '🥉' : i+1}</span>
+                                                <span className="text-gray-800">{r.nickname}</span>
+                                            </span>
+                                            <span className="text-amber-700 font-bold">{r.score}</span>
+                                        </div>
+                                    )) : <p className="text-center text-gray-400 py-4 text-sm">{t(lang, 'loadingRank')}</p>}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {gameState === 'countdown' && (
+                        <div className="flex items-center justify-center h-full bg-yellow-400">
+                            <h2 key={countdown} className="text-[20vh] text-white drop-shadow-2xl animate-scaleFade">{countdown === 0 ? "GO!" : countdown}</h2>
+                        </div>
+                    )}
+
+                    {(gameState === 'playing' || gameState === 'result') && (
+                        <div className="flex flex-col h-full bg-slate-100">
+                            <div className="bg-yellow-400 p-4 border-b-4 border-amber-900 flex justify-between items-center shadow-md">
+                                <div className="bg-amber-900 text-white px-4 py-1 rounded-xl text-center min-w-[80px]">
+                                    <p className="text-xs">{t(lang, 'timeLeft')}</p>
+                                    <p className={`text-2xl ${timeLeft <= 3000 ? 'text-red-400 animate-pulse' : ''}`}>{(timeLeft / 1000).toFixed(2)}</p>
+                                </div>
+                                <div className="bg-white border-2 border-amber-900 px-6 py-1 rounded-xl text-center">
+                                    <p className="text-xs text-amber-700">{t(lang, 'score')}</p>
+                                    <p className="text-2xl text-amber-900">{score}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex-1 p-4 md:p-6 flex flex-col items-center justify-center relative">
+                                {gameState === 'result' && (
+                                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-sm animate-pop">
+                                        <div className="text-center px-6">
+                                            <div className={`text-7xl mb-4 ${lastResult.isCorrect ? 'text-green-500' : 'text-red-500'}`}>
+                                                {lastResult.isCorrect ? <i className="fa-solid fa-circle-check"></i> : <i className="fa-solid fa-circle-xmark"></i>}
+                                            </div>
+                                            <h3 className={`text-4xl md:text-5xl mb-2 ${lastResult.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                                                {lastResult.isCorrect ? t(lang, 'correct') : t(lang, 'wrong')}
+                                            </h3>
+                                            {lastResult.isCorrect ? (
+                                                <div className="bg-white border-2 border-amber-200 rounded-2xl p-4 shadow-sm animate-slideUp">
+                                                    <p className="text-xl text-gray-600">{t(lang, 'baseScore')} <span className="text-blue-500">+{lastResult.points}</span></p>
+                                                    <p className="text-xl text-gray-600">{t(lang, 'timeBonus')} <span className="text-orange-500">+{lastResult.timeBonus}</span></p>
+                                                    <p className="text-2xl md:text-3xl mt-2 text-amber-900 font-bold">{t(lang, 'totalPts', lastResult.points + lastResult.timeBonus)}</p>
+                                                </div>
+                                            ) : (
+                                                <div className="bg-white border-2 border-red-100 rounded-2xl p-4 shadow-sm animate-slideUp">
+                                                    <p className="text-lg md:text-xl text-gray-600">{t(lang, 'answerIs', questionData.answer.name)}</p>
+                                                </div>
+                                            )}
+                                            <img src={questionData.answer.front} className="w-40 h-40 mx-auto mt-4 drop-shadow-lg" />
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="bg-white w-full rounded-2xl p-4 border-4 border-amber-900 text-center mb-4 shadow-sm flex items-center justify-center min-h-[80px]">
+                                    <p className="dynamic-text">{questionData?.text}</p>
+                                </div>
+
+                                {questionData?.mainImage ? (
+                                    <div className="w-44 h-44 md:w-56 md:h-56 bg-white rounded-full border-8 border-amber-400 flex items-center justify-center shadow-inner mb-6 overflow-hidden flex-shrink-0">
+                                        {isLoading ? (
+                                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-900"></div>
+                                        ) : (
+                                            <img src={questionData.mainImage} className={`w-36 h-36 md:w-44 md:h-44 object-contain ${questionData.isMainSilhouette ? 'silhouette' : ''}`} />
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="h-4"></div>
+                                )}
+
+                                <div className="grid grid-cols-2 gap-3 w-full">
+                                    {options.map((opt, idx) => {
+                                        let content = null;
+                                        let btnClass = "";
+                                        
+                                        if (questionData?.optionType === 'text') {
+                                            content = <span className="truncate w-full block text-[1rem] md:text-xl">{opt.name}</span>;
+                                            btnClass = "bg-white p-2 rounded-2xl border-4 border-amber-900 text-amber-900 btn-main h-16 flex items-center justify-center overflow-hidden w-full";
+                                        } else {
+                                            let imgSrc = opt.front;
+                                            if (questionData?.optionType === 'back') imgSrc = opt.back;
+                                            content = <img src={imgSrc} className={`h-full object-contain mx-auto ${questionData?.optionType === 'silhouette' ? 'silhouette' : 'drop-shadow-sm'}`} />;
+                                            btnClass = "bg-white p-2 rounded-2xl border-4 border-amber-900 btn-main h-28 md:h-36 flex items-center justify-center overflow-hidden w-full";
+                                        }
+
+                                        return (
+                                            <button 
+                                                key={`${opt.id}-${idx}`} 
+                                                onClick={() => handleAnswer(opt)}
+                                                className={btnClass}
+                                                disabled={gameState === 'result'}
+                                            >
+                                                {content}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="p-3 bg-amber-900 text-white text-center">
+                                {t(lang, 'round')} {round} / {MAX_ROUNDS} 👑 {nickname}
+                            </div>
+                        </div>
+                    )}
+
+                    {gameState === 'gameover' && (
+                        <div className="flex flex-col items-center p-6 md:p-8 h-full animate-pop overflow-y-auto">
+                            <h2 className="text-4xl md:text-5xl text-amber-900 mb-2">{t(lang, 'complete')}</h2>
+                            <div className="bg-white border-4 border-amber-900 rounded-3xl p-6 w-full text-center mb-6 shadow-lg">
+                                <p className="text-gray-500 mb-1">{t(lang, 'finalScore', nickname)}</p>
+                                <p className="text-6xl md:text-7xl text-amber-900 mb-4 font-bold">{score}</p>
+                                <p className="text-xl md:text-2xl text-blue-600 bg-blue-50 py-2 rounded-xl border border-blue-200">
+                                    {t(lang, 'rankMsg', myRank ? myRank : '?')}
+                                </p>
+                            </div>
+                            <div className="w-full ranking-box p-4 mb-6">
+                                <p className="text-center mb-2 font-bold">{t(lang, 'top3')}</p>
+                                {ranking.slice(0, 3).map((r, i) => (
+                                    <div key={i} className="flex justify-between py-1 border-b border-dashed">
+                                        <span>{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'} {r.nickname}</span>
+                                        <span>{r.score}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <button onClick={startGame} className="w-full p-4 text-2xl md:text-3xl btn-main mb-3 font-bold">{t(lang, 'playAgain')}</button>
+                            <button onClick={handleHomeClick} className="w-full p-4 text-2xl md:text-3xl bg-white border-4 border-amber-900 text-amber-900 rounded-3xl font-bold">{t(lang, 'home')}</button>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

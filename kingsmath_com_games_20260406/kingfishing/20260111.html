@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-5YW0T2C109');
+    </script>
+    <script type="text/javascript" src="//wcs.pstatic.net/wcslog.js"></script>
+    <script type="text/javascript">
+    if(!wcs_add) var wcs_add = {};
+    wcs_add["wa"] = "2217b57851846a";
+    if(window.wcs) {
+    wcs_do();
+    }
+    </script>
+
+    <meta name="description" content="킹수학으로 전자칠판을 최고의 수학 학습 도구로 만드세요! 게임으로 즐기는 무료 수학 트레이닝." id="meta-desc">
+    <meta name="keywords" content="전자칠판, 수학게임, 킹수학, 두뇌게임, 무료게임, 연산게임, 교육용게임, 웹게임, 초등수학, 비교하기" id="meta-keywords">
+    <link rel="canonical" href="https://킹수학.com" id="link-canonical">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="낚시킹 비교킹 | 킹수학.com" id="og-title">
+    <meta property="og:description" content="전자칠판 전용 수학 놀이, 무료·무설치" id="og-desc">
+    <meta property="og:image" content="http://11ukul.com/wp-content/uploads/2026/01/낚시킹-비교킹_킹수학-전자칠판-전용-수학-배틀-게임.png">
+    <meta property="og:url" content="https://킹수학.com" id="og-url">
+    <meta property="og:site_name" content="킹수학" id="og-site-name">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="낚시킹 비교킹 | 킹수학.com" id="tw-title">
+    <meta name="twitter:description" content="전자칠판 전용 수학 놀이" id="tw-desc">
+    <meta name="twitter:image" content="http://11ukul.com/wp-content/uploads/2026/01/낚시킹-비교킹_킹수학-전자칠판-전용-수학-배틀-게임.png">
+
+    <meta name="theme-color" content="#1e1e2e">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="page-title">낚시킹 비교킹</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        /* [기본 설정] */
+        * { 
+            box-sizing: border-box; 
+            user-select: none; -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+        }
+        
+        body {
+            margin: 0; padding: 0; overflow: hidden;
+            font-family: 'Jua', sans-serif;
+            background-color: #1e1e2e;
+            color: #ecf0f1;
+            height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* --- 상단 헤더 --- */
+        header {
+            height: 18%; 
+            display: flex;
+            justify-content: center; /* 중앙 정렬 */
+            align-items: center;
+            padding: 0 20px;
+            background: #2b2b3b;
+            border-bottom: 3px solid #444;
+            z-index: 10;
+            position: relative;
+        }
+
+        /* 점수판 컨테이너: 플레이어 영역 위에 정렬되도록 */
+        .score-board-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            justify-content: space-around; /* 균등 분할 */
+            align-items: center;
+            flex: 1;
+        }
+
+        .player-score {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 5px 10px;
+            border-radius: 15px;
+            background: #363646;
+            border: 3px solid #555;
+            min-width: 100px;
+            width: 18%; /* 반응형 너비 */
+            height: 85%;
+            transition: transform 0.2s;
+            position: relative;
+        }
+        
+        /* 팀별 색상 테마 */
+        .p1-board { border-color: #3b82f6; color: #60a5fa; } /* 강아지 (파랑) */
+        .p2-board { border-color: #ef4444; color: #f87171; } /* 고양이 (빨강) */
+        .p3-board { border-color: #d946ef; color: #e879f9; } /* 토끼 (분홍) */
+        .p4-board { border-color: #22c55e; color: #4ade80; } /* 햄스터 (초록) */
+
+        .player-label { font-size: 1.2rem; font-weight: bold; white-space: nowrap; margin-bottom: 5px; }
+        .score-display { font-size: 2.8rem; font-weight: bold; font-family: 'Poppins', sans-serif; line-height: 1; color: white; }
+
+        /* 타이머 (헤더 중앙 절대 위치) */
+        .timer-wrapper {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+        }
+
+        .timer-container {
+            text-align: center; background: #2d3436; padding: 5px 20px;
+            border-radius: 40px; border: 4px solid #fbbf24;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+            min-width: 120px;
+        }
+        .timer-container.urgent { animation: pulse 0.5s infinite alternate; border-color: #ff5252; background: #4a1c1c; }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+        
+        .timer-label { font-size: 0.8rem; color: #b2bec3; display: block; }
+        #timer { font-size: 2.5rem; font-weight: bold; color: #f1c40f; font-family: 'Poppins', sans-serif; line-height: 1; }
+        .urgent #timer { color: #ff6b6b; }
+
+        /* --- 메인 게임 영역 --- */
+        #game-split-view {
+            flex-grow: 1;
+            display: flex;
+            width: 100%;
+            height: 62%;
+            position: relative;
+            background: #1e1e2e;
+        }
+
+        .player-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding-top: 10px;
+            overflow: hidden;
+            border-right: 2px solid #444;
+        }
+        .player-area:last-child { border-right: none; }
+
+        /* 배경색 (팀별 미세 조정) */
+        .area-p1 { background: linear-gradient(180deg, #172554 0%, #1e1e2e 100%); }
+        .area-p2 { background: linear-gradient(180deg, #450a0a 0%, #1e1e2e 100%); }
+        .area-p3 { background: linear-gradient(180deg, #4a044e 0%, #1e1e2e 100%); }
+        .area-p4 { background: linear-gradient(180deg, #052e16 0%, #1e1e2e 100%); }
+
+        /* 물고기 탱크 */
+        .fish-tank {
+            width: 100%; height: 60%;
+            display: flex; justify-content: space-evenly; align-items: flex-end;
+            padding-bottom: 10px; position: relative;
+        }
+
+        .fish-wrapper {
+            position: relative; transition: transform 0.5s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 45%; max-width: 200px;
+        }
+
+        .vs-circle {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            width: 50px; height: 50px;
+            background: #2d3436; border: 3px solid #636e72; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 30px; font-family: Arial, sans-serif; color: #f1c40f;
+            z-index: 5; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .fish-body {
+            font-size: 5rem; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
+            z-index: 1; margin-bottom: 5px; line-height: 1; transition: all 0.3s;
+        }
+        
+        .fish-number {
+            font-size: 1.5rem; font-weight: bold; color: #ffffff;
+            background: #374151; padding: 5px 10px; border-radius: 30px;
+            z-index: 2; font-family: 'Poppins', sans-serif; min-width: 60px;
+            text-align: center; white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 2px solid #6b7280;
+        }
+        
+        /* 분수 스타일 */
+        .fraction { display: inline-block; vertical-align: middle; font-size: 0.8em; margin: 0 2px; }
+        .fraction > span { display: block; text-align: center; line-height: 1; }
+        .fraction span.top { border-bottom: 2px solid #fff; padding: 0 2px 2px 2px; }
+        .fraction span.bottom { padding: 2px 2px 0 2px; }
+        .mixed-int { font-size: 1.1em; margin-right: 4px; vertical-align: middle; }
+
+        /* 낚시 바 */
+        .hook-area {
+            width: 90%; height: 70px; margin-top: auto; margin-bottom: 20px;
+            position: relative; background: #1e293b; border-radius: 15px;
+            border: 3px solid #475569; overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        .zone-container { display: flex; width: 100%; height: 100%; }
+        .zone {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            font-size: 28px; color: white; font-family: Arial, sans-serif; font-weight: 300;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        .zone:last-child { border-right: none; }
+        .zone.gt { background-color: #0369a1; }
+        .zone.eq { background-color: #1d4ed8; }
+        .zone.lt { background-color: #0c4a6e; }
+
+        .hook {
+            position: absolute; top: -5px; left: 0; width: 40px; height: 80px;
+            display: flex; flex-direction: column; align-items: center;
+            transform: translateX(0); z-index: 5; pointer-events: none;
+        }
+        .hook i { font-size: 35px; color: #facc15; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
+        .hook::before {
+            content: ''; width: 2px; height: 1000px; background: #94a3b8;
+            position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%);
+        }
+
+        .feedback-msg {
+            position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 2.5rem; font-weight: bold; text-shadow: 0 0 10px rgba(0,0,0,0.8);
+            z-index: 20; display: none; white-space: nowrap;
+        }
+
+        /* --- 하단 버튼 --- */
+        footer {
+            height: 20%; display: flex; padding: 0; background: #111827; border-top: 2px solid #374151;
+        }
+        .btn-container {
+            flex: 1; display: flex; justify-content: center; align-items: center; padding: 10px;
+            border-right: 1px solid #374151;
+        }
+        .btn-container:last-child { border-right: none; }
+
+        .stop-btn {
+            width: 90%; height: 70%; font-size: 1.5rem; font-weight: bold; font-family: 'Jua', sans-serif;
+            border: none; border-radius: 20px; cursor: pointer; color: white;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; top: 0; transition: all 0.1s;
+        }
+        .stop-btn span { margin-top: 5px; }
+
+        .btn-p1 { background: linear-gradient(to bottom, #3b82f6, #1d4ed8); box-shadow: 0 6px 0 #1e3a8a; }
+        .btn-p1:active { top: 6px; box-shadow: 0 0 0 #1e3a8a; }
+
+        .btn-p2 { background: linear-gradient(to bottom, #ef4444, #b91c1c); box-shadow: 0 6px 0 #7f1d1d; }
+        .btn-p2:active { top: 6px; box-shadow: 0 0 0 #7f1d1d; }
+
+        .btn-p3 { background: linear-gradient(to bottom, #d946ef, #a21caf); box-shadow: 0 6px 0 #701a75; }
+        .btn-p3:active { top: 6px; box-shadow: 0 0 0 #701a75; }
+
+        .btn-p4 { background: linear-gradient(to bottom, #22c55e, #15803d); box-shadow: 0 6px 0 #14532d; }
+        .btn-p4:active { top: 6px; box-shadow: 0 0 0 #14532d; }
+
+        /* --- 오버레이 (메뉴/결과) --- */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 100; color: white; padding: 20px; overflow-y: auto;
+        }
+        .hidden { display: none !important; }
+
+        /* 메뉴 섹션 스타일 */
+        .menu-section {
+            background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 15px;
+            margin-bottom: 15px; width: 100%; max-width: 900px; text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .section-title { font-size: 1.1rem; color: #94a3b8; margin-bottom: 8px; display: block; }
+        
+        .option-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        
+        .option-btn {
+            padding: 10px 20px; font-size: 1.1rem; background: transparent; color: #cbd5e1;
+            border: 2px solid #475569; border-radius: 12px; cursor: pointer;
+            font-family: 'Jua', sans-serif; transition: all 0.2s;
+        }
+        .option-btn:hover { background: rgba(255,255,255,0.05); }
+        .option-btn.selected { 
+            background: #3b82f6; color: white; border-color: #3b82f6; 
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .tab-menu { display: flex; gap: 10px; margin-bottom: 10px;  justify-content: center;}
+        .tab-btn {
+            padding: 10px 25px; font-size: 1.2rem; background: rgba(255,255,255,0.05); color: #94a3b8;
+            border: 2px solid transparent; border-radius: 30px; cursor: pointer;
+            font-family: 'Jua', sans-serif; transition: all 0.2s;   
+        }
+        .tab-btn.active { background: #3b82f6; color: white; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4); }
+
+        .tab-content { display: none; width: 100%; justify-content: center; margin-bottom: 10px; }
+        .tab-content.active { display: flex; flex-wrap: wrap; gap: 10px; }
+
+        .level-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; }
+        .level-btn {
+            padding: 10px; background: #1e293b; border: 2px solid #334155; border-radius: 12px;
+            cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px;
+            color: #cbd5e1; transition: 0.2s; min-width: 100px;
+        }
+        .level-btn.selected { background: #0f172a; border-color: #facc15; color: white; transform: scale(1.05); }
+        .lvl-icon { font-size: 1.4rem; }
+        .lvl-text { font-size: 1rem; font-weight: bold; }
+        .lvl-desc { font-size: 0.8rem; color: #64748b; }
+
+        .start-btn-large {
+            padding: 15px 80px; font-size: 2.2rem; background: #10b981; color: white;
+            border: none; border-radius: 50px; cursor: pointer; font-family: 'Jua', sans-serif;
+            box-shadow: 0 8px 0 #047857; margin-top: 15px; transition: transform 0.1s;
+        }
+        .start-btn-large:active { transform: scale(0.95); box-shadow: 0 4px 0 #047857; }
+        .start-btn-large:disabled { background: #334155; color: #64748b; box-shadow: none; cursor: not-allowed; }
+
+        .main-title-container { text-align: center; margin-bottom: 15px; }
+        .main-title { font-size: 3.5rem; color: #facc15; text-shadow: 3px 3px 0 #b45309; margin: 0; line-height: 1.2; }
+
+        /* 결과 화면 */
+        .result-grid {
+            display: flex; gap: 15px; width: 100%; max-width: 1000px; height: 50vh;
+            justify-content: center; align-items: stretch; margin-bottom: 20px;
+        }
+        .result-card {
+            flex: 1; background: rgba(0,0,0,0.5); border-radius: 15px; border: 2px solid #444;
+            display: flex; flex-direction: column; align-items: center; padding: 15px;
+            position: relative; overflow: hidden;
+        }
+        .result-rank { font-size: 2rem; position: absolute; top: 10px; left: 10px; text-shadow: 0 2px 2px rgba(0,0,0,0.5); }
+        .result-score { font-size: 3rem; font-weight: bold; margin: 10px 0; color: white; }
+        .result-count { font-size: 1.2rem; color: #cbd5e1; margin-bottom: 10px; }
+        .result-collection {
+            flex: 1; width: 100%; background: rgba(255,255,255,0.05); border-radius: 10px;
+            overflow-y: auto; padding: 5px; display: flex; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: 2px;
+        }
+        .mini-fish { font-size: 24px; }
+
+        /* 언어 선택 */
+        .lang-switcher { position: fixed; top: 18%; right: 15px; background: #aaaaaa52; padding: 5px 10px; border-radius: 30px; display: flex; gap: 8px; z-index: 9999; backdrop-filter: blur(4px); }
+        .lang-btn { font-size: 20px; cursor: pointer; border: none; background: none; padding: 0; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); transition: 0.2s; }
+        .lang-btn:hover { transform: scale(1.2); }
+
+        .floating-btn { position: fixed; bottom: 50%; width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; cursor: pointer; z-index: 9000; border: 1px solid rgba(255,255,255,0.2); }
+        .floating-home { left: 20px; }
+        .floating-full { right: 20px; }
+
+        /* 4인용일 때 글씨 크기 조정 */
+        .small-text .fish-number { font-size: 1.2rem; min-width: 50px; padding: 5px 8px; }
+        .small-text .fish-body { font-size: 5rem; }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switcher">
+        <button class="lang-btn" onclick="changeLanguage('ko')" title="Korean">🇰🇷</button>
+        <button class="lang-btn" onclick="changeLanguage('en')" title="English">🇺🇸</button>
+        <button class="lang-btn" onclick="changeLanguage('zh')" title="Chinese">🇨🇳</button>
+        <button class="lang-btn" onclick="changeLanguage('ja')" title="Japanese">🇯🇵</button>
+        <button class="lang-btn" onclick="changeLanguage('es')" title="Spanish">🇪🇸</button>
+        <button class="lang-btn" onclick="changeLanguage('fr')" title="French">🇫🇷</button>
+        <button class="lang-btn" onclick="changeLanguage('ru')" title="Russian">🇷🇺</button>
+    </div>
+
+    <header id="game-header" class="hidden">
+        <div id="score-board" class="score-board-container">
+            </div>
+        <div class="timer-wrapper">
+            <div class="timer-container" id="timer-box">
+                <span class="timer-label" data-i18n="time_label">TIME</span>
+                <span id="timer">60</span>
+            </div>
+        </div>
+    </header>
+
+    <div id="game-split-view" class="hidden">
+        </div>
+
+    <footer id="game-footer" class="hidden">
+        </footer>
+
+    <div class="floating-btn floating-home" onclick="goHome()" title="Home"><i class="fa-solid fa-house"></i></div>
+    <div class="floating-btn floating-full" onclick="toggleFullScreen()" title="Full"><i class="fa-solid fa-expand"></i></div>
+
+    <div id="start-screen" class="overlay">
+        <div class="main-title-container">
+            <div style="color:#94a3b8; font-size:1.2rem; margin-bottom:5px;">
+                게임으로 수학의 킹이 되어라. <a href="http://킹수학.com" target="_blank" id="brand-link" style="color:#facc15; text-decoration:none;">킹수학.com</a>
+            </div>
+            <h1 class="main-title" data-i18n="game_title">🎣 낚시킹 비교킹</h1>
+        </div>
+
+        <div class="menu-section">
+            <span class="section-title" data-i18n="sec_players">1. 참가 인원</span>
+            <div class="option-row">
+                <button class="option-btn selected" onclick="setPlayers(2)">2 Player</button>
+                <button class="option-btn" onclick="setPlayers(3)">3 Player</button>
+                <button class="option-btn" onclick="setPlayers(4)">4 Player</button>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <span class="section-title" data-i18n="sec_category">2. 문제 유형</span>
+            <div class="tab-menu">
+                <button class="tab-btn active" onclick="setCategory('natural')" data-i18n="tab_natural">🌱 자연수</button>
+                <button class="tab-btn" onclick="setCategory('decimal')" data-i18n="tab_decimal">💧 소수</button>
+                <button class="tab-btn" onclick="setCategory('fraction')" data-i18n="tab_fraction">🍰 분수 & 혼합</button>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <span class="section-title" data-i18n="sec_level">3. 단계 선택</span>
+            <div class="level-grid" id="level-grid">
+                </div>
+        </div>
+
+        <div class="menu-section">
+            <span class="section-title" data-i18n="sec_diff">4. 난이도</span>
+            <div class="option-row">
+                <button class="option-btn selected" onclick="setDifficulty('easy')">
+                    <i class="fa-solid fa-anchor"></i> <span data-i18n="diff_easy">쉬움 (고정)</span>
+                </button>
+                <button class="option-btn" onclick="setDifficulty('hard')">
+                    <i class="fa-solid fa-shuffle"></i> <span data-i18n="diff_hard">어려움 (랜덤)</span>
+                </button>
+            </div>
+        </div>
+
+        <button class="start-btn-large" id="btn-start" onclick="startGame()" disabled data-i18n="btn_start">게임 시작</button>
+        <div style="margin-top:20px;">
+            <a href="http://킹수학.com" class="other-game-link" id="link-other-game" data-i18n="link_other">🎮 다른 게임 고르기</a>
+        </div>
+    </div>
+
+    <div id="end-screen" class="overlay hidden">
+        <h1 style="font-size:3rem; color:#facc15; margin-bottom:20px;" data-i18n="game_over">GAME OVER</h1>
+        <div class="result-grid" id="result-grid">
+            </div>
+        <button class="start-btn-large" onclick="goHome()" data-i18n="btn_restart">처음으로</button>
+    </div>
+
+    <script>
+        // --- 설정 및 상태 ---
+        const CONFIG = {
+            playerCount: 2,
+            category: 'natural',
+            level: 0,
+            difficulty: 'easy'
+        };
+        
+        const TEAMS = {
+            1: { labelKey: "team_dog", color: "#3b82f6", bg: "area-p1", emoji: "🐶" },
+            2: { labelKey: "team_cat", color: "#ef4444", bg: "area-p2", emoji: "🐱" },
+            3: { labelKey: "team_rabbit", color: "#d946ef", bg: "area-p3", emoji: "🐰" },
+            4: { labelKey: "team_hamster", color: "#22c55e", bg: "area-p4", emoji: "🐹" }
+        };
+
+        const LEVEL_DATA = {
+            natural: [
+                { lv: 1, icon: '🐠', desc: '1 ~ 9' },
+                { lv: 2, icon: '🐟', desc: '1 ~ 99' },
+                { lv: 3, icon: '🐡', desc: '1 ~ 999' },
+                { lv: 4, icon: '🐋', desc: '1 ~ 9999' }
+            ],
+            decimal: [
+                { lv: 5, icon: '💧', desc: 'desc_decimal_1' },
+                { lv: 6, icon: '💦', desc: 'desc_decimal_2' },
+                { lv: 7, icon: '🌊', desc: 'desc_decimal_3' }
+            ],
+            fraction: [
+                { lv: 8, icon: '🍰', desc: 'desc_frac_same' },
+                { lv: 9, icon: '🍕', desc: 'desc_frac_diff' },
+                { lv: 10, icon: '🥞', desc: 'desc_mixed' },
+                { lv: 11, icon: '🏆', desc: 'desc_vs' }
+            ]
+        };
+
+        const FISH_EMOJIS = ['🐟', '🐠', '🐡', '🦈', '🐳', '🐋', '🦐', '🦑', '🐙', '🦞', '🦀', '🐬'];
+        let gameState = { active: false, timer: 60, interval: null, animFrame: null, players: {} };
+        let audioCtx = null;
+
+        // --- 다국어 ---
+        const TRANSLATIONS = {
+            ko: {
+                game_title: "🎣 낚시킹 비교킹",
+                sec_players: "1. 참가 인원", sec_category: "2. 문제 유형", sec_level: "3. 단계 선택", sec_diff: "4. 난이도",
+                tab_natural: "자연수", tab_decimal: "소수", tab_fraction: "분수",
+                diff_easy: "쉬움 (고정)", diff_hard: "어려움 (랜덤)",
+                btn_start: "게임 시작", btn_restart: "처음으로", game_over: "게임 종료!", link_other: "🎮 다른 게임 고르기",
+                time_label: "남은 시간", team_dog: "강아지", team_cat: "고양이", team_rabbit: "토끼", team_hamster: "햄스터",
+                msg_correct: "성공!", msg_wrong: "실패!",
+                desc_decimal_1: "소수 첫째", desc_decimal_2: "소수 둘째", desc_decimal_3: "소수 셋째",
+                desc_frac_same: "분모 같음", desc_frac_diff: "분모 다름", desc_mixed: "대분수", desc_vs: "소수vs분수",
+                rank_1: "🥇 1등", rank_2: "🥈 2등", rank_3: "🥉 3등", rank_4: "4등", count_label: "잡은 수", unit_count: "마리"
+            },
+            en: {
+                game_title: "🎣 Fishing King",
+                sec_players: "1. Players", sec_category: "2. Category", sec_level: "3. Level", sec_diff: "4. Difficulty",
+                tab_natural: "Numbers", tab_decimal: "Decimals", tab_fraction: "Fractions",
+                diff_easy: "Easy (Fixed)", diff_hard: "Hard (Random)",
+                btn_start: "Start Game", btn_restart: "Home", game_over: "Game Over!", link_other: "🎮 More Games",
+                time_label: "TIME", team_dog: "Dog", team_cat: "Cat", team_rabbit: "Rabbit", team_hamster: "Hamster",
+                msg_correct: "Gotcha!", msg_wrong: "Missed!",
+                desc_decimal_1: "Tenths", desc_decimal_2: "Hundredths", desc_decimal_3: "Thousandths",
+                desc_frac_same: "Like Frac", desc_frac_diff: "Unlike Frac", desc_mixed: "Mixed Num", desc_vs: "Dec vs Frac",
+                rank_1: "🥇 1st", rank_2: "🥈 2nd", rank_3: "🥉 3rd", rank_4: "4th", count_label: "Caught", unit_count: ""
+            },
+            zh: {
+                game_title: "🎣 垂钓王",
+                sec_players: "1. 玩家人数", sec_category: "2. 问题类型", sec_level: "3. 等级选择", sec_diff: "4. 难度",
+                tab_natural: "自然数", tab_decimal: "小数", tab_fraction: "分数",
+                diff_easy: "简单 (固定)", diff_hard: "困难 (随机)",
+                btn_start: "开始游戏", btn_restart: "主页", game_over: "游戏结束!", link_other: "🎮 更多游戏",
+                time_label: "时间", team_dog: "小狗", team_cat: "小猫", team_rabbit: "兔子", team_hamster: "仓鼠",
+                msg_correct: "成功!", msg_wrong: "失败!",
+                desc_decimal_1: "十分位", desc_decimal_2: "百分位", desc_decimal_3: "千分位",
+                desc_frac_same: "同分母", desc_frac_diff: "异分母", desc_mixed: "带分数", desc_vs: "小数vs分数",
+                rank_1: "🥇 第一名", rank_2: "🥈 第二名", rank_3: "🥉 第三名", rank_4: "第四名", count_label: "捕获", unit_count: "条"
+            },
+            ja: {
+                game_title: "🎣 釣りキング",
+                sec_players: "1. 参加人数", sec_category: "2. 問題タイプ", sec_level: "3. レベル選択", sec_diff: "4. 難易度",
+                tab_natural: "自然数", tab_decimal: "小数", tab_fraction: "分数",
+                diff_easy: "簡単 (固定)", diff_hard: "難しい (ランダム)",
+                btn_start: "ゲーム開始", btn_restart: "ホーム", game_over: "ゲーム終了!", link_other: "🎮 他のゲーム",
+                time_label: "残り時間", team_dog: "イヌ", team_cat: "ネコ", team_rabbit: "ウサギ", team_hamster: "ハムスター",
+                msg_correct: "成功!", msg_wrong: "失敗!",
+                desc_decimal_1: "小数第一位", desc_decimal_2: "小数第二位", desc_decimal_3: "小数第三位",
+                desc_frac_same: "同分母", desc_frac_diff: "異分母", desc_mixed: "帯分数", desc_vs: "小数vs分数",
+                rank_1: "🥇 1位", rank_2: "🥈 2位", rank_3: "🥉 3位", rank_4: "4位", count_label: "釣果", unit_count: "匹"
+            },
+            es: {
+                game_title: "🎣 Rey de la Pesca",
+                sec_players: "1. Jugadores", sec_category: "2. Categoría", sec_level: "3. Nivel", sec_diff: "4. Dificultad",
+                tab_natural: "Números", tab_decimal: "Decimales", tab_fraction: "Fracciones",
+                diff_easy: "Fácil (Fijo)", diff_hard: "Difícil (Azar)",
+                btn_start: "Empezar", btn_restart: "Inicio", game_over: "¡Fin del juego!", link_other: "🎮 Más Juegos",
+                time_label: "TIEMPO", team_dog: "Perro", team_cat: "Gato", team_rabbit: "Conejo", team_hamster: "Hámster",
+                msg_correct: "¡Éxito!", msg_wrong: "¡Fallo!",
+                desc_decimal_1: "Décimas", desc_decimal_2: "Centésimas", desc_decimal_3: "Milésimas",
+                desc_frac_same: "Mismo Den", desc_frac_diff: "Dif Den", desc_mixed: "Mixtos", desc_vs: "Dec vs Frac",
+                rank_1: "🥇 1º", rank_2: "🥈 2º", rank_3: "🥉 3º", rank_4: "4º", count_label: "Peces", unit_count: ""
+            },
+            fr: {
+                game_title: "🎣 Roi de la Pêche",
+                sec_players: "1. Joueurs", sec_category: "2. Catégorie", sec_level: "3. Niveau", sec_diff: "4. Difficulté",
+                tab_natural: "Nombres", tab_decimal: "Décimaux", tab_fraction: "Fractions",
+                diff_easy: "Facile (Fixe)", diff_hard: "Difficile (Hasard)",
+                btn_start: "Commencer", btn_restart: "Accueil", game_over: "Terminé!", link_other: "🎮 Autres Jeux",
+                time_label: "TEMPS", team_dog: "Chien", team_cat: "Chat", team_rabbit: "Lapin", team_hamster: "Hamster",
+                msg_correct: "Bravo!", msg_wrong: "Raté!",
+                desc_decimal_1: "Dixièmes", desc_decimal_2: "Centièmes", desc_decimal_3: "Millièmes",
+                desc_frac_same: "Même Dén", desc_frac_diff: "Diff Dén", desc_mixed: "Mixtes", desc_vs: "Déc vs Frac",
+                rank_1: "🥇 1er", rank_2: "🥈 2e", rank_3: "🥉 3e", rank_4: "4e", count_label: "Poissons", unit_count: ""
+            },
+            ru: {
+                game_title: "🎣 Король Рыбалки",
+                sec_players: "1. Игроки", sec_category: "2. Категория", sec_level: "3. Уровень", sec_diff: "4. Сложность",
+                tab_natural: "Числа", tab_decimal: "Десятичные", tab_fraction: "Дроби",
+                diff_easy: "Легко (Фикс)", diff_hard: "Сложно (Случ)",
+                btn_start: "Начать", btn_restart: "Домой", game_over: "Конец игры!", link_other: "🎮 Другие игры",
+                time_label: "ВРЕМЯ", team_dog: "Собака", team_cat: "Кошка", team_rabbit: "Кролик", team_hamster: "Хомяк",
+                msg_correct: "Успех!", msg_wrong: "Мимо!",
+                desc_decimal_1: "Десятые", desc_decimal_2: "Сотые", desc_decimal_3: "Тысячные",
+                desc_frac_same: "Общий знам", desc_frac_diff: "Разный знам", desc_mixed: "Смешанные", desc_vs: "Дес vs Дробь",
+                rank_1: "🥇 1-й", rank_2: "🥈 2-й", rank_3: "🥉 3-й", rank_4: "4-й", count_label: "Поймано", unit_count: "шт"
+            }
+        };
+        let curLang = 'ko';
+
+        function changeLanguage(lang) {
+            curLang = lang;
+            const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if(t[key]) el.innerText = t[key];
+            });
+            
+            // Domain Update
+            const brandLink = document.getElementById('brand-link');
+            const otherLink = document.getElementById('link-other-game');
+            if(lang === 'ko') {
+                brandLink.href = "https://킹수학.com"; brandLink.innerText = "킹수학.com";
+                otherLink.href = "https://킹수학.com";
+            } else {
+                brandLink.href = "http://www.kingsmath.com"; brandLink.innerText = "KingsMath.com";
+                otherLink.href = "http://www.kingsmath.com";
+            }
+            
+            renderLevelGrid(); 
+        }
+
+        window.onload = () => {
+            renderLevelGrid();
+            
+            // Auto-detect language
+            const urlParams = new URLSearchParams(window.location.search);
+            const langParam = urlParams.get('lang');
+            const browserLang = navigator.language.slice(0, 2);
+            let targetLang = 'en';
+
+            if(langParam && TRANSLATIONS[langParam]) targetLang = langParam;
+            else if(TRANSLATIONS[browserLang]) targetLang = browserLang;
+            
+            changeLanguage(targetLang);
+        };
+
+        function setPlayers(n) {
+            CONFIG.playerCount = n;
+            updateBtnState('.menu-section:nth-child(2) .option-btn', n === 2 ? 0 : n === 3 ? 1 : 2);
+        }
+        function setCategory(cat) {
+            CONFIG.category = cat;
+            CONFIG.level = 0; 
+            document.getElementById('btn-start').disabled = true;
+            
+            // Tab Style Update
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            const idx = cat === 'natural' ? 0 : cat === 'decimal' ? 1 : 2;
+            tabs[idx].classList.add('active');
+            
+            renderLevelGrid();
+        }
+        function setDifficulty(diff) {
+            CONFIG.difficulty = diff;
+            updateBtnState('.menu-section:nth-child(5) .option-btn', diff === 'easy' ? 0 : 1);
+        }
+        function updateBtnState(selector, activeIdx) {
+            const btns = document.querySelectorAll(selector);
+            btns.forEach((b, i) => b.classList.toggle('selected', i === activeIdx));
+        }
+
+        function renderLevelGrid() {
+            const grid = document.getElementById('level-grid');
+            grid.innerHTML = '';
+            const data = LEVEL_DATA[CONFIG.category];
+            const t = TRANSLATIONS[curLang] || TRANSLATIONS.en;
+
+            data.forEach(item => {
+                const desc = t[item.desc] || item.desc;
+                const el = document.createElement('div');
+                el.className = `level-btn ${CONFIG.level === item.lv ? 'selected' : ''}`;
+                el.innerHTML = `<div class="lvl-icon">${item.icon}</div><div class="lvl-text">Lv.${item.lv}</div><div class="lvl-desc">${desc}</div>`;
+                el.onpointerdown = () => {
+                    CONFIG.level = item.lv;
+                    document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
+                    el.classList.add('selected');
+                    document.getElementById('btn-start').disabled = false;
+                };
+                grid.appendChild(el);
+            });
+        }
+
+        // --- 게임 시작 및 생성 ---
+        function startGame() {
+            if (CONFIG.level === 0) return;
+            initAudio();
+            document.getElementById('start-screen').classList.add('hidden');
+            
+            // 헤더 생성
+            const scoreBoard = document.getElementById('score-board');
+            scoreBoard.innerHTML = '';
+            for(let i=1; i<=CONFIG.playerCount; i++) {
+                const team = TEAMS[i];
+                const tmpl = `
+                    <div class="player-score" style="border-color:${team.color}; color:${team.color}">
+                        <div class="player-label">${team.emoji}</div>
+                        <div id="score-p${i}" class="score-display">0</div>
+                    </div>
+                `;
+                scoreBoard.innerHTML += tmpl;
+            }
+
+            // 게임 영역 생성
+            const splitView = document.getElementById('game-split-view');
+            splitView.innerHTML = '';
+            splitView.classList.remove('hidden');
+            document.getElementById('game-header').classList.remove('hidden');
+            document.getElementById('game-footer').classList.remove('hidden');
+            
+            if(CONFIG.playerCount >= 3) splitView.classList.add('small-text');
+            else splitView.classList.remove('small-text');
+
+            for(let i=1; i<=CONFIG.playerCount; i++) {
+                createPlayerArea(i, splitView);
+            }
+
+            // 푸터 버튼 생성
+            const footer = document.getElementById('game-footer');
+            footer.innerHTML = '';
+            for(let i=1; i<=CONFIG.playerCount; i++) {
+                const team = TEAMS[i];
+                const btn = document.createElement('div');
+                btn.className = 'btn-container';
+                btn.innerHTML = `
+                    <button class="stop-btn" style="background:${team.color}; box-shadow:0 6px 0 rgba(0,0,0,0.3);" onpointerdown="handleStop(${i})">
+                        <i class="fa-solid fa-hand-pointer"></i> <span>STOP</span>
+                    </button>
+                `;
+                footer.appendChild(btn);
+            }
+
+            // 상태 초기화
+            gameState.active = true;
+            gameState.timer = 60;
+            gameState.players = {};
+            for(let i=1; i<=CONFIG.playerCount; i++) {
+                gameState.players[i] = {
+                    score: 0, count: 0, 
+                    hookPos: Math.random()*90, hookDir: 1, hookSpeed: 0.5,
+                    locked: false, answer: '', zones: [], history: []
+                };
+                nextProblem(i);
+            }
+
+            startTimer();
+            loop();
+        }
+
+        function createPlayerArea(id, container) {
+            const team = TEAMS[id];
+            const div = document.createElement('div');
+            div.className = `player-area ${team.bg}`;
+            div.innerHTML = `
+                <div class="fish-tank">
+                    <div class="fish-wrapper" id="fish-l-${id}">
+                        <div class="fish-body">🐟</div>
+                        <div class="fish-number" id="num-l-${id}">?</div>
+                    </div>
+                    <div class="vs-circle" id="circle-${id}"></div>
+                    <div class="fish-wrapper" id="fish-r-${id}">
+                        <div class="fish-body" style="transform: scaleX(-1);">🐠</div>
+                        <div class="fish-number" id="num-r-${id}">?</div>
+                    </div>
+                </div>
+                <div class="feedback-msg" id="msg-${id}"></div>
+                <div class="hook-area">
+                    <div class="zone-container" id="zones-${id}"></div>
+                    <div class="hook" id="hook-${id}"><i class="fa-solid fa-anchor"></i></div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        // --- 게임 로직 ---
+        function startTimer() {
+            document.getElementById('timer').innerText = 60;
+            document.getElementById('timer-box').classList.remove('urgent');
+            
+            if(gameState.interval) clearInterval(gameState.interval);
+            gameState.interval = setInterval(() => {
+                gameState.timer--;
+                document.getElementById('timer').innerText = gameState.timer;
+                if(gameState.timer <= 5) {
+                    document.getElementById('timer-box').classList.add('urgent');
+                    playSound('tick');
+                }
+                if(gameState.timer <= 0) endGame();
+            }, 1000);
+        }
+
+        function loop() {
+            if(!gameState.active) return;
+            for(let i=1; i<=CONFIG.playerCount; i++) {
+                const p = gameState.players[i];
+                if(p.locked) continue;
+                
+                p.hookPos += p.hookSpeed * p.hookDir;
+                if(p.hookPos >= 92 || p.hookPos <= 0) p.hookDir *= -1;
+                
+                const el = document.getElementById(`hook-${i}`);
+                if(el) el.style.left = p.hookPos + '%';
+            }
+            gameState.animFrame = requestAnimationFrame(loop);
+        }
+
+        function nextProblem(id) {
+            const p = gameState.players[id];
+            p.hookSpeed = Math.min(4, 0.5 + (p.count * 0.1));
+            p.locked = false;
+
+            let v1, v2, d1, d2;
+            const lv = CONFIG.level;
+            
+            if(lv <= 4) { // 자연수
+                const max = Math.pow(10, lv) - 1;
+                v1 = rand(1, max); v2 = rand(1, max);
+                d1 = v1; d2 = v2;
+            } else if (lv <= 7) { // 소수
+                const digit = lv - 4; 
+                const base = Math.pow(10, digit);
+                v1 = rand(1, base*10)/base; v2 = rand(1, base*10)/base;
+                d1 = v1.toFixed(digit); d2 = v2.toFixed(digit);
+            } else { // 분수 (간단 구현)
+                let den = rand(2, 10);
+                v1 = rand(1, den*2)/den; v2 = rand(1, den*2)/den;
+                d1 = makeFrac(Math.round(v1*den), den); d2 = makeFrac(Math.round(v2*den), den);
+            }
+
+            document.getElementById(`num-l-${id}`).innerHTML = d1;
+            document.getElementById(`num-r-${id}`).innerHTML = d2;
+            document.getElementById(`circle-${id}`).innerText = '';
+
+            const diff = v1 - v2;
+            if(Math.abs(diff) < 0.000001) p.answer = 'eq';
+            else if(diff > 0) p.answer = 'gt';
+            else p.answer = 'lt';
+
+            // 난이도에 따른 존 설정
+            const zones = ['gt', 'eq', 'lt'];
+            if(CONFIG.difficulty === 'hard') shuffle(zones);
+            
+            p.zones = zones;
+            const zoneContainer = document.getElementById(`zones-${id}`);
+            zoneContainer.innerHTML = '';
+            zones.forEach(z => {
+                const div = document.createElement('div');
+                div.className = `zone ${z}`;
+                div.innerText = z === 'gt' ? '>' : z === 'lt' ? '<' : '=';
+                zoneContainer.appendChild(div);
+            });
+
+            document.querySelector(`#fish-l-${id} .fish-body`).innerText = randItem(FISH_EMOJIS);
+            document.querySelector(`#fish-r-${id} .fish-body`).innerText = randItem(FISH_EMOJIS);
+        }
+
+        function handleStop(id) {
+            const p = gameState.players[id];
+            if(p.locked || !gameState.active) return;
+            p.locked = true;
+
+            let idx = 0;
+            const pos = p.hookPos + 4; 
+            if(pos > 33.33) idx = 1;
+            if(pos > 66.66) idx = 2;
+
+            const selected = p.zones[idx];
+            const isCorrect = selected === p.answer;
+            const sym = selected === 'gt' ? '>' : selected === 'lt' ? '<' : '=';
+            
+            document.getElementById(`circle-${id}`).innerText = sym;
+
+            const msgEl = document.getElementById(`msg-${id}`);
+            const t = TRANSLATIONS[curLang] || TRANSLATIONS.en;
+
+            if(isCorrect) {
+                p.score += 200; p.count++;
+                playSound('success');
+                msgEl.innerText = t.msg_correct;
+                msgEl.style.color = '#4ade80';
+            } else {
+                p.score = Math.max(0, p.score - 50);
+                playSound('fail');
+                msgEl.innerText = t.msg_wrong;
+                msgEl.style.color = '#f87171';
+            }
+
+            document.getElementById(`score-p${id}`).innerText = p.score;
+            msgEl.style.display = 'block';
+
+            setTimeout(() => {
+                msgEl.style.display = 'none';
+                if(gameState.active) nextProblem(id);
+            }, 1000);
+        }
+
+        function endGame() {
+            gameState.active = false;
+            clearInterval(gameState.interval);
+            cancelAnimationFrame(gameState.animFrame);
+            playSound('end');
+
+            document.getElementById('end-screen').classList.remove('hidden');
+            const grid = document.getElementById('result-grid');
+            grid.innerHTML = '';
+            
+            const results = [];
+            for(let i=1; i<=CONFIG.playerCount; i++) results.push({ id: i, ...gameState.players[i] });
+            results.sort((a,b) => b.score - a.score);
+
+            const t = TRANSLATIONS[curLang];
+
+            results.forEach((p, idx) => {
+                const team = TEAMS[p.id];
+                let rankText = t[`rank_${idx+1}`];
+                if(idx > 0 && p.score === results[idx-1].score) rankText = t[`rank_${idx}`]; 
+
+                let fishHTML = '';
+                for(let k=0; k<p.count; k++) fishHTML += `<span class="mini-fish">${randItem(FISH_EMOJIS)}</span>`;
+
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.style.borderColor = team.color;
+                card.innerHTML = `
+                    <div class="result-rank" style="color:${team.color}">${rankText}</div>
+                    <div style="font-size:1.5rem; margin-top:20px;">${team.emoji} ${t[team.labelKey]}</div>
+                    <div class="result-score">${p.score}</div>
+                    <div class="result-count">${p.count} ${t.unit_count}</div>
+                    <div class="result-collection">${fishHTML}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- 유틸 ---
+        function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+        function randItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function makeFrac(n, d) { return `<div class="fraction"><span class="top">${n}</span><span class="bottom">${d}</span></div>`; }
+        function shuffle(a) { for(let i=a.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
+
+        function initAudio() {
+            if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+        }
+        function playSound(type) {
+            if(!audioCtx) return;
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+            if(type === 'tick') {
+                osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now+0.1);
+                osc.start(now); osc.stop(now+0.1);
+            } else if(type === 'success') {
+                osc.frequency.setValueAtTime(523, now);
+                osc.frequency.setValueAtTime(659, now+0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now+0.3);
+                osc.start(now); osc.stop(now+0.3);
+            } else if(type === 'fail') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(100, now+0.3);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now+0.3);
+                osc.start(now); osc.stop(now+0.3);
+            } else if(type === 'end') {
+                osc.frequency.setValueAtTime(600, now);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now+1.5);
+                osc.start(now); osc.stop(now+1.5);
+            }
+        }
+        function goHome() { location.reload(); }
+        function toggleFullScreen() {
+            if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else if(document.exitFullscreen) document.exitFullscreen();
+        }
+    </script>
+</body>
+</html>

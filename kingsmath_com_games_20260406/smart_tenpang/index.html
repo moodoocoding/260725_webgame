@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5YW0T2C109');
+    </script>
+   
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>텐팡킹 모바일 | 킹수학</title>
+    <meta name="description" content="합하여 10을 만드는 두뇌 퍼즐 액션! 텐팡킹(Ten Pang King) 모바일입니다.">
+    <meta name="keywords" content="킹수학, 텐팡킹, 애니팡, 수학게임, 두뇌게임, 퍼즐, KingsMath">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        :root {
+            --bg-body: #FFF9C4; 
+            --bg-app: #FFFFFF; 
+            --primary: #FF9800; 
+            --secondary: #29B6F6; 
+            --accent: #FF4081; 
+            --text-main: #5D4037; 
+            --grid-bg: #8a817c;
+        }
+
+        /* 기본 게임 CSS 초기화 */
+        * { touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+        
+        body {
+            margin: 0; padding: 0; background-color: var(--bg-body);
+            font-family: 'Jua', 'Noto Sans', sans-serif; color: var(--text-main);
+            height: 100vh; display: flex; justify-content: center; overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        #mobile-wrapper {
+            width: 100%; max-width: 600px; height: 100%;
+            background-color: var(--bg-app); 
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; position: relative; 
+            border-left: 2px solid #FFECB3; border-right: 2px solid #FFECB3;
+        }
+
+        /* --- 상단 글로벌 헤더 --- */
+        .global-header {
+            position: absolute; top: 0; left: 0; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px; z-index: 2000;
+        }
+
+        .brand-link, #langTriggerBtn {
+            text-decoration: none; color: var(--text-main); font-size: 1.0rem;
+            background: rgba(255,255,255,0.8); padding: 5px 12px; 
+            border-radius: 20px; border: 1px solid #FFCC80;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex; align-items: center; gap: 6px;
+            cursor: pointer; height: 34px; line-height: 1; font-family: inherit;
+            box-sizing: border-box !important;
+            z-index: 99999 !important;
+        }
+        #langTriggerBtn img { width: 16px; border-radius: 2px; }
+
+        /* --- 모달 독립 CSS --- */
+        #langModal, #langModal * { box-sizing: border-box !important; font-family: 'Noto Sans', sans-serif; }
+        #langModal i, #toastNotification i, #langTriggerBtn i { font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important; font-weight: 900; }
+        #langModal { z-index: 99999 !important; opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        #langModal.active { opacity: 1; visibility: visible; }
+        #langModal .modal-content { transform: scale(0.95) translateY(-10px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        #langModal.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+        #langModal .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        #langModal .custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        #langModal .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        #toastNotification { z-index: 99999 !important; transform: translateY(100%); opacity: 0; transition: all 0.3s ease; font-family: 'Noto Sans', sans-serif; box-sizing: border-box !important; }
+        #toastNotification.show { transform: translateY(0); opacity: 1; }
+
+        /* --- 시작 화면 --- */
+        #start-screen {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            padding: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+            padding-top: 60px;
+        }
+        .main-title { font-size: 3rem; color: var(--primary); text-align: center; margin: 10px 0; line-height: 1.1; text-shadow: 2px 2px 0 #FFFDE7; }
+        .main-title.long-text { font-size: 2.2rem; }
+        .main-title.very-long-text { font-size: 1.8rem; }
+        .title-sub { font-size: 1.5rem; color: var(--secondary); display: block; margin-top: 5px; }
+        
+        .rules-box { 
+            background: #E3F2FD; padding: 10px; border-radius: 15px; 
+            border: 2px dashed var(--secondary); margin-bottom: 15px; 
+            width: 100%; font-size: 1rem; text-align: center; color: #0277BD; line-height: 1.4; 
+        }
+        .rules-box p { margin: 3px 0; }
+
+        #qr-wrapper { margin: 10px 0; cursor: pointer; padding: 5px; border: 1px solid #EEE; box-sizing: content-box; }
+        #qr-code img { display: block; } 
+
+        #nickname { 
+            width: 80%; padding: 12px; border: 3px solid var(--primary); 
+            border-radius: 15px; font-family: inherit; font-size: 1.2rem; 
+            text-align: center; outline: none; margin-top: 10px; box-sizing: border-box;
+        }
+
+        .btn-common {
+            width: 80%; max-width: 350px; padding: 10px 0; border-radius: 50px;
+            font-family: inherit; cursor: pointer; transition: transform 0.1s;
+            margin: 10px 0; display: flex; justify-content: center; align-items: center;
+            box-sizing: border-box; text-align: center; word-break: keep-all; font-weight: bold;
+        }
+        .btn-start { background: var(--primary); color: white; border: none; font-size: 1.5rem; box-shadow: 0 5px 0 #E65100; margin-top: 15px; }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 0 0 #E65100; }
+        .btn-start.long-text { font-size: 1.2rem; padding: 10px; }
+        .btn-practice { background: #8BC34A; color: white; border: none; font-size: 1.2rem; box-shadow: 0 5px 0 #558B2F; margin-bottom: 20px; }
+        .btn-practice:active { transform: translateY(4px); box-shadow: 0 0 0 #558B2F; }
+        .btn-practice.long-text { font-size: 1.0rem; padding: 10px; }
+
+        .link-other-games { text-decoration: none; color: #555; font-size: 1.1rem; margin-bottom: 20px; border-bottom: 1px solid #999; padding-bottom: 2px; }
+
+        /* 랭킹 스타일 */
+        .ranking-container {
+            width: 100%; background: #FFFDE7; border-radius: 10px; border: 2px solid #FFF59D;
+            padding: 10px; margin-bottom: 20px; box-sizing: border-box;
+        }
+        .rank-header { font-size: 1.2rem; color: #FBC02D; text-align: center; margin-bottom: 5px; font-weight: bold; }
+        #rank-list-start { max-height: 300px; overflow-y: auto; }
+        .rank-row { display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px dashed #DDD; font-size: 0.95rem; }
+        .rank-row:nth-child(1) { color: #D32F2F; font-weight: bold; } 
+
+        /* --- 게임 화면 --- */
+        #game-screen { display: none; flex-direction: column; height: 100%; position: relative; padding-top: 0; }
+        
+        .game-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 10px; background: #FFF9C4; border-bottom: 2px solid #FFECB3; box-sizing: border-box;
+        }
+        .header-left, .header-right { width: 60px; display: flex; justify-content: center; }
+        .control-icon { font-size: 1.8rem; cursor: pointer; }
+        
+        .header-center { text-align: center; flex: 1; }
+        #score-display { font-size: 2.5rem; color: var(--primary); font-weight: bold; line-height: 1; }
+        #combo-display { font-size: 1rem; color: #D84315; margin-top: 2px; font-weight: bold; }
+        .timer-highlight { color: #2196F3; font-size: 1.2rem; }
+
+        .timer-bar { height: 10px; width: 100%; background: #EEE; position: relative; }
+        #timer-progress { height: 100%; width: 100%; background: linear-gradient(90deg, #4CAF50, #8BC34A); transition: width 0.2s linear, background 0.2s; }
+
+        #grid-container {
+            flex: 1; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; 
+            background: #FAFAFA; padding: 10px; padding-top: 40px; box-sizing: border-box; position: relative;
+        }
+        
+        /* 텐팡킹 애니팡 그리드 (Absolute 기반) */
+        #grid {
+            position: relative;
+            background-color: var(--grid-bg); 
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2), inset 0 4px 8px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 450px;
+            aspect-ratio: 1/1;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .cell {
+            position: absolute;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.8rem; font-weight: 900; color: #463f3a;
+            border-radius: 10px; cursor: pointer; user-select: none;
+            transition: top 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        left 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                        transform 0.15s ease, opacity 0.15s ease;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15), inset 0 2px 2px rgba(255,255,255,0.4);
+            box-sizing: border-box;
+        }
+
+        .cell.selected { transform: scale(1.1); filter: brightness(1.15); z-index: 10; border: 3px solid #fff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 4px 0 rgba(0,0,0,0.15); }
+        
+        @keyframes cellPop {
+            0% { transform: scale(1); filter: brightness(1); }
+            40% { transform: scale(1.3); filter: brightness(1.5); }
+            100% { transform: scale(0); filter: brightness(2); opacity: 0; }
+        }
+        .cell.popping { animation: cellPop 0.25s ease-out forwards; z-index: 20; }
+
+        /* 파티클 폭발 효과 */
+        .particle {
+            position: absolute;
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 50;
+            transform: translate(-50%, -50%);
+            animation: particleExplode 0.4s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+            box-shadow: 0 0 6px rgba(255,255,255,0.8);
+        }
+        @keyframes particleExplode {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0); opacity: 0; }
+        }
+
+        /* 숫자별 색상 (파스텔톤) */
+        .num-1 { background-color: #ffadad; }
+        .num-2 { background-color: #ffd6a5; }
+        .num-3 { background-color: #fdffb6; }
+        .num-4 { background-color: #caffbf; }
+        .num-5 { background-color: #9bf6ff; }
+        .num-6 { background-color: #a0c4ff; }
+        .num-7 { background-color: #bdb2ff; }
+        .num-8 { background-color: #ffc6ff; }
+        .num-9 { background-color: #e5e5e5; }
+
+        /* 이펙트 오버레이 */
+        #combo-text {
+            position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            font-size: 3rem; font-weight: 900; color: #ffeb3b; text-shadow: 0 0 10px #ff5722, 2px 2px 0 #000;
+            opacity: 0; pointer-events: none; z-index: 100; font-family: 'Noto Sans', sans-serif;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center; white-space: nowrap; width: 100%;
+        }
+        .show-combo { transform: translate(-50%, -50%) scale(1) !important; opacity: 1 !important; }
+
+        .bonus-time {
+            position: absolute; top: 20%; left: 50%; transform: translateX(-50%);
+            font-size: 2rem; font-weight: 900; color: #4CAF50; text-shadow: 0 0 10px #fff, 2px 2px 0 #000;
+            pointer-events: none; z-index: 150; font-family: 'Noto Sans', sans-serif;
+            animation: floatUp 1s ease-out forwards;
+        }
+        @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -40px); } }
+
+        #notice-text {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            font-size: 1.8rem; font-weight: 900; color: #fff; background: rgba(0,0,0,0.75);
+            padding: 15px 25px; border-radius: 15px; text-align: center; opacity: 0;
+            pointer-events: none; z-index: 200; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .show-notice { transform: translate(-50%, -50%) scale(1) !important; opacity: 1 !important; }
+
+        @keyframes hintPulse { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.15); filter: brightness(1.2); box-shadow: 0 0 15px #ffeb3b, 0 4px 0 rgba(0,0,0,0.15); z-index: 5; border: 3px solid #ffeb3b; } }
+        .hint-anim { animation: hintPulse 1s infinite; }
+
+        /* --- 숫자 섞기(셔플) 아이템 버튼 --- */
+        #shuffle-btn-container {
+            width: 100%; max-width: 450px; height: 50px;
+            background-color: #9e9e9e; 
+            border-radius: 12px; margin-top: 15px; 
+            position: relative; overflow: hidden;
+            cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+            transition: transform 0.1s;
+        }
+        #shuffle-btn-container:active { 
+            transform: translateY(4px); box-shadow: 0 0 0 rgba(0,0,0,0.15); 
+        }
+        #shuffle-btn-progress {
+            position: absolute; top: 0; left: 0; height: 100%;
+            width: 100%; 
+            background: linear-gradient(90deg, #ff5252, #d32f2f); 
+            transition: width 0.3s ease-out;
+            pointer-events: none;
+        }
+        #shuffle-btn-text {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 1.5rem; font-weight: 900; z-index: 10;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.3); font-family: inherit;
+            pointer-events: none;
+        }
+        .shuffle-disabled { 
+            cursor: not-allowed !important; transform: none !important; 
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15) !important; 
+        }
+        .shuffle-disabled #shuffle-btn-text { 
+            color: #f5f5f5; text-shadow: 1px 1px 0 rgba(0,0,0,0.2); 
+        }
+
+        .footer-nickname { margin-top: 15px; font-size: 3rem; color: #795548; font-weight: bold; }
+
+        /* --- 오버레이 (카운트다운 & 결과) --- */
+        #overlay-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); z-index: 1000;
+            display: none; justify-content: center; align-items: center; flex-direction: column;
+        }
+        #countdown-text { font-size: 6rem; color: var(--primary); font-weight: bold; }
+        
+        #result-content { text-align: center; width: 90%; display: none; }
+        .result-title { font-size: 2.5rem; color: #E91E63; margin-bottom: 10px; font-weight: bold; }
+        .final-score { font-size: 4.5rem; color: var(--primary); font-weight: bold; margin: 10px 0; }
+        .my-rank-info { font-size: 1.5rem; color: #333; margin-bottom: 20px; background: #E3F2FD; display: inline-block; padding: 5px 20px; border-radius: 20px;}
+        
+        .top3-box { background: white; border: 2px solid #FFD54F; border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: left; }
+        .top3-row { display: flex; justify-content: space-between; font-size: 1.1rem; margin: 5px 0; border-bottom: 1px solid #EEE; padding-bottom: 3px; }
+
+        .end-buttons { display: flex; gap: 20px; justify-content: center; }
+        .big-btn { 
+            font-size: 3rem; width: 80px; height: 80px; border-radius: 50%; 
+            display: flex; justify-content: center; align-items: center;
+            background: white; border: 2px solid #EEE; box-shadow: 0 5px 0 #DDD; cursor: pointer; box-sizing: border-box;
+        }
+        .big-btn:active { transform: translateY(3px); box-shadow: none; }
+
+        #qr-modal { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        #qr-modal img { max-width: 90%; height: auto; border: 5px solid white; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+<div id="mobile-wrapper">
+    <div class="global-header">
+        <a href="/" target="_self" id="kingsmath-link" class="brand-link" data-i18n="brandName">킹수학.com</a>
+        <button id="langTriggerBtn">
+            <i class="fa-solid fa-globe text-gray-500 text-sm"></i>
+            <img id="currentFlag" src="https://flagcdn.com/w40/kr.png" alt="KR">
+            <i class="fa-solid fa-chevron-down text-gray-400 text-xs ml-1"></i>
+        </button>
+    </div>
+
+    <div id="start-screen">
+        <h1 class="main-title">
+            <span data-i18n="gameTitle">텐팡킹</span><br>
+            <span class="title-sub" data-i18n="mobileVer">Ten Pang King</span>
+        </h1>
+        
+        <div class="rules-box">
+            <p data-i18n="rule1">1. <strong>합이 10</strong>이 되게 스와이프!</p>
+            <p data-i18n="rule2">2. 연속 매칭 시 <strong>콤보 폭발</strong></p>
+            <p data-i18n="rule3">3. 콤보 달성 시 <strong>시간 보너스!</strong></p>
+            <p style="font-size:0.9rem; color:#555;" data-i18n="ruleDrag">(상하좌우 위치를 바꿔보세요!)</p>
+        </div>
+
+        <div id="qr-wrapper" onclick="openQrModal()"><div id="qr-code"></div></div>
+        <div style="font-size:0.8rem; color:#888; margin-bottom:10px;" data-i18n="qrDesc">(QR코드를 누르면 확대됩니다)</div>
+
+        <input type="text" id="nickname" placeholder="닉네임 입력 (최대 8자)" maxlength="8">
+        
+        <button class="btn-common btn-start" onclick="checkStart('ranked')" data-i18n="btnStart">1분 랭킹전 시작</button>
+        <button class="btn-common btn-practice" onclick="checkStart('practice')" data-i18n="btnPractice">연습 모드 (무제한)</button>
+        
+        <a href="/" target="_self" class="link-other-games" data-i18n="linkOther">🎮 다른 게임 고르기</a>
+
+        <div class="ranking-container">
+            <div class="rank-header" data-i18n="rankTitle">🏆 명예의 전당 (Top 100)</div>
+            <div id="rank-list-start" data-i18n="loading">로딩 중...</div>
+        </div>
+    </div>
+
+    <div id="game-screen">
+        <div class="game-header">
+            <div class="header-left"><div class="control-icon" onclick="goHome()">🏠</div></div>
+            <div class="header-center">
+                <div id="score-display">0</div>
+                <div id="combo-display">
+                    <span data-i18n="timeLabel">시간</span>: <span id="timer" class="timer-highlight">60</span><span data-i18n="secUnit">초</span>
+                    | <span data-i18n="comboLabel">콤보</span>: <span id="combo">0</span>
+                </div>
+            </div>
+            <div class="header-right"><div class="control-icon" onclick="resetGame()">🔄</div></div>
+        </div>
+
+        <div class="timer-bar"><div id="timer-progress"></div></div>
+        
+        <div id="grid-container">
+            <div id="grid">
+                <div id="combo-text">2 COMBO!</div>
+                <div id="notice-text">섞는 중...</div>
+            </div>
+            
+            <div id="shuffle-btn-container" onclick="useShuffleItem()">
+                <div id="shuffle-btn-progress"></div>
+                <div id="shuffle-btn-text" data-i18n="shuffleBtn">숫자 섞기</div>
+            </div>
+
+            <div class="footer-nickname" id="footer-nickname">닉네임</div>
+        </div>
+    </div>
+
+    <div id="overlay-layer">
+        <div id="countdown-text">3</div>
+        <div id="result-content">
+            <div class="result-title">GAME OVER</div>
+            <div class="final-score" id="final-score-txt">0</div>
+            <div class="my-rank-info" id="my-rank-txt" data-i18n="rankCalc">순위 계산 중...</div>
+            <div class="top3-box" id="top3-container">
+                <div style="font-weight:bold; margin-bottom:10px; border-bottom:2px solid #FFCA28;" data-i18n="todayTop3">🥇 오늘의 TOP 3</div>
+                <div id="top3-list"></div>
+            </div>
+            <div class="end-buttons">
+                <div class="big-btn" onclick="goHome()">🏠</div>
+                <div class="big-btn" onclick="resetGame()">🔄</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="qr-modal" onclick="closeQrModal()"><div id="qr-big"></div></div>
+</div>
+
+<div id="langModal" class="modal-overlay fixed inset-0 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm pt-16 sm:pt-0 px-4">
+    <div class="modal-content bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between p-5 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10">
+            <div><h2 class="text-xl font-bold text-white flex items-center gap-2"><i class="fa-solid fa-language text-yellow-500"></i><span>Language / 언어</span></h2></div>
+            <button id="closeModalBtn" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <div class="p-5 pb-2 bg-gray-900">
+            <div class="relative"><i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i><input type="text" id="searchInput" placeholder="Search / 검색 ..." class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 block pl-11 p-3.5 outline-none transition-all placeholder-gray-500"></div>
+        </div>
+        <div class="p-5 overflow-y-auto custom-scrollbar flex-1">
+            <div id="languageGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+            <div id="noResult" class="hidden flex-col items-center justify-center py-12 text-gray-500"><i class="fa-regular fa-face-frown-open text-4xl mb-3"></i><p>No results / 검색 결과 없음</p></div>
+        </div>
+    </div>
+</div>
+<div id="toastNotification" class="fixed bottom-6 right-6 bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 flex items-center gap-3">
+    <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400"><i class="fa-solid fa-check"></i></div>
+    <div><p id="ui-toast" class="text-sm font-medium text-white">언어가 변경되었습니다.</p><p id="toastLangName" class="text-xs text-gray-400">Korean</p></div>
+</div>
+
+<script>
+    /* --- 다국어 데이터 및 모달 로직 --- */
+    const toastTranslations = {
+        'ko': '언어가 변경되었습니다.', 'en': 'Language changed.', 'zh': '语言已更改。', 'ja': '言語が変更されました。',
+        'es': 'Idioma cambiado.', 'fr': 'Langue modifiée.', 'ru': 'Язык изменен.', 'vi': 'Ngôn ngữ đã được thay đổi.',
+        'id': 'Bahasa telah diubah.', 'th': 'เปลี่ยนภาษาเรียบร้อยแล้ว', 'pt-br': 'Idioma alterado.', 'hi': 'भाषा बदल दी गई है।',
+        'bn': 'ভাষা পরিবর্তন করা হয়েছে।', 'tr': 'Dil değiştirildi.', 'de': 'Sprache geändert.', 'it': 'Lingua cambiata.'
+    };
+    const languagesList = [
+        { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' }, { code: 'en', country: 'us', name: 'English', enName: 'English' },
+        { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)' }, { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+        { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' }, { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+        { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' }, { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+        { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' }, { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+        { code: 'pt-br', country: 'br', name: 'Português (BR)', enName: 'Portuguese (Brazil)' }, { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+        { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' }, { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' },
+        { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' }, { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' }
+    ];
+
+    const translations = {
+        ko: { titleTag: "텐팡킹 모바일 | 킹수학", metaDesc: "합하여 10을 만드는 두뇌 퍼즐 액션! 텐팡킹 모바일.", metaKeywords: "킹수학, 텐팡킹, 수학게임", brandName: "킹수학.com", gameTitle: "텐팡킹", mobileVer: "모바일 타임어택", rule1: "1. <strong>합이 10</strong>이 되게 스와이프!", rule2: "2. 연속 매칭 시 <strong>콤보 폭발</strong>", rule3: "3. 콤보 달성 시 <strong>시간 보너스!</strong>", ruleDrag: "(상하좌우 위치를 바꿔보세요!)", qrDesc: "(QR코드를 누르면 확대됩니다)", nickPlace: "닉네임 입력 (최대 8자)", btnStart: "1분 랭킹전 시작", btnPractice: "연습 모드 (무제한)", linkOther: "🎮 다른 게임 고르기", rankTitle: "🏆 명예의 전당 (Top 100)", loading: "로딩 중...", timeLabel: "시간", secUnit: "초", comboLabel: "콤보", rankCalc: "순위 계산 중...", todayTop3: "🥇 오늘의 TOP 3", alertNick: "닉네임을 입력해주세요.", practiceEnd: "연습 완료!", rankOut: "순위권 밖입니다.", rankSave: "기록 저장 완료", myRank: "{rank}위 입니다!", shuffling: "섞는 중...", shuffleBtn: "숫자 섞기" },
+        en: { titleTag: "Ten Pang King Mobile | KingsMath", metaDesc: "Action puzzle to make 10! Ten Pang King by KingsMath.", metaKeywords: "KingsMath, Ten Pang King, Math Game", brandName: "KingsMath.com", gameTitle: "Ten Pang King", mobileVer: "Time Attack", rule1: "1. Swipe to make <strong>Sum 10</strong>", rule2: "2. Match to trigger <strong>Combos</strong>", rule3: "3. Combos give <strong>Time Bonus!</strong>", ruleDrag: "(Swap blocks up/down/left/right!)", qrDesc: "(Click QR to zoom)", nickPlace: "Nickname (Max 8)", btnStart: "1 Min Ranked Game", btnPractice: "Practice Mode", linkOther: "🎮 Play More Games", rankTitle: "🏆 Hall of Fame", loading: "Loading...", timeLabel: "Time", secUnit: "s", comboLabel: "Combo", rankCalc: "Calculating Rank...", todayTop3: "🥇 Today's TOP 3", alertNick: "Enter a nickname.", practiceEnd: "Practice Done!", rankOut: "Not Ranked", rankSave: "Saved", myRank: "Rank: {rank}!", shuffling: "Shuffling...", shuffleBtn: "Shuffle Numbers" },
+        zh: { titleTag: "凑十王者 手机版 | KingsMath", metaDesc: "凑成10的动作解谜！KingsMath凑十王者。", metaKeywords: "KingsMath, 凑十王者, 数学", brandName: "KingsMath.com", gameTitle: "凑十王者", mobileVer: "计时赛", rule1: "1. 滑动使 <strong>和为10</strong>", rule2: "2. 连续消除引发 <strong>连击</strong>", rule3: "3. 连击获得 <strong>时间奖励！</strong>", ruleDrag: "(上下左右交换位置！)", qrDesc: "(点击二维码放大)", nickPlace: "输入昵称 (最多8字)", btnStart: "1分钟排位赛", btnPractice: "练习模式", linkOther: "🎮 更多游戏", rankTitle: "🏆 名人堂 (Top 100)", loading: "加载中...", timeLabel: "时间", secUnit: "秒", comboLabel: "连击", rankCalc: "计算排名中...", todayTop3: "🥇 今日 TOP 3", alertNick: "请输入昵称。", practiceEnd: "练习结束！", rankOut: "未上榜。", rankSave: "已保存记录。", myRank: "第 {rank} 名！", shuffling: "洗牌中...", shuffleBtn: "随机打乱" },
+        ja: { titleTag: "テンパンキング モバイル | KingsMath", metaDesc: "10を作るアクションパズル！KingsMathのテンパンキング。", metaKeywords: "KingsMath, パズル, 算数", brandName: "KingsMath.com", gameTitle: "テンパンキング", mobileVer: "タイムアタック", rule1: "1. スワイプして <strong>合計10</strong> に！", rule2: "2. 連続マッチで <strong>コンボ爆発</strong>", rule3: "3. コンボ達成で <strong>時間ボーナス！</strong>", ruleDrag: "(上下左右に入れ替えてね！)", qrDesc: "(QRタップで拡大)", nickPlace: "ニックネーム (最大8文字)", btnStart: "1分間ランキング戦", btnPractice: "練習モード", linkOther: "🎮 他のゲームを遊ぶ", rankTitle: "🏆 名誉の殿堂 (Top 100)", loading: "ロード中...", timeLabel: "時間", secUnit: "秒", comboLabel: "コンボ", rankCalc: "順位計算中...", todayTop3: "🥇 今日の TOP 3", alertNick: "ニックネームを入力してください。", practiceEnd: "練習完了！", rankOut: "ランク外です。", rankSave: "記録を保存しました", myRank: "{rank}位です！", shuffling: "シャッフル中...", shuffleBtn: "数字を混ぜる" },
+        es: { titleTag: "Ten Pang King Móvil | KingsMath", metaDesc: "¡Puzle de acción para hacer 10! Ten Pang King por KingsMath.", metaKeywords: "KingsMath, Juego de mates", brandName: "KingsMath.com", gameTitle: "Ten Pang King", mobileVer: "Contrarreloj", rule1: "1. Desliza para <strong>Sumar 10</strong>", rule2: "2. Empareja para <strong>Combos</strong>", rule3: "3. ¡Los combos dan <strong>Tiempo Extra!</strong>", ruleDrag: "(¡Intercambia arriba/abajo/izq/der!)", qrDesc: "(Toca QR para ampliar)", nickPlace: "Apodo (Máx 8)", btnStart: "Partida 1 Min", btnPractice: "Práctica", linkOther: "🎮 Más Juegos", rankTitle: "🏆 Salón de la Fama", loading: "Cargando...", timeLabel: "Tiempo", secUnit: "s", comboLabel: "Combo", rankCalc: "Calculando...", todayTop3: "🥇 TOP 3 Hoy", alertNick: "Ingresa apodo.", practiceEnd: "¡Completado!", rankOut: "Sin Clasificar", rankSave: "Guardado", myRank: "¡Puesto {rank}!", shuffling: "Mezclando...", shuffleBtn: "Mezclar Números" },
+        fr: { titleTag: "Ten Pang King Mobile | KingsMath", metaDesc: "Puzzle d'action pour faire 10 ! Ten Pang King par KingsMath.", metaKeywords: "KingsMath, Mathématiques", brandName: "KingsMath.com", gameTitle: "Ten Pang King", mobileVer: "Contre-la-montre", rule1: "1. Glissez pour <strong>Somme de 10</strong>", rule2: "2. Associez pour des <strong>Combos</strong>", rule3: "3. Combos = <strong>Temps Bonus !</strong>", ruleDrag: "(Échangez haut/bas/gauche/droite !)", qrDesc: "(Cliquez QR pour zoomer)", nickPlace: "Pseudo (Max 8)", btnStart: "Partie 1 Min", btnPractice: "Pratique", linkOther: "🎮 Plus de Jeux", rankTitle: "🏆 Renommée", loading: "Chargement...", timeLabel: "Temps", secUnit: "s", comboLabel: "Combo", rankCalc: "Calcul...", todayTop3: "🥇 TOP 3 du Jour", alertNick: "Entrez un pseudo.", practiceEnd: "Terminé !", rankOut: "Non Classé", rankSave: "Sauvegardé", myRank: "Rang {rank} !", shuffling: "Mélange...", shuffleBtn: "Mélanger les Nombres" },
+        ru: { titleTag: "Ten Pang King Мобайл | KingsMath", metaDesc: "Головоломка на сумму 10! Ten Pang King от KingsMath.", metaKeywords: "KingsMath, Математика", brandName: "KingsMath.com", gameTitle: "Ten Pang King", mobileVer: "На время", rule1: "1. Свайп для <strong>Суммы 10</strong>", rule2: "2. Цепочки для <strong>Комбо</strong>", rule3: "3. Комбо дает <strong>Бонус времени!</strong>", ruleDrag: "(Меняйте вверх/вниз/влево/вправо!)", qrDesc: "(Нажмите QR для зума)", nickPlace: "Ник (Макс 8)", btnStart: "Игра 1 мин.", btnPractice: "Практика", linkOther: "🎮 Другие Игры", rankTitle: "🏆 Зал Славы", loading: "Загрузка...", timeLabel: "Время", secUnit: "с", comboLabel: "Комбо", rankCalc: "Подсчет...", todayTop3: "🥇 ТОП 3 Сегодня", alertNick: "Введите ник.", practiceEnd: "Готово!", rankOut: "Вне рейтинга", rankSave: "Сохранено", myRank: "Место {rank}!", shuffling: "Перемешиваем...", shuffleBtn: "Перемешать числа" },
+        id: { titleTag: "Ten Pang King Mobile | KingsMath", metaDesc: "Teka-teki aksi jumlah 10! Ten Pang King oleh KingsMath.", metaKeywords: "KingsMath, Game Matematika", brandName: "KingsMath.com", gameTitle: "Ten Pang King", mobileVer: "Waktu Terbatas", rule1: "1. Geser untuk <strong>Jumlah 10</strong>", rule2: "2. Cocokkan untuk <strong>Combo</strong>", rule3: "3. Combo beri <strong>Bonus Waktu!</strong>", ruleDrag: "(Tukar atas/bawah/kiri/kanan!)", qrDesc: "(Klik QR untuk perbesar)", nickPlace: "Nama (Maks 8)", btnStart: "Main 1 Menit", btnPractice: "Latihan", linkOther: "🎮 Game Lain", rankTitle: "🏆 Hall of Fame", loading: "Memuat...", timeLabel: "Waktu", secUnit: "d", comboLabel: "Combo", rankCalc: "Menghitung...", todayTop3: "🥇 TOP 3 Hari Ini", alertNick: "Masukkan nama.", practiceEnd: "Selesai!", rankOut: "Tidak Masuk", rankSave: "Tersimpan", myRank: "Peringkat {rank}!", shuffling: "Mengocok...", shuffleBtn: "Acak Angka" },
+        vi: { titleTag: "Ten Pang King Mobile | KingsMath", metaDesc: "Câu đố hành động tổng 10! Ten Pang King của KingsMath.", metaKeywords: "KingsMath, Toán Học", brandName: "KingsMath.com", gameTitle: "Ten Pang King", mobileVer: "Tính Giờ", rule1: "1. Vuốt để <strong>Tổng 10</strong>", rule2: "2. Ghép để tạo <strong>Combo</strong>", rule3: "3. Combo tặng <strong>Thưởng thời gian!</strong>", ruleDrag: "(Đổi chỗ lên/xuống/trái/phải!)", qrDesc: "(Nhấn QR để phóng to)", nickPlace: "Tên (Tối đa 8)", btnStart: "Chơi 1 Phút", btnPractice: "Tập luyện", linkOther: "🎮 Game khác", rankTitle: "🏆 Bảng Xếp Hạng", loading: "Đang tải...", timeLabel: "T.Gian", secUnit: "s", comboLabel: "Combo", rankCalc: "Đang tính...", todayTop3: "🥇 TOP 3 Hôm Nay", alertNick: "Nhập biệt danh.", practiceEnd: "Xong!", rankOut: "Ngoài bảng", rankSave: "Đã lưu", myRank: "Hạng {rank}!", shuffling: "Đang xáo...", shuffleBtn: "Xáo Trộn Số" },
+        th: { titleTag: "Ten Pang King มือถือ | KingsMath", metaDesc: "แอคชั่นพัซเซิลรวม 10! Ten Pang King โดย KingsMath", metaKeywords: "KingsMath, เกมคณิตศาสตร์", brandName: "KingsMath.com", gameTitle: "Ten Pang King", mobileVer: "แข่งเวลา", rule1: "1. ปัดเพื่อ <strong>รวม 10</strong>", rule2: "2. จับคู่เพื่อ <strong>คอมโบ</strong>", rule3: "3. คอมโบให้ <strong>โบนัสเวลา!</strong>", ruleDrag: "(สลับขึ้น/ลง/ซ้าย/ขวา!)", qrDesc: "(แตะ QR เพื่อขยาย)", nickPlace: "ชื่อ (สูงสุด 8)", btnStart: "แข่ง 1 นาที", btnPractice: "ฝึกซ้อม", linkOther: "🎮 เล่นเกมอื่น", rankTitle: "🏆 หอเกียรติยศ", loading: "กำลังโหลด...", timeLabel: "เวลา", secUnit: "วิ", comboLabel: "คอมโบ", rankCalc: "กำลังคำนวณ...", todayTop3: "🥇 TOP 3 วันนี้", alertNick: "กรุณาใส่ชื่อ", practiceEnd: "สำเร็จ!", rankOut: "ไม่ติดอันดับ", rankSave: "บันทึกแล้ว", myRank: "อันดับ {rank}!", shuffling: "กำลังสับเปลี่ยน...", shuffleBtn: "สลับตัวเลข" },
+        'pt-br': { titleTag: "Ten Pang King Mobile | KingsMath", metaDesc: "Quebra-cabeça de ação para somar 10!", metaKeywords: "KingsMath, Matemática", brandName: "KingsMath.com", gameTitle: "Ten Pang King", mobileVer: "Contra o tempo", rule1: "1. Deslize para <strong>Soma 10</strong>", rule2: "2. Combine para <strong>Combos</strong>", rule3: "3. Combos dão <strong>Bônus de Tempo!</strong>", ruleDrag: "(Troque cima/baixo/esq/dir!)", qrDesc: "(Clique no QR para ampliar)", nickPlace: "Apelido (Máx 8)", btnStart: "Jogar 1 Minuto", btnPractice: "Prática", linkOther: "🎮 Mais Jogos", rankTitle: "🏆 Hall da Fama", loading: "Carregando...", timeLabel: "Tempo", secUnit: "s", comboLabel: "Combo", rankCalc: "Calculando...", todayTop3: "🥇 TOP 3 Hoje", alertNick: "Digite apelido.", practiceEnd: "Concluído!", rankOut: "Sem Classificação", rankSave: "Salvo", myRank: "Posição {rank}!", shuffling: "Misturando...", shuffleBtn: "Misturar Números" },
+        hi: { titleTag: "Ten Pang King मोबाइल | KingsMath", metaDesc: "10 बनाने वाला एक्शन पज़ल!", metaKeywords: "KingsMath, गणित का खेल", brandName: "KingsMath.com", gameTitle: "Ten Pang King", mobileVer: "टाइम अटैक", rule1: "1. <strong>जोड़ 10</strong> के लिए स्वाइप करें", rule2: "2. <strong>कॉम्बो</strong> ट्रिगर करें", rule3: "3. कॉम्बो पर <strong>बोनस समय!</strong>", ruleDrag: "(ऊपर/नीचे/बाएं/दाएं स्वैप करें!)", qrDesc: "(ज़ूम के लिए QR पर क्लिक करें)", nickPlace: "उपनाम (अधिकतम 8)", btnStart: "1 मिनट रैंक गेम", btnPractice: "अभ्यास", linkOther: "🎮 और खेलें", rankTitle: "🏆 हॉल ऑफ फेम", loading: "लोड हो रहा है...", timeLabel: "समय", secUnit: "से", comboLabel: "कॉम्बो", rankCalc: "गणना की जा रही है...", todayTop3: "🥇 आज के TOP 3", alertNick: "उपनाम दर्ज करें।", practiceEnd: "पूर्ण!", rankOut: "रैंक नहीं है", rankSave: "सहेजा गया", myRank: "रैंक {rank}!", shuffling: "फेरबदल...", shuffleBtn: "संख्याएं मिलाएं" },
+        bn: { titleTag: "Ten Pang King মোবাইল | KingsMath", metaDesc: "10 তৈরির পাজল গেম!", metaKeywords: "KingsMath, গণিত গেম", brandName: "KingsMath.com", gameTitle: "Ten Pang King", mobileVer: "টাইম অ্যাটাক", rule1: "1. <strong>যোগফল 10</strong> করতে সোয়াইপ", rule2: "2. <strong>কম্বো</strong> ট্রিগার করুন", rule3: "3. কম্বোতে <strong>বোনাস সময়!</strong>", ruleDrag: "(উপরে/নিচে/বামে/ডানে বদলান!)", qrDesc: "(বড় করতে QR ক্লিক করুন)", nickPlace: "ডাকনাম (সর্বোচ্চ 8)", btnStart: "১ মিনিট র‍্যাঙ্ক", btnPractice: "অনুশীলন", linkOther: "🎮 আরও খেলুন", rankTitle: "🏆 হল অফ ফেম", loading: "লোড হচ্ছে...", timeLabel: "সময়", secUnit: "সে", comboLabel: "কম্বো", rankCalc: "গণনা হচ্ছে...", todayTop3: "🥇 আজকের TOP 3", alertNick: "ডাকনাম লিখুন।", practiceEnd: "সম্পন্ন!", rankOut: "র‍্যাঙ্ক করা হয়নি", rankSave: "সংরক্ষিত", myRank: "র‍্যাঙ্ক {rank}!", shuffling: ">শাফেল হচ্ছে...", shuffleBtn: "সংখ্যা মেশান" },
+        tr: { titleTag: "Ten Pang King Mobil | KingsMath", metaDesc: "10 yapmak için aksiyon bulmacası!", metaKeywords: "KingsMath, Matematik Oyunu", brandName: "KingsMath.com", gameTitle: "Ten Pang King", mobileVer: "Zamana Karşı", rule1: "1. <strong>Toplam 10</strong> için kaydır", rule2: "2. <strong>Kombo</strong> için eşleştir", rule3: "3. Kombolar <strong>Zaman Bonusu</strong> verir!", ruleDrag: "(Yukarı/aşağı/sağa/sola değiştir!)", qrDesc: "(Büyütmek için QR'a tıkla)", nickPlace: "Ad (Maks 8)", btnStart: "1 Dk Oyun", btnPractice: "Alıştırma", linkOther: "🎮 Daha Fazla Oyun", rankTitle: "🏆 Onur Listesi", loading: "Yükleniyor...", timeLabel: "Süre", secUnit: "sn", comboLabel: "Kombo", rankCalc: "Hesaplanıyor...", todayTop3: "🥇 Bugünün TOP 3'ü", alertNick: "Ad girin.", practiceEnd: "Tamamlandı!", rankOut: "Sıralama Dışı", rankSave: "Kaydedildi", myRank: "Sıralama: {rank}!", shuffling: "Karıştırılıyor...", shuffleBtn: "Sayıları Karıştır" },
+        de: { titleTag: "Ten Pang King Mobile | KingsMath", metaDesc: "Action-Puzzle um 10 zu machen!", metaKeywords: "KingsMath, Mathe-Spiel", brandName: "KingsMath.com", gameTitle: "Ten Pang King", mobileVer: "Zeitangriff", rule1: "1. Wische für <strong>Summe 10</strong>", rule2: "2. Matche für <strong>Kombos</strong>", rule3: "3. Kombos geben <strong>Zeitbonus!</strong>", ruleDrag: "(Tausche hoch/runter/links/rechts!)", qrDesc: "(QR für Zoom tippen)", nickPlace: "Name (Max 8)", btnStart: "1 Min Spiel", btnPractice: "Übung", linkOther: "🎮 Mehr Spiele", rankTitle: "🏆 Ruhmeshalle", loading: "Lädt...", timeLabel: "Zeit", secUnit: "s", comboLabel: "Kombo", rankCalc: "Berechne...", todayTop3: "🥇 TOP 3 Heute", alertNick: "Gib einen Namen ein.", practiceEnd: "Fertig!", rankOut: "Nicht platziert", rankSave: "Gespeichert", myRank: "Platz: {rank}!", shuffling: "Mische...", shuffleBtn: "Zahlen Mischen" },
+        it: { titleTag: "Ten Pang King Mobile | KingsMath", metaDesc: "Puzzle d'azione per fare 10!", metaKeywords: "KingsMath, Gioco di Matematica", brandName: "KingsMath.com", gameTitle: "Ten Pang King", mobileVer: "Contro il tempo", rule1: "1. Scorri per <strong>Somma 10</strong>", rule2: "2. Abbina per <strong>Combo</strong>", rule3: "3. Le combo danno <strong>Tempo Bonus!</strong>", ruleDrag: "(Scambia su/giù/sx/dx!)", qrDesc: "(Tocca QR per zoom)", nickPlace: "Nome (Max 8)", btnStart: "Gioca 1 Min", btnPractice: "Pratica", linkOther: "🎮 Altri Giochi", rankTitle: "🏆 Hall of Fame", loading: "Caricamento...", timeLabel: "Tempo", secUnit: "s", comboLabel: "Combo", rankCalc: "Calcolo...", todayTop3: "🥇 TOP 3 Oggi", alertNick: "Inserisci nome.", practiceEnd: "Fatto!", rankOut: "Non Classificato", rankSave: "Salvato", myRank: "Posizione: {rank}!", shuffling: "Mescolo...", shuffleBtn: "Mescola Numeri" }
+    };
+
+    let currentLang = 'en';
+    function detectLanguage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlLang = urlParams.get('lang');
+        const storedLang = localStorage.getItem('kingsmath_lang');
+        const browserLang = navigator.language.slice(0, 2);
+        if (urlLang && translations[urlLang]) return urlLang;
+        if (storedLang && translations[storedLang]) return storedLang;
+        if (translations[browserLang]) return browserLang;
+        return 'en';
+    }
+
+    function applyLanguage() {
+        const t = translations[currentLang];
+        document.title = t.titleTag;
+        document.querySelector('meta[name="description"]').setAttribute("content", t.metaDesc);
+        document.querySelector('meta[name="keywords"]').setAttribute("content", t.metaKeywords);
+
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (t[key]) el.innerHTML = t[key];
+        });
+
+        const nickInput = document.getElementById('nickname');
+        if (nickInput) nickInput.placeholder = t.nickPlace;
+
+        const brandLink = document.getElementById('kingsmath-link');
+        if (brandLink) {
+            brandLink.href = '/';
+            brandLink.target = "_self";
+            brandLink.innerHTML = currentLang === 'ko' ? '킹수학.com' : 'KingsMath.com';
+        }
+
+        document.body.style.fontFamily = currentLang === 'ko' ? "'Jua', sans-serif" : "'Noto Sans', sans-serif";
+
+        const titleEl = document.querySelector('.main-title');
+        const startBtn = document.querySelector('.btn-start');
+        const pracBtn = document.querySelector('.btn-practice');
+        if(titleEl && startBtn && pracBtn) {
+            titleEl.classList.remove('long-text', 'very-long-text');
+            startBtn.classList.remove('long-text'); pracBtn.classList.remove('long-text');
+            const longLangs = ['ru', 'es', 'fr', 'en', 'pt-br', 'id', 'de', 'it', 'tr'];
+            const veryLongLangs = ['vi', 'th', 'hi', 'bn'];
+            if (veryLongLangs.includes(currentLang)) {
+                titleEl.classList.add('very-long-text'); startBtn.classList.add('long-text'); pracBtn.classList.add('long-text');
+            } else if (longLangs.includes(currentLang)) {
+                titleEl.classList.add('long-text'); startBtn.classList.add('long-text'); pracBtn.classList.add('long-text');
+            }
+        }
+        const langInfo = languagesList.find(l => l.code === currentLang) || languagesList[1];
+        document.getElementById('currentFlag').src = `https://flagcdn.com/w40/${langInfo.country}.png`;
+        
+        // 동적 텍스트용 변수 업데이트
+        const noticeTextEl = document.getElementById('notice-text');
+        if (noticeTextEl) {
+            noticeTextEl.innerHTML = t.shuffling;
+        }
+    }
+
+    const modal = document.getElementById('langModal');
+    const searchInput = document.getElementById('searchInput');
+    const gridEl = document.getElementById('languageGrid');
+    const noResult = document.getElementById('noResult');
+    const toast = document.getElementById('toastNotification');
+    let toastTimeout;
+
+    function renderLanguages(filterText = '') {
+        gridEl.innerHTML = '';
+        const lowerFilter = filterText.toLowerCase();
+        const filteredLangs = languagesList.filter(lang => lang.name.toLowerCase().includes(lowerFilter) || lang.enName.toLowerCase().includes(lowerFilter) || lang.code.toLowerCase().includes(lowerFilter));
+
+        if (filteredLangs.length === 0) {
+            gridEl.classList.add('hidden'); noResult.classList.remove('hidden'); noResult.classList.add('flex');
+        } else {
+            gridEl.classList.remove('hidden'); noResult.classList.add('hidden'); noResult.classList.remove('flex');
+            filteredLangs.forEach(lang => {
+                const isSelected = lang.code === currentLang;
+                const baseClasses = "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 group relative overflow-hidden";
+                const stateClasses = isSelected ? "bg-gray-800 border-yellow-500 ring-1 ring-yellow-500/50" : "bg-gray-800/40 border-gray-700 hover:bg-gray-700 hover:border-gray-500";
+                const btn = document.createElement('div');
+                btn.className = `${baseClasses} ${stateClasses}`;
+                btn.innerHTML = `
+                    <div class="shrink-0 w-8 h-6 rounded overflow-hidden shadow-sm border border-gray-700/50">
+                        <img src="https://flagcdn.com/w40/${lang.country}.png" alt="${lang.country}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                    </div>
+                    <div class="flex-1 min-w-0 flex flex-col items-start">
+                        <span class="text-sm font-medium text-white truncate w-full ${isSelected ? 'text-yellow-400' : ''}">${lang.name}</span>
+                        <span class="text-xs text-gray-400 truncate w-full">${lang.enName}</span>
+                    </div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check text-yellow-500 text-lg ml-2"></i>' : ''}
+                `;
+                btn.addEventListener('click', () => {
+                    currentLang = lang.code; localStorage.setItem('kingsmath_lang', currentLang);
+                    const newUrl = new URL(window.location); newUrl.searchParams.set('lang', currentLang);
+                    window.history.pushState({}, '', newUrl);
+                    applyLanguage(); closeModal();
+                    const toastMsg = toastTranslations[currentLang] || toastTranslations['en'];
+                    document.getElementById('ui-toast').textContent = toastMsg;
+                    document.getElementById('toastLangName').textContent = lang.name;
+                    toast.classList.add('show'); clearTimeout(toastTimeout);
+                    toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+                    renderLanguages(searchInput.value);
+                });
+                gridEl.appendChild(btn);
+            });
+        }
+    }
+
+    function openModal() { modal.classList.add('active'); setTimeout(() => searchInput.focus(), 100); }
+    function closeModal() { modal.classList.remove('active'); }
+
+    document.getElementById('langTriggerBtn').addEventListener('click', openModal);
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    searchInput.addEventListener('input', (e) => renderLanguages(e.target.value));
+
+    /* --- 게임 로직 및 Web Audio API --- */
+    const GAME_ID = 'ten_pang_king_mobile'; 
+    const TIME_LIMIT = 60; 
+    let currentMode = 'ranked'; 
+    let nickname = "";
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+    function initAudio() {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    document.addEventListener('mousedown', initAudio, { once: true });
+    document.addEventListener('touchstart', initAudio, { once: true });
+    document.addEventListener('pointerdown', initAudio, { once: true });
+
+    function playTone(freq, type, duration, vol) {
+        if (!audioCtx) return;
+        try {
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(freq, t);
+            gain.gain.setValueAtTime(vol, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(t); osc.stop(t + duration);
+        } catch(e) { console.warn("Audio Error: ", e); }
+    }
+
+    const sfx = {
+        start: () => playTone(880, 'sine', 0.15, 0.3), 
+        go: () => playTone(1320, 'sine', 0.4, 0.4),    
+        swap: () => playTone(300, 'sine', 0.1, 0.4),
+        pop: (comboLevel) => {
+            if (!audioCtx) return;
+            try {
+                const t = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator(); 
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sine'; 
+                
+                const baseFreq = 500 + (comboLevel * 50);
+                osc.frequency.setValueAtTime(baseFreq, t);
+                osc.frequency.exponentialRampToValueAtTime(baseFreq + 300, t + 0.1); 
+                
+                gain.gain.setValueAtTime(0.4, t); 
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+                
+                osc.connect(gain); 
+                gain.connect(audioCtx.destination);
+                osc.start(t); 
+                osc.stop(t + 0.1);
+            } catch(e) { console.warn("Audio Error", e); }
+        },
+        fall: () => playTone(150, 'square', 0.05, 0.1),
+        error: () => playTone(200, 'sawtooth', 0.15, 0.4),
+        shuffle: () => playTone(600, 'triangle', 0.3, 0.3),
+        timeup: () => playTone(400, 'sawtooth', 1, 0.5),
+        bonus: () => {
+            if (!audioCtx) return;
+            try {
+                const t = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, t); osc.frequency.linearRampToValueAtTime(1200, t + 0.2);
+                gain.gain.setValueAtTime(0.3, t); gain.gain.linearRampToValueAtTime(0.01, t + 0.2);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(t); osc.stop(t + 0.2);
+            } catch(e) {}
+        }
+    };
+
+    /* 텐팡킹 변수 */
+    const boardSize = 7;
+    let cellPx = 0; 
+    const cellGapPx = 4;
+    const boardEl = document.getElementById('grid');
+    const scoreEl = document.getElementById('score-display');
+    const comboEl = document.getElementById('combo');
+    const timerEl = document.getElementById('timer');
+    const timerProgress = document.getElementById('timer-progress');
+    const timerBar = document.querySelector('.timer-bar');
+
+    let board = [];
+    let isAnimating = false;
+    let isGameOver = false;
+    let timerStarted = false;
+    let timeLeft = 60;
+    let practiceTime = 0;
+    let mainTimerId = null;
+    let selected = null;
+    let score = 0;
+    let combo = 0;
+    let hintTimeoutId = null;
+    let startX = 0, startY = 0;
+    let activeBlock = null;
+
+    /* 숫자 섞기 아이템 관련 변수 */
+    let shuffleReady = true;
+    let shuffleProgressScore = 0;
+    const SHUFFLE_TARGET_SCORE = 5000;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        currentLang = detectLanguage(); applyLanguage(); renderLanguages();
+        new QRCode(document.getElementById("qr-code"), { text: window.location.href, width: 100, height: 100, colorDark : "#000000", colorLight : "#ffffff" });
+        const savedNick = localStorage.getItem('kingsmath_nick');
+        if(savedNick) document.getElementById('nickname').value = savedNick;
+        
+        loadRanking(false);
+        window.addEventListener('resize', handleResize);
+    });
+
+    function openQrModal() {
+        document.getElementById('qr-big').innerHTML = document.getElementById('qr-code').innerHTML;
+        const img = document.getElementById('qr-big').querySelector('img');
+        if(img) { img.style.width = '300px'; img.style.height = '300px'; }
+        document.getElementById('qr-modal').style.display = 'flex';
+    }
+    function closeQrModal() { document.getElementById('qr-modal').style.display = 'none'; }
+
+    function goHome() {
+        if (document.fullscreenElement) {
+            clearInterval(mainTimerId); clearTimeout(hintTimeoutId);
+            document.querySelector('.global-header').style.display = 'flex'; 
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('overlay-layer').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+        } else { location.reload(); }
+    }
+
+    function checkStart(mode) {
+        initAudio(); 
+
+        nickname = document.getElementById('nickname').value.trim();
+        if(!nickname) { alert(translations[currentLang].alertNick); return; }
+        localStorage.setItem('kingsmath_nick', nickname);
+        currentMode = mode; 
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'flex';
+        
+        document.querySelector('.global-header').style.display = 'none'; 
+        
+        document.getElementById('footer-nickname').innerText = nickname;
+        
+        if (currentMode === 'ranked') { timerBar.style.display = 'block'; }
+        else { timerBar.style.display = 'none'; }
+        
+        startCountdown();
+    }
+
+    function startCountdown() {
+        const overlay = document.getElementById('overlay-layer');
+        const cntTxt = document.getElementById('countdown-text');
+        const resCont = document.getElementById('result-content');
+        
+        overlay.style.display = 'flex'; resCont.style.display = 'none'; cntTxt.style.display = 'block';
+        let count = 3; cntTxt.innerText = count; sfx.start();
+
+        const interval = setInterval(() => {
+            count--;
+            if(count > 0) { cntTxt.innerText = count; sfx.start(); } 
+            else {
+                clearInterval(interval); cntTxt.innerText = "START!"; sfx.go();
+                setTimeout(() => { overlay.style.display = 'none'; initGame(); }, 500);
+            }
+        }, 1000);
+    }
+
+    function formatTime(seconds) {
+        const m = Math.floor(seconds / 60); const s = seconds % 60;
+        return `${m}:${s < 10 ? '0'+s : s}`;
+    }
+
+    function calculateCellSize() {
+        const gridW = boardEl.clientWidth;
+        const padding = 10; 
+        const usableWidth = gridW - (padding * 2);
+        cellPx = (usableWidth - (cellGapPx * (boardSize - 1))) / boardSize;
+        return padding;
+    }
+
+    function getPosition(r, c, padding) {
+        return {
+            top: padding + r * (cellPx + cellGapPx),
+            left: padding + c * (cellPx + cellGapPx)
+        };
+    }
+
+    function handleResize() {
+        if (document.getElementById('game-screen').style.display === 'flex' && !isGameOver) {
+            const pad = calculateCellSize();
+            for(let r=0; r<boardSize; r++){
+                for(let c=0; c<boardSize; c++){
+                    if(board[r][c] && board[r][c].el) {
+                        board[r][c].el.style.width = cellPx + 'px';
+                        board[r][c].el.style.height = cellPx + 'px';
+                        const pos = getPosition(board[r][c].el.dataset.r, board[r][c].el.dataset.c, pad);
+                        board[r][c].el.style.top = pos.top + 'px';
+                        board[r][c].el.style.left = pos.left + 'px';
+                    }
+                }
+            }
+        }
+    }
+
+    function getSafeRandomNumber(r, c, currentRow) {
+        let valid = [1,2,3,4,5,6,7,8,9];
+        if (r > 0) { const topVal = board[r-1][c].val; valid = valid.filter(n => n + topVal !== 10); }
+        if (c > 0) { const leftVal = currentRow[c-1].val; valid = valid.filter(n => n + leftVal !== 10); }
+        if (valid.length === 0) return Math.floor(Math.random() * 9) + 1;
+        return valid[Math.floor(Math.random() * valid.length)];
+    }
+
+    function swapDataOnly(r1, c1, r2, c2) {
+        let temp = board[r1][c1]; board[r1][c1] = board[r2][c2]; board[r2][c2] = temp;
+    }
+
+    function findValidMove() {
+        for(let r = boardSize - 1; r >= 0; r--) {
+            for(let c = 0; c < boardSize; c++) {
+                if(c < boardSize - 1) {
+                    swapDataOnly(r, c, r, c+1); 
+                    let m = findMatches(); 
+                    swapDataOnly(r, c, r, c+1);
+                    if(m.length > 0) return {r1:r, c1:c, r2:r, c2:c+1};
+                }
+                if(r < boardSize - 1) {
+                    swapDataOnly(r, c, r+1, c); 
+                    let m = findMatches(); 
+                    swapDataOnly(r, c, r+1, c);
+                    if(m.length > 0) return {r1:r, c1:c, r2:r+1, c2:c};
+                }
+            }
+        }
+        return null;
+    }
+
+    function resetHintTimer() {
+        clearTimeout(hintTimeoutId); clearHints();
+        if (!isAnimating && !isGameOver) hintTimeoutId = setTimeout(showHint, 5000);
+    }
+    
+    function showHint() {
+        if (isAnimating || isGameOver) return;
+        const move = findValidMove();
+        if (move) { board[move.r1][move.c1].el.classList.add('hint-anim'); board[move.r2][move.c2].el.classList.add('hint-anim'); }
+    }
+    
+    function clearHints() { document.querySelectorAll('.hint-anim').forEach(el => el.classList.remove('hint-anim')); }
+
+    function shuffleBoard() {
+        isAnimating = true; clearTimeout(hintTimeoutId); clearHints();
+        
+        const noticeEl = document.getElementById('notice-text');
+        noticeEl.innerHTML = translations[currentLang].shuffling;
+        noticeEl.classList.add('show-notice'); sfx.shuffle();
+
+        setTimeout(() => {
+            noticeEl.classList.remove('show-notice');
+            do {
+                for (let r = 0; r < boardSize; r++) {
+                    for (let c = 0; c < boardSize; c++) {
+                        board[r][c].val = getSafeRandomNumber(r, c, board[r]);
+                        const cell = board[r][c].el;
+                        cell.className = `cell num-${board[r][c].val}`;
+                        cell.textContent = board[r][c].val;
+                        cell.style.transform = 'scale(0)';
+                        setTimeout(() => { cell.style.transform = ''; }, 50 + Math.random() * 200);
+                    }
+                }
+            } while(!findValidMove());
+            
+            setTimeout(() => { isAnimating = false; resetHintTimer(); }, 400);
+        }, 1200);
+    }
+
+    function startTimer() {
+        clearInterval(mainTimerId);
+        mainTimerId = setInterval(() => {
+            if (isGameOver) return;
+            if (currentMode === 'ranked') {
+                timeLeft--; updateTimerUI();
+                if (timeLeft <= 0) endGame();
+            } else {
+                practiceTime++; updateTimerUI();
+            }
+        }, 1000);
+    }
+
+    function updateTimerUI() {
+        if (currentMode === 'ranked') {
+            timerEl.textContent = timeLeft;
+            const pct = Math.min((timeLeft / TIME_LIMIT) * 100, 100);
+            timerProgress.style.width = pct + "%";
+            if (timeLeft <= 5 && timeLeft > 0) {
+                timerEl.classList.add('time-warning'); sfx.start(); 
+                timerProgress.style.background = 'linear-gradient(90deg, #FF5252, #FF1744)';
+            } else {
+                timerEl.classList.remove('time-warning');
+                timerProgress.style.background = 'linear-gradient(90deg, #4CAF50, #8BC34A)';
+            }
+        } else {
+            timerEl.textContent = formatTime(practiceTime);
+        }
+    }
+
+    function showBonusTime(sec) {
+        sfx.bonus();
+        const bonusEl = document.createElement('div');
+        bonusEl.className = 'bonus-time'; bonusEl.textContent = `+${sec}초`;
+        boardEl.appendChild(bonusEl);
+        setTimeout(() => { if (bonusEl.parentNode) bonusEl.parentNode.removeChild(bonusEl); }, 1000);
+    }
+
+    function initGame() {
+        isGameOver = false; isAnimating = false; timerStarted = false;
+        score = 0; combo = 0; timeLeft = TIME_LIMIT; practiceTime = 0;
+        shuffleReady = true; shuffleProgressScore = 0;
+        updateScore(); updateTimerUI(); updateShuffleUI();
+        
+        const pad = calculateCellSize();
+
+        do {
+            const obsoleteElements = boardEl.querySelectorAll('.cell, .bonus-time');
+            obsoleteElements.forEach(el => el.remove());
+            board = [];
+            for (let r = 0; r < boardSize; r++) {
+                let row = [];
+                for (let c = 0; c < boardSize; c++) {
+                    const val = getSafeRandomNumber(r, c, row);
+                    const cell = createCellElement(r, c, val, pad);
+                    row.push({ val: val, el: cell });
+                }
+                board.push(row);
+            }
+        } while(!findValidMove());
+        
+        if (!boardEl.dataset.initialized) {
+            boardEl.addEventListener('pointerdown', handlePointerDown);
+            document.addEventListener('pointerup', handlePointerUp);
+            boardEl.addEventListener('touchmove', (e) => { e.preventDefault(); }, {passive: false});
+            boardEl.dataset.initialized = 'true';
+        }
+        resetHintTimer();
+    }
+
+    function createCellElement(r, c, val, pad) {
+        const cell = document.createElement('div');
+        cell.className = `cell num-${val}`; cell.textContent = val;
+        cell.style.width = cellPx + 'px'; cell.style.height = cellPx + 'px';
+        const pos = getPosition(r, c, pad);
+        cell.style.top = pos.top + 'px'; cell.style.left = pos.left + 'px';
+        cell.dataset.r = r; cell.dataset.c = c;
+        boardEl.appendChild(cell);
+        return cell;
+    }
+
+    function handlePointerDown(e) {
+        if (isGameOver || isAnimating) return;
+        initAudio();
+        
+        if (!timerStarted) { startTimer(); timerStarted = true; }
+        resetHintTimer();
+        
+        const target = e.target.closest('.cell');
+        if (!target) return;
+
+        activeBlock = { r: parseInt(target.dataset.r), c: parseInt(target.dataset.c) };
+        startX = e.clientX; startY = e.clientY;
+
+        if (selected) board[selected.r][selected.c].el.classList.remove('selected');
+        target.classList.add('selected');
+    }
+
+    function handlePointerUp(e) {
+        if (isAnimating || !activeBlock || isGameOver) return;
+        const diffX = e.clientX - startX; const diffY = e.clientY - startY;
+        let targetR = activeBlock.r, targetC = activeBlock.c;
+
+        if (Math.abs(diffX) > 20 || Math.abs(diffY) > 20) {
+            if (Math.abs(diffX) > Math.abs(diffY)) targetC += (diffX > 0) ? 1 : -1;
+            else targetR += (diffY > 0) ? 1 : -1;
+        } else {
+            if (!selected) { selected = activeBlock; return; } 
+            else {
+                targetR = selected.r; targetC = selected.c;
+                if (targetR === activeBlock.r && targetC === activeBlock.c) {
+                    board[selected.r][selected.c].el.classList.remove('selected');
+                    selected = null; activeBlock = null; return;
+                }
+            }
+        }
+
+        if (selected) board[selected.r][selected.c].el.classList.remove('selected');
+        if (activeBlock) board[activeBlock.r][activeBlock.c].el.classList.remove('selected');
+        selected = null;
+
+        if (targetR >= 0 && targetR < boardSize && targetC >= 0 && targetC < boardSize) {
+            const rDiff = Math.abs(activeBlock.r - targetR), cDiff = Math.abs(activeBlock.c - targetC);
+            if (rDiff + cDiff === 1) trySwap(activeBlock.r, activeBlock.c, targetR, targetC);
+        }
+        activeBlock = null;
+    }
+
+    function trySwap(r1, c1, r2, c2) {
+        isAnimating = true; combo = 0; updateScore(); sfx.swap();
+        swapBlocks(r1, c1, r2, c2);
+
+        setTimeout(() => {
+            const matches = findMatches();
+            if (matches.length > 0) processMatches(matches);
+            else {
+                sfx.error(); swapBlocks(r1, c1, r2, c2);
+                setTimeout(() => { isAnimating = false; resetHintTimer(); }, 250);
+            }
+        }, 250);
+    }
+
+    function swapBlocks(r1, c1, r2, c2) {
+        const b1 = board[r1][c1], b2 = board[r2][c2];
+        board[r1][c1] = b2; board[r2][c2] = b1;
+        b1.el.dataset.r = r2; b1.el.dataset.c = c2; b2.el.dataset.r = r1; b2.el.dataset.c = c1;
+        const pad = calculateCellSize();
+        const pos1 = getPosition(r2, c2, pad), pos2 = getPosition(r1, c1, pad);
+        b1.el.style.top = pos1.top + 'px'; b1.el.style.left = pos1.left + 'px';
+        b2.el.style.top = pos2.top + 'px'; b2.el.style.left = pos2.left + 'px';
+    }
+
+    function findMatches() {
+        let matchedSet = new Set();
+        for (let r = 0; r < boardSize; r++) {
+            for (let c = 0; c < boardSize - 1; c++) {
+                if (!board[r][c] || !board[r][c+1]) continue;
+                if (board[r][c].val + board[r][c+1].val === 10) { matchedSet.add(`${r},${c}`); matchedSet.add(`${r},${c+1}`); }
+            }
+        }
+        for (let r = 0; r < boardSize - 1; r++) {
+            for (let c = 0; c < boardSize; c++) {
+                if (!board[r][c] || !board[r+1][c]) continue;
+                if (board[r][c].val + board[r+1][c].val === 10) { matchedSet.add(`${r},${c}`); matchedSet.add(`${r+1},${c}`); }
+            }
+        }
+        return Array.from(matchedSet).map(str => { const [r, c] = str.split(',').map(Number); return {r, c}; });
+    }
+
+    function createExplosion(r, c, colorClass) {
+        const pad = calculateCellSize();
+        const pos = getPosition(r, c, pad);
+        const centerX = pos.left + cellPx / 2;
+        const centerY = pos.top + cellPx / 2;
+        
+        for(let i=0; i<8; i++) {
+            const particle = document.createElement('div');
+            particle.className = `particle ${colorClass}`;
+            particle.style.left = centerX + 'px';
+            particle.style.top = centerY + 'px';
+            
+            const angle = (Math.PI * 2 / 8) * i + (Math.random()*0.5);
+            const velocity = cellPx * (0.6 + Math.random()*0.4);
+            const tx = Math.cos(angle) * velocity;
+            const ty = Math.sin(angle) * velocity;
+            
+            particle.style.setProperty('--tx', `${tx}px`);
+            particle.style.setProperty('--ty', `${ty}px`);
+            
+            boardEl.appendChild(particle);
+            setTimeout(() => { if (particle.parentNode) particle.remove(); }, 400);
+        }
+    }
+
+    function processMatches(matches) {
+        combo++; sfx.pop(combo);
+        let gainedScore = matches.length * 10 * combo;
+        if(nickname === 'Queen3434343') gainedScore *= 6;
+        score += gainedScore; updateScore();
+
+        // 아이템 게이지 채우기
+        if (!shuffleReady && !isGameOver) {
+            shuffleProgressScore += gainedScore;
+            if (shuffleProgressScore >= SHUFFLE_TARGET_SCORE) {
+                shuffleReady = true;
+                shuffleProgressScore = SHUFFLE_TARGET_SCORE;
+                sfx.bonus(); 
+            }
+            updateShuffleUI();
+        }
+
+        if (combo >= 2 && currentMode === 'ranked' && !isGameOver) {
+            let timeToAdd = (combo === 2) ? 2 : 1;
+            timeLeft += timeToAdd; updateTimerUI(); showBonusTime(timeToAdd);
+        }
+
+        if (combo >= 2) {
+            const cText = document.getElementById('combo-text');
+            cText.textContent = `${combo} COMBO!`; cText.classList.add('show-combo');
+            setTimeout(() => cText.classList.remove('show-combo'), 700);
+        }
+
+        matches.forEach(m => {
+            const block = board[m.r][m.c];
+            if (block) {
+                const colorClass = Array.from(block.el.classList).find(c => c.startsWith('num-'));
+                if(colorClass) createExplosion(m.r, m.c, colorClass);
+
+                block.el.classList.add('popping');
+                setTimeout(() => { if (block.el.parentNode) block.el.parentNode.removeChild(block.el); }, 250);
+                board[m.r][m.c] = null;
+            }
+        });
+        setTimeout(applyGravity, 250); 
+    }
+
+    function applyGravity() {
+        let movedAny = false;
+        const pad = calculateCellSize();
+
+        for (let c = 0; c < boardSize; c++) {
+            let emptySpots = 0;
+            for (let r = boardSize - 1; r >= 0; r--) {
+                if (board[r][c] === null) emptySpots++;
+                else if (emptySpots > 0) {
+                    const targetR = r + emptySpots; const block = board[r][c];
+                    board[targetR][c] = block; board[r][c] = null;
+                    block.el.dataset.r = targetR;
+                    const pos = getPosition(targetR, c, pad);
+                    block.el.style.top = pos.top + 'px';
+                    movedAny = true;
+                }
+            }
+            
+            for (let i = 0; i < emptySpots; i++) {
+                const targetR = emptySpots - 1 - i; 
+                
+                let valid = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                
+                if (i > 0 && board[targetR + 1][c]) {
+                    valid = valid.filter(n => n + board[targetR + 1][c].val !== 10);
+                }
+                
+                const val = valid.length > 0 ? valid[Math.floor(Math.random() * valid.length)] : Math.floor(Math.random() * 9) + 1;
+                
+                const cell = createCellElement(targetR, c, val, pad);
+                const startPos = getPosition(-emptySpots + i, c, pad);
+                cell.style.top = startPos.top + 'px';
+                board[targetR][c] = { val: val, el: cell };
+                movedAny = true;
+                setTimeout(() => { const targetPos = getPosition(targetR, c, pad); cell.style.top = targetPos.top + 'px'; }, 20 + i * 40); 
+            }
+        }
+
+        if (movedAny) setTimeout(sfx.fall, 250);
+        setTimeout(() => {
+            const newMatches = findMatches();
+            if (newMatches.length > 0) processMatches(newMatches); 
+            else {
+                isAnimating = false;
+                if (!findValidMove()) shuffleBoard();
+                else resetHintTimer();
+            }
+        }, 400);
+    }
+
+    function updateScore() {
+        scoreEl.textContent = score; comboEl.textContent = combo;
+    }
+
+    /* 숫자 섞기 아이템 로직 */
+    function useShuffleItem() {
+        if (isGameOver || isAnimating) return;
+        if (nickname !== 'Queen' && !shuffleReady) return;
+        
+        if (nickname !== 'Queen') {
+            shuffleReady = false;
+            shuffleProgressScore = 0;
+        }
+        updateShuffleUI();
+        
+        shuffleBoard();
+    }
+
+    function updateShuffleUI() {
+        const container = document.getElementById('shuffle-btn-container');
+        const progress = document.getElementById('shuffle-btn-progress');
+        if (!container || !progress) return;
+
+        if (nickname === 'Queen' || shuffleReady) {
+            container.classList.remove('shuffle-disabled');
+            progress.style.width = '100%';
+        } else {
+            container.classList.add('shuffle-disabled');
+            const pct = Math.min((shuffleProgressScore / SHUFFLE_TARGET_SCORE) * 100, 100);
+            progress.style.width = pct + '%';
+        }
+    }
+
+    function resetGame() { document.getElementById('result-content').style.display = 'none'; startCountdown(); }
+    window.restartGame = function() { resetGame(); };
+
+    function endGame() {
+        isGameOver = true; isAnimating = true;
+        clearInterval(mainTimerId); clearTimeout(hintTimeoutId); clearHints();
+        sfx.timeup();
+        
+        const overlay = document.getElementById('overlay-layer');
+        const cntTxt = document.getElementById('countdown-text');
+        const resCont = document.getElementById('result-content');
+        const top3Cont = document.getElementById('top3-container');
+        
+        overlay.style.display = 'flex'; cntTxt.style.display = 'none'; resCont.style.display = 'block';
+        const t = translations[currentLang];
+
+        if(currentMode === 'ranked') {
+            document.getElementById('final-score-txt').innerText = score;
+            document.getElementById('my-rank-txt').innerText = t.rankCalc;
+            top3Cont.style.display = 'block'; submitScore();
+        } else {
+            document.getElementById('final-score-txt').innerText = formatTime(practiceTime);
+            document.getElementById('my-rank-txt').innerText = t.practiceEnd;
+            top3Cont.style.display = 'none'; 
+        }
+    }
+
+    function loadRanking(isResult = false) {
+        try {
+            fetch(`ranking.php?action=list&game_id=${GAME_ID}&limit=100`)
+                .then(res => res.json())
+                .then(data => {
+                    if(!isResult) {
+                        const list = document.getElementById('rank-list-start'); list.innerHTML = '';
+                        data.forEach((item, i) => { list.innerHTML += `<div class="rank-row"><span>${i+1}. ${item.nickname}</span><span>${item.score}</span></div>`; });
+                    } else {
+                        const list = document.getElementById('top3-list'); list.innerHTML = '';
+                        data.slice(0, 3).forEach((item, i) => {
+                            let medal = i===0 ? '🥇' : (i===1 ? '🥈' : '🥉');
+                            list.innerHTML += `<div class="top3-row"><span>${medal} ${item.nickname}</span><span>${item.score}</span></div>`;
+                        });
+                    }
+                }).catch(err => {
+                    console.error("서버 통신 오류:", err);
+                    handleMockRanking(isResult);
+                });
+        } catch (e) {
+            console.warn("미리보기 환경에서는 서버 연동 기능이 제한됩니다.", e);
+            handleMockRanking(isResult);
+        }
+    }
+
+    function handleMockRanking(isResult) {
+        if(!isResult) {
+            const list = document.getElementById('rank-list-start');
+            if(list) list.innerHTML = '<div class="rank-row" style="justify-content:center; color:#999; padding: 15px;">서버 연결 안됨 (미리보기)</div>';
+        } else {
+            const list = document.getElementById('top3-list');
+            if(list) list.innerHTML = '<div class="top3-row" style="justify-content:center; color:#999; padding: 10px;">서버 연결 안됨</div>';
+        }
+    }
+
+    function submitScore() {
+        const formData = new FormData();
+        formData.append('game_id', GAME_ID); formData.append('nickname', nickname); formData.append('score', score);
+        const t = translations[currentLang];
+        
+        try {
+            fetch('ranking.php?action=submit', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if(data.rank) document.getElementById('my-rank-txt').innerText = t.myRank.replace('{rank}', data.rank);
+                else document.getElementById('my-rank-txt').innerText = t.rankOut;
+                loadRanking(true);
+            })
+            .catch(err => {
+                document.getElementById('my-rank-txt').innerText = t.rankSave; loadRanking(true);
+            });
+        } catch (e) {
+            console.warn("미리보기 환경에서는 서버 연동 기능이 제한됩니다.", e);
+            document.getElementById('my-rank-txt').innerText = t.rankSave + " (로컬 저장됨)";
+            loadRanking(true);
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+ 
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5YW0T2C109');
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>대칭킹 🦋</title>
+    <meta name="description" content="선대칭과 점대칭을 마스터하라! 1분 타임어택 두뇌 게임.">
+    <meta name="keywords" content="수학, 대칭, 두뇌게임, 킹수학">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+        :root {
+            --bg-color: #faf8ef;
+            --grid-bg: #bbada0;
+            --empty-cell: #cdc1b4;
+            --primary-brown: #8d6e63;
+            --deep-brown: #5d4037;
+            --text-color: #776e65;
+            --cell-filled: #f65e3b; 
+            --cell-problem: #8f7a66; 
+        }
+
+        /* -------------------------------------------
+           [게임 원본 CSS 영역] 
+        ------------------------------------------- */
+        * { box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; }
+        
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            font-family: 'Jua', sans-serif;
+            height: 100vh; 
+            height: 100dvh; 
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+            color: var(--text-color);
+            overscroll-behavior: none;
+        }
+
+        #game-container {
+            width: 100%; max-width: 500px; height: 100%; background: var(--bg-color);
+            position: relative; display: flex; flex-direction: column;
+            box-shadow: 0 0 25px rgba(141, 110, 99, 0.3);
+        }
+
+        .hidden { display: none !important; }
+        .center { text-align: center; }
+        button { cursor: pointer; border: none; font-family: inherit; transition: transform 0.05s; }
+
+        #start-screen {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
+            padding-top: 2vh; padding-bottom: 5vh; background: linear-gradient(180deg, #fdfbf7 0%, #fff 100%);
+            overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y !important; 
+        }
+        
+        /* 상단 네비게이션 좌/우 균형 맞춤 (요구사항 13) */
+        #top-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; padding: 0 20px; margin-bottom: 1vh; flex-shrink: 0;
+            position: relative; z-index: 99999; /* 언어 버튼 최상단 보장 */
+        }
+        
+        #kingsmath-link-btn, #langTriggerBtn {
+            font-size: 2.2vh; color: var(--deep-brown); text-decoration: none; font-weight: bold;
+            background: #fff; padding: 5px 15px; border: 2px dashed var(--primary-brown);
+            border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            height: 4.5vh; box-sizing: border-box; font-family: 'Jua', sans-serif;
+            cursor: pointer; outline: none;
+        }
+
+        #langTriggerBtn img { width: 2.2vh; height: auto; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        #langTriggerBtn i { font-size: 2vh; color: var(--primary-brown); }
+
+        .main-title { 
+            font-size: 8vh; color: var(--deep-brown); margin: 1vh 0; 
+            text-shadow: 3px 3px 0px #d7ccc8; line-height: 1.2; text-align: center;
+            display: flex; align-items: baseline; justify-content: center; gap: 10px; flex-wrap: wrap;
+        }
+        .main-title.long-text { font-size: 5.5vh; }
+        .title-sub { font-size: 4vh; color: #8d6e63; text-shadow: 1px 1px 0px #d7ccc8; }
+        
+        #qrcode-area {
+            margin: 1.5vh 0; padding: 10px; background: white;
+            border: 3px dashed var(--primary-brown); border-radius: 15px; cursor: pointer;
+        }
+        .qr-invite-text {
+            font-size: 1.8vh; color: #aaa; text-align: center; margin-top: -1vh; margin-bottom: 1.5vh; cursor: pointer; font-weight: bold;
+        }
+        .desc { font-size: 3vh; color: #8d6e63; margin: 1.5vh 0; font-weight: bold; text-align: center; padding: 0 10px; word-break: keep-all;}
+
+        input#nickname {
+            width: 85%; padding: 1.5vh; font-size: 4vh; text-align: center;
+            border: 3px dashed var(--primary-brown); border-radius: 30px; 
+            font-family: inherit; margin-bottom: 2vh; color: var(--deep-brown); background-color: #fff;
+        }
+        input#nickname:focus { outline: none; border-color: var(--deep-brown); border-style: solid; }
+
+        .btn-start {
+            width: 85%; padding: 1.5vh; font-size: 5vh; 
+            background-color: var(--primary-brown); color: white; border: 3px dashed rgba(255,255,255,0.5); border-radius: 30px;
+            box-shadow: 0 0.6vh #5d4037; margin-bottom: 2vh;
+        }
+        .btn-start.long-text { font-size: 3.5vh; }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 0.2vh #5d4037; }
+
+        #ranking-board {
+            margin-top: 2vh; width: 90%; background: #fff; border: 3px dashed #d7ccc8; border-radius: 15px;
+            padding: 1vh; height: 35vh; overflow-y: auto; touch-action: pan-y !important; 
+            -webkit-overflow-scrolling: touch; overscroll-behavior: contain; flex-shrink: 0; 
+        }
+        .rank-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8vh 0.5vh; border-bottom: 1px dashed #eee; font-size: 2.2vh; }
+
+        #game-screen { flex: 1; display: flex; flex-direction: column; background-color: var(--bg-color); position: relative; overflow: hidden; width: 100%; }
+
+        .game-header-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px 5px 20px; width: 100%; flex-shrink: 0; gap: 10px; }
+        .icon-btn { background: none; border: none; font-size: 3.5vh; padding: 5px; cursor: pointer; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1)); transition: transform 0.1s; }
+        .icon-btn:active { transform: scale(0.9); }
+
+        .score-stitch-box { background-color: #bbada0; border: 3px dashed #eee4da; border-radius: 15px; padding: 2px 15px; box-shadow: 0 3px 0 #8d6e63; min-width: 100px; text-align: center; }
+        .score-label-text { font-size: 1.5vh; color: #eee4da; font-weight: bold; opacity: 0.9; margin-bottom: -2px; }
+        .score-value-text { font-size: 4.5vh; font-weight: 900; color: #fff; line-height: 1; text-shadow: 2px 2px 0 #8d6e63; }
+        
+        #mode-indicator { text-align: center; font-size: 6vh; font-weight: bold; color: var(--deep-brown); margin: 5px 0; min-height: 4vh; }
+        .nickname-container { text-align: center; margin-top: 5px; padding: 5px; flex-shrink: 0; margin-bottom: 15px; }
+        .nickname-text { font-size: 6vh; color: var(--deep-brown); font-weight: bold; background: #efebe9; padding: 5px 20px; border-radius: 20px; display: inline-block; border: 2px dashed #d7ccc8; }
+
+        #game-area { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 10px; }
+        #grid-container {
+            position: relative; background: var(--grid-bg); border-radius: 10px; width: 90vmin; height: 90vmin;
+            max-width: 450px; max-height: 450px; padding: 8px; border: 4px solid #bbada0;
+            display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); gap: 2px;
+        }
+
+        .cell { background: var(--empty-cell); border-radius: 2px; width: 100%; height: 100%; position: relative; }
+        .cell.problem { background: var(--cell-problem) !important; }
+        .cell.painted { background: var(--cell-filled) !important; }
+
+        .line-mode::after { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 4px; background: #ff5252; margin-left: -2px; z-index: 10; box-shadow: 0 0 5px rgba(0,0,0,0.3); pointer-events: none; }
+        .point-mode::after { content: ''; position: absolute; top: 50%; left: 50%; width: 16px; height: 16px; background: #ff5252; border-radius: 50%; transform: translate(-50%, -50%); z-index: 10; border: 3px solid #fff; pointer-events: none; }
+
+        #timer-bar-container { width: 90%; height: 10px; background: #d7ccc8; border-radius: 5px; margin: 10px auto; overflow: hidden; }
+        #timer-bar { width: 100%; height: 100%; background: #ff5252; transition: width 1s linear; }
+
+        .success-overlay { position: absolute; top:0; left:0; width:100%; height:100%; display: flex; justify-content: center; align-items: center; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+        .success-overlay.show { opacity: 1; }
+        .success-icon { font-size: 15vh; text-shadow: 0 0 20px #fff; }
+
+        #result-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(250, 248, 239, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; padding-bottom: 5vh; }
+        .result-score { font-size: 9vh; color: var(--deep-brown); margin: 1vh 0; font-weight: bold; }
+        
+        #qr-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 999; }
+        #qrcode-large { background: white; padding: 20px; border-radius: 20px; display: flex; justify-content: center; align-items: center; max-width: 100%; max-height: 100%; }
+        
+        /* QR 캔버스 안정성 강화 */
+        #qrcode-large img, #qrcode-large canvas { 
+            width: 55vmin !important; height: 55vmin !important; 
+            max-width: 256px !important; max-height: 256px !important; 
+            min-width: 150px; min-height: 150px; object-fit: contain; display: block;
+        }
+        #qrcode-area img, #qrcode-area canvas {
+            display: block; margin: 0 auto;
+            width: 70px !important; height: 70px !important;
+        }
+
+        #countdown-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); z-index: 200; display: flex; justify-content: center; align-items: center; }
+        #countdown-text { font-size: 15vh; font-weight: bold; color: var(--deep-brown); animation: pulse 0.5s infinite alternate; }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+        ::-webkit-scrollbar { width: 14px; }
+        ::-webkit-scrollbar-track { background: #efebe9; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background-color: #d7ccc8; border-radius: 10px; border: 4px solid #efebe9; background-clip: content-box; }
+
+        .overlay-screen, .overlay-screen * { touch-action: pan-y !important; }
+        .start-rank-container { height: auto !important; max-height: none !important; flex-grow: 0 !important; }
+        .rank-scroll-area { overflow: visible !important; }
+
+        #start-screen, #start-screen * { touch-action: pan-y !important; user-select: auto !important; -webkit-user-select: auto !important; }
+        #ranking-board, #ranking-board * { touch-action: pan-y !important; }
+        #game-screen, #game-screen * { touch-action: none !important; overscroll-behavior: none; }
+
+
+       /* -------------------------------------------
+   [격리된 언어 모달 CSS (Z-index 99999 보장)] 
+------------------------------------------- */
+#langModal, #langModal *, #toastNotification, #toastNotification * {
+    box-sizing: border-box !important;
+}
+
+/* 폰트 어썸 아이콘(i 태그)을 제외한 나머지 요소에만 폰트 강제 적용 */
+#langModal *:not(i), #toastNotification *:not(i) {
+    font-family: 'Noto Sans KR', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+}
+
+        .custom-modal-overlay {
+            position: fixed; inset: 0; z-index: 99999 !important;
+            display: flex; align-items: flex-start; justify-content: center;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 4rem 1rem 1rem 1rem;
+        }
+        @media (min-width: 640px) { .custom-modal-overlay { align-items: center; padding: 1rem; } }
+        .custom-modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .custom-modal-content {
+            background: #111827; border: 1px solid #374151; border-radius: 1rem;
+            width: 100%; max-width: 56rem; max-height: 85vh;
+            display: flex; flex-direction: column; overflow: hidden;
+            transform: scale(0.95) translateY(-10px); opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            font-size: 16px !important; /* 모달 내 폰트 베이스 고정 (게임 CSS와 격리) */
+        }
+        .custom-modal-overlay.active .custom-modal-content { transform: scale(1) translateY(0); opacity: 1; }
+
+        .lang-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.25rem; border-bottom: 1px solid #1f2937;
+            background: rgba(17, 24, 39, 0.95); position: sticky; top: 0; z-index: 10;
+        }
+        .lang-modal-title { font-size: 1.25rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+        
+        .lang-close-btn {
+            width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: #1f2937;
+            display: flex; align-items: center; justify-content: center; color: #9ca3af;
+            border: none; cursor: pointer; transition: background 0.2s, color 0.2s;
+        }
+        .lang-close-btn:hover { background: #374151; color: #fff; }
+
+        .lang-search-wrapper { padding: 1.25rem 1.25rem 0.5rem 1.25rem; background: #111827; position: relative; }
+        .lang-search-icon { position: absolute; left: 2.25rem; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+        .lang-search-input {
+            width: 100%; background: #1f2937; border: 1px solid #374151; color: #fff;
+            font-size: 0.875rem; border-radius: 0.75rem; padding: 0.875rem 0.875rem 0.875rem 2.75rem;
+            outline: none; transition: all 0.2s;
+        }
+        .lang-search-input:focus { border-color: #eab308; box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.5); }
+        .lang-search-input::placeholder { color: #6b7280; }
+
+        .lang-grid-wrapper { padding: 1.25rem; overflow-y: auto; flex: 1; }
+        .lang-grid-wrapper::-webkit-scrollbar { width: 8px; }
+        .lang-grid-wrapper::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        .lang-grid-wrapper::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        .lang-grid-wrapper::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        .lang-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.75rem; }
+        @media (min-width: 640px) { .lang-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .lang-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1280px) { .lang-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        .lang-btn {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem;
+            border-radius: 0.75rem; border: 1px solid #374151; background: rgba(31, 41, 55, 0.4);
+            cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; text-align: left;
+        }
+        .lang-btn:hover { background: #374151; border-color: #6b7280; }
+        .lang-btn.selected { background: #1f2937; border-color: #eab308; box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.5); }
+        
+        .lang-flag-box { flex-shrink: 0; width: 2rem; height: 1.5rem; border-radius: 0.25rem; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.1); border: 1px solid rgba(55, 65, 81, 0.5); }
+        .lang-flag-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .lang-btn:hover .lang-flag-box img { transform: scale(1.1); }
+        
+        .lang-text-box { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+        .lang-name-main { font-size: 0.875rem; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+        .lang-btn.selected .lang-name-main { color: #facc15; }
+        .lang-name-sub { font-size: 0.75rem; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+
+        .lang-check-icon { color: #eab308; font-size: 1.125rem; margin-left: 0.5rem; }
+        .lang-no-result { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 0; color: #6b7280; text-align: center; }
+        .lang-no-result i { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+        .custom-toast {
+            position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 99999 !important;
+            background: #1f2937; border: 1px solid #374151; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem; padding: 1rem; display: flex; align-items: center; gap: 0.75rem;
+            transform: translateY(150%); opacity: 0; transition: all 0.3s ease;
+        }
+        .custom-toast.show { transform: translateY(0); opacity: 1; }
+        .toast-icon { width: 2rem; height: 2rem; border-radius: 9999px; background: rgba(34, 197, 94, 0.2); display: flex; align-items: center; justify-content: center; color: #4ade80; }
+        .toast-msg { font-size: 0.875rem; font-weight: 500; color: #fff; margin: 0; }
+        .toast-sub { font-size: 0.75rem; color: #9ca3af; margin: 0; }
+        
+        .dynamic-text-xs { font-size: 3vh !important; }
+        .dynamic-text-sm { font-size: 3.5vh !important; }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen">
+        <div id="top-nav">
+            <a id="kingsmath-link-btn" href="/" target="_self">킹수학.com</a>
+            
+            <div id="langTriggerWrapper">
+                <button id="langTriggerBtn">
+                    <i class="fa-solid fa-globe"></i>
+                    <img id="currentFlag" src="https://flagcdn.com/w40/kr.png" alt="KR">
+                    <span id="currentLangName">한국어</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="main-title">
+            <span id="ui-mainTitle">대칭킹 🦋</span>
+            <span class="title-sub" id="ui-subTitle">모바일</span>
+        </div>
+        
+        <div id="qrcode-area" onclick="toggleQR(true)"></div>
+        <div class="qr-invite-text" id="ui-qrInvite" onclick="toggleQR(true)">QR 코드로 초대하기</div>
+
+        <div class="desc" id="ui-desc">1분 동안 대칭을 완성해 점수를 획득하세요!</div>
+        
+        <input type="text" id="nickname" maxlength="8" placeholder="닉네임 입력" onfocus="this.select()">
+        
+        <button class="btn-start" id="ui-startBtn" onclick="startGame()">🚀 게임 시작!</button>
+        
+        <a href="/" target="_self" class="link-btn" style="color:#666; text-decoration:none; background:#ffeaa7; padding:10px 20px; border-radius:20px; border:2px dashed #d1b86e;" id="ui-otherGamesBtn">🎲 다른 게임 고르기</a>
+        
+        <div id="ranking-board">
+            <div class="center" id="ui-rankingLoading">랭킹을 불러오고 있어요... 🏃‍♂️</div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div class="game-header-row">
+            <button class="icon-btn" id="btn-home" style="cursor:pointer;">🏠</button>
+            
+            <div class="score-stitch-box">
+                <div class="score-label-text" id="ui-scoreLabel">SCORE</div>
+                <div class="score-value-text" id="score">0</div>
+            </div>
+            
+            <button class="icon-btn" onclick="forceRestart()">🔄</button>
+        </div>
+
+        <div id="timer-bar-container">
+            <div id="timer-bar"></div>
+        </div>
+        <div id="mode-indicator">🦋 선대칭</div>
+
+        <div id="game-area">
+            <div id="grid-container" class="line-mode">
+                </div>
+            <div id="success-overlay" class="success-overlay">
+                <div class="success-icon">⭕</div>
+            </div>
+            
+            <div id="countdown-screen" class="hidden">
+                <div id="countdown-text">3</div>
+            </div>
+        </div>
+
+        <div class="nickname-container">
+            <span id="game-nickname" class="nickname-text">Player</span>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <h2 style="font-size: 5vh; margin:0; color:#8d6e63;" id="ui-gameOver">Game Over! 🏁</h2>
+        <h3 id="res-nickname" style="font-size: 4vh; margin: 10px 0; color:var(--deep-brown);">Player</h3>
+        <div class="result-score"><span id="res-score">0</span></div>
+        <div id="res-rank" style="font-size: 3vh; margin-bottom:30px; color:#5d4037;">몇 등일까요? 🤔</div>
+        
+        <button class="btn-start" onclick="restartGame()" style="background:#8d6e63; box-shadow: 0 0.6vh #5d4037;" id="ui-restartBtn">🔄 다시 하기</button>
+        <button class="btn-start" onclick="goHome()" style="background:#d7ccc8; color:#5d4037; box-shadow: 0 0.6vh #a1887f;" id="ui-homeBtn">🏠 처음으로</button>
+
+        <div id="top3-board" style="margin-top:2vh; width:85%; background:#fff; border:2px dashed #d7ccc8; border-radius:15px; padding:10px;">
+            <div style="text-align:center; color:#8d6e63; font-weight:bold; font-size:2.5vh; margin-bottom:1vh;">🏆 TOP 3 🏆</div>
+            <div id="top3-list"></div>
+        </div>
+    </div>
+</div>
+
+<div id="qr-modal" class="hidden" onclick="toggleQR(false)">
+    <div style="background:white; padding:30px; border-radius:20px; text-align:center;">
+        <div id="qrcode-large"></div>
+        <div class="center" style="margin-top:15px; font-size:20px; color:#8d6e63; font-weight:bold;">Close 👋</div>
+    </div>
+</div>
+
+<div id="langModal" class="custom-modal-overlay">
+    <div class="custom-modal-content">
+        <div class="lang-modal-header">
+            <h2 class="lang-modal-title">
+                <i class="fa-solid fa-language" style="color: #eab308;"></i>
+                Language / 언어
+            </h2>
+            <button id="closeModalBtn" class="lang-close-btn">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="lang-search-wrapper">
+            <i class="fa-solid fa-magnifying-glass lang-search-icon"></i>
+            <input type="text" id="searchInput" class="lang-search-input" placeholder="Search / 검색 ...">
+        </div>
+        <div class="lang-grid-wrapper">
+            <div id="languageGrid" class="lang-grid"></div>
+            <div id="noResult" class="lang-no-result">
+                <i class="fa-regular fa-face-frown-open"></i>
+                <p>No results / 검색 결과 없음</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toastNotification" class="custom-toast">
+    <div class="toast-icon">
+        <i class="fa-solid fa-check"></i>
+    </div>
+    <div>
+        <p id="ui-toastMsg" class="toast-msg">언어가 변경되었습니다.</p>
+        <p id="toastLangName" class="toast-sub">Korean</p>
+    </div>
+</div>
+
+<script>
+// --- 16개국 다국어 번역 데이터 (초등 수학 어조, 창의적 타이틀 적용 완비) ---
+const i18nData = {
+    ko: { 
+        code: 'ko', country: 'kr', name: '한국어', enName: 'Korean',
+        domain: "킹수학.com", pageTitle: "대칭킹 🦋", mainTitle: "대칭킹 🦋", subTitle: "모바일", 
+        desc: "1분 동안 대칭을 완성해 점수를 획득하세요!", placeholder: "닉네임 입력",
+        startBtn: "🚀 게임 시작!", otherGamesBtn: "🎲 다른 게임 고르기", rankingLoading: "랭킹 로딩중... 🏃‍♂️",
+        rankingEmpty: "아직 1등이 없어요. 도전! 👑", rankingError: "랭킹 오류 😭",
+        homeBtn: "🏠 처음으로", restartBtn: "🔄 다시하기", gameOver: "게임 오버! 🏁",
+        rankQuery: "몇 등일까요? 🤔", rankResult: "현재 {rank}등 이에요!",
+        alertName: "📛 닉네임을 꼭 써주세요!", alertBadWord: "🚫 예쁜 말을 써주세요!",
+        qrInvite: "QR 코드로 초대하기", scoreLabel: "SCORE", 
+        modeLine: "🦋 선대칭", modePoint: "🌀 점대칭",
+        metaDesc: "선대칭과 점대칭을 마스터하라! 1분 타임어택 두뇌 게임.", toast: "언어가 변경되었습니다."
+    },
+    en: { 
+        code: 'en', country: 'us', name: 'English', enName: 'English',
+        domain: "KingsMath.com", pageTitle: "Symmetry King 🦋", mainTitle: "Symmetry King", subTitle: "Mobile", 
+        desc: "Master Symmetry in 1 minute to score points!", placeholder: "Enter Name",
+        startBtn: "🚀 Start Game", otherGamesBtn: "🎲 Other Games", rankingLoading: "Loading... 🏃‍♂️",
+        rankingEmpty: "No King yet. Be the first! 👑", rankingError: "Error 😭",
+        homeBtn: "🏠 Home", restartBtn: "🔄 Retry", gameOver: "Game Over! 🏁",
+        rankQuery: "Checking Rank... 🤔", rankResult: "Rank {rank}!",
+        alertName: "📛 Enter Name!", alertBadWord: "🚫 Nice words only!",
+        qrInvite: "Invite via QR Code", scoreLabel: "SCORE",
+        modeLine: "🦋 Line Symmetry", modePoint: "🌀 Point Symmetry",
+        metaDesc: "Master Line Symmetry and Point Symmetry in this 1-minute time attack game.", toast: "Language changed."
+    },
+    zh: { 
+        code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)',
+        domain: "KingsMath.com", pageTitle: "对称之王 🦋", mainTitle: "对称之王", subTitle: "手机版", 
+        desc: "在1分钟内完成对称图形以获取分数！", placeholder: "输入名字",
+        startBtn: "🚀 开始游戏", otherGamesBtn: "🎲 更多游戏", rankingLoading: "加载中... 🏃‍♂️",
+        rankingEmpty: "还没有第一名 👑", rankingError: "错误 😭",
+        homeBtn: "🏠 首页", restartBtn: "🔄 重试", gameOver: "游戏结束! 🏁",
+        rankQuery: "排名查询中... 🤔", rankResult: "第 {rank} 名!",
+        alertName: "📛 请输入名字!", alertBadWord: "🚫 请使用文明用语!",
+        qrInvite: "扫码邀请", scoreLabel: "分数",
+        modeLine: "🦋 轴对称", modePoint: "🌀 中心对称",
+        metaDesc: "1分钟时间挑战，掌握轴对称和中心对称。", toast: "语言已更改。"
+    },
+    ja: { 
+        code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese',
+        domain: "KingsMath.com", pageTitle: "対称キング 🦋", mainTitle: "対称キング", subTitle: "モバイル", 
+        desc: "1分間で対称図形を完成させて得点しよう！", placeholder: "名前を入力",
+        startBtn: "🚀 スタート", otherGamesBtn: "🎲 他のゲーム", rankingLoading: "読み込み中... 🏃‍♂️",
+        rankingEmpty: "まだ1位がいません 👑", rankingError: "エラー 😭",
+        homeBtn: "🏠 ホーム", restartBtn: "🔄 もう一度", gameOver: "ゲームオーバー! 🏁",
+        rankQuery: "何位かな？ 🤔", rankResult: "{rank}位です!",
+        alertName: "📛 名前を入れてね!", alertBadWord: "🚫 きれいな言葉を使ってね!",
+        qrInvite: "QRコードで招待", scoreLabel: "点数",
+        modeLine: "🦋 線対称", modePoint: "🌀 点対称",
+        metaDesc: "線対称と点対称をマスターする1分間のタイムアタックゲーム。", toast: "言語が変更されました。"
+    },
+    es: { 
+        code: 'es', country: 'es', name: 'Español', enName: 'Spanish',
+        domain: "KingsMath.com", pageTitle: "Rey de la Simetría 🦋", mainTitle: "Rey Simetría", subTitle: "Móvil", 
+        desc: "¡Completa la simetría en 1 minuto para ganar puntos!", placeholder: "Escribe tu nombre",
+        startBtn: "🚀 Iniciar juego", otherGamesBtn: "🎲 Otros juegos", rankingLoading: "Cargando... 🏃‍♂️",
+        rankingEmpty: "Aún no hay Rey. 👑", rankingError: "Error 😭",
+        homeBtn: "🏠 Inicio", restartBtn: "🔄 Reintentar", gameOver: "¡Juego terminado! 🏁",
+        rankQuery: "¿Cuál es mi rango? 🤔", rankResult: "¡Rango {rank}!",
+        alertName: "📛 ¡Escribe un nombre!", alertBadWord: "🚫 ¡Solo palabras amables!",
+        qrInvite: "Invitar con código QR", scoreLabel: "PUNTOS",
+        modeLine: "🦋 Simetría axial", modePoint: "🌀 Simetría central",
+        metaDesc: "Domina la simetría axial y central en este juego de 1 minuto.", toast: "Idioma cambiado."
+    },
+    fr: { 
+        code: 'fr', country: 'fr', name: 'Français', enName: 'French',
+        domain: "KingsMath.com", pageTitle: "Roi de la Symétrie 🦋", mainTitle: "Roi Symétrie", subTitle: "Mobile", 
+        desc: "Complétez la symétrie en 1 minute pour marquer des points !", placeholder: "Entrez votre nom",
+        startBtn: "🚀 Commencer", otherGamesBtn: "🎲 Autres jeux", rankingLoading: "Chargement... 🏃‍♂️",
+        rankingEmpty: "Pas encore de Roi. 👑", rankingError: "Erreur 😭",
+        homeBtn: "🏠 Accueil", restartBtn: "🔄 Réessayer", gameOver: "Jeu terminé ! 🏁",
+        rankQuery: "Quel est mon rang ? 🤔", rankResult: "Rang {rank} !",
+        alertName: "📛 Entrez un nom !", alertBadWord: "🚫 Mots gentils seulement !",
+        qrInvite: "Inviter par QR Code", scoreLabel: "SCORE",
+        modeLine: "🦋 Symétrie axiale", modePoint: "🌀 Symétrie centrale",
+        metaDesc: "Maîtrisez la symétrie axiale et centrale dans ce jeu d'une minute.", toast: "Langue modifiée."
+    },
+    ru: { 
+        code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian',
+        domain: "KingsMath.com", pageTitle: "Король Симметрии 🦋", mainTitle: "Король Симметрии", subTitle: "Мобильный", 
+        desc: "Завершите симметрию за 1 минуту, чтобы набрать очки!", placeholder: "Введите имя",
+        startBtn: "🚀 Начать", otherGamesBtn: "🎲 Другие игры", rankingLoading: "Загрузка... 🏃‍♂️",
+        rankingEmpty: "Короля пока нет. 👑", rankingError: "Ошибка 😭",
+        homeBtn: "🏠 Главная", restartBtn: "🔄 Повторить", gameOver: "Игра окончена! 🏁",
+        rankQuery: "Какой у меня ранг? 🤔", rankResult: "Ранг {rank}!",
+        alertName: "📛 Введите имя!", alertBadWord: "🚫 Только вежливые слова!",
+        qrInvite: "Пригласить через QR", scoreLabel: "СЧЁТ",
+        modeLine: "🦋 Осевая симметрия", modePoint: "🌀 Центральная симметрия",
+        metaDesc: "Освойте осевую и центральную симметрию в этой минутной игре.", toast: "Язык изменен."
+    },
+    id: { 
+        code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian',
+        domain: "KingsMath.com", pageTitle: "Raja Simetri 🦋", mainTitle: "Raja Simetri", subTitle: "Seluler", 
+        desc: "Selesaikan simetri dalam 1 menit untuk mencetak poin!", placeholder: "Masukkan Nama",
+        startBtn: "🚀 Mulai Game", otherGamesBtn: "🎲 Game Lainnya", rankingLoading: "Memuat... 🏃‍♂️",
+        rankingEmpty: "Belum ada Raja. 👑", rankingError: "Kesalahan 😭",
+        homeBtn: "🏠 Beranda", restartBtn: "🔄 Ulangi", gameOver: "Permainan Berakhir! 🏁",
+        rankQuery: "Berapa peringkat saya? 🤔", rankResult: "Peringkat {rank}!",
+        alertName: "📛 Masukkan nama!", alertBadWord: "🚫 Hanya kata-kata sopan!",
+        qrInvite: "Undang via QR Code", scoreLabel: "SKOR",
+        modeLine: "🦋 Simetri Garis", modePoint: "🌀 Simetri Titik",
+        metaDesc: "Kuasai Simetri Garis dan Titik dalam 1 menit.", toast: "Bahasa telah diubah."
+    },
+    vi: { 
+        code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese',
+        domain: "KingsMath.com", pageTitle: "Vua Đối Xứng 🦋", mainTitle: "Vua Đối Xứng", subTitle: "Di động", 
+        desc: "Hoàn thành phép đối xứng trong 1 phút để ghi điểm!", placeholder: "Nhập Tên",
+        startBtn: "🚀 Bắt đầu", otherGamesBtn: "🎲 Trò chơi khác", rankingLoading: "Đang tải... 🏃‍♂️",
+        rankingEmpty: "Chưa có Vua. 👑", rankingError: "Lỗi 😭",
+        homeBtn: "🏠 Trang chủ", restartBtn: "🔄 Thử lại", gameOver: "Kết thúc trò chơi! 🏁",
+        rankQuery: "Hạng của tôi? 🤔", rankResult: "Hạng {rank}!",
+        alertName: "📛 Vui lòng nhập tên!", alertBadWord: "🚫 Chỉ dùng từ ngữ lịch sự!",
+        qrInvite: "Mời qua Mã QR", scoreLabel: "ĐIỂM",
+        modeLine: "🦋 Đối xứng trục", modePoint: "🌀 Đối xứng tâm",
+        metaDesc: "Làm chủ đối xứng trục và tâm trong 1 phút.", toast: "Ngôn ngữ đã được thay đổi."
+    },
+    th: { 
+        code: 'th', country: 'th', name: 'ไทย', enName: 'Thai',
+        domain: "KingsMath.com", pageTitle: "ราชาสมมาตร 🦋", mainTitle: "ราชาสมมาตร", subTitle: "มือถือ", 
+        desc: "เติมเต็มความสมมาตรใน 1 นาทีเพื่อทำคะแนน!", placeholder: "ใส่ชื่อ",
+        startBtn: "🚀 เริ่มเกม", otherGamesBtn: "🎲 เกมอื่นๆ", rankingLoading: "กำลังโหลด... 🏃‍♂️",
+        rankingEmpty: "ยังไม่มีราชา 👑", rankingError: "ข้อผิดพลาด 😭",
+        homeBtn: "🏠 หน้าแรก", restartBtn: "🔄 ลองอีกครั้ง", gameOver: "จบเกม! 🏁",
+        rankQuery: "ฉันได้อันดับที่เท่าไหร่? 🤔", rankResult: "อันดับ {rank}!",
+        alertName: "📛 กรุณาใส่ชื่อ!", alertBadWord: "🚫 ใช้คำสุภาพเท่านั้น!",
+        qrInvite: "เชิญผ่านคิวอาร์โค้ด", scoreLabel: "คะแนน",
+        modeLine: "🦋 สมมาตรแบบเส้น", modePoint: "🌀 สมมาตรแบบจุด",
+        metaDesc: "เชี่ยวชาญสมมาตรแบบเส้นและจุดใน 1 นาที", toast: "เปลี่ยนภาษาเรียบร้อยแล้ว"
+    },
+    'pt-br': { 
+        code: 'pt-br', country: 'br', name: 'Português', enName: 'Portuguese (Brazil)',
+        domain: "KingsMath.com", pageTitle: "Rei da Simetria 🦋", mainTitle: "Rei Simetria", subTitle: "Mobile", 
+        desc: "Complete a simetria em 1 minuto para marcar pontos!", placeholder: "Digite seu nome",
+        startBtn: "🚀 Iniciar Jogo", otherGamesBtn: "🎲 Outros Jogos", rankingLoading: "Carregando... 🏃‍♂️",
+        rankingEmpty: "Nenhum Rei ainda. 👑", rankingError: "Erro 😭",
+        homeBtn: "🏠 Início", restartBtn: "🔄 Tentar Novamente", gameOver: "Fim de Jogo! 🏁",
+        rankQuery: "Qual é o meu rank? 🤔", rankResult: "Rank {rank}!",
+        alertName: "📛 Digite um nome!", alertBadWord: "🚫 Apenas palavras educadas!",
+        qrInvite: "Convidar via QR Code", scoreLabel: "PONTOS",
+        modeLine: "🦋 Simetria de Eixo", modePoint: "🌀 Simetria de Ponto",
+        metaDesc: "Domine a simetria de eixo e ponto neste jogo de 1 minuto.", toast: "Idioma alterado."
+    },
+    hi: { 
+        code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi',
+        domain: "KingsMath.com", pageTitle: "समरूपता राजा 🦋", mainTitle: "समरूपता राजा", subTitle: "मोबाइल", 
+        desc: "अंक प्राप्त करने के लिए 1 मिनट में समरूपता पूरी करें!", placeholder: "नाम दर्ज करें",
+        startBtn: "🚀 खेल शुरू करें", otherGamesBtn: "🎲 अन्य खेल", rankingLoading: "लोड हो रहा है... 🏃‍♂️",
+        rankingEmpty: "अभी तक कोई राजा नहीं। 👑", rankingError: "त्रुटि 😭",
+        homeBtn: "🏠 मुख्य पृष्ठ", restartBtn: "🔄 पुनः प्रयास करें", gameOver: "खेल खत्म! 🏁",
+        rankQuery: "मेरी रैंक क्या है? 🤔", rankResult: "रैंक {rank}!",
+        alertName: "📛 नाम दर्ज करें!", alertBadWord: "🚫 केवल अच्छे शब्द!",
+        qrInvite: "QR कोड द्वारा आमंत्रित करें", scoreLabel: "स्कोर",
+        modeLine: "🦋 रेखा समरूपता", modePoint: "🌀 बिंदु समरूपता",
+        metaDesc: "1 मिनट में रेखा और बिंदु समरूपता में महारत हासिल करें।", toast: "भाषा बदल दी गई है।"
+    },
+    bn: { 
+        code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali',
+        domain: "KingsMath.com", pageTitle: "প্রতিসাম্য রাজা 🦋", mainTitle: "প্রতিসাম্য রাজা", subTitle: "মোবাইল", 
+        desc: "পয়েন্ট পেতে ১ মিনিটে প্রতিসাম্য সম্পূর্ণ করুন!", placeholder: "নাম লিখুন",
+        startBtn: "🚀 গেম শুরু", otherGamesBtn: "🎲 অন্যান্য গেম", rankingLoading: "লোড হচ্ছে... 🏃‍♂️",
+        rankingEmpty: "এখনও কোন রাজা নেই। 👑", rankingError: "ত্রুটি 😭",
+        homeBtn: "🏠 হোম", restartBtn: "🔄 আবার চেষ্টা করুন", gameOver: "গেম ওভার! 🏁",
+        rankQuery: "আমার র‍্যাঙ্ক কত? 🤔", rankResult: "র‍্যাঙ্ক {rank}!",
+        alertName: "📛 নাম লিখুন!", alertBadWord: "🚫 শুধুমাত্র সুন্দর শব্দ!",
+        qrInvite: "QR কোড দিয়ে আমন্ত্রণ জানান", scoreLabel: "স্কোর",
+        modeLine: "🦋 রেখা প্রতিসাম্য", modePoint: "🌀 বিন্দু প্রতিসাম্য",
+        metaDesc: "১ মিনিটের এই গেমে রেখা এবং বিন্দু প্রতিসাম্য আয়ত্ত করুন।", toast: "ভাষা পরিবর্তন করা হয়েছে।"
+    },
+    tr: { 
+        code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish',
+        domain: "KingsMath.com", pageTitle: "Simetri Kralı 🦋", mainTitle: "Simetri Kralı", subTitle: "Mobil", 
+        desc: "Puan kazanmak için simetriyi 1 dakikada tamamlayın!", placeholder: "Adınızı Girin",
+        startBtn: "🚀 Oyuna Başla", otherGamesBtn: "🎲 Diğer Oyunlar", rankingLoading: "Yükleniyor... 🏃‍♂️",
+        rankingEmpty: "Henüz Kral yok. 👑", rankingError: "Hata 😭",
+        homeBtn: "🏠 Ana Sayfa", restartBtn: "🔄 Tekrar Dene", gameOver: "Oyun Bitti! 🏁",
+        rankQuery: "Sıralamam ne? 🤔", rankResult: "Sıralama {rank}!",
+        alertName: "📛 Lütfen bir isim girin!", alertBadWord: "🚫 Sadece kibar kelimeler!",
+        qrInvite: "QR Kod ile Davet Et", scoreLabel: "PUAN",
+        modeLine: "🦋 Çizgi Simetrisi", modePoint: "🌀 Nokta Simetrisi",
+        metaDesc: "Bu 1 dakikalık oyunda Çizgi ve Nokta Simetrisinde ustalaşın.", toast: "Dil değiştirildi."
+    },
+    de: { 
+        code: 'de', country: 'de', name: 'Deutsch', enName: 'German',
+        domain: "KingsMath.com", pageTitle: "Symmetrie-König 🦋", mainTitle: "Symmetrie-König", subTitle: "Mobil", 
+        desc: "Vervollständige die Symmetrie in 1 Minute für Punkte!", placeholder: "Name eingeben",
+        startBtn: "🚀 Spiel Starten", otherGamesBtn: "🎲 Andere Spiele", rankingLoading: "Lädt... 🏃‍♂️",
+        rankingEmpty: "Noch kein König. 👑", rankingError: "Fehler 😭",
+        homeBtn: "🏠 Startseite", restartBtn: "🔄 Wiederholen", gameOver: "Spiel Vorbei! 🏁",
+        rankQuery: "Welcher Rang? 🤔", rankResult: "Rang {rank}!",
+        alertName: "📛 Bitte Namen eingeben!", alertBadWord: "🚫 Nur nette Worte!",
+        qrInvite: "Per QR-Code einladen", scoreLabel: "PUNKTE",
+        modeLine: "🦋 Achsensymmetrie", modePoint: "🌀 Punktsymmetrie",
+        metaDesc: "Meistere Achsen- und Punktsymmetrie in diesem 1-Minuten-Spiel.", toast: "Sprache geändert."
+    },
+    it: { 
+        code: 'it', country: 'it', name: 'Italiano', enName: 'Italian',
+        domain: "KingsMath.com", pageTitle: "Re della Simetria 🦋", mainTitle: "Re Simetria", subTitle: "Mobile", 
+        desc: "Completa la simetria in 1 minuto per fare punti!", placeholder: "Inserisci il nome",
+        startBtn: "🚀 Inizia Gioco", otherGamesBtn: "🎲 Altri Giochi", rankingLoading: "Caricamento... 🏃‍♂️",
+        rankingEmpty: "Nessun Re ancora. 👑", rankingError: "Errore 😭",
+        homeBtn: "🏠 Home", restartBtn: "🔄 Riprova", gameOver: "Fine Gioco! 🏁",
+        rankQuery: "Qual è il mio grado? 🤔", rankResult: "Grado {rank}!",
+        alertName: "📛 Inserisci un nome!", alertBadWord: "🚫 Solo parole gentili!",
+        qrInvite: "Invita via QR Code", scoreLabel: "PUNTI",
+        modeLine: "🦋 Simmetria Assiale", modePoint: "🌀 Simmetria Centrale",
+        metaDesc: "Padroneggia la Simmetria Assiale e Centrale in 1 minuto.", toast: "Lingua cambiata."
+    }
+};
+
+const languagesList = Object.values(i18nData);
+
+let currentLangCode = 'en'; 
+let score = 0;
+let isGameRunning = false;
+let myNickname = "";
+let timeLeft = 60;
+let timerInterval = null;
+let countdownTimer = null;
+
+// 게임 로직 변수
+const GRID_SIZE = 8;
+let currentMode = 'line'; 
+let problemGrid = [];
+let paintedGrid = [];
+let isDrawing = false;
+let drawMode = 1; 
+
+// UI 요소
+const langModal = document.getElementById('langModal');
+const langTriggerBtnWrapper = document.getElementById('langTriggerWrapper');
+const closeBtn = document.getElementById('closeModalBtn');
+const searchInput = document.getElementById('searchInput');
+const grid = document.getElementById('languageGrid');
+const noResult = document.getElementById('noResult');
+const toast = document.getElementById('toastNotification');
+let toastTimeout;
+
+window.onload = function() {
+    initLanguage(); // 다국어 초기화 및 URL 파라미터 감지
+    updateQRCode();
+    const savedName = localStorage.getItem("kings_sym_nickname");
+    if(savedName) document.getElementById("nickname").value = savedName;
+    loadRanking(); 
+
+    document.getElementById('langTriggerBtn').addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    langModal.addEventListener('click', (e) => { if (e.target === langModal) closeModal(); });
+    searchInput.addEventListener('input', (e) => renderLanguages(e.target.value));
+};
+
+// [다국어 2번 규칙] 우선순위 감지 및 기본 영어(en) 설정
+function initLanguage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const langParam = urlParams.get('lang');
+    const savedLang = localStorage.getItem('kingsmath_lang');
+    const browserLang = navigator.language.substr(0, 2);
+
+    if (langParam && i18nData[langParam]) { currentLangCode = langParam; }
+    else if (savedLang && i18nData[savedLang]) { currentLangCode = savedLang; }
+    else if (i18nData[browserLang]) { currentLangCode = browserLang; }
+    else { currentLangCode = 'en'; } 
+
+    applyLanguage(currentLangCode, false);
+    
+    // [다국어 8번 제미나이 체크] 모달 목록 그려주는 함수 무조건 호출
+    renderLanguages();
+}
+
+function applyLanguage(code, updateHistory = true) {
+    if (!i18nData[code]) code = 'en';
+    currentLangCode = code;
+    localStorage.setItem('kingsmath_lang', code); // [다국어 3번 규칙] 로컬스토리지 저장
+    
+    const data = i18nData[code];
+    
+    // SEO 태그 동적 변경
+    document.title = data.pageTitle;
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if(metaDesc) metaDesc.setAttribute("content", data.metaDesc);
+
+    // UI 텍스트 변경
+    document.getElementById('ui-mainTitle').innerText = data.mainTitle;
+    document.getElementById('ui-subTitle').innerText = data.subTitle;
+    document.getElementById('ui-desc').innerText = data.desc;
+    document.getElementById('ui-qrInvite').innerText = data.qrInvite;
+    document.getElementById('nickname').placeholder = data.placeholder;
+    document.getElementById('ui-startBtn').innerText = data.startBtn;
+    document.getElementById('ui-otherGamesBtn').innerText = data.otherGamesBtn;
+    document.getElementById('ui-scoreLabel').innerText = data.scoreLabel;
+    document.getElementById('ui-gameOver').innerText = data.gameOver;
+    document.getElementById('res-rank').innerText = data.rankQuery;
+    document.getElementById('ui-restartBtn').innerText = data.restartBtn;
+    document.getElementById('ui-homeBtn').innerText = data.homeBtn;
+    
+    if(!isGameRunning) document.getElementById('mode-indicator').innerText = data.modeLine;
+
+    // 상단 버튼 업데이트
+    document.getElementById('currentFlag').src = `https://flagcdn.com/w40/${data.country}.png`;
+    document.getElementById('currentLangName').innerText = data.name;
+
+    // 도메인 링크 규칙 처리 (한국어 외 KingsMath.com)
+    const linkBtn = document.getElementById("kingsmath-link-btn");
+    linkBtn.innerText = data.domain;
+    linkBtn.href = "/"; 
+
+    // 동적 폰트 사이즈 조정
+    const startBtn = document.getElementById('ui-startBtn');
+    startBtn.className = "btn-start " + (data.startBtn.length > 12 ? 'dynamic-text-xs' : '');
+    
+    const mainTitle = document.getElementById('ui-mainTitle');
+    mainTitle.className = "main-title " + (data.mainTitle.length > 9 ? 'dynamic-text-sm' : '');
+
+    // [다국어 3번 규칙] URL 업데이트 및 QR 재생성
+    if (updateHistory) {
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?lang=' + code;
+        window.history.pushState({path: newUrl}, '', newUrl);
+        updateQRCode();
+    }
+}
+
+function renderLanguages(filterText = '') {
+    grid.innerHTML = '';
+    const lowerFilter = filterText.toLowerCase();
+    
+    const filteredLangs = languagesList.filter(lang => 
+        lang.name.toLowerCase().includes(lowerFilter) || 
+        lang.enName.toLowerCase().includes(lowerFilter) ||
+        lang.code.toLowerCase().includes(lowerFilter)
+    );
+
+    if (filteredLangs.length === 0) {
+        grid.style.display = 'none';
+        noResult.style.display = 'flex';
+    } else {
+        grid.style.display = 'grid';
+        noResult.style.display = 'none';
+
+        filteredLangs.forEach(lang => {
+            const isSelected = lang.code === currentLangCode;
+            const btn = document.createElement('div');
+            btn.className = `lang-btn ${isSelected ? 'selected' : ''}`;
+            
+            btn.innerHTML = `
+                <div class="lang-flag-box"><img src="https://flagcdn.com/w40/${lang.country}.png" alt="${lang.country}"></div>
+                <div class="lang-text-box">
+                    <span class="lang-name-main">${lang.name}</span>
+                    <span class="lang-name-sub">${lang.enName}</span>
+                </div>
+                ${isSelected ? '<i class="fa-solid fa-circle-check lang-check-icon"></i>' : ''}
+            `;
+            
+            btn.addEventListener('click', () => {
+                applyLanguage(lang.code);
+                closeModal(); // [다국어 9번 제미나이 체크] 모달 닫힘 오류 방지
+                showToast(lang.name, lang.toast);
+                renderLanguages(searchInput.value);
+            });
+            grid.appendChild(btn);
+        });
+    }
+}
+
+function openModal() {
+    langModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => searchInput.focus(), 100);
+}
+
+function closeModal() {
+    langModal.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function showToast(langName, msg) {
+    document.getElementById('ui-toastMsg').textContent = msg;
+    document.getElementById('toastLangName').textContent = langName;
+    toast.classList.add('show');
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 3000);
+}
+
+
+// --- QR 코드 렌더링 로직 (초기화 충돌 완벽 방지) ---
+function updateQRCode() {
+    try {
+        const currentUrl = window.location.href.split('?')[0] + '?lang=' + currentLangCode; 
+        const qrArea = document.getElementById("qrcode-area");
+        qrArea.innerHTML = ""; 
+        
+        if (typeof QRCode !== "undefined") {
+            new QRCode(qrArea, { 
+                text: currentUrl, width: 128, height: 128, 
+                colorDark : "#5d4037", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.M
+            });
+        }
+
+        const modal = document.getElementById('qr-modal');
+        if (!modal.classList.contains('hidden')) {
+            updateLargeQRCode();
+        }
+    } catch(e) { console.error("QR Code rendering failed", e); }
+}
+
+function updateLargeQRCode() {
+    try {
+        const currentUrl = window.location.href.split('?')[0] + '?lang=' + currentLangCode;
+        const qrLarge = document.getElementById("qrcode-large");
+        qrLarge.innerHTML = ""; 
+        
+        if (typeof QRCode !== "undefined") {
+            new QRCode(qrLarge, { 
+                text: currentUrl, width: 256, height: 256,
+                colorDark : "#5d4037", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.M
+            });
+        }
+    } catch(e) { console.error("Large QR Code rendering failed", e); }
+}
+
+function toggleQR(show) {
+    const modal = document.getElementById('qr-modal');
+    if(show) {
+        modal.classList.remove('hidden');
+        setTimeout(() => { updateLargeQRCode(); }, 50);
+    } else {
+        modal.classList.add('hidden');
+    }
+}
+
+// [요구사항 4] 홈 이모지 전체 화면 지체 없이 첫 화면 가기 분기 로직 적용 완료
+document.getElementById('btn-home').addEventListener('click', () => {
+    // 1. 만약 전체 화면 모드라면
+    if (document.fullscreenElement) {
+        // 새로고침 대신 화면 초기화 로직 실행 (전체 화면 유지)
+        isGameRunning = false;
+        clearInterval(timerInterval);
+        if(countdownTimer) clearTimeout(countdownTimer);
+        
+        // 메인 화면 노출 시 언어 버튼 다시 보이기
+        document.getElementById('langTriggerWrapper').style.display = 'block';
+        
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+        
+        if(window.playTone) playTone(440, 'sine', 0.1);
+        loadRanking();
+    } else {
+        // 2. 전체 화면이 아니라면 그냥 새로고침
+        location.reload();
+    }
+});
+
+function startGame() {
+    const nameInput = document.getElementById("nickname").value.trim();
+    const txt = i18nData[currentLangCode];
+
+    if(nameInput.length < 1) { alert(txt.alertName); return; }
+    const basicBadWords = ["시발", "씨발", "개새끼", "shibal", "ssibal", "fuck", "bitch", "shit"]; 
+    for(let bad of basicBadWords) {
+        if(nameInput.toLowerCase().includes(bad)) { alert(txt.alertBadWord); return; }
+    }
+
+    localStorage.setItem("kings_sym_nickname", nameInput);
+    myNickname = nameInput;
+    document.getElementById("game-nickname").innerText = myNickname;
+
+    // 게임 시작 시 몰입을 위해 언어 선택 버튼 숨김 (요구사항 5)
+    document.getElementById('langTriggerWrapper').style.display = 'none';
+
+    document.getElementById("start-screen").classList.add("hidden");
+    document.getElementById("result-screen").classList.add("hidden");
+    document.getElementById("game-screen").classList.remove("hidden");
+    
+    runCountdown(initGame);
+}
+
+function runCountdown(callback) {
+    const cdScreen = document.getElementById("countdown-screen");
+    const cdText = document.getElementById("countdown-text");
+    cdScreen.classList.remove("hidden");
+    isGameRunning = false; 
+
+    let count = 3;
+    cdText.innerText = count;
+    playTone(400, 'sine', 0.1); 
+
+    function tick() {
+        count--;
+        if(count > 0) {
+            cdText.innerText = count;
+            playTone(400, 'sine', 0.1);
+            countdownTimer = setTimeout(tick, 1000);
+        } else {
+            cdText.innerText = "Start!";
+            playTone(800, 'triangle', 0.3);
+            countdownTimer = setTimeout(() => {
+                cdScreen.classList.add("hidden");
+                if(callback) callback();
+            }, 500);
+        }
+    }
+    countdownTimer = setTimeout(tick, 1000);
+}
+
+function initGame() {
+    score = 0;
+    isGameRunning = true;
+    document.getElementById("score").innerText = "0";
+    timeLeft = 60;
+    document.getElementById("timer-bar").style.width = "100%";
+    
+    currentMode = 'line'; 
+    nextProblem();
+    
+    if(timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        const percent = (timeLeft / 60) * 100;
+        document.getElementById("timer-bar").style.width = percent + "%";
+        
+        if(timeLeft <= 5 && timeLeft > 0) playTone(800, 'sine', 0.05);
+        if(timeLeft <= 0) endGame();
+    }, 1000);
+}
+
+function nextProblem() {
+    if(!isGameRunning) return;
+    
+    const txt = i18nData[currentLangCode];
+    const indicator = document.getElementById("mode-indicator");
+    const container = document.getElementById("grid-container");
+    
+    if(currentMode === 'line') {
+        indicator.innerText = txt.modeLine;
+        container.className = 'line-mode';
+    } else {
+        indicator.innerText = txt.modePoint;
+        container.className = 'point-mode';
+    }
+
+    problemGrid = Array(GRID_SIZE * GRID_SIZE).fill(0);
+    paintedGrid = Array(GRID_SIZE * GRID_SIZE).fill(0);
+    
+    const numCells = 4 + Math.floor(Math.random() * 4); 
+    for(let i=0; i<numCells; i++) {
+        let r = Math.floor(Math.random() * GRID_SIZE);
+        let c = Math.floor(Math.random() * (GRID_SIZE / 2)); 
+        problemGrid[r * GRID_SIZE + c] = 1;
+    }
+    renderGrid();
+}
+
+function renderGrid() {
+    const container = document.getElementById("grid-container");
+    container.innerHTML = '';
+
+    for(let r=0; r<GRID_SIZE; r++) {
+        for(let c=0; c<GRID_SIZE; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.dataset.r = r;
+            cell.dataset.c = c;
+            const idx = r * GRID_SIZE + c;
+
+            if(problemGrid[idx] === 1) cell.classList.add('problem');
+            if(paintedGrid[idx] === 1) cell.classList.add('painted');
+
+            cell.onpointerdown = (e) => handleInputStart(e, r, c);
+            cell.onpointerenter = (e) => handleInputMove(e, r, c);
+            container.appendChild(cell);
+        }
+    }
+}
+
+function handleInputStart(e, r, c) {
+    if(!isGameRunning) return;
+    if(c < GRID_SIZE / 2) return; 
+
+    e.preventDefault();
+
+    const idx = r * GRID_SIZE + c;
+    drawMode = paintedGrid[idx] === 1 ? 0 : 1;
+    isDrawing = true;
+    
+    updateCell(idx, drawMode);
+    const stopDrawing = () => { isDrawing = false; document.removeEventListener('pointerup', stopDrawing); };
+    document.addEventListener('pointerup', stopDrawing);
+}
+
+function handleInputMove(e, r, c) {
+    if(!isGameRunning || !isDrawing) return;
+    if(c < GRID_SIZE / 2) return;
+    if(e.pointerType === 'mouse' && e.buttons === 0) { isDrawing = false; return; }
+
+    const idx = r * GRID_SIZE + c;
+    if(paintedGrid[idx] !== drawMode) {
+        updateCell(idx, drawMode);
+    }
+}
+
+function updateCell(idx, value) {
+    paintedGrid[idx] = value;
+    const cells = document.getElementById("grid-container").children;
+    if(value === 1) cells[idx].classList.add('painted');
+    else cells[idx].classList.remove('painted');
+
+    playTone(300 + (value ? 100 : 0), 'sine', 0.05); 
+    checkAnswer();
+}
+
+function checkAnswer() {
+    let solutionMap = Array(GRID_SIZE * GRID_SIZE).fill(0);
+    let dotCount = 0;
+
+    for(let r=0; r<GRID_SIZE; r++) {
+        for(let c=0; c<GRID_SIZE/2; c++) {
+            if (problemGrid[r*GRID_SIZE + c] === 1) {
+                dotCount++;
+                let targetR, targetC;
+                if (currentMode === 'line') { targetR = r; targetC = (GRID_SIZE - 1) - c; } 
+                else { targetR = (GRID_SIZE - 1) - r; targetC = (GRID_SIZE - 1) - c; }
+                solutionMap[targetR * GRID_SIZE + targetC] = 1;
+            }
+        }
+    }
+    
+    for(let i=0; i<paintedGrid.length; i++) {
+        if (solutionMap[i] !== paintedGrid[i]) return; 
+    }
+
+    const multiplier = (currentMode === 'point') ? 20 : 10;
+    score += (dotCount * multiplier);
+    document.getElementById("score").innerText = score;
+    
+    playTone(600, 'sine', 0.1); 
+    setTimeout(() => playTone(800, 'sine', 0.1), 100);
+    
+    const overlay = document.getElementById("success-overlay");
+    overlay.classList.add('show');
+    setTimeout(() => overlay.classList.remove('show'), 300);
+
+    setTimeout(() => {
+        currentMode = (currentMode === 'line') ? 'point' : 'line';
+        nextProblem();
+    }, 300);
+}
+
+function endGame() {
+    isGameRunning = false;
+    clearInterval(timerInterval);
+    playTone(523, 'triangle', 0.2); 
+    setTimeout(() => playTone(440, 'triangle', 0.4), 400);
+
+    document.getElementById("game-screen").classList.add("hidden");
+    document.getElementById("result-screen").classList.remove("hidden");
+    
+    document.getElementById("res-nickname").innerText = myNickname;
+    document.getElementById("res-score").innerText = score;
+    
+    submitScore(myNickname, score);
+}
+
+let audioCtx = null;
+function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+function playTone(freq, type, duration) {
+    try {
+        initAudio(); 
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator(); 
+        const gain = audioCtx.createGain();
+        osc.type = type; 
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    } catch(e) {
+        console.warn("Audio Context not ready", e);
+    }
+}
+
+function restartGame() {
+    document.getElementById("result-screen").classList.add("hidden");
+    document.getElementById("game-screen").classList.remove("hidden");
+    runCountdown(initGame);
+}
+
+function forceRestart() {
+    if(countdownTimer) clearTimeout(countdownTimer);
+    document.getElementById("countdown-screen").classList.add("hidden");
+    runCountdown(initGame);
+}
+
+function goHome() {
+    isGameRunning = false;
+    document.getElementById("result-screen").classList.add("hidden");
+    document.getElementById("game-screen").classList.add("hidden");
+    document.getElementById("start-screen").classList.remove("hidden");
+    document.getElementById('langTriggerWrapper').style.display = 'block'; // 돌아왔을 때 언어 버튼 복구
+    loadRanking();
+}
+
+const API_URL = "./ranking.php";
+
+function submitScore(name, score) {
+    const txt = i18nData[currentLangCode];
+    const formData = new FormData();
+    formData.append('nickname', name);
+    formData.append('score', score);
+
+    fetch(API_URL + '?action=submit', { method: 'POST', body: formData })
+    .then(response => response.json())
+    .then(data => {
+        if(data.status === 'success') {
+            document.getElementById("res-rank").innerText = txt.rankResult.replace('{rank}', data.rank);
+        } else if(data.status === 'error' && data.message === 'bad_word') {
+            document.getElementById("res-rank").innerText = txt.alertBadWord;
+        } else {
+            document.getElementById("res-rank").innerText = "Error!";
+        }
+        loadTop3(); 
+    })
+    .catch(error => { console.error(error); document.getElementById("res-rank").innerText = "Network Error"; });
+}
+
+function loadRanking() {
+    const list = document.getElementById("ranking-board");
+    const txt = i18nData[currentLangCode];
+    list.innerHTML = `<div class="center" id="ui-rankingLoading">${txt.rankingLoading}</div>`;
+
+    fetch(API_URL + '?action=list')
+    .then(response => response.json())
+    .then(data => {
+        if(data.length === 0) {
+            list.innerHTML = `<div class="center" style="margin-top:20px;">${txt.rankingEmpty}</div>`;
+            return;
+        }
+        let html = "";
+        data.forEach((item, index) => {
+            let rankHtml = index < 3 ? `<span style="width:15%; text-align:center; font-size:1.5em; line-height:1;">${index===0?"🥇":index===1?"🥈":"🥉"}</span>` : `<span style="width:15%; text-align:center; color:#8d6e63; font-weight:bold;">${index+1}</span>`;
+            html += `<div class="rank-item">${rankHtml}<span style="width:50%; padding-left:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.nickname}</span><span style="width:35%; text-align:right; color:#888; font-weight:bold;">${item.score}</span></div>`;
+        });
+        list.innerHTML = html;
+    })
+    .catch(error => { console.error(error); list.innerHTML = `<div class="center" style="color:red;">${txt.rankingError}</div>`; });
+}
+
+function loadTop3() {
+    const list = document.getElementById("top3-list");
+    list.innerHTML = `<div class="center" style="font-size:2vh;">Loading...</div>`;
+    fetch(API_URL + '?action=list')
+    .then(response => response.json())
+    .then(data => {
+        let html = "";
+        for(let i=0; i < Math.min(data.length, 3); i++) {
+            let item = data[i];
+            let medal = i===0?"🥇":i===1?"🥈":"🥉";
+            html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px dashed #eee; font-size:2.2vh;">
+                <div style="color:#5d4037; display:flex; align-items:center; gap:5px;"><span>${medal}</span><span style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.nickname}</span></div>
+                <span style="font-weight:bold; color:#8d6e63;">${item.score}</span></div>`;
+        }
+        if(data.length === 0) html = `<div class="center" style="font-size:2vh;">No Data 👑</div>`;
+        list.innerHTML = html;
+    });
+}
+</script>
+</body>
+</html>

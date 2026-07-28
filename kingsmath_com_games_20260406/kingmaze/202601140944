@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5YW0T2C109');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title id="page-title">미로킹 과일탐험대</title>
+    <meta id="meta-desc" name="description" content="미로킹 과일탐험대 - 친구들과 함께 즐기는 최고의 미로 찾기 게임!">
+    <meta name="keywords" content="Maze Game, Math Game, Kids Game, KingsMath, 킹수학, 미로찾기, 교육용 게임">
+    <meta name="theme-color" content="#2b2b2b">
+
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&family=Fredoka+One&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #2b2b2b;
+            --ui-bg: #3a3a3a;
+            --text-color: #f0f0f0;
+            --accent-color: #FFD93D;
+            --wall-color: #5d4037;
+            --floor-color: #8d6e63;
+            --p1-color: #ff6b6b;
+            --p2-color: #54a0ff;
+            --p3-color: #1dd1a1;
+            --p4-color: #feca57;
+        }
+
+        body {
+            margin: 0; padding: 0; overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Jua', 'Fredoka One', 'Noto Sans KR', sans-serif;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header --- */
+        header {
+            height: 60px;
+            background-color: #1e1e1e;
+            display: flex; 
+            align-items: center;
+            justify-content: center; 
+            position: relative;
+            padding: 0 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+        
+        header a {
+            position: absolute;
+            left: 20px;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 1.2rem;
+            text-shadow: 1px 1px 0 #000;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 60%;
+        }
+        
+        #header-timer-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #main-timer {
+            font-size: 2.0rem;
+            color: #fff;
+            background: #222;
+            padding: 2px 20px;
+            border-radius: 15px;
+            border: 2px solid #666;
+            min-width: 60px;
+            text-align: center;
+            font-family: 'Jua', 'Fredoka One', sans-serif;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        /* --- Language Switcher --- */
+        .lang-switcher {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: #aaaaaa52;
+            border-radius: 20px;
+            padding: 5px 10px;
+            z-index: 1000;
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 8px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            backdrop-filter: blur(2px);
+        }
+
+        .lang-btn {
+            cursor: pointer;
+            font-size: 1.5rem;
+            text-decoration: none;
+            border: none;
+            background: none;
+            padding: 0;
+            margin: 0;
+            line-height: 1;
+            transition: transform 0.2s;
+            opacity: 0.7;
+        }
+        .lang-btn:hover, .lang-btn.active {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+
+        /* --- Layout --- */
+        #app-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            height: calc(100% - 60px);
+            overflow: hidden; 
+            padding-bottom: 30px;
+            box-sizing: border-box;
+        }
+
+        /* --- Start Screen --- */
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            background: var(--ui-bg);
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 4px solid #555;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            min-width: 450px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+        }
+
+        h1 { margin: 0; font-size: 2.5rem; color: #fff; text-shadow: 3px 3px 0 #000; text-align: center; }
+        
+        .option-section { width: 100%; text-align: center; }
+        .label-text { color: #aaa; margin-bottom: 8px; font-size: 1.1rem; }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            border-radius: 15px;
+            border: 2px solid #555;
+            background-color: #222;
+            color: #fff;
+            font-family: 'Jua', 'Fredoka One', sans-serif;
+            cursor: pointer;
+            outline: none;
+            text-align: center;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFD93D%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 16px auto;
+        }
+        select:focus { border-color: var(--accent-color); }
+
+        #btn-start {
+            margin-top: 15px;
+            padding: 15px 60px;
+            font-size: 2.0rem;
+            background-color: #ff7675;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 8px 0 #d63031;
+            font-family: 'Jua', 'Fredoka One', sans-serif;
+            cursor: pointer;
+            transition: transform 0.1s;
+            width: 100%;
+        }
+        #btn-start:active { transform: translateY(6px); box-shadow: none; }
+
+        .guide-box {
+            background: rgba(0,0,0,0.2);
+            border: 2px dashed #666;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            color: #ccc;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        /* --- Game Screen (Canvas) --- */
+        #game-layer {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            background-color: #2b2b2b;
+            overflow: hidden;
+            width: 100%;
+            touch-action: none;
+        }
+        canvas {
+            display: block;
+            touch-action: none;
+        }
+
+        /* Floating Buttons */
+        .floating-btn {
+            position: fixed;
+            top: 40%;
+            transform: translateY(-50%);
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: #444;
+            color: white;
+            display: flex;
+            justify-content: center; align-items: center;
+            font-size: 1.8rem;
+            z-index: 200;
+            border: 2px solid #666;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+        .floating-btn:hover { opacity: 1; }
+        #btn-home { left: 20px; }
+        #btn-fullscreen { right: 20px; }
+
+        /* Popups */
+        .overlay-msg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center;
+            z-index: 150;
+            color: white;
+            text-align: center;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+        .msg-title { font-size: 3rem; color: var(--accent-color); margin-bottom: 20px; text-shadow: 0 0 20px gold;}
+        .msg-sub { font-size: 1.5rem; margin-bottom: 20px; white-space: pre-line; line-height: 1.6; }
+        
+        #btn-to-main {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            background: #0984e3;
+            color: white;
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 5px 0 #06528d;
+            font-family: 'Jua', 'Fredoka One', sans-serif;
+            cursor: pointer;
+        }
+        #btn-to-main:active { transform: translateY(4px); box-shadow: none; }
+
+        /* Countdown Overlay */
+        #countdown-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 160;
+            pointer-events: none;
+        }
+        #countdown-text {
+            font-size: 8rem;
+            color: #fff;
+            text-shadow: 0 0 30px var(--p1-color);
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: 'Fredoka One', 'Jua', sans-serif;
+        }
+        #countdown-sub {
+            font-size: 2rem;
+            color: var(--accent-color);
+            margin-top: 20px;
+            text-shadow: 2px 2px 0 #000;
+            text-align: center;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switcher">
+        <button class="lang-btn" onclick="changeLanguage('ko')" title="한국어">🇰🇷</button>
+        <button class="lang-btn" onclick="changeLanguage('en')" title="English">🇺🇸</button>
+        <button class="lang-btn" onclick="changeLanguage('zh')" title="中文">🇨🇳</button>
+        <button class="lang-btn" onclick="changeLanguage('ja')" title="日本語">🇯🇵</button>
+        <button class="lang-btn" onclick="changeLanguage('es')" title="Español">🇪🇸</button>
+        <button class="lang-btn" onclick="changeLanguage('fr')" title="Français">🇫🇷</button>
+        <button class="lang-btn" onclick="changeLanguage('ru')" title="Русский">🇷🇺</button>
+    </div>
+
+    <header>
+        <a href="#" id="header-link" onclick="handleLogoClick(event)">👑 KingsMath.com</a>
+        
+        <div id="header-timer-area">
+            <div id="main-timer">60</div>
+        </div>
+    </header>
+
+    <div id="app-container">
+        <div id="start-screen">
+            <h1 id="game-title">👑 Maze King: Fruit Adventure</h1>
+            
+            <div class="guide-box">
+                <b id="guide-title">💡 How to Play:</b><br>
+                <span id="guide-desc-1">- Don't touch the walls! Eat fruits.</span><br>
+                <span id="guide-desc-2">- Drag to move your character.</span><br>
+                <span id="guide-desc-3">- Eat all fruits to reveal the Castle(🏰) in the center.</span>
+            </div>
+
+            <div class="option-section">
+                <div class="label-text" id="label-mode">Game Mode</div>
+                <select id="sel-mode">
+                    </select>
+            </div>
+
+            <div class="option-section">
+                <div class="label-text" id="label-diff">Difficulty</div>
+                <select id="sel-diff">
+                    </select>
+            </div>
+
+            <button id="btn-start">Start Game! 🚀</button>
+            <a href="#" id="footer-link" style="margin-top: 20px; color: #aaa; text-decoration: none; font-size: 1.0rem; border-bottom: 1px dashed #555; padding-bottom: 2px;">🎮 Choose Another Game</a>
+        </div>
+
+        <div id="game-layer">
+            <div id="canvas-container">
+                <canvas id="game-canvas"></canvas>
+            </div>
+            
+            <div id="countdown-overlay">
+                <div id="countdown-text">3</div>
+                <div id="countdown-sub">Eat fruits and go home!</div>
+            </div>
+
+            <div id="result-overlay" class="overlay-msg">
+                <div class="msg-title" id="res-title">SUCCESS!</div>
+                <div class="msg-sub" id="res-sub">Record: 50s</div>
+                <button id="btn-to-main">🏠 Home</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="btn-home" class="floating-btn">🏠</div>
+    <div id="btn-fullscreen" class="floating-btn">⛶</div>
+
+    <script>
+        /**
+         * Maze King Fruit Adventure (Multi-Language Version)
+         */
+
+        // --- Localization Data ---
+        const translations = {
+            ko: {
+                title: "미로킹 과일탐험대",
+                desc: "미로킹 과일탐험대 - 친구들과 함께 즐기는 최고의 미로 찾기 게임!",
+                headerLink: "게임으로 수학의 킹이 되어라. 👑킹수학.com",
+                gameTitle: "👑 미로킹 과일대소동",
+                guideTitle: "💡 게임 방법:",
+                guide1: "- 벽에 닿지 않게 길을 찾아 과일을 드세요.",
+                guide2: "- 터치 & 드래그로 캐릭터를 움직입니다.",
+                guide3: "- 과일을 모두 먹으면 맵 정중앙에 화려한 성(🏰)이 나타납니다.",
+                labelMode: "게임 모드 선택",
+                labelDiff: "난이도",
+                btnStart: "게임 시작! 🚀",
+                footerLink: "🎮 다른 게임 고르기",
+                modes: [
+                    {val: '1p', text: '1인용 (개인전 10x10)'},
+                    {val: '2p', text: '2인용 (개인전 10x10)'},
+                    {val: '3p', text: '3인용 (개인전 10x10)'},
+                    {val: '4p', text: '4인용 (개인전 10x10)'},
+                    {val: 'team', text: '2:2 팀전 (20x10 대형맵)'},
+                    {val: 'coop', text: '4인 협동 (40x10 초대형맵)'}
+                ],
+                diffs: [
+                    {val: 'easy', text: '쉬움 (길이 많이 뚫려있음) 🐥'},
+                    {val: 'hard', text: '어려움 (막힌 길이 많은 정석 미로) 🔥'}
+                ],
+                countSub: "과일을 먹고 집으로 가세요!",
+                success: "성공! 🎉",
+                fail: "시간 초과 ⌛",
+                btnHome: "🏠 메인으로",
+                rankSuffix: "등",
+                team: "팀"
+            },
+            en: {
+                title: "Maze King: Fruit Adventure",
+                desc: "Maze King: Fruit Adventure - The best maze game to play with friends!",
+                headerLink: "Become the King of Math. 👑KingsMath.com",
+                gameTitle: "👑 Maze King: Fruit Chaos",
+                guideTitle: "💡 How to Play:",
+                guide1: "- Avoid walls. Eat all fruits.",
+                guide2: "- Touch & Drag to move.",
+                guide3: "- Eat all fruits to find the Castle(🏰) in the center.",
+                labelMode: "Game Mode",
+                labelDiff: "Difficulty",
+                btnStart: "Start Game! 🚀",
+                footerLink: "🎮 Choose Another Game",
+                modes: [
+                    {val: '1p', text: '1 Player (10x10)'},
+                    {val: '2p', text: '2 Players (10x10)'},
+                    {val: '3p', text: '3 Players (10x10)'},
+                    {val: '4p', text: '4 Players (10x10)'},
+                    {val: 'team', text: '2:2 Team (20x10)'},
+                    {val: 'coop', text: '4P Co-op (40x10)'}
+                ],
+                diffs: [
+                    {val: 'easy', text: 'Easy (Open Paths) 🐥'},
+                    {val: 'hard', text: 'Hard (Classic Maze) 🔥'}
+                ],
+                countSub: "Eat fruits and go home!",
+                success: "CLEAR! 🎉",
+                fail: "TIME OVER ⌛",
+                btnHome: "🏠 Home",
+                rankSuffix: "", // st, nd, rd logic handled in JS
+                team: "Team"
+            },
+            zh: {
+                title: "迷宫之王：水果大冒险",
+                desc: "迷宫之王：水果大冒险 - 和朋友一起玩的最佳迷宫游戏！",
+                headerLink: "成为数学之王。👑KingsMath.com",
+                gameTitle: "👑 迷宫之王：水果大乱斗",
+                guideTitle: "💡 游戏方法：",
+                guide1: "- 不要碰到墙壁。吃掉水果。",
+                guide2: "- 触摸并拖动来移动角色。",
+                guide3: "- 吃掉所有水果，城堡(🏰)就会出现在中心。",
+                labelMode: "游戏模式",
+                labelDiff: "难度",
+                btnStart: "开始游戏！🚀",
+                footerLink: "🎮 选择其他游戏",
+                modes: [
+                    {val: '1p', text: '1人 (10x10)'},
+                    {val: '2p', text: '2人 (10x10)'},
+                    {val: '3p', text: '3人 (10x10)'},
+                    {val: '4p', text: '4人 (10x10)'},
+                    {val: 'team', text: '2:2 团队战 (20x10)'},
+                    {val: 'coop', text: '4人 合作 (40x10)'}
+                ],
+                diffs: [
+                    {val: 'easy', text: '简单 (路径开阔) 🐥'},
+                    {val: 'hard', text: '困难 (经典迷宫) 🔥'}
+                ],
+                countSub: "吃掉水果回家！",
+                success: "成功！🎉",
+                fail: "时间到 ⌛",
+                btnHome: "🏠以此",
+                rankSuffix: "名",
+                team: "队"
+            },
+            ja: {
+                title: "迷路キング：フルーツ大冒険",
+                desc: "迷路キング：フルーツ大冒険 - 友達と一緒に楽しむ最高の迷路ゲーム！",
+                headerLink: "ゲームで数学のキングになろう。👑KingsMath.com",
+                gameTitle: "👑 迷路キング：フルーツ大騒動",
+                guideTitle: "💡 遊び方：",
+                guide1: "- 壁に当たらないでください。果物を食べよう。",
+                guide2: "- タッチ＆ドラッグで移動します。",
+                guide3: "- 果物を全部食べると、真ん中に城(🏰)が現れます。",
+                labelMode: "ゲームモード",
+                labelDiff: "難易度",
+                btnStart: "ゲームスタート！🚀",
+                footerLink: "🎮 他のゲームを選ぶ",
+                modes: [
+                    {val: '1p', text: '1人用 (10x10)'},
+                    {val: '2p', text: '2人用 (10x10)'},
+                    {val: '3p', text: '3人用 (10x10)'},
+                    {val: '4p', text: '4人用 (10x10)'},
+                    {val: 'team', text: '2:2 チーム戦 (20x10)'},
+                    {val: 'coop', text: '4人 協力 (40x10)'}
+                ],
+                diffs: [
+                    {val: 'easy', text: 'かんたん (道が広い) 🐥'},
+                    {val: 'hard', text: 'むずかしい (迷路) 🔥'}
+                ],
+                countSub: "果物を食べてお家に帰ろう！",
+                success: "クリア！🎉",
+                fail: "タイムオーバー ⌛",
+                btnHome: "🏠 ホーム",
+                rankSuffix: "位",
+                team: "チーム"
+            },
+            es: {
+                title: "Rey del Laberinto: Aventura Frutal",
+                desc: "¡El mejor juego de laberintos para jugar con amigos!",
+                headerLink: "Sé el Rey de las Matemáticas. 👑KingsMath.com",
+                gameTitle: "👑 Rey del Laberinto",
+                guideTitle: "💡 Cómo jugar:",
+                guide1: "- Evita las paredes. Come frutas.",
+                guide2: "- Toca y arrastra para moverte.",
+                guide3: "- Come todo para encontrar el Castillo(🏰).",
+                labelMode: "Modo de Juego",
+                labelDiff: "Dificultad",
+                btnStart: "¡Empezar! 🚀",
+                footerLink: "🎮 Elegir otro juego",
+                modes: [
+                    {val: '1p', text: '1 Jugador (10x10)'},
+                    {val: '2p', text: '2 Jugadores (10x10)'},
+                    {val: '3p', text: '3 Jugadores (10x10)'},
+                    {val: '4p', text: '4 Jugadores (10x10)'},
+                    {val: 'team', text: '2:2 Equipo (20x10)'},
+                    {val: 'coop', text: '4J Cooperativo (40x10)'}
+                ],
+                diffs: [
+                    {val: 'easy', text: 'Fácil (Caminos abiertos) 🐥'},
+                    {val: 'hard', text: 'Difícil (Laberinto) 🔥'}
+                ],
+                countSub: "¡Come frutas y ve a casa!",
+                success: "¡ÉXITO! 🎉",
+                fail: "TIEMPO FINALIZADO ⌛",
+                btnHome: "🏠 Inicio",
+                rankSuffix: "º",
+                team: "Equipo"
+            },
+            fr: {
+                title: "Roi du Labyrinthe: Aventure Fruitée",
+                desc: "Le meilleur jeu de labyrinthe à jouer entre amis!",
+                headerLink: "Devenez le Roi des Maths. 👑KingsMath.com",
+                gameTitle: "👑 Roi du Labyrinthe",
+                guideTitle: "💡 Comment jouer:",
+                guide1: "- Évitez les murs. Mangez les fruits.",
+                guide2: "- Touchez et glissez pour bouger.",
+                guide3: "- Mangez tout pour voir le Château(🏰).",
+                labelMode: "Mode de Jeu",
+                labelDiff: "Difficulté",
+                btnStart: "Commencer! 🚀",
+                footerLink: "🎮 Choisir un autre jeu",
+                modes: [
+                    {val: '1p', text: '1 Joueur (10x10)'},
+                    {val: '2p', text: '2 Joueurs (10x10)'},
+                    {val: '3p', text: '3 Joueurs (10x10)'},
+                    {val: '4p', text: '4 Joueurs (10x10)'},
+                    {val: 'team', text: '2:2 Équipe (20x10)'},
+                    {val: 'coop', text: '4J Coop (40x10)'}
+                ],
+                diffs: [
+                    {val: 'easy', text: 'Facile (Chemins ouverts) 🐥'},
+                    {val: 'hard', text: 'Difficile (Labyrinthe) 🔥'}
+                ],
+                countSub: "Mangez et rentrez chez vous!",
+                success: "BRAVO! 🎉",
+                fail: "TEMPS ÉCOULÉ ⌛",
+                btnHome: "🏠 Accueil",
+                rankSuffix: "e",
+                team: "Équipe"
+            },
+            ru: {
+                title: "Король Лабиринтов: Фрукты",
+                desc: "Лучшая игра-лабиринт для игры с друзьями!",
+                headerLink: "Стань королем математики. 👑KingsMath.com",
+                gameTitle: "👑 Король Лабиринтов",
+                guideTitle: "💡 Как играть:",
+                guide1: "- Не касайся стен. Ешь фрукты.",
+                guide2: "- Тяни, чтобы двигаться.",
+                guide3: "- Съешь всё, чтобы найти Замок(🏰).",
+                labelMode: "Режим игры",
+                labelDiff: "Сложность",
+                btnStart: "Начать! 🚀",
+                footerLink: "🎮 Другая игра",
+                modes: [
+                    {val: '1p', text: '1 Игрок (10x10)'},
+                    {val: '2p', text: '2 Игрока (10x10)'},
+                    {val: '3p', text: '3 Игрока (10x10)'},
+                    {val: '4p', text: '4 Игрока (10x10)'},
+                    {val: 'team', text: '2:2 Команда (20x10)'},
+                    {val: 'coop', text: '4И Кооп (40x10)'}
+                ],
+                diffs: [
+                    {val: 'easy', text: 'Легко (Широкие пути) 🐥'},
+                    {val: 'hard', text: 'Сложно (Лабиринт) 🔥'}
+                ],
+                countSub: "Ешь фрукты и иди домой!",
+                success: "ПОБЕДА! 🎉",
+                fail: "ВРЕМЯ ВЫШЛО ⌛",
+                btnHome: "🏠 Домой",
+                rankSuffix: "",
+                team: "Ком."
+            }
+        };
+
+        // --- Language Logic ---
+        let currentLang = 'en';
+
+        function getLanguage() {
+            // 1. URL Parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const langParam = urlParams.get('lang');
+            if (langParam && translations[langParam]) return langParam;
+
+            // 2. LocalStorage
+            const savedLang = localStorage.getItem('kingsmath_lang');
+            if (savedLang && translations[savedLang]) return savedLang;
+
+            // 3. Browser Language
+            const browserLang = navigator.language.slice(0, 2);
+            if (translations[browserLang]) return browserLang;
+
+            // Default
+            return 'en';
+        }
+
+        function changeLanguage(lang) {
+            if (!translations[lang]) return;
+            currentLang = lang;
+            localStorage.setItem('kingsmath_lang', lang);
+            
+            // Update URL without reload if possible, but keeping query param
+            const url = new URL(window.location);
+            url.searchParams.set('lang', lang);
+            window.history.pushState({}, '', url);
+
+            updateUI();
+        }
+
+        function updateUI() {
+            const t = translations[currentLang];
+            
+            // SEO
+            document.getElementById('page-title').innerText = t.title;
+            document.getElementById('meta-desc').setAttribute('content', t.desc);
+            document.documentElement.lang = currentLang;
+
+            // Header Link & Domain Logic
+            const headerLink = document.getElementById('header-link');
+            headerLink.innerText = t.headerLink;
+            if (currentLang === 'ko') {
+                headerLink.href = 'https://킹수학.com';
+            } else {
+                headerLink.href = 'http://kingsmath.com';
+            }
+            
+            // Footer Link Logic
+            const footerLink = document.getElementById('footer-link');
+            footerLink.innerText = t.footerLink;
+            if (currentLang === 'ko') {
+                footerLink.href = '/';
+            } else {
+                footerLink.href = '/';
+            }
+
+            // Static Text
+            document.getElementById('game-title').innerText = t.gameTitle;
+            document.getElementById('guide-title').innerText = t.guideTitle;
+            document.getElementById('guide-desc-1').innerText = t.guide1;
+            document.getElementById('guide-desc-2').innerText = t.guide2;
+            document.getElementById('guide-desc-3').innerText = t.guide3;
+            document.getElementById('label-mode').innerText = t.labelMode;
+            document.getElementById('label-diff').innerText = t.labelDiff;
+            document.getElementById('btn-start').innerText = t.btnStart;
+            document.getElementById('btn-to-main').innerText = t.btnHome;
+            document.getElementById('countdown-sub').innerText = t.countSub;
+
+            // Dropdowns (Preserve selection)
+            const selMode = document.getElementById('sel-mode');
+            const savedMode = selMode.value;
+            selMode.innerHTML = '';
+            t.modes.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.val;
+                opt.innerText = m.text;
+                selMode.appendChild(opt);
+            });
+            if (savedMode) selMode.value = savedMode;
+            if (!selMode.value) selMode.value = '4p'; // Default fall back
+
+            const selDiff = document.getElementById('sel-diff');
+            const savedDiff = selDiff.value;
+            selDiff.innerHTML = '';
+            t.diffs.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.val;
+                opt.innerText = d.text;
+                selDiff.appendChild(opt);
+            });
+            if (savedDiff) selDiff.value = savedDiff;
+            
+            // Highlight active flag
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.lang-btn[onclick="changeLanguage('${currentLang}')"]`).classList.add('active');
+        }
+
+        function handleLogoClick(e) {
+            e.preventDefault();
+            const target = e.currentTarget.href;
+            if (confirm(translations[currentLang].footerLink + "?")) { // Simple confirm using "Choose another game?" text context
+                window.location.href = target;
+            } else {
+                 location.reload(); // Default reload behavior for game reset
+            }
+        }
+
+        // Initialize Language
+        currentLang = getLanguage();
+        updateUI();
+
+        
+        // --- Game Constants & Config ---
+        const COLORS = ['#ff6b6b', '#54a0ff', '#1dd1a1', '#feca57']; 
+        const EMOJIS = ['🐶', '🐱', '🐰', '🐹'];
+        const FRUITS = ['🍎', '🍌', '🍇', '🍓', '🍒', '🍑', '🍍', '🥝'];
+        
+        // --- Global State ---
+        let state = {
+            modeType: 'individual', 
+            difficulty: 'easy',
+            cols: 10, 
+            rows: 10,
+            playerCount: 4,
+            isPlaying: false,
+            isCountingDown: false,
+            timeLimit: 60,
+            remainingTime: 60,
+            timerInterval: null,
+            zones: [], 
+            mazes: [], 
+            players: [],
+            isFinished: false,
+            finishedRankCounter: 1 // 도착 순서 카운터
+        };
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- Audio Context ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'eat') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(1000, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'win') {
+                osc.type = 'triangle';
+                [523, 659, 783, 1046].forEach((freq, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.type = 'triangle';
+                    o.frequency.value = freq;
+                    g.gain.setValueAtTime(0.2, now + i*0.1);
+                    g.gain.linearRampToValueAtTime(0, now + i*0.1 + 0.3);
+                    o.start(now + i*0.1); o.stop(now + i*0.1 + 0.3);
+                });
+            } else if (type === 'lose') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.5);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
+            } else if (type === 'spawn') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.linearRampToValueAtTime(400, now + 0.2);
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+            } else if (type === 'beep') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(600, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.15);
+                osc.start(now); osc.stop(now + 0.15);
+            } else if (type === 'go') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.linearRampToValueAtTime(1200, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            }
+        }
+
+        // --- Maze Generator ---
+        class MazeCell {
+            constructor(c, r) {
+                this.c = c;
+                this.r = r;
+                this.visited = false;
+                this.walls = { top: true, right: true, bottom: true, left: true };
+            }
+        }
+
+        class Maze {
+            constructor(cols, rows) {
+                this.cols = cols;
+                this.rows = rows;
+                this.grid = [];
+                this.fruits = [];
+                this.goalSpawned = false;
+                this.goalRect = null;
+                this.initGrid();
+                this.generateDFS();
+            }
+
+            initGrid() {
+                for(let r=0; r<this.rows; r++) {
+                    const row = [];
+                    for(let c=0; c<this.cols; c++) {
+                        row.push(new MazeCell(c, r));
+                    }
+                    this.grid.push(row);
+                }
+            }
+
+            generateDFS() {
+                let stack = [];
+                let current = this.grid[0][0];
+                current.visited = true;
+                stack.push(current);
+
+                while(stack.length > 0) {
+                    current = stack[stack.length - 1];
+                    let neighbors = this.getUnvisitedNeighbors(current);
+
+                    if (neighbors.length > 0) {
+                        let next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                        this.removeWalls(current, next);
+                        next.visited = true;
+                        stack.push(next);
+                    } else {
+                        stack.pop();
+                    }
+                }
+
+                if (state.difficulty === 'easy') {
+                    this.braidMaze(0.5);
+                } else {
+                    this.braidMaze(0.1);
+                }
+            }
+
+            getUnvisitedNeighbors(cell) {
+                let neighbors = [];
+                const dirs = [[0,-1], [1,0], [0,1], [-1,0]];
+                for(let d of dirs) {
+                    let nc = cell.c + d[0];
+                    let nr = cell.r + d[1];
+                    if(nc >= 0 && nc < this.cols && nr >= 0 && nr < this.rows) {
+                        if(!this.grid[nr][nc].visited) {
+                            neighbors.push(this.grid[nr][nc]);
+                        }
+                    }
+                }
+                return neighbors;
+            }
+
+            removeWalls(a, b) {
+                let x = a.c - b.c;
+                let y = a.r - b.r;
+                if(x === 1) { a.walls.left = false; b.walls.right = false; }
+                else if(x === -1) { a.walls.right = false; b.walls.left = false; }
+                if(y === 1) { a.walls.top = false; b.walls.bottom = false; }
+                else if(y === -1) { a.walls.bottom = false; b.walls.top = false; }
+            }
+
+            braidMaze(factor) {
+                for(let r=0; r<this.rows; r++) {
+                    for(let c=0; c<this.cols; c++) {
+                        let cell = this.grid[r][c];
+                        let wallCount = (cell.walls.top?1:0) + (cell.walls.right?1:0) + (cell.walls.bottom?1:0) + (cell.walls.left?1:0);
+                        
+                        if (wallCount === 3 && Math.random() < factor) {
+                            let walls = [];
+                            if (cell.walls.top && r > 0) walls.push('top');
+                            if (cell.walls.right && c < this.cols-1) walls.push('right');
+                            if (cell.walls.bottom && r < this.rows-1) walls.push('bottom');
+                            if (cell.walls.left && c > 0) walls.push('left');
+
+                            if(walls.length > 0) {
+                                let pick = walls[Math.floor(Math.random() * walls.length)];
+                                if(pick === 'top') { cell.walls.top = false; this.grid[r-1][c].walls.bottom = false; }
+                                if(pick === 'right') { cell.walls.right = false; this.grid[r][c+1].walls.left = false; }
+                                if(pick === 'bottom') { cell.walls.bottom = false; this.grid[r+1][c].walls.top = false; }
+                                if(pick === 'left') { cell.walls.left = false; this.grid[r][c-1].walls.right = false; }
+                            }
+                        }
+                    }
+                }
+            }
+
+            populateFruits(count) {
+                this.fruits = [];
+                let placed = 0;
+                // Center safe zone (2x2)
+                const cX = Math.floor(this.cols/2);
+                const cY = Math.floor(this.rows/2);
+
+                while(placed < count) {
+                    const r = Math.floor(Math.random() * this.rows);
+                    const c = Math.floor(Math.random() * this.cols);
+                    
+                    // Exclude center 2x2
+                    const isCenter = (r >= cY-1 && r <= cY && c >= cX-1 && c <= cX);
+                    
+                    if(!this.fruits.find(f => f.r === r && f.c === c) && !isCenter) {
+                        this.fruits.push({
+                            id: placed, r: r, c: c,
+                            type: FRUITS[Math.floor(Math.random() * FRUITS.length)],
+                            eaten: false
+                        });
+                        placed++;
+                    }
+                }
+            }
+        }
+
+        // --- Player Class ---
+        class Player {
+            constructor(id, zoneIndex, maze, startPos) {
+                this.id = id;
+                this.zoneIndex = zoneIndex;
+                this.maze = maze;
+                this.color = COLORS[id];
+                this.emoji = EMOJIS[id];
+                this.x = startPos.c + 0.5; 
+                this.y = startPos.r + 0.5;
+                this.radius = 0.25; 
+                this.active = false;
+                this.score = 0;
+                this.finished = false;
+                this.rank = 0; // Final Rank
+                
+                // For rendering logic
+                this.renderRect = null; // {x, y, w, h}
+            }
+        }
+
+        // --- Core Game Functions ---
+
+        function initGame() {
+            // Read UI Options
+            const modeVal = document.getElementById('sel-mode').value;
+            state.difficulty = document.getElementById('sel-diff').value;
+
+            // Configure
+            if(modeVal === '1p') { state.modeType = 'individual'; state.playerCount = 1; state.cols = 10; state.rows = 10; }
+            else if(modeVal === '2p') { state.modeType = 'individual'; state.playerCount = 2; state.cols = 10; state.rows = 10; }
+            else if(modeVal === '3p') { state.modeType = 'individual'; state.playerCount = 3; state.cols = 10; state.rows = 10; }
+            else if(modeVal === '4p') { state.modeType = 'individual'; state.playerCount = 4; state.cols = 10; state.rows = 10; }
+            else if(modeVal === 'team') { state.modeType = 'team'; state.playerCount = 4; state.cols = 20; state.rows = 10; }
+            else if(modeVal === 'coop') { state.modeType = 'coop'; state.playerCount = 4; state.cols = 40; state.rows = 10; }
+
+            state.remainingTime = 60;
+            state.isPlaying = false; // Wait for countdown
+            state.isCountingDown = true;
+            state.isFinished = false;
+            state.finishedRankCounter = 1; // [NEW] 순위 카운터 초기화
+            state.players = [];
+            state.zones = [];
+            state.mazes = [];
+
+            // Master Maze
+            const masterMaze = new Maze(state.cols, state.rows);
+            const fruitCount = Math.floor((state.cols * state.rows) * 0.15);
+            masterMaze.populateFruits(fruitCount);
+
+            // Zones
+            if (state.modeType === 'individual') {
+                const zoneW = 1 / state.playerCount;
+                for(let i=0; i<state.playerCount; i++) {
+                    state.zones.push({ x: i*zoneW, y: 0, w: zoneW, h: 1, mazeIdx: i });
+                    const m = new Maze(state.cols, state.rows);
+                    m.grid = JSON.parse(JSON.stringify(masterMaze.grid));
+                    m.fruits = JSON.parse(JSON.stringify(masterMaze.fruits));
+                    state.mazes.push(m);
+                    state.players.push(new Player(i, i, m, {r: state.rows-1, c: 0}));
+                }
+            } else if (state.modeType === 'team') {
+                const teamCount = 2; 
+                const zoneW = 0.5;
+                for(let t=0; t<teamCount; t++) {
+                    state.zones.push({ x: t*zoneW, y: 0, w: zoneW, h: 1, mazeIdx: t });
+                    const m = new Maze(state.cols, state.rows);
+                    m.grid = JSON.parse(JSON.stringify(masterMaze.grid));
+                    m.fruits = JSON.parse(JSON.stringify(masterMaze.fruits));
+                    state.mazes.push(m);
+                }
+                for(let i=0; i<4; i++) {
+                    const t = (i < 2) ? 0 : 1;
+                    const startC = (i % 2 === 0) ? 0 : state.cols - 1;
+                    state.players.push(new Player(i, t, state.mazes[t], {r: state.rows-1, c: startC}));
+                }
+            } else { // Coop
+                state.zones.push({ x: 0, y: 0, w: 1, h: 1, mazeIdx: 0 });
+                state.mazes.push(masterMaze);
+                const positions = [
+                    {r: state.rows-1, c: 0}, 
+                    {r: state.rows-1, c: state.cols-1}, 
+                    {r: state.rows-1, c: Math.floor(state.cols/3)}, 
+                    {r: state.rows-1, c: Math.floor(state.cols*2/3)}
+                ];
+                for(let i=0; i<4; i++) {
+                    state.players.push(new Player(i, 0, masterMaze, positions[i]));
+                }
+            }
+            
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-layer').style.display = 'flex';
+            document.getElementById('result-overlay').style.display = 'none';
+            
+            resizeCanvas(); 
+
+            // Start Countdown
+            startCountdownSequence();
+        }
+
+        function startCountdownSequence() {
+            const overlay = document.getElementById('countdown-overlay');
+            const text = document.getElementById('countdown-text');
+            overlay.style.display = 'flex';
+            
+            let count = 3;
+            text.innerText = count;
+            playSound('beep');
+
+            const interval = setInterval(() => {
+                count--;
+                if(count > 0) {
+                    text.innerText = count;
+                    text.style.animation = 'none';
+                    text.offsetHeight; /* trigger reflow */
+                    text.style.animation = 'pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);';
+                    playSound('beep');
+                } else if(count === 0) {
+                    text.innerText = "GO!";
+                    text.style.color = "#FFD93D";
+                    playSound('go');
+                } else {
+                    clearInterval(interval);
+                    overlay.style.display = 'none';
+                    state.isCountingDown = false;
+                    state.isPlaying = true;
+                    startTimer();
+                }
+            }, 1000);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startTimer() {
+            if (state.timerInterval) clearInterval(state.timerInterval);
+            const timerEl = document.getElementById('main-timer');
+            timerEl.innerText = state.remainingTime;
+            timerEl.style.color = '#fff';
+            
+            state.timerInterval = setInterval(() => {
+                if(!state.isPlaying) return;
+                state.remainingTime--;
+                timerEl.innerText = state.remainingTime;
+                
+                if (state.remainingTime <= 5 && state.remainingTime > 0) {
+                    timerEl.style.color = '#ff6b6b';
+                    playSound('beep');
+                } else {
+                    timerEl.style.color = '#fff';
+                }
+
+                if (state.remainingTime <= 0) endGame(false);
+            }, 1000);
+        }
+
+        function calculateRank() {
+            if (state.modeType === 'team') {
+                const t0 = [state.players[0], state.players[1]];
+                const t1 = [state.players[2], state.players[3]];
+
+                const t0Fin = t0.every(p => p.finished);
+                const t1Fin = t1.every(p => p.finished);
+                
+                const t0Score = t0.reduce((acc, p) => acc + p.score, 0);
+                const t1Score = t1.reduce((acc, p) => acc + p.score, 0);
+
+                let t0Rank, t1Rank;
+
+                if (t0Fin && !t1Fin) {
+                    t0Rank = 1; t1Rank = 2;
+                } else if (!t0Fin && t1Fin) {
+                    t0Rank = 2; t1Rank = 1;
+                } else if (t0Fin && t1Fin) {
+                    t0Rank = 1; t1Rank = 1;
+                } else {
+                    if (t0Score > t1Score) { t0Rank = 1; t1Rank = 2; }
+                    else if (t1Score > t0Score) { t0Rank = 2; t1Rank = 1; }
+                    else { t0Rank = 1; t1Rank = 1; }
+                }
+
+                t0.forEach(p => p.rank = t0Rank);
+                t1.forEach(p => p.rank = t1Rank);
+
+                return [...t0, ...t1];
+            } 
+            
+            // [NEW] 개인전/협동전 랭킹 로직 개선
+            // 1. 이미 도착한 사람들은 도착 순서대로의 Rank 유지
+            // 2. 도착하지 못한 사람들은 Score 내림차순으로 정렬하여 남은 등수 부여
+
+            const sorted = [...state.players].sort((a, b) => {
+                // 둘 다 도착했으면 기존 등수(도착순서) 유지
+                if (a.finished && b.finished) return a.rank - b.rank;
+                // 한 명만 도착했으면 도착한 사람이 위로
+                if (a.finished) return -1;
+                if (b.finished) return 1;
+                // 둘 다 도착 못했으면 점수 높은 순
+                return b.score - a.score;
+            });
+            
+            // 도착하지 못한 플레이어들에게 순위 부여 (현재 1등, 2등... 다음 순서부터)
+            let currentNextRank = state.finishedRankCounter; 
+            
+            for (let i = 0; i < sorted.length; i++) {
+                if (!sorted[i].finished) {
+                    // 점수가 이전 사람과 같다면 공동 등수 처리 (선택사항이나 여기선 단순 순차 부여)
+                    sorted[i].rank = currentNextRank++;
+                }
+            }
+
+            return sorted;
+        }
+
+        function endGame(success) {
+            state.isPlaying = false;
+            state.isFinished = true;
+            clearInterval(state.timerInterval);
+            
+            const overlay = document.getElementById('result-overlay');
+            const title = document.getElementById('res-title');
+            const sub = document.getElementById('res-sub');
+            
+            const rankedPlayers = calculateRank();
+            const t = translations[currentLang]; // Get current translation
+            
+            overlay.style.display = 'flex';
+            if (success) {
+                title.innerText = t.success;
+                title.style.color = "var(--accent-color)";
+                playSound('win');
+            } else {
+                title.innerText = t.fail;
+                title.style.color = "#ff7675";
+                playSound('lose');
+            }
+
+            let rankStr = "";
+            
+            if (state.modeType === 'team') {
+                const t0 = state.players.filter(p => p.id < 2);
+                const t1 = state.players.filter(p => p.id >= 2);
+                
+                const printTeam = (teamName, teamArr) => {
+                    const rank = teamArr[0].rank;
+                    let medal = (rank === 1) ? "🥇" : (rank === 2 ? "🥈" : "🥉");
+                    let scoreSum = teamArr.reduce((a,b)=>a+b.score,0);
+                    return `${medal} ${teamName} (${teamArr[0].emoji}${teamArr[1].emoji}) : 🍎${scoreSum}\n`;
+                };
+                
+                const teams = [ {name: "Team A", arr: t0}, {name: "Team B", arr: t1} ];
+                // Use localized Team names if needed, simply "Team A/B" mostly works or use logic
+                if (currentLang === 'ko') { teams[0].name = "A팀"; teams[1].name = "B팀"; }
+                
+                teams.sort((a,b) => a.arr[0].rank - b.arr[0].rank);
+                
+                teams.forEach(tm => {
+                    rankStr += printTeam(tm.name, tm.arr);
+                });
+
+            } else {
+                rankedPlayers.forEach(p => {
+                    let medal = "";
+                    if(p.rank === 1) medal = "🥇";
+                    else if(p.rank === 2) medal = "🥈";
+                    else if(p.rank === 3) medal = "🥉";
+                    
+                    // Ordinal suffixes logic for English
+                    let rankText = p.rank;
+                    if (currentLang === 'en') {
+                         if (p.rank === 1) rankText += "st";
+                         else if (p.rank === 2) rankText += "nd";
+                         else if (p.rank === 3) rankText += "rd";
+                         else rankText += "th";
+                    } else {
+                        rankText += t.rankSuffix;
+                    }
+
+                    if(p.rank <= 3) rankText = medal;
+                    
+                    rankStr += `${rankText} : ${p.emoji} 🍎${p.score}\n`;
+                });
+            }
+
+            sub.innerText = rankStr;
+        }
+
+        // --- Interaction Logic (Multi-Touch Optimized) ---
+        let activePointers = {};
+
+        // Pointer Down
+        canvas.addEventListener('pointerdown', e => {
+            if(!state.isPlaying || state.isCountingDown) return;
+            e.preventDefault(); 
+            
+            const rect = canvas.getBoundingClientRect();
+            const tx = e.clientX - rect.left;
+            const ty = e.clientY - rect.top;
+
+            let grabbed = null;
+            for(let p of state.players) {
+                if(!p.renderRect) continue;
+                
+                const cellW = p.renderRect.w / p.maze.cols;
+                const cellH = p.renderRect.h / p.maze.rows;
+                const pScreenX = p.renderRect.x + p.x * cellW;
+                const pScreenY = p.renderRect.y + p.y * cellH;
+
+                if (Math.hypot(tx - pScreenX, ty - pScreenY) < cellW * 2) {
+                    grabbed = p; 
+                    break;
+                }
+            }
+
+            if (grabbed) {
+                activePointers[e.pointerId] = { pid: grabbed.id };
+                grabbed.active = true;
+                canvas.setPointerCapture(e.pointerId);
+            }
+        });
+
+        // Pointer Move
+        canvas.addEventListener('pointermove', e => {
+            if(!state.isPlaying || state.isCountingDown) return;
+            e.preventDefault();
+            
+            if (activePointers[e.pointerId]) {
+                const pid = activePointers[e.pointerId].pid;
+                const player = state.players[pid];
+                const rect = canvas.getBoundingClientRect();
+                movePlayer(player, e.clientX - rect.left, e.clientY - rect.top);
+            }
+        });
+
+        // Pointer Up/Cancel
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(evt => {
+            canvas.addEventListener(evt, e => {
+                e.preventDefault();
+                if (activePointers[e.pointerId]) {
+                    const pid = activePointers[e.pointerId].pid;
+                    state.players[pid].active = false;
+                    delete activePointers[e.pointerId];
+                    try {
+                        if (canvas.hasPointerCapture(e.pointerId)) {
+                            canvas.releasePointerCapture(e.pointerId);
+                        }
+                    } catch(err) {}
+                }
+            });
+        });
+
+        function movePlayer(player, targetScreenX, targetScreenY) {
+            if(player.finished || !player.renderRect) return;
+
+            const rRect = player.renderRect;
+            const cellW = rRect.w / player.maze.cols;
+            const cellH = rRect.h / player.maze.rows;
+
+            const relX = targetScreenX - rRect.x;
+            const relY = targetScreenY - rRect.y;
+
+            const safeX = Math.max(0, Math.min(rRect.w, relX));
+            const safeY = Math.max(0, Math.min(rRect.h, relY));
+
+            const gridTx = (safeX / rRect.w) * player.maze.cols;
+            const gridTy = (safeY / rRect.h) * player.maze.rows;
+
+            const dx = gridTx - player.x;
+            const dy = gridTy - player.y;
+            const dist = Math.hypot(dx, dy);
+            
+            const step = 0.05; 
+            const steps = Math.ceil(dist / step);
+            const dirX = dx/dist || 0;
+            const dirY = dy/dist || 0;
+
+            let currX = player.x;
+            let currY = player.y;
+
+            for(let i=0; i<steps; i++) {
+                let nextX = currX + dirX * Math.min(step, dist - i*step);
+                let nextY = currY + dirY * Math.min(step, dist - i*step);
+
+                if (!checkWall(player.maze, currX, currY, nextX, currY, player.radius)) {
+                    currX = nextX;
+                }
+                if (!checkWall(player.maze, currX, currY, currX, nextY, player.radius)) {
+                    currY = nextY;
+                }
+            }
+            player.x = currX;
+            player.y = currY;
+
+            checkFruit(player);
+            checkGoal(player);
+        }
+
+        function checkWall(maze, oldX, oldY, newX, newY, r) {
+            if (newX - r < 0 || newX + r > maze.cols || newY - r < 0 || newY + r > maze.rows) return true;
+
+            const minC = Math.floor(newX - r);
+            const maxC = Math.floor(newX + r);
+            const minR = Math.floor(newY - r);
+            const maxR = Math.floor(newY + r);
+
+            for (let rIter = minR; rIter <= maxR; rIter++) {
+                for (let cIter = minC; cIter <= maxC; cIter++) {
+                    if (rIter < 0 || rIter >= maze.rows || cIter < 0 || cIter >= maze.cols) continue;
+                    
+                    const cell = maze.grid[rIter][cIter];
+                    const cx = cIter;
+                    const cy = rIter;
+
+                    if (cell.walls.top) {
+                        if (distToSegment(newX, newY, cx, cy, cx+1, cy) < r) return true;
+                    }
+                    if (cell.walls.bottom) {
+                        if (distToSegment(newX, newY, cx, cy+1, cx+1, cy+1) < r) return true;
+                    }
+                    if (cell.walls.left) {
+                        if (distToSegment(newX, newY, cx, cy, cx, cy+1) < r) return true;
+                    }
+                    if (cell.walls.right) {
+                        if (distToSegment(newX, newY, cx+1, cy, cx+1, cy+1) < r) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function distToSegment(px, py, x1, y1, x2, y2) {
+            const l2 = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
+            if (l2 === 0) return Math.hypot(px-x1, py-y1);
+            let t = ((px-x1)*(x2-x1) + (py-y1)*(y2-y1)) / l2;
+            t = Math.max(0, Math.min(1, t));
+            return Math.hypot(px - (x1 + t*(x2-x1)), py - (y1 + t*(y2-y1)));
+        }
+
+        function checkFruit(player) {
+            const maze = player.maze;
+            maze.fruits.forEach(f => {
+                if(!f.eaten) {
+                    if(Math.hypot(player.x - (f.c+0.5), player.y - (f.r+0.5)) < 0.5) {
+                        f.eaten = true;
+                        player.score++;
+                        playSound('eat');
+                        checkSpawnGoal(maze);
+                    }
+                }
+            });
+        }
+
+        function checkSpawnGoal(maze) {
+            const total = maze.fruits.length;
+            const eaten = maze.fruits.filter(f => f.eaten).length;
+            
+            if (eaten === total && !maze.goalSpawned) {
+                maze.goalSpawned = true;
+                const centerC = Math.floor(maze.cols / 2) - 1;
+                const centerR = Math.floor(maze.rows / 2) - 1;
+                maze.goalRect = { c: centerC, r: centerR, w: 2, h: 2 };
+                playSound('spawn');
+            }
+        }
+
+        function checkGoal(player) {
+            if(!player.maze.goalSpawned) return;
+            if(player.finished) return; // 이미 도착한 플레이어는 무시
+
+            const g = player.maze.goalRect;
+            if (player.x > g.c && player.x < g.c + g.w &&
+                player.y > g.r && player.y < g.r + g.h) {
+                
+                // [NEW] 도착 처리 로직 강화
+                player.finished = true;
+                player.active = false;
+                
+                // 개인전일 경우 도착 순서대로 즉시 등수 부여
+                if (state.modeType === 'individual') {
+                    player.rank = state.finishedRankCounter++;
+                    playSound('win'); // [NEW] 도착 즉시 효과음 재생
+                } else {
+                    // 팀전이나 협동전은 기존처럼 나중에 계산하되 소리는 재생
+                    playSound('win');
+                }
+                
+                // 모든 플레이어가 도착했는지 확인
+                if(state.players.every(p => p.finished)) {
+                    endGame(true);
+                }
+            }
+        }
+
+        // --- Rendering ---
+        function resizeCanvas() {
+            const container = document.getElementById('canvas-container');
+            if(container.clientWidth > 0) {
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawRoundedRect(ctx, x, y, width, height, radius, fillStyle, strokeStyle) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            if(fillStyle) {
+                ctx.fillStyle = fillStyle;
+                ctx.fill();
+            }
+            if(strokeStyle) {
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = strokeStyle;
+                ctx.stroke();
+            }
+        }
+
+        function gameLoop() {
+            if (!state.isPlaying && !state.isCountingDown && !state.isFinished) return;
+            
+            if (canvas.width === 0) resizeCanvas();
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            state.zones.forEach(zone => {
+                const zX = zone.x * canvas.width;
+                const zY = zone.y * canvas.height;
+                const zW = zone.w * canvas.width;
+                const zH = zone.h * canvas.height;
+                
+                ctx.strokeStyle = '#222'; 
+                ctx.lineWidth = 2;
+                ctx.strokeRect(zX, zY, zW, zH);
+
+                const maze = state.mazes[zone.mazeIdx];
+                const mapRatio = maze.cols / maze.rows;
+                
+                const headerH = 100;
+                const availableW = zW;
+                const availableH = zH - headerH;
+
+                let drawW, drawH;
+                let widthFactor = 0.95; 
+                if (state.playerCount >= 3) widthFactor = 0.9; 
+
+                drawW = availableW * widthFactor;
+                drawH = drawW / mapRatio;
+
+                if (drawH > availableH) {
+                    drawH = availableH * 0.95;
+                    drawW = drawH * mapRatio;
+                }
+
+                const drawX = zX + (zW - drawW) / 2;
+                const drawY = zY + availableH - drawH + (headerH * 0.5);
+
+                const playersInZone = state.players.filter(p => p.maze === maze);
+                playersInZone.forEach(p => {
+                    p.renderRect = { x: drawX, y: drawY, w: drawW, h: drawH };
+                });
+
+                const centerX = drawX + drawW/2;
+                const boxY = drawY - 90;
+                const boxH = 80;
+                const boxW = Math.min(250, zW * 0.8);
+                
+                drawRoundedRect(ctx, centerX - boxW/2, boxY, boxW, boxH, 15, "rgba(0,0,0,0.6)", "#fff");
+
+                ctx.fillStyle = '#fff';
+                ctx.textAlign = 'center'; 
+                ctx.textBaseline = 'middle';
+
+                if (state.modeType === 'team') {
+                    const emojis = playersInZone.map(p => p.emoji).join(" ");
+                    const totalScore = playersInZone.reduce((a, b) => a + b.score, 0);
+                    
+                    ctx.font = '24px "Jua"';
+                    ctx.fillText(emojis, centerX, boxY + 25);
+                    
+                    ctx.font = 'bold 30px "Jua"';
+                    ctx.fillStyle = '#FFD93D';
+                    ctx.fillText(`🍎 ${totalScore}`, centerX, boxY + 55);
+
+                } else {
+                    let headerText = "";
+                    playersInZone.forEach(p => {
+                            headerText += `${p.emoji}${p.score} `;
+                    });
+                    
+                    ctx.font = 'bold 30px "Jua"';
+                    if (state.playerCount >= 3) ctx.font = 'bold 24px "Jua"';
+                    
+                    ctx.fillText(headerText, centerX, boxY + boxH/2);
+                }
+
+                ctx.save();
+                ctx.translate(drawX, drawY);
+                
+                ctx.fillStyle = '#8d6e63'; 
+                ctx.fillRect(0, 0, drawW, drawH);
+
+                const cw = drawW / maze.cols;
+                const ch = drawH / maze.rows;
+
+                ctx.strokeStyle = '#5d4037';
+                ctx.lineWidth = Math.max(4, cw * 0.15); 
+                ctx.lineCap = 'round';
+
+                ctx.beginPath();
+                for(let r=0; r<maze.rows; r++) {
+                    for(let c=0; c<maze.cols; c++) {
+                        const cell = maze.grid[r][c];
+                        const cx = c * cw;
+                        const cy = r * ch;
+                        
+                        if(cell.walls.top) { ctx.moveTo(cx, cy); ctx.lineTo(cx+cw, cy); }
+                        if(cell.walls.bottom) { ctx.moveTo(cx, cy+ch); ctx.lineTo(cx+cw, cy+ch); }
+                        if(cell.walls.left) { ctx.moveTo(cx, cy); ctx.lineTo(cx, cy+ch); }
+                        if(cell.walls.right) { ctx.moveTo(cx+cw, cy); ctx.lineTo(cx+cw, cy+ch); }
+                    }
+                }
+                ctx.stroke();
+
+                if(maze.goalSpawned) {
+                    const g = maze.goalRect;
+                    const time = performance.now() / 300;
+                    const hue = (time * 100) % 360;
+                    const pulse = 1 + Math.sin(time * 2) * 0.05;
+
+                    ctx.fillStyle = `hsla(${hue}, 80%, 60%, 0.6)`;
+                    const gx = g.c * cw;
+                    const gy = g.r * ch;
+                    const gw = g.w * cw;
+                    const gh = g.h * ch;
+                    
+                    const cx = gx + gw/2;
+                    const cy = gy + gh/2;
+                    
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.scale(pulse, pulse);
+                    ctx.fillRect(-gw/2, -gh/2, gw, gh);
+                    
+                    ctx.font = `${Math.min(cw, ch) * 1.5}px serif`;
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText('🏰', 0, 0);
+                    ctx.restore();
+                }
+
+                ctx.font = `${Math.min(cw, ch) * 0.7}px serif`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                maze.fruits.forEach(f => {
+                    if(!f.eaten) ctx.fillText(f.type, (f.c+0.5)*cw, (f.r+0.5)*ch);
+                });
+
+                playersInZone.forEach(pl => {
+                    const px = pl.x * cw;
+                    const py = pl.y * ch;
+                    
+                    if(pl.active) {
+                        ctx.shadowBlur = 10; ctx.shadowColor = pl.color;
+                    } else {
+                        ctx.shadowBlur = 0;
+                    }
+
+                    ctx.fillStyle = pl.color;
+                    ctx.beginPath();
+                    ctx.arc(px, py, Math.min(cw, ch) * 0.35, 0, Math.PI*2);
+                    ctx.fill();
+
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#000';
+                    ctx.font = `${Math.min(cw, ch) * 0.5}px serif`;
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText(pl.emoji, px, py + 2);
+
+                    // [NEW] 조건 변경: 게임이 끝났거나(isFinished) 혹은 해당 플레이어가 도착했으면(pl.finished) 등수 표시
+                    if((state.isFinished || pl.finished) && pl.rank > 0) {
+                        ctx.fillStyle = '#FFD93D';
+                        // Rank suffix handling for display
+                        let suffix = translations[currentLang].rankSuffix;
+                        let rankTxt = `${pl.rank}${suffix}`;
+                        if(currentLang === 'en') {
+                             if(pl.rank === 1) rankTxt = "1st";
+                             else if(pl.rank === 2) rankTxt = "2nd";
+                             else if(pl.rank === 3) rankTxt = "3rd";
+                             else rankTxt = `${pl.rank}th`;
+                        }
+
+                        ctx.font = `bold ${Math.min(cw, ch) * 0.8}px "Jua"`; 
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth = 4;
+                        ctx.strokeText(rankTxt, px, py - ch*1);
+                        ctx.fillText(rankTxt, px, py - ch*1);
+                    } else if(pl.finished) {
+                        // 여기는 도달할 일이 거의 없으나(위 조건에 pl.finished가 포함됨), 
+                        // 만약 rank가 0인 상태로 finished된 예외 케이스용
+                        ctx.font = `${Math.min(cw, ch) * 0.5}px serif`;
+                        ctx.fillText('🚩', px, py - ch*0.5);
+                    }
+                });
+
+                ctx.restore();
+            });
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- Button Events ---
+        document.getElementById('btn-start').addEventListener('click', () => {
+            initGame();
+        });
+        document.getElementById('btn-to-main').addEventListener('click', () => {
+            state.isPlaying = false;
+            state.isCountingDown = false;
+            state.isFinished = false;
+            document.getElementById('game-layer').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+        });
+        document.getElementById('btn-home').addEventListener('click', () => {
+            state.isPlaying = false;
+            state.isCountingDown = false;
+            state.isFinished = false;
+            document.getElementById('game-layer').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+        });
+        document.getElementById('btn-fullscreen').addEventListener('click', () => {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else if (document.exitFullscreen) document.exitFullscreen();
+        });
+
+    </script>
+</body>
+</html>

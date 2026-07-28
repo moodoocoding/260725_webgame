@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-5YW0T2C109');
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+
+    <meta id="meta-desc" name="description" content="기억력과 눈썰미의 한계에 도전하라! 다함께 즐기는 색상 맞추기 배틀">
+    <meta id="meta-keys" name="keywords" content="색깔킹, Color King, 색상게임, 눈썰미, 기억력, KingsMath">
+    <title id="page-title">색깔킹🎨</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #1a1a2e; 
+            --card-bg: #16213e;
+            --text-color: #f0f0f0;
+            --accent-color: #e94560;
+            --btn-active: #0f3460;
+            --border-color: #555;
+        }
+
+        * {
+            box-sizing: border-box;
+            touch-action: none;
+            -webkit-user-drag: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Jua', 'Noto Sans KR', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header --- */
+        header {
+            background-color: #0f1c2e;
+            padding: 0 20px;
+            height: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: none; 
+            z-index: 100;
+            flex-shrink: 0;
+            transition: background-color 1s ease; 
+        }
+        .header-title { font-size: 2.2rem; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); }
+
+        /* --- Selection Timer --- */
+        #selection-timer {
+            display: none;
+            text-align: center;
+            font-size: 2.5rem;
+            color: #FFD93D;
+            background-color: #0b1320;
+            padding: 10px;
+            border-bottom: 3px solid #222;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+            flex-shrink: 0;
+            z-index: 90;
+        }
+
+        /* --- Main Container --- */
+        #app-container {
+            flex: 1; position: relative;
+            display: flex; flex-direction: column;
+            width: 100%; height: calc(100% - 70px);
+        }
+
+        /* --- Start Screen --- */
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: var(--bg-color); z-index: 200;
+            overflow-y: auto;
+        }
+        .start-card {
+            background: var(--card-bg); padding: 30px; border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); border: 3px solid #0f3460;
+            text-align: center; max-width: 90%; width: 500px; margin: 20px 0;
+        }
+        .top-banner-link {
+            color: #FFD93D; text-decoration: none; font-size: 1.1rem;
+            margin-bottom: 15px; display: block; font-weight: bold;
+        }
+        h1 { margin: 0 0 20px 0; font-size: 3.5rem; color: #fff; text-shadow: 3px 3px 0 #000; }
+        .option-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0 20px 0; justify-content: center; }
+        .option-group.diff-group { grid-template-columns: repeat(2, 1fr); }
+        .btn-option {
+            padding: 10px; font-size: 1.2rem; border: 2px solid #555; background: #222;
+            color: #aaa; border-radius: 15px; cursor: pointer; transition: all 0.2s;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .btn-option.selected {
+            background-color: var(--btn-active); color: white; border-color: var(--accent-color);
+            transform: scale(1.05); box-shadow: 0 0 10px var(--accent-color);
+        }
+        #btn-start {
+            width: 100%; padding: 15px; font-size: 2rem; background-color: var(--accent-color);
+            color: white; border: none; border-radius: 50px; box-shadow: 0 6px 0 #b33045;
+            font-family: inherit; cursor: pointer; margin-top: 10px;
+        }
+        #btn-start:active { transform: translateY(6px); box-shadow: none; }
+        .guide-box { background: rgba(0,0,0,0.3); padding:15px; border-radius:10px; margin-top:20px; text-align:left; font-size:1rem; color:#ccc; line-height: 1.5; }
+
+        /* --- Compare Phase Area --- */
+        #compare-area {
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            background: #0b1320; border-bottom: 5px solid #222; padding: 30px; flex-shrink: 0; z-index: 10;
+            transition: background-color 1s ease;
+            min-height: 150px;
+        }
+        #compare-title {
+            font-size: 2rem; color: white; text-shadow: 2px 2px 6px rgba(0,0,0,0.9); font-weight: bold; margin-bottom: 10px; display: none;
+        }
+        #scoring-text { display: none; font-size: 3rem; color: #fff; font-weight: bold; text-shadow: 2px 2px 6px rgba(0,0,0,0.9); }
+
+        /* --- Game Screen --- */
+        #game-screen {
+            display: none; width: 100%; flex: 1; flex-direction: row; overflow: hidden;
+            justify-content: center; align-items: stretch;
+        }
+
+        .player-area {
+            flex: 1 1 0; border-right: 2px solid #0f1c2e;
+            display: flex; flex-direction: column; position: relative;
+            background: var(--bg-color); height: 100%;
+            align-items: center; justify-content: flex-start; padding: 15px 0;
+        }
+        .player-area:last-child { border-right: none; }
+
+        .player-header {
+            width: 90%; text-align: center; padding: 5px; background: rgba(0,0,0,0.4);
+            border-radius: 10px; margin-bottom: 10px; font-size: 1.5rem; color: #fff; text-shadow: 1px 1px 2px #000;
+        }
+
+        .color-preview {
+            width: 90%; height: 60% !important; border-radius: 15px; background: #333;
+            border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            display: flex; justify-content: center; align-items: center; text-align: center;
+            font-size: 1.2rem; color: #aaa; font-weight: bold; margin-bottom: 15px;
+            transition: background-color 0.2s; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            padding: 5px;
+        }
+
+        .board-wrapper {
+            position: relative; width: 90%; max-width: 400px; aspect-ratio: 1;
+            border-radius: 12px; border: 4px solid #333; box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            background: #000; overflow: hidden;
+        }
+        .palette-canvas { width: 100%; height: 100%; cursor: pointer; display: block; }
+
+        /* --- Advanced Sliders --- */
+        .sliders-wrapper {
+            display: flex; padding: 10px; gap: 10px; background: #222;
+        }
+        .slider-column {
+            flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%;
+        }
+        .slider-label {
+            font-size: 1rem; color: #fff; margin-bottom: 5px; text-shadow: 1px 1px 2px #000; text-align: center;
+        }
+        .slider-track {
+            flex: 1; width: 100%; position: relative; border-radius: 8px; cursor: pointer; touch-action: none;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .hue-track {
+            background: linear-gradient(to bottom, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+        }
+        .slider-thumb {
+            position: absolute; width: 26px; height: 26px; background: white; border: 3px solid #333;
+            border-radius: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 2;
+        }
+
+        .submit-btn {
+            width: 80%; padding: 12px; font-size: 1.5rem; margin-top: 20px;
+            background-color: var(--accent-color); color: white; border: none; border-radius: 15px;
+            cursor: pointer; font-family: inherit; box-shadow: 0 5px 0 #b33045;
+            transition: all 0.2s; display: block;
+        }
+        .submit-btn:active { transform: translateY(5px); box-shadow: none; }
+        .submit-btn:disabled { background-color: #444; color: #888; box-shadow: 0 5px 0 #222; cursor: not-allowed; }
+
+        .result-overlay {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: rgba(0,0,0,0.85);
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 50; backdrop-filter: blur(5px);
+            border-top: 3px solid rgba(255,255,255,0.2); border-radius: 20px 20px 0 0;
+        }
+        .medal { font-size: 5rem; margin-bottom: 10px; animation: popIn 0.5s; }
+        .rank-text { font-size: 2.5rem; color: white; margin-bottom: 5px; font-weight: bold; }
+        .final-msg { font-size: 2rem; color: #f1c40f; text-shadow: 2px 2px 5px #000; }
+
+        /* 타겟 색상 모달 */
+        #target-display-modal {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 400;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .target-color-box {
+            width: 60vw; height: 60vh; border-radius: 30px; border: 15px solid white;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; padding: 20px; text-align: center;
+        }
+        #target-msg-text { font-size: 4rem; font-weight: bold; text-shadow: 3px 3px 6px #000; color: white; text-align: center; }
+
+        /* 전체 종료 오버레이 */
+        #global-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: transparent;
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 500; pointer-events: none;
+        }
+        .restart-container { position: absolute; bottom: 50%; pointer-events: auto; }
+        .restart-btn { padding:15px 40px; font-size:2rem; border-radius:50px; border:none; background:var(--accent-color); color:white; cursor:pointer; font-family:inherit; box-shadow:0 5px 15px rgba(0,0,0,0.5); }
+
+        .floating-btn {
+            position: absolute; top: 15px; width: 45px; height: 45px; background: rgba(0,0,0,0.6);
+            border: 2px solid #666; border-radius: 50%; color: white; font-size: 1.2rem;
+            display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 600;
+        }
+        #btn-home { left: 15px; }
+        #btn-fs { right: 15px; }
+
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+        /* 반응형 (전자칠판/태블릿) */
+        @media (max-width: 1400px), (max-height: 850px) {
+            h1 { font-size: 2.5rem; }
+            .start-card { padding: 20px; width: 450px; }
+            #target-msg-text { font-size: 2.5rem; }
+            .submit-btn { font-size: 1.2rem; padding: 10px; margin-top: 10px; }
+            .color-preview { height: 40px; font-size: 1rem; }
+            #compare-area { padding: 20px; min-height: 100px; }
+            #scoring-text { font-size: 2rem; }
+            #selection-timer { font-size: 2rem; }
+            .slider-label { font-size: 0.8rem; }
+        }
+
+        /* ========================================================
+           다국어 모달 및 UI 독립 전용 CSS (충돌 방지 철저)
+           ======================================================== */
+        #langSelectorContainer { position: absolute; top: 15px; right: 15px; z-index: 99999; }
+        #langModal, #langModal * { box-sizing: border-box !important; font-family: sans-serif; }
+        /* 폰트 어썸 아이콘 깨짐 방지 예외 처리 */
+        #langModal .fa-solid, #langModal .fa-regular { font-family: "Font Awesome 6 Free" !important; font-weight: 900; }
+        #langModal .fa-regular { font-weight: 400; }
+        
+        .ls-btn-trigger {
+            display: flex; align-items: center; gap: 8px; background: rgba(55,65,81,0.5);
+            border: 1px solid #4b5563; border-radius: 9999px; padding: 8px 16px; color: white;
+            cursor: pointer; transition: all 0.2s; font-size: 0.875rem; font-weight: 500; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+        }
+        .ls-btn-trigger:hover { background: rgba(55,65,81,1); }
+        .ls-flag { width: 20px; height: 14px; border-radius: 2px; object-fit: cover; }
+        
+        .ls-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 99999; display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 16px;
+        }
+        .ls-overlay.active { opacity: 1; visibility: visible; }
+        
+        .ls-content {
+            background: #111827; border: 1px solid #374151; border-radius: 1rem; width: 100%; max-width: 56rem;
+            max-height: 85vh; display: flex; flex-direction: column; overflow: hidden;
+            transform: scale(0.95) translateY(-10px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .ls-overlay.active .ls-content { transform: scale(1) translateY(0); opacity: 1; }
+        
+        .ls-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #1f2937; background: #111827; }
+        .ls-title { font-size: 1.25rem; font-weight: bold; color: white; display: flex; align-items: center; gap: 8px; margin: 0; }
+        .ls-close { width: 40px; height: 40px; border-radius: 50%; background: #1f2937; border: none; color: #9ca3af; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; transition: 0.2s; }
+        .ls-close:hover { background: #374151; color: white; }
+        
+        .ls-search-wrap { padding: 20px 20px 8px 20px; background: #111827; position: relative; }
+        .ls-search-input { width: 100%; background: #1f2937; border: 1px solid #374151; color: white; padding: 14px 14px 14px 44px; border-radius: 0.75rem; outline: none; font-size: 0.875rem; transition: 0.2s; }
+        .ls-search-input:focus { border-color: #eab308; box-shadow: 0 0 0 2px rgba(234,179,8,0.2); }
+        .ls-search-icon { position: absolute; left: 36px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+        
+        .ls-grid-wrap { padding: 20px; overflow-y: auto; flex: 1; }
+        .ls-grid-wrap::-webkit-scrollbar { width: 8px; }
+        .ls-grid-wrap::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        .ls-grid-wrap::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        .ls-grid-wrap::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        
+        .ls-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+        .ls-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 0.75rem; border: 1px solid #374151; background: rgba(31,41,55,0.4); cursor: pointer; transition: 0.2s; }
+        .ls-item:hover { background: #374151; border-color: #6b7280; }
+        .ls-item.selected { background: #1f2937; border-color: #eab308; box-shadow: 0 0 0 1px rgba(234,179,8,0.5); }
+        .ls-item-flag { width: 32px; height: 24px; border-radius: 4px; object-fit: cover; border: 1px solid rgba(55,65,81,0.5); }
+        .ls-item-text { flex: 1; min-width: 0; display: flex; flex-direction: column; text-align: left; }
+        .ls-item-name { font-size: 0.875rem; font-weight: 500; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ls-item.selected .ls-item-name { color: #facc15; }
+        .ls-item-en { font-size: 0.75rem; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ls-item-check { color: #eab308; font-size: 1.125rem; }
+        
+        .ls-no-result { display: none; flex-direction: column; items: center; justify-content: center; padding: 48px 0; color: #6b7280; text-align: center; }
+        .ls-no-result i { font-size: 2.25rem; margin-bottom: 12px; }
+        
+        /* 토스트 알림 */
+        .ls-toast {
+            position: fixed; bottom: 24px; right: 24px; background: #1f2937; border: 1px solid #374151;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); border-radius: 0.75rem; padding: 16px;
+            display: flex; align-items: center; gap: 12px; z-index: 99999;
+            transform: translateY(150%); opacity: 0; transition: all 0.3s ease;
+        }
+        .ls-toast.show { transform: translateY(0); opacity: 1; }
+        .ls-toast-icon { width: 32px; height: 32px; border-radius: 50%; background: rgba(34,197,94,0.2); color: #4ade80; display: flex; justify-content: center; align-items: center; }
+        .ls-toast-msg { font-size: 0.875rem; font-weight: 500; color: white; margin: 0; }
+        .ls-toast-lang { font-size: 0.75rem; color: #9ca3af; margin: 0; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="langSelectorContainer">
+        <button id="langTriggerBtn" class="ls-btn-trigger">
+            <i class="fa-solid fa-globe" style="color: #9ca3af;"></i>
+            <img id="currentFlag" src="https://flagcdn.com/w40/kr.png" alt="KR" class="ls-flag">
+            <span id="currentLangName" class="auto-resize-text">한국어</span>
+            <i class="fa-solid fa-chevron-down" style="color: #9ca3af; font-size: 0.75rem;"></i>
+        </button>
+    </div>
+
+    <div id="langModal" class="ls-overlay">
+        <div class="ls-content">
+            <div class="ls-header">
+                <h2 class="ls-title">
+                    <i class="fa-solid fa-language" style="color: #eab308;"></i>
+                    <span>Language / 언어</span>
+                </h2>
+                <button id="closeModalBtn" class="ls-close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="ls-search-wrap">
+                <i class="fa-solid fa-magnifying-glass ls-search-icon"></i>
+                <input type="text" id="searchInput" class="ls-search-input" placeholder="Search / 검색 ...">
+            </div>
+            <div class="ls-grid-wrap">
+                <div id="languageGrid" class="ls-grid"></div>
+                <div id="noResult" class="ls-no-result">
+                    <i class="fa-regular fa-face-frown-open"></i>
+                    <p>No results / 검색 결과 없음</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastNotification" class="ls-toast">
+        <div class="ls-toast-icon"><i class="fa-solid fa-check"></i></div>
+        <div>
+            <p id="ui-toast" class="ls-toast-msg">언어가 변경되었습니다.</p>
+            <p id="toastLangName" class="ls-toast-lang">Korean</p>
+        </div>
+    </div>
+    <header id="main-header">
+        <div class="header-title" data-i18n="pageTitle">색깔킹🎨</div>
+    </header>
+
+    <div id="app-container">
+        
+        <div id="selection-timer" data-i18n="timerRem" data-i18n-arg="30">남은 시간: 30초</div>
+
+        <div id="compare-area">
+            <div id="compare-title" data-i18n="compareTitle" class="auto-resize-text">이 색깔을 찾았어야 해요!</div>
+            <div id="scoring-text" data-i18n="scoreWait" data-i18n-arg="5" class="auto-resize-text">결과 발표 5초 전</div>
+        </div>
+
+        <div id="start-screen">
+            <div class="start-card">
+                <a href="/" class="top-banner-link auto-resize-text" target="_self" data-i18n="banner">선생님이 만든, 안전한 수학 놀이터 킹수학.com</a>
+                <h1 data-i18n="pageTitle" class="auto-resize-text">색깔킹🎨</h1>
+                
+                <p style="color:#aaa; margin-bottom:5px;" data-i18n="diffLabel">난이도 선택</p>
+                <div class="option-group diff-group" id="difficulty-options">
+                    <div class="btn-option selected auto-resize-text" onclick="selectDifficulty('beginner', this)" data-i18n="diffBeginner">초급 (색상환)</div>
+                    <div class="btn-option auto-resize-text" onclick="selectDifficulty('advanced', this)" data-i18n="diffAdvanced">고급 (명도/채도)</div>
+                </div>
+
+                <p style="color:#aaa; margin-bottom:5px;" data-i18n="playerLabel">플레이어 수 선택</p>
+                <div class="option-group" id="player-options">
+                    <div class="btn-option selected auto-resize-text" onclick="selectPlayer(1, this)" data-i18n="playerCount" data-i18n-arg="1">1인</div>
+                    <div class="btn-option auto-resize-text" onclick="selectPlayer(2, this)" data-i18n="playerCount" data-i18n-arg="2">2인</div>
+                    <div class="btn-option auto-resize-text" onclick="selectPlayer(3, this)" data-i18n="playerCount" data-i18n-arg="3">3인</div>
+                    <div class="btn-option auto-resize-text" onclick="selectPlayer(4, this)" data-i18n="playerCount" data-i18n-arg="4">4인</div>
+                    <div class="btn-option auto-resize-text" onclick="selectPlayer(5, this)" data-i18n="playerCount" data-i18n-arg="5">5인</div>
+                    <div class="btn-option auto-resize-text" onclick="selectPlayer(6, this)" data-i18n="playerCount" data-i18n-arg="6">6인</div>
+                </div>
+
+                <div class="guide-box">
+                    <span>📢 <b data-i18n="guideTitle">게임 방법</b></span><br>
+                    <span data-i18n="guide1">1. 화면에 나오는 색깔을 <b>10초간</b> 기억하세요.</span><br>
+                    <span data-i18n="guide2">2. <b>30초</b> 안에 똑같은 색을 찾아 터치하세요!</span><br>
+                    <span data-i18n="guide3">3. 선택한 색은 상단에 유지됩니다. 고른 후 <b>제출하기</b> 클릭!</span><br>
+                    <span data-i18n="guide4">4. 모두가 제출하거나 시간이 끝나면 <b>정답 색상</b>이 공개됩니다.</span><br>
+                    <span data-i18n="guide5">5. 자동으로 채점 후 <b>하단에 1등부터 발표</b>됩니다!</span>
+                </div>
+
+                <button id="btn-start" class="auto-resize-text" onclick="initGame()" data-i18n="startBtn">게임 시작! 🚀</button>
+<button onclick="location.href='https://kingsmath.com'" class="auto-resize-text" style="background:none; border:none; color:#888; text-decoration:underline; cursor:pointer; margin-top:15px; width:100%;" data-i18n="otherGameBtn">다른 게임 고르기</button>
+            </div>
+        </div>
+
+        <div id="game-screen"></div>
+
+        <div id="target-display-modal">
+            <div class="target-color-box" id="target-color-box">
+                <div id="target-msg-text" data-i18n="targetMem" data-i18n-arg="10" class="auto-resize-text">이 색깔을 기억하세요! (10초)</div>
+            </div>
+        </div>
+
+        <div id="global-overlay">
+            <div class="restart-container">
+                <button class="restart-btn auto-resize-text" onclick="document.getElementById('btn-home').click()" data-i18n="restartBtn">다시하기 🔄</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="btn-home" class="floating-btn" title="Home" style="display:none;">🏠</div>
+    <div id="btn-fs" class="floating-btn" onclick="toggleFullScreen()" title="Full Screen" style="display:none;">⛶</div>
+
+    <script>
+        /* ==========================================
+           다국어 (16개국) 번역 데이터베이스
+           ========================================== */
+        const i18n = {
+            'ko': {
+                pageTitle: "색깔킹🎨", banner: "선생님이 만든, 안전한 수학 놀이터 킹수학.com",
+                diffLabel: "난이도 선택", diffBeginner: "초급 (색상환)", diffAdvanced: "고급 (명도/채도)",
+                playerLabel: "플레이어 수 선택", playerCount: "{n}인",
+                guideTitle: "게임 방법", guide1: "1. 화면에 나오는 색깔을 10초간 기억하세요.", guide2: "2. 30초 안에 똑같은 색을 찾아 터치하세요!", guide3: "3. 선택한 색은 상단에 유지됩니다. 고른 후 제출하기 클릭!", guide4: "4. 모두가 제출하거나 시간이 끝나면 정답 색상이 공개됩니다.", guide5: "5. 자동으로 채점 후 하단에 1등부터 발표됩니다!",
+                startBtn: "게임 시작! 🚀", otherGameBtn: "다른 게임 고르기",
+                timerRem: "남은 시간: {n}초", timerEnd: "시간 종료!", compareTitle: "이 색깔을 찾았어야 해요!", scoreWait: "결과 발표 {n}초 전", scoreNow: "결과 발표!",
+                previewWait: "아래에서 선택하세요", previewReady: "대기중...", previewTimeout: "시간초과",
+                sliderHue: "색상", sliderSat: "채도", sliderLight: "명도",
+                submitBtn: "제출하기", submitDone: "제출완료",
+                targetMem: "이 색깔을 기억하세요! ({n}초)", rankStr: "{n}등", matchStr: "{n}% 일치!", restartBtn: "다시하기 🔄", toastMsg: "언어가 변경되었습니다.",
+                animals: ['강아지🐶', '고양이🐱', '토끼🐰', '햄스터🐹', '팬더🐼', '곰🐻'],
+                metaDesc: "기억력과 눈썰미의 한계에 도전하라! 다함께 즐기는 색상 맞추기 배틀", metaKeys: "색깔킹, Color King, 색상게임, 눈썰미, 기억력, KingsMath"
+            },
+            'en': {
+                pageTitle: "Color King🎨", banner: "A safe math playground, KingsMath.com",
+                diffLabel: "Select Difficulty", diffBeginner: "Easy (Color Wheel)", diffAdvanced: "Hard (Hue/Sat/Light)",
+                playerLabel: "Select Players", playerCount: "{n}P",
+                guideTitle: "How to Play", guide1: "1. Memorize the color shown for 10 seconds.", guide2: "2. Find the exact same color within 30 seconds!", guide3: "3. Your choice is kept. Click Submit when ready!", guide4: "4. The answer reveals when time is up or everyone submits.", guide5: "5. Scores are calculated automatically!",
+                startBtn: "Start Game! 🚀", otherGameBtn: "Choose Another Game",
+                timerRem: "Time Left: {n}s", timerEnd: "Time's Up!", compareTitle: "You should have found this color!", scoreWait: "Results in {n}s", scoreNow: "Results!",
+                previewWait: "Select below", previewReady: "Waiting...", previewTimeout: "Timeout",
+                sliderHue: "Hue", sliderSat: "Sat", sliderLight: "Light",
+                submitBtn: "Submit", submitDone: "Submitted",
+                targetMem: "Memorize this! ({n}s)", rankStr: "Rank {n}", matchStr: "{n}% Match!", restartBtn: "Play Again 🔄", toastMsg: "Language changed.",
+                animals: ['Dog🐶', 'Cat🐱', 'Rabbit🐰', 'Hamster🐹', 'Panda🐼', 'Bear🐻'],
+                metaDesc: "Challenge your memory! A multiplayer color matching battle", metaKeys: "Color King, Color game, Memory, KingsMath"
+            },
+            'zh': {
+                pageTitle: "颜色之王🎨", banner: "安全的数学游乐场 KingsMath.com",
+                diffLabel: "选择难度", diffBeginner: "初级 (色轮)", diffAdvanced: "高级 (亮度/饱和度)",
+                playerLabel: "选择玩家人数", playerCount: "{n}人",
+                guideTitle: "游戏方法", guide1: "1. 记住屏幕上的颜色 10 秒钟。", guide2: "2. 在 30 秒内找到相同的颜色并触摸！", guide3: "3. 选好后点击提交！", guide4: "4. 时间结束或全部提交后，将公开正确颜色。", guide5: "5. 自动评分并公布结果！",
+                startBtn: "开始游戏！ 🚀", otherGameBtn: "选择其他游戏",
+                timerRem: "剩余时间: {n}秒", timerEnd: "时间到！", compareTitle: "你应该找到这个颜色！", scoreWait: "结果公布倒计时 {n}秒", scoreNow: "公布结果！",
+                previewWait: "在下方选择", previewReady: "等待中...", previewTimeout: "超时",
+                sliderHue: "色相", sliderSat: "饱和度", sliderLight: "亮度",
+                submitBtn: "提交", submitDone: "已提交",
+                targetMem: "记住这个颜色！ ({n}秒)", rankStr: "第{n}名", matchStr: "{n}% 匹配！", restartBtn: "再玩一次 🔄", toastMsg: "语言已更改。",
+                animals: ['小狗🐶', '小猫🐱', '兔子🐰', '仓鼠🐹', '熊猫🐼', '熊🐻'],
+                metaDesc: "挑战你的记忆力！多人颜色匹配对战", metaKeys: "颜色之王, 匹配游戏, 记忆力, KingsMath"
+            },
+            'ja': {
+                pageTitle: "カラーキング🎨", banner: "安全な算数の遊び場 KingsMath.com",
+                diffLabel: "難易度選択", diffBeginner: "初級 (色相環)", diffAdvanced: "高級 (明度/彩度)",
+                playerLabel: "プレイヤー数選択", playerCount: "{n}人",
+                guideTitle: "遊び方", guide1: "1. 画面の色を10秒間覚えてください。", guide2: "2. 30秒以内に同じ色を見つけてタッチ！", guide3: "3. 選んだ色は上に表示されます。決定したら提出！", guide4: "4. 全員提出するか時間が切れると正解発表。", guide5: "5. 自動採点して順位を発表します！",
+                startBtn: "ゲームスタート！ 🚀", otherGameBtn: "他のゲームを選ぶ",
+                timerRem: "残り時間: {n}秒", timerEnd: "時間終了！", compareTitle: "この色を見つけるべきでした！", scoreWait: "結果発表 {n}秒前", scoreNow: "結果発表！",
+                previewWait: "下から選択", previewReady: "待機中...", previewTimeout: "時間切れ",
+                sliderHue: "色相", sliderSat: "彩度", sliderLight: "明度",
+                submitBtn: "提出する", submitDone: "提出完了",
+                targetMem: "この色を覚えて！ ({n}秒)", rankStr: "{n}位", matchStr: "{n}% 一致！", restartBtn: "もう一度 🔄", toastMsg: "言語が変更されました。",
+                animals: ['犬🐶', '猫🐱', 'ウサギ🐰', 'ハムスター🐹', 'パンダ🐼', 'クマ🐻'],
+                metaDesc: "記憶力の限界に挑戦！みんなで楽しむ色合わせバトル", metaKeys: "カラーキング, 色合わせ, 記憶力, KingsMath"
+            },
+            'es': {
+                pageTitle: "Rey del Color🎨", banner: "Un patio de matemáticas seguro KingsMath.com",
+                diffLabel: "Dificultad", diffBeginner: "Fácil (Rueda)", diffAdvanced: "Difícil (Luz/Sat)",
+                playerLabel: "Jugadores", playerCount: "{n} J.",
+                guideTitle: "Cómo jugar", guide1: "1. Memoriza el color por 10 seg.", guide2: "2. ¡Encuentra el mismo color en 30 seg!", guide3: "3. ¡Haz clic en Enviar cuando estés listo!", guide4: "4. La respuesta se revela al final.", guide5: "5. ¡El puntaje es automático!",
+                startBtn: "¡Empezar! 🚀", otherGameBtn: "Elegir otro juego",
+                timerRem: "Tiempo: {n}s", timerEnd: "¡Tiempo!", compareTitle: "¡Deberías haber encontrado este color!", scoreWait: "Resultados en {n}s", scoreNow: "¡Resultados!",
+                previewWait: "Selecciona abajo", previewReady: "Esperando...", previewTimeout: "Tiempo agotado",
+                sliderHue: "Tono", sliderSat: "Sat", sliderLight: "Luz",
+                submitBtn: "Enviar", submitDone: "Enviado",
+                targetMem: "¡Memoriza esto! ({n}s)", rankStr: "Rango {n}", matchStr: "¡{n}% Igual!", restartBtn: "Jugar de nuevo 🔄", toastMsg: "Idioma cambiado.",
+                animals: ['Perro🐶', 'Gato🐱', 'Conejo🐰', 'Hámster🐹', 'Panda🐼', 'Oso🐻'],
+                metaDesc: "¡Desafía tu memoria! Batalla de colores", metaKeys: "Rey del Color, Memoria, KingsMath"
+            },
+            'fr': {
+                pageTitle: "Roi des Couleurs🎨", banner: "Une aire de jeux de maths sécurisée KingsMath.com",
+                diffLabel: "Difficulté", diffBeginner: "Facile", diffAdvanced: "Difficile",
+                playerLabel: "Joueurs", playerCount: "{n} J.",
+                guideTitle: "Comment jouer", guide1: "1. Mémorisez la couleur pendant 10s.", guide2: "2. Trouvez la même couleur en 30s!", guide3: "3. Cliquez sur Soumettre quand vous êtes prêt!", guide4: "4. La réponse est révélée à la fin.", guide5: "5. Le score est automatique!",
+                startBtn: "Commencer! 🚀", otherGameBtn: "Choisir un autre jeu",
+                timerRem: "Temps: {n}s", timerEnd: "Terminé!", compareTitle: "Vous deviez trouver cette couleur!", scoreWait: "Résultats dans {n}s", scoreNow: "Résultats!",
+                previewWait: "Sélectionnez", previewReady: "En attente...", previewTimeout: "Temps écoulé",
+                sliderHue: "Teinte", sliderSat: "Sat", sliderLight: "Lum",
+                submitBtn: "Soumettre", submitDone: "Soumis",
+                targetMem: "Mémorisez! ({n}s)", rankStr: "Rang {n}", matchStr: "{n}% Match!", restartBtn: "Rejouer 🔄", toastMsg: "Langue modifiée.",
+                animals: ['Chien🐶', 'Chat🐱', 'Lapin🐰', 'Hamster🐹', 'Panda🐼', 'Ours🐻'],
+                metaDesc: "Défiez votre mémoire! Bataille de couleurs", metaKeys: "Roi des Couleurs, Mémoire, KingsMath"
+            },
+            'de': {
+                pageTitle: "Farbkönig🎨", banner: "Ein sicherer Mathe-Spielplatz KingsMath.com",
+                diffLabel: "Schwierigkeit", diffBeginner: "Einfach", diffAdvanced: "Schwer",
+                playerLabel: "Spieler", playerCount: "{n} S.",
+                guideTitle: "Spielanleitung", guide1: "1. Merke dir die Farbe für 10s.", guide2: "2. Finde die gleiche Farbe in 30s!", guide3: "3. Klicke auf Senden, wenn du bereit bist!", guide4: "4. Die Antwort wird am Ende enthüllt.", guide5: "5. Die Wertung erfolgt automatisch!",
+                startBtn: "Start! 🚀", otherGameBtn: "Anderes Spiel wählen",
+                timerRem: "Zeit: {n}s", timerEnd: "Zeit abgelaufen!", compareTitle: "Du hättest diese Farbe finden sollen!", scoreWait: "Ergebnisse in {n}s", scoreNow: "Ergebnisse!",
+                previewWait: "Unten auswählen", previewReady: "Warten...", previewTimeout: "Zeit abgelaufen",
+                sliderHue: "Farbton", sliderSat: "Sätt", sliderLight: "Hell",
+                submitBtn: "Senden", submitDone: "Gesendet",
+                targetMem: "Merken! ({n}s)", rankStr: "Rang {n}", matchStr: "{n}% Überein!", restartBtn: "Nochmal spielen 🔄", toastMsg: "Sprache geändert.",
+                animals: ['Hund🐶', 'Katze🐱', 'Hase🐰', 'Hamster🐹', 'Panda🐼', 'Bär🐻'],
+                metaDesc: "Fordere dein Gedächtnis heraus! Farbschlacht", metaKeys: "Farbkönig, Gedächtnis, KingsMath"
+            },
+            'it': {
+                pageTitle: "Re dei Colori🎨", banner: "Un parco giochi matematico sicuro KingsMath.com",
+                diffLabel: "Difficoltà", diffBeginner: "Facile", diffAdvanced: "Difficile",
+                playerLabel: "Giocatori", playerCount: "{n} G.",
+                guideTitle: "Come giocare", guide1: "1. Memorizza il colore per 10s.", guide2: "2. Trova lo stesso colore in 30s!", guide3: "3. Fai clic su Invia quando sei pronto!", guide4: "4. La risposta viene rivelata alla fine.", guide5: "5. Il punteggio è automatico!",
+                startBtn: "Inizia! 🚀", otherGameBtn: "Scegli un altro gioco",
+                timerRem: "Tempo: {n}s", timerEnd: "Tempo scaduto!", compareTitle: "Dovevi trovare questo colore!", scoreWait: "Risultati in {n}s", scoreNow: "Risultati!",
+                previewWait: "Seleziona sotto", previewReady: "In attesa...", previewTimeout: "Tempo scaduto",
+                sliderHue: "Tinta", sliderSat: "Sat", sliderLight: "Lum",
+                submitBtn: "Invia", submitDone: "Inviato",
+                targetMem: "Memorizza! ({n}s)", rankStr: "Rango {n}", matchStr: "{n}% Uguale!", restartBtn: "Gioca di nuovo 🔄", toastMsg: "Lingua cambiata.",
+                animals: ['Cane🐶', 'Gatto🐱', 'Coniglio🐰', 'Criceto🐹', 'Panda🐼', 'Orso🐻'],
+                metaDesc: "Sfida la tua memoria! Battaglia di colori", metaKeys: "Re dei Colori, Memoria, KingsMath"
+            },
+            'pt-br': {
+                pageTitle: "Rei das Cores🎨", banner: "Um parquinho de matemática seguro KingsMath.com",
+                diffLabel: "Dificuldade", diffBeginner: "Fácil", diffAdvanced: "Difícil",
+                playerLabel: "Jogadores", playerCount: "{n} J.",
+                guideTitle: "Como Jogar", guide1: "1. Memorize a cor por 10s.", guide2: "2. Encontre a mesma cor em 30s!", guide3: "3. Clique em Enviar quando estiver pronto!", guide4: "4. A resposta é revelada no final.", guide5: "5. A pontuação é automática!",
+                startBtn: "Começar! 🚀", otherGameBtn: "Escolher Outro Jogo",
+                timerRem: "Tempo: {n}s", timerEnd: "Fim do tempo!", compareTitle: "Você deveria ter encontrado esta cor!", scoreWait: "Resultados em {n}s", scoreNow: "Resultados!",
+                previewWait: "Selecione abaixo", previewReady: "Aguardando...", previewTimeout: "Esgotado",
+                sliderHue: "Matiz", sliderSat: "Sat", sliderLight: "Luz",
+                submitBtn: "Enviar", submitDone: "Enviado",
+                targetMem: "Memorize! ({n}s)", rankStr: "Rank {n}", matchStr: "{n}% Igual!", restartBtn: "Jogar Novamente 🔄", toastMsg: "Idioma alterado.",
+                animals: ['Cão🐶', 'Gato🐱', 'Coelho🐰', 'Hamster🐹', 'Panda🐼', 'Urso🐻'],
+                metaDesc: "Desafie sua memória! Batalha de cores", metaKeys: "Rei das Cores, Memória, KingsMath"
+            },
+            'ru': {
+                pageTitle: "Король Цветов🎨", banner: "Безопасная площадка для математики KingsMath.com",
+                diffLabel: "Сложность", diffBeginner: "Легко", diffAdvanced: "Сложно",
+                playerLabel: "Игроки", playerCount: "{n} И.",
+                guideTitle: "Как играть", guide1: "1. Запомни цвет на 10 сек.", guide2: "2. Найди такой же за 30 сек!", guide3: "3. Нажми Отправить, когда будешь готов!", guide4: "4. Ответ появится в конце.", guide5: "5. Оценка ставится автоматически!",
+                startBtn: "Старт! 🚀", otherGameBtn: "Выбрать другую игру",
+                timerRem: "Время: {n}с", timerEnd: "Время вышло!", compareTitle: "Нужно было найти этот цвет!", scoreWait: "Результаты через {n}с", scoreNow: "Результаты!",
+                previewWait: "Выбери ниже", previewReady: "Ожидание...", previewTimeout: "Время вышло",
+                sliderHue: "Оттенок", sliderSat: "Насыщ", sliderLight: "Яркость",
+                submitBtn: "Отправить", submitDone: "Готово",
+                targetMem: "Запомни! ({n}с)", rankStr: "Ранг {n}", matchStr: "{n}% Совпадение!", restartBtn: "Играть снова 🔄", toastMsg: "Язык изменен.",
+                animals: ['Собака🐶', 'Кот🐱', 'Кролик🐰', 'Хомяк🐹', 'Панда🐼', 'Медведь🐻'],
+                metaDesc: "Испытай свою память! Цветовая битва", metaKeys: "Король Цветов, Память, KingsMath"
+            },
+            'id': {
+                pageTitle: "Raja Warna🎨", banner: "Taman bermain matematika yang aman KingsMath.com",
+                diffLabel: "Kesulitan", diffBeginner: "Mudah", diffAdvanced: "Sulit",
+                playerLabel: "Pemain", playerCount: "{n} P.",
+                guideTitle: "Cara Bermain", guide1: "1. Ingat warna selama 10 detik.", guide2: "2. Temukan warna yang sama dalam 30 detik!", guide3: "3. Klik Kirim saat kamu siap!", guide4: "4. Jawaban terungkap di akhir.", guide5: "5. Penilaian otomatis!",
+                startBtn: "Mulai! 🚀", otherGameBtn: "Pilih Game Lain",
+                timerRem: "Sisa Waktu: {n}d", timerEnd: "Waktu Habis!", compareTitle: "Kamu seharusnya menemukan warna ini!", scoreWait: "Hasil dalam {n}d", scoreNow: "Hasil!",
+                previewWait: "Pilih di bawah", previewReady: "Menunggu...", previewTimeout: "Waktu Habis",
+                sliderHue: "Warna", sliderSat: "Saturasi", sliderLight: "Cahaya",
+                submitBtn: "Kirim", submitDone: "Terkirim",
+                targetMem: "Ingat ini! ({n}d)", rankStr: "Peringkat {n}", matchStr: "{n}% Cocok!", restartBtn: "Main Lagi 🔄", toastMsg: "Bahasa telah diubah.",
+                animals: ['Anjing🐶', 'Kucing🐱', 'Kelinci🐰', 'Hamster🐹', 'Panda🐼', 'Beruang🐻'],
+                metaDesc: "Tantang ingatanmu! Pertarungan warna", metaKeys: "Raja Warna, Ingatan, KingsMath"
+            },
+            'vi': {
+                pageTitle: "Vua Màu Sắc🎨", banner: "Sân chơi toán học an toàn KingsMath.com",
+                diffLabel: "Độ khó", diffBeginner: "Dễ", diffAdvanced: "Khó",
+                playerLabel: "Người chơi", playerCount: "{n} Ng.",
+                guideTitle: "Cách chơi", guide1: "1. Ghi nhớ màu trong 10 giây.", guide2: "2. Tìm màu tương tự trong 30 giây!", guide3: "3. Nhấp Gửi khi bạn đã sẵn sàng!", guide4: "4. Câu trả lời sẽ xuất hiện cuối cùng.", guide5: "5. Chấm điểm tự động!",
+                startBtn: "Bắt đầu! 🚀", otherGameBtn: "Chọn trò chơi khác",
+                timerRem: "Thời gian: {n}s", timerEnd: "Hết giờ!", compareTitle: "Bạn đáng lẽ phải tìm màu này!", scoreWait: "Kết quả sau {n}s", scoreNow: "Kết quả!",
+                previewWait: "Chọn bên dưới", previewReady: "Đang đợi...", previewTimeout: "Hết giờ",
+                sliderHue: "Màu", sliderSat: "Đậm", sliderLight: "Sáng",
+                submitBtn: "Gửi", submitDone: "Đã gửi",
+                targetMem: "Nhớ màu này! ({n}s)", rankStr: "Hạng {n}", matchStr: "{n}% Trùng!", restartBtn: "Chơi lại 🔄", toastMsg: "Ngôn ngữ đã được thay đổi.",
+                animals: ['Chó🐶', 'Mèo🐱', 'Thỏ🐰', 'Chuột🐹', 'Gấu🐼', 'Gấu🐻'],
+                metaDesc: "Thử thách trí nhớ! Trận chiến màu sắc", metaKeys: "Vua Màu Sắc, Trí nhớ, KingsMath"
+            },
+            'th': {
+                pageTitle: "ราชาแห่งสี🎨", banner: "สนามเด็กเล่นคณิตศาสตร์ที่ปลอดภัย KingsMath.com",
+                diffLabel: "ความยาก", diffBeginner: "ง่าย", diffAdvanced: "ยาก",
+                playerLabel: "ผู้เล่น", playerCount: "{n} คน",
+                guideTitle: "วิธีเล่น", guide1: "1. จำสีไว้ 10 วินาที", guide2: "2. ค้นหาสีเดียวกันใน 30 วินาที!", guide3: "3. คลิก ส่ง เมื่อพร้อม!", guide4: "4. คำตอบจะเปิดเผยในตอนท้าย", guide5: "5. ให้คะแนนอัตโนมโนมัติ!",
+                startBtn: "เริ่มเกม! 🚀", otherGameBtn: "เลือกเกมอื่น",
+                timerRem: "เวลา: {n}วิ", timerEnd: "หมดเวลา!", compareTitle: "คุณควรพบสีนี้!", scoreWait: "ผลลัพธ์ใน {n}วิ", scoreNow: "ผลลัพธ์!",
+                previewWait: "เลือกด้านล่าง", previewReady: "กำลังรอ...", previewTimeout: "หมดเวลา",
+                sliderHue: "สี", sliderSat: "ความสด", sliderLight: "ความสว่าง",
+                submitBtn: "ส่ง", submitDone: "ส่งแล้ว",
+                targetMem: "จำสีนี้! ({n}วิ)", rankStr: "อันดับ {n}", matchStr: "ตรงกัน {n}%!", restartBtn: "เล่นอีกครั้ง 🔄", toastMsg: "เปลี่ยนภาษาเรียบร้อยแล้ว",
+                animals: ['หมา🐶', 'แมว🐱', 'กระต่าย🐰', 'หนูแฮมสเตอร์🐹', 'แพนด้า🐼', 'หมี🐻'],
+                metaDesc: "ท้าทายความจำของคุณ! การต่อสู้สีสัน", metaKeys: "ราชาแห่งสี, ความจำ, KingsMath"
+            },
+            'hi': {
+                pageTitle: "रंगों का राजा🎨", banner: "एक सुरक्षित गणित खेल का मैदान KingsMath.com",
+                diffLabel: "कठिनाई", diffBeginner: "आसान", diffAdvanced: "कठिन",
+                playerLabel: "खिलाड़ी", playerCount: "{n} खि.",
+                guideTitle: "कैसे खेलें", guide1: "1. 10 सेकंड के लिए रंग याद रखें।", guide2: "2. 30 सेकंड में समान रंग खोजें!", guide3: "3. तैयार होने पर सबमिट करें!", guide4: "4. उत्तर अंत में दिखाया जाता है।", guide5: "5. स्कोरिंग स्वचालित है!",
+                startBtn: "शुरू करें! 🚀", otherGameBtn: "कोई अन्य गेम चुनें",
+                timerRem: "समय: {n}s", timerEnd: "समय समाप्त!", compareTitle: "आपको यह रंग खोजना चाहिए था!", scoreWait: "{n}s में परिणाम", scoreNow: "परिणाम!",
+                previewWait: "नीचे चुनें", previewReady: "प्रतीक्षा...", previewTimeout: "समय समाप्त",
+                sliderHue: "रंग", sliderSat: "संतृप्ति", sliderLight: "चमक",
+                submitBtn: "सबमिट", submitDone: "हो गया",
+                targetMem: "याद रखें! ({n}s)", rankStr: "रैंक {n}", matchStr: "{n}% मेल!", restartBtn: "फिर से खेलें 🔄", toastMsg: "भाषा बदल दी गई है।",
+                animals: ['कुत्ता🐶', 'बिल्ली🐱', 'खरगोश🐰', 'हैम्स्टर🐹', 'पांडा🐼', 'भालू🐻'],
+                metaDesc: "अपनी याददाश्त को चुनौती दें! रंग मिलान लड़ाई", metaKeys: "रंगों का राजा, याददाश्त, KingsMath"
+            },
+            'bn': {
+                pageTitle: "রঙের রাজা🎨", banner: "একটি নিরাপদ গণিত খেলার মাঠ KingsMath.com",
+                diffLabel: "অসুবিধা", diffBeginner: "সহজ", diffAdvanced: "কঠিন",
+                playerLabel: "খেলোয়াড়", playerCount: "{n} জন",
+                guideTitle: "কিভাবে খেলবেন", guide1: "1. 10 সেকেন্ডের জন্য রঙটি মনে রাখুন।", guide2: "2. 30 সেকেন্ডের মধ্যে একই রঙ খুঁজুন!", guide3: "3. প্রস্তুত হলে সাবমিট ক্লিক করুন!", guide4: "4. উত্তরটি শেষে প্রকাশ করা হয়।", guide5: "5. স্বয়ংক্রিয় স্কোরিং!",
+                startBtn: "শুরু করুন! 🚀", otherGameBtn: "অন্য খেলা বেছে নিন",
+                timerRem: "সময়: {n}s", timerEnd: "সময় শেষ!", compareTitle: "আপনার এই রঙটি খুঁজে পাওয়া উচিত ছিল!", scoreWait: "{n}s-এ ফলাফল", scoreNow: "ফলাফল!",
+                previewWait: "নীচে নির্বাচন করুন", previewReady: "অপেক্ষা...", previewTimeout: "সময় শেষ",
+                sliderHue: "রঙ", sliderSat: "ঘনত্ব", sliderLight: "উজ্জ্বলতা",
+                submitBtn: "জমা দিন", submitDone: "জমা দেওয়া হয়েছে",
+                targetMem: "মনে রাখুন! ({n}s)", rankStr: "র‌্যাঙ্ক {n}", matchStr: "{n}% মিল!", restartBtn: "আবার খেলুন 🔄", toastMsg: "ভাষা পরিবর্তন করা হয়েছে।",
+                animals: ['কুকুর🐶', 'বিড়াল🐱', 'খরগোশ🐰', 'হ্যামস্টার🐹', 'পান্ডা🐼', 'ভাল্লুক🐻'],
+                metaDesc: "আপনার স্মৃতিকে চ্যালেঞ্জ করুন! রঙ ম্যাচিং যুদ্ধ", metaKeys: "রঙের রাজা, স্মৃতি, KingsMath"
+            },
+            'tr': {
+                pageTitle: "Renk Kralı🎨", banner: "Güvenli bir matematik oyun alanı KingsMath.com",
+                diffLabel: "Zorluk", diffBeginner: "Kolay", diffAdvanced: "Zor",
+                playerLabel: "Oyuncular", playerCount: "{n} O.",
+                guideTitle: "Nasıl Oynanır", guide1: "1. Rengi 10 saniye aklında tut.", guide2: "2. 30 saniye içinde aynı rengi bul!", guide3: "3. Hazır olduğunda Gönder'e tıkla!", guide4: "4. Cevap sonunda ortaya çıkar.", guide5: "5. Puanlama otomatiktir!",
+                startBtn: "Başla! 🚀", otherGameBtn: "Başka Oyun Seç",
+                timerRem: "Süre: {n}s", timerEnd: "Süre Doldu!", compareTitle: "Bu rengi bulmalıydın!", scoreWait: "{n}s içinde sonuçlar", scoreNow: "Sonuçlar!",
+                previewWait: "Aşağıdan seç", previewReady: "Bekleniyor...", previewTimeout: "Zaman Aşımı",
+                sliderHue: "Ton", sliderSat: "Doyg", sliderLight: "Parlk",
+                submitBtn: "Gönder", submitDone: "Gönderildi",
+                targetMem: "Ezberle! ({n}s)", rankStr: "Sıra {n}", matchStr: "%{n} Eşleşti!", restartBtn: "Tekrar Oyna 🔄", toastMsg: "Dil değiştirildi.",
+                animals: ['Köpek🐶', 'Kedi🐱', 'Tavşan🐰', 'Hamster🐹', 'Panda🐼', 'Ayı🐻'],
+                metaDesc: "Hafızana meydan oku! Renk eşleştirme savaşı", metaKeys: "Renk Kralı, Hafıza, KingsMath"
+            }
+        };
+
+        const languageList = [
+            { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+            { code: 'en', country: 'us', name: 'English', enName: 'English' },
+            { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)' },
+            { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+            { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+            { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+            { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+            { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' },
+            { code: 'pt-br', country: 'br', name: 'Português', enName: 'Portuguese (Brazil)' },
+            { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+            { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+            { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+            { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+            { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+            { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+            { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' }
+        ];
+
+        let currentLang = 'en';
+
+        function initLanguage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlLang = urlParams.get('lang');
+            const savedLang = localStorage.getItem('kingsmath_lang');
+            const browserLang = navigator.language.slice(0, 2).toLowerCase();
+            
+            if (urlLang && i18n[urlLang]) currentLang = urlLang;
+            else if (savedLang && i18n[savedLang]) currentLang = savedLang;
+            else if (i18n[browserLang]) currentLang = browserLang;
+
+            applyLanguage(currentLang, false);
+            renderLanguages();
+        }
+
+        function t(key, arg = '') {
+            let str = i18n[currentLang][key] || i18n['en'][key];
+            if(arg !== '') str = str.replace('{n}', arg);
+            return str;
+        }
+
+        function applyLanguage(langCode, showToastFlag = true) {
+            currentLang = langCode;
+            localStorage.setItem('kingsmath_lang', langCode);
+            
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set('lang', langCode);
+            window.history.pushState(null, '', newUrl.toString());
+
+            if (langCode !== 'ko') document.body.style.fontFamily = "sans-serif";
+            else document.body.style.fontFamily = "'Jua', 'Noto Sans KR', sans-serif";
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const arg = el.getAttribute('data-i18n-arg');
+                if(i18n[langCode][key]) el.innerHTML = t(key, arg || '');
+            });
+
+            document.getElementById('page-title').innerText = i18n[langCode].pageTitle;
+            document.getElementById('meta-desc').setAttribute('content', i18n[langCode].metaDesc);
+            document.getElementById('meta-keys').setAttribute('content', i18n[langCode].metaKeys);
+
+            const langObj = languageList.find(l => l.code === langCode) || languageList[1];
+            document.getElementById('currentFlag').src = `https://flagcdn.com/w40/${langObj.country}.png`;
+            document.getElementById('currentLangName').textContent = langObj.name;
+
+            if (showToastFlag) {
+                document.getElementById('ui-toast').textContent = i18n[langCode].toastMsg || i18n['en'].toastMsg;
+                document.getElementById('toastLangName').textContent = langObj.name;
+                const toast = document.getElementById('toastNotification');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+            adjustFontSize();
+        }
+
+        function adjustFontSize() {
+            setTimeout(() => {
+                document.querySelectorAll('.auto-resize-text').forEach(el => {
+                    el.style.fontSize = ''; 
+                    let currentSize = parseFloat(window.getComputedStyle(el).fontSize);
+                    while (el.scrollWidth > el.clientWidth && currentSize > 10) {
+                        currentSize -= 1;
+                        el.style.fontSize = currentSize + 'px';
+                    }
+                });
+            }, 100);
+        }
+
+        // --- 모달 로직 ---
+        const triggerBtn = document.getElementById('langTriggerBtn');
+        const modal = document.getElementById('langModal');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const searchInput = document.getElementById('searchInput');
+        const grid = document.getElementById('languageGrid');
+        const noResult = document.getElementById('noResult');
+
+        function renderLanguages(filterText = '') {
+            grid.innerHTML = '';
+            const lowerFilter = filterText.toLowerCase();
+            const filteredLangs = languageList.filter(lang => 
+                lang.name.toLowerCase().includes(lowerFilter) || 
+                lang.enName.toLowerCase().includes(lowerFilter) ||
+                lang.code.toLowerCase().includes(lowerFilter)
+            );
+
+            if (filteredLangs.length === 0) {
+                grid.style.display = 'none';
+                noResult.style.display = 'flex';
+            } else {
+                grid.style.display = 'grid';
+                noResult.style.display = 'none';
+
+                filteredLangs.forEach(lang => {
+                    const isSelected = lang.code === currentLang;
+                    const btn = document.createElement('div');
+                    btn.className = `ls-item ${isSelected ? 'selected' : ''}`;
+                    btn.innerHTML = `
+                        <img src="https://flagcdn.com/w40/${lang.country}.png" class="ls-item-flag">
+                        <div class="ls-item-text">
+                            <span class="ls-item-name">${lang.name}</span>
+                            <span class="ls-item-en">${lang.enName}</span>
+                        </div>
+                        ${isSelected ? '<i class="fa-solid fa-circle-check ls-item-check"></i>' : ''}
+                    `;
+                    btn.addEventListener('click', () => {
+                        applyLanguage(lang.code);
+                        closeLangModal();
+                        renderLanguages(searchInput.value);
+                    });
+                    grid.appendChild(btn);
+                });
+            }
+        }
+
+        function openLangModal() {
+            modal.classList.add('active');
+            setTimeout(() => searchInput.focus(), 100);
+        }
+        function closeLangModal() { modal.classList.remove('active'); }
+
+        triggerBtn.addEventListener('click', openLangModal);
+        closeBtn.addEventListener('click', closeLangModal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeLangModal(); });
+        searchInput.addEventListener('input', (e) => renderLanguages(e.target.value));
+
+        /* ==========================================
+           기존 게임 스크립트 연동 및 번역 동적화 적용
+           ========================================== */
+        let playerCount = 1;
+        let gameMode = 'beginner'; 
+        let targetRGB = [0, 0, 0];
+        let targetColorStr = '';
+        let phase = 'idle'; 
+        let selectionInterval = null;
+        let players = [];
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            if (type === 'tick') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            } else if (type === 'pop') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, now);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            } else if (type === 'bell') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(783.99, now + 0.1); 
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.8);
+            } else if (type === 'drum') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(150, now);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            }
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(now); osc.stop(now + 0.8);
+        }
+
+        function selectDifficulty(mode, el) {
+            gameMode = mode;
+            document.querySelectorAll('#difficulty-options .btn-option').forEach(btn => btn.classList.remove('selected'));
+            el.classList.add('selected');
+            playSound('pop');
+        }
+
+        function selectPlayer(cnt, el) {
+            playerCount = cnt;
+            document.querySelectorAll('#player-options .btn-option').forEach(btn => btn.classList.remove('selected'));
+            el.classList.add('selected');
+            playSound('pop');
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else if (document.exitFullscreen) document.exitFullscreen();
+        }
+
+        // 전체 화면일 때 지체 없이 첫화면 이동 로직
+        document.getElementById('btn-home').addEventListener('click', () => {
+            if (document.fullscreenElement) {
+                if(selectionInterval) clearInterval(selectionInterval);
+                let id = window.setTimeout(function() {}, 0);
+                while (id--) { window.clearTimeout(id); }
+
+                document.getElementById('langSelectorContainer').style.display = 'block';
+                document.getElementById('game-screen').style.display = 'none';
+                document.getElementById('compare-area').style.display = 'none';
+                document.getElementById('selection-timer').style.display = 'none';
+                document.getElementById('target-display-modal').style.display = 'none';
+                document.getElementById('global-overlay').style.display = 'none';
+                document.getElementById('start-screen').style.display = 'flex';
+                document.getElementById('btn-home').style.display = 'none';
+                document.getElementById('btn-fs').style.display = 'none';
+                document.getElementById('main-header').style.backgroundColor = '#0f1c2e';
+
+                phase = 'idle';
+                playSound('pop');
+                adjustFontSize();
+            } else {
+                location.reload(); 
+            }
+        });
+
+        function hslToRgb(h, s, l) {
+            s /= 100; l /= 100;
+            const k = n => (n + h / 30) % 12;
+            const a = s * Math.min(l, 1 - l);
+            const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+            return [Math.round(255 * f(0)), Math.round(255 * f(8)), Math.round(255 * f(4))];
+        }
+
+        function drawPalette(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const cols = 50; const rows = 50;
+            const cw = canvas.width / cols;
+            const ch = canvas.height / rows;
+
+            for(let r=0; r<rows; r++) {
+                let l = 95 - (r * (90/rows)); 
+                for(let c=0; c<cols; c++) {
+                    let h = c * (360/cols);   
+                    ctx.fillStyle = `hsl(${h}, 100%, ${l}%)`;
+                    ctx.fillRect(c*cw, r*ch, cw+1, ch+1); 
+                }
+            }
+        }
+
+        function initGame() {
+            playSound('pop');
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('langSelectorContainer').style.display = 'none';
+            document.getElementById('btn-home').style.display = 'flex';
+            document.getElementById('btn-fs').style.display = 'flex';
+            
+            const gameScreen = document.getElementById('game-screen');
+            gameScreen.style.display = 'flex';
+            gameScreen.innerHTML = '';
+            players = [];
+
+            const currAnimals = i18n[currentLang].animals || i18n['en'].animals;
+
+            for (let i = 0; i < playerCount; i++) {
+                // 수정됨: tempH, tempS, tempL을 가운데 정렬값(180, 50, 50)으로 초기화
+                players.push({ 
+                    id: i, percent: 0, selectedStr: null, selectedRGB: null, submitted: false,
+                    tempH: 180, tempS: 50, tempL: 50 
+                });
+                
+                const div = document.createElement('div');
+                div.className = `player-area`;
+                
+                let boardHtml = '';
+                if (gameMode === 'beginner') {
+                    boardHtml = `
+                    <div class="board-wrapper">
+                        <canvas class="palette-canvas" id="canvas-${i}" width="500" height="500" data-p="${i}"></canvas>
+                    </div>`;
+                } else {
+                    // 수정됨: 모든 슬라이더 thumb의 top을 50%로 지정하고, CSS background 그래디언트 역시 180, 50%을 기준으로 렌더링
+                    boardHtml = `
+                    <div class="board-wrapper sliders-wrapper">
+                        <div class="slider-column">
+                            <div class="slider-label">${t('sliderHue')}</div>
+                            <div class="slider-track hue-track" data-p="${i}" data-type="h">
+                                <div class="slider-thumb" id="thumb-h-${i}" style="top:50%;"></div>
+                            </div>
+                        </div>
+                        <div class="slider-column">
+                            <div class="slider-label">${t('sliderSat')}</div>
+                            <div class="slider-track sat-track" id="track-s-${i}" data-p="${i}" data-type="s" style="background: linear-gradient(to bottom, hsl(180, 100%, 50%), hsl(180, 0%, 50%));">
+                                <div class="slider-thumb" id="thumb-s-${i}" style="top:50%;"></div>
+                            </div>
+                        </div>
+                        <div class="slider-column">
+                            <div class="slider-label">${t('sliderLight')}</div>
+                            <div class="slider-track lig-track" id="track-l-${i}" data-p="${i}" data-type="l" style="background: linear-gradient(to bottom, white, hsl(180, 50%, 50%), black);">
+                                <div class="slider-thumb" id="thumb-l-${i}" style="top:50%;"></div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+
+                // 수정됨: button의 onclick을 onpointerdown으로 변경하여 터치 충돌 해결
+                div.innerHTML = `
+                    <div class="player-header auto-resize-text">${currAnimals[i]}</div>
+                    <div class="color-preview auto-resize-text" id="preview-${i}">${t('previewWait')}</div>
+                    ${boardHtml}
+                    <button class="submit-btn auto-resize-text" id="submit-btn-${i}" onpointerdown="submitColor(${i})" disabled>${t('submitBtn')}</button>
+                    <div class="result-overlay" id="result-${i}">
+                        <div class="medal" id="medal-${i}"></div>
+                        <div class="rank-text auto-resize-text" id="rank-text-${i}"></div>
+                        <div class="final-msg auto-resize-text" id="final-msg-${i}"></div>
+                    </div>
+                `;
+                gameScreen.appendChild(div);
+
+                if (gameMode === 'beginner') {
+                    drawPalette(`canvas-${i}`);
+                    document.getElementById(`canvas-${i}`).addEventListener('pointerdown', handleCanvasTouch);
+                } else {
+                    bindSliderEvents(i);
+                }
+            }
+
+            adjustFontSize();
+            startMemorizePhase();
+        }
+
+        function bindSliderEvents(pIdx) {
+            ['h', 's', 'l'].forEach(type => {
+                const track = document.querySelector(`.slider-track[data-p="${pIdx}"][data-type="${type}"]`);
+                track.addEventListener('pointerdown', onSliderPointerDown);
+                track.addEventListener('pointermove', onSliderPointerMove);
+            });
+        }
+
+        function updateSliderFromEvent(e, track) {
+            if (phase !== 'select') return;
+            const pIdx = parseInt(track.dataset.p);
+            const type = track.dataset.type;
+            const p = players[pIdx];
+
+            if (p.submitted) return;
+
+            const rect = track.getBoundingClientRect();
+            let y = e.clientY - rect.top;
+            y = Math.max(0, Math.min(y, rect.height));
+            const ratio = y / rect.height; 
+
+            if (type === 'h') p.tempH = ratio * 360; 
+            if (type === 's') p.tempS = (1 - ratio) * 100; 
+            if (type === 'l') p.tempL = (1 - ratio) * 100; 
+
+            updatePlayerColorFromSliders(pIdx);
+        }
+
+        function onSliderPointerDown(e) {
+            e.currentTarget.setPointerCapture(e.pointerId);
+            updateSliderFromEvent(e, e.currentTarget);
+            playSound('pop');
+        }
+
+        function onSliderPointerMove(e) {
+            if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+                updateSliderFromEvent(e, e.currentTarget);
+            }
+        }
+
+        function updatePlayerColorFromSliders(pIdx) {
+            const p = players[pIdx];
+            
+            const trackS = document.getElementById(`track-s-${pIdx}`);
+            trackS.style.background = `linear-gradient(to bottom, hsl(${p.tempH}, 100%, 50%), hsl(${p.tempH}, 0%, 50%))`;
+            
+            const trackL = document.getElementById(`track-l-${pIdx}`);
+            trackL.style.background = `linear-gradient(to bottom, white, hsl(${p.tempH}, ${p.tempS}%, 50%), black)`;
+
+            document.getElementById(`thumb-h-${pIdx}`).style.top = `${(p.tempH / 360) * 100}%`;
+            document.getElementById(`thumb-s-${pIdx}`).style.top = `${(100 - p.tempS)}%`;
+            document.getElementById(`thumb-l-${pIdx}`).style.top = `${(100 - p.tempL)}%`;
+
+            p.selectedRGB = hslToRgb(p.tempH, p.tempS, p.tempL);
+            p.selectedStr = `hsl(${p.tempH}, ${p.tempS}%, ${p.tempL}%)`;
+
+            const preview = document.getElementById(`preview-${pIdx}`);
+            preview.style.backgroundColor = p.selectedStr;
+            preview.innerText = ""; 
+
+            const submitBtn = document.getElementById(`submit-btn-${pIdx}`);
+            submitBtn.disabled = false;
+        }
+
+        function handleCanvasTouch(e) {
+            if (phase !== 'select') return;
+            e.preventDefault();
+            
+            const canvas = e.currentTarget;
+            const pIdx = parseInt(canvas.dataset.p);
+            const p = players[pIdx];
+            
+            if (p.submitted) return; 
+
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            const col = Math.floor(x / 10);
+            const row = Math.floor(y / 10);
+            
+            if (col < 0 || col > 49 || row < 0 || row > 49) return;
+
+            let h = col * (360/50);
+            let l = 95 - (row * (90/50));
+            
+            p.selectedRGB = hslToRgb(h, 100, l);
+            p.selectedStr = `hsl(${h}, 100%, ${l}%)`;
+
+            const preview = document.getElementById(`preview-${pIdx}`);
+            preview.style.backgroundColor = p.selectedStr;
+            preview.innerText = ""; 
+            
+            const submitBtn = document.getElementById(`submit-btn-${pIdx}`);
+            submitBtn.disabled = false;
+
+            playSound('pop');
+        }
+
+        function startMemorizePhase() {
+            phase = 'memorize';
+            
+            let h = Math.floor(Math.random() * 360);
+            let s = gameMode === 'advanced' ? Math.floor(Math.random() * 60) + 40 : 100; 
+            let l = Math.floor(Math.random() * 70) + 15; 
+            
+            if(gameMode === 'beginner') {
+                let row = Math.floor((95 - l) / (90/50));
+                let col = Math.floor(h / (360/50));
+                h = col * (360/50);
+                l = 95 - (row * (90/50));
+            }
+
+            targetRGB = hslToRgb(h, s, l);
+            targetColorStr = `hsl(${h}, ${s}%, ${l}%)`;
+
+            const modal = document.getElementById('target-display-modal');
+            const box = document.getElementById('target-color-box');
+            const msg = document.getElementById('target-msg-text');
+            
+            box.style.backgroundColor = targetColorStr;
+            modal.style.display = 'flex';
+
+            let count = 10; 
+            msg.innerText = t('targetMem', count);
+            playSound('tick');
+
+            const iv = setInterval(() => {
+                count--;
+                if(count > 0) {
+                    msg.innerText = t('targetMem', count);
+                    playSound('tick');
+                } else {
+                    clearInterval(iv);
+                    playSound('bell');
+                    modal.style.display = 'none';
+                    startSelectionPhase(); 
+                }
+            }, 1000);
+        }
+
+        function startSelectionPhase() {
+            phase = 'select';
+            const timerDiv = document.getElementById('selection-timer');
+            timerDiv.style.display = 'block';
+
+            let selCount = 30;
+            timerDiv.innerText = t('timerRem', selCount);
+
+            selectionInterval = setInterval(() => {
+                selCount--;
+                if(selCount > 0) {
+                    timerDiv.innerText = t('timerRem', selCount);
+                    if (selCount <= 5) playSound('tick');
+                } else {
+                    clearInterval(selectionInterval);
+                    timerDiv.innerText = t('timerEnd');
+                    playSound('bell');
+                    forceSubmitAll(); 
+                }
+            }, 1000);
+        }
+
+        function submitColor(pIdx) {
+            const p = players[pIdx];
+            p.submitted = true;
+            
+            const btn = document.getElementById(`submit-btn-${pIdx}`);
+            btn.innerText = t('submitDone');
+            btn.disabled = true;
+
+            const preview = document.getElementById(`preview-${pIdx}`);
+            preview.innerText = t('previewReady');
+            preview.style.color = "#fff";
+
+            playSound('tick');
+
+            if (players.every(pl => pl.submitted)) {
+                if (selectionInterval) clearInterval(selectionInterval);
+                setTimeout(showComparePhase, 500);
+            }
+        }
+
+        function forceSubmitAll() {
+            players.forEach(p => {
+                if (!p.submitted) {
+                    p.submitted = true;
+                    const btn = document.getElementById(`submit-btn-${p.id}`);
+                    btn.innerText = t('previewTimeout');
+                    btn.disabled = true;
+                    
+                    const preview = document.getElementById(`preview-${p.id}`);
+                    preview.innerText = t('previewTimeout');
+                    preview.style.color = "#ff4d4d";
+                }
+            });
+            setTimeout(showComparePhase, 500);
+        }
+
+        function showComparePhase() {
+            phase = 'compare';
+            
+            document.getElementById('selection-timer').style.display = 'none';
+
+            const compareArea = document.getElementById('compare-area');
+            const header = document.getElementById('main-header');
+            const title = document.getElementById('compare-title');
+            const scoreText = document.getElementById('scoring-text');
+            
+            header.style.backgroundColor = targetColorStr;
+            compareArea.style.backgroundColor = targetColorStr;
+            
+            title.innerText = t('compareTitle');
+            title.style.display = 'block';
+            compareArea.style.display = 'flex';
+            playSound('bell');
+
+            scoreText.style.display = 'block';
+            let count = 5;
+            scoreText.innerText = t('scoreWait', count);
+            playSound('drum');
+
+            const iv = setInterval(() => {
+                count--;
+                if(count > 0) {
+                    scoreText.innerText = t('scoreWait', count);
+                    playSound('drum');
+                } else {
+                    clearInterval(iv);
+                    scoreText.innerText = t('scoreNow');
+                    playSound('bell');
+                    evaluateAndShowResults();
+                }
+            }, 1000);
+        }
+
+        function shootFireworks() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) { return clearInterval(interval); }
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        function showPlayerResult(p) {
+            const overlay = document.getElementById(`result-${p.id}`);
+            let medal = '👏';
+            if(p.finalRank === 1) medal = '🥇'; else if(p.finalRank === 2) medal = '🥈'; else if(p.finalRank === 3) medal = '🥉';
+
+            document.getElementById(`medal-${p.id}`).innerText = medal;
+            document.getElementById(`rank-text-${p.id}`).innerText = t('rankStr', p.finalRank);
+            document.getElementById(`final-msg-${p.id}`).innerText = t('matchStr', p.percent);
+            
+            overlay.style.display = 'flex';
+        }
+
+        function evaluateAndShowResults() {
+            phase = 'result';
+            const maxDist = 441.673; 
+
+            players.forEach(p => {
+                let simPercent = 0;
+                if (p.selectedRGB) {
+                    let d = Math.sqrt(
+                        Math.pow(targetRGB[0] - p.selectedRGB[0], 2) +
+                        Math.pow(targetRGB[1] - p.selectedRGB[1], 2) +
+                        Math.pow(targetRGB[2] - p.selectedRGB[2], 2)
+                    );
+                    simPercent = Math.max(0, 100 - (d / maxDist) * 100);
+                }
+                p.percent = parseFloat(simPercent.toFixed(1)); 
+            });
+
+            const sorted = [...players].sort((a, b) => b.percent - a.percent);
+            let currentRank = 1;
+            for(let i=0; i<sorted.length; i++) {
+                if (i > 0 && sorted[i].percent < sorted[i-1].percent) currentRank = i + 1;
+                sorted[i].finalRank = currentRank;
+            }
+
+            const firstPlacePlayers = sorted.filter(p => p.finalRank === 1);
+            firstPlacePlayers.forEach(p => showPlayerResult(p));
+            shootFireworks();
+            playSound('bell');
+
+            setTimeout(() => {
+                const others = sorted.filter(p => p.finalRank !== 1);
+                others.forEach(p => showPlayerResult(p));
+                
+                document.getElementById('global-overlay').style.display = 'flex';
+            }, 3000);
+        }
+
+        // 초기 언어 실행
+        window.addEventListener('DOMContentLoaded', initLanguage);
+
+    </script>
+</body>
+</html>

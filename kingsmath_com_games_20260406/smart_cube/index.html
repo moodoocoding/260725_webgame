@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5YW0T2C109"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-5YW0T2C109');
+</script>
+
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <title id="meta-title">쌓기나무킹 모바일: 1분 타임어택</title>
+    <meta name="description" id="meta-desc" content="1분 동안 3D 쌓기나무의 개수를 맞히는 모바일 두뇌 게임! 자유롭게 돌려보며 공간지각능력을 키워보세요.">
+    <meta name="keywords" id="meta-keywords" content="쌓기나무킹, 수학게임, 공간지각력, 3D게임, 두뇌게임">
+    <meta property="og:title" id="og-title" content="쌓기나무킹 모바일">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            corePlugins: { preflight: false }
+        }
+    </script>
+
+<style>
+        :root {
+            --main-yellow: #FFD93D;
+            --main-dark: #1e1e2e;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* 폰트어썸 이모지 깨짐 방지용 예외 처리 및 폰트 분리 */
+        .fas, .far, .fab, .fa-solid, .fa-regular {
+            font-family: "Font Awesome 6 Free" !important;
+        }
+        
+        body.lang-ko * { font-family: 'Jua', sans-serif; }
+        body:not(.lang-ko) * { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            letter-spacing: normal;
+        }
+        body:not(.lang-ko) .game-logo { font-weight: bold; }
+
+        * { 
+            box-sizing: border-box; 
+            touch-action: none; 
+            user-select: none; 
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            margin: 0; padding: 0; 
+            overflow: hidden;
+            background-color: #111;
+            /* 100dvh는 주소창이 줄어들거나 늘어날 때 동적으로 반응하는 높이 단위입니다 */
+            height: 100vh; height: 100dvh; 
+            display: flex; justify-content: center; align-items: center;
+            color: white;
+        }
+
+        /* 모바일 래퍼 */
+        #mobile-wrapper {
+            width: 100%; max-width: 480px; 
+            height: 100%; height: 100dvh; /* 높이 강제 고정 */
+            background-color: var(--main-dark);
+            position: relative;
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        /* --- 다국어 모달 전용 독립 CSS (충돌 방지 및 z-index 최고 수준) --- */
+        #langModal, #langModal * {
+            box-sizing: border-box !important;
+        }
+        .modal-overlay {
+            opacity: 0; visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 99999 !important;
+        }
+        .modal-overlay.active {
+            opacity: 1; visibility: visible;
+        }
+        .modal-content {
+            transform: scale(0.95) translateY(-10px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.5); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        .toast {
+            transform: translateY(100%); opacity: 0; transition: all 0.3s ease;
+            z-index: 99999 !important;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        
+        /* 언어 선택기 우측 상단 트리거 버튼 (디자인 매칭) */
+        #langTriggerBtn {
+            z-index: 99999 !important;
+            background: transparent;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 1rem;
+            display: flex; align-items: center; gap: 8px;
+            cursor: pointer;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            font-weight: bold;
+        }
+        #langTriggerBtn:active { transform: scale(0.95); }
+
+        /* --- 상단 헤더 --- */
+        header {
+            position: absolute; top: 0; left: 0; width: 100%;
+            height: calc(80px + var(--safe-top)); /* 높이 약간 축소 */
+            padding-top: var(--safe-top);
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+            display: flex; justify-content: center; align-items: flex-start;
+            z-index: 20; pointer-events: none;
+        }
+
+        .nav-icon {
+            position: absolute; top: calc(15px + var(--safe-top));
+            font-size: 1.8rem; cursor: pointer; pointer-events: auto;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            transition: transform 0.1s;
+        }
+        .nav-icon:active { transform: scale(0.9); }
+        #btn-home-game { left: 20px; }
+        #btn-restart-game { right: 20px; }
+
+        .game-info-bar {
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 2px;
+            margin-top: 5px;
+            pointer-events: none;
+        }
+        
+        .score-row {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 12px; border-radius: 15px;
+        }
+        
+        .info-brick { font-size: 1.2rem; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        
+        .timer-wrapper {
+            position: relative;
+            display: flex; justify-content: center; align-items: center;
+            margin-bottom: 2px;
+        }
+        .timer-badge { 
+            font-size: 2.0rem; 
+            color: white; background: #ef4444; 
+            padding: 0px 20px; border-radius: 99px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            border: 3px solid #fca5a5;
+            min-width: 70px; text-align: center;
+            z-index: 2;
+        }
+        
+        .info-score { 
+            font-size: 1.4rem; 
+            color: var(--main-yellow); 
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5); 
+            text-align: center;
+        }
+
+        .time-bonus-effect {
+            position: absolute; 
+            top: 100%; left: 50%; 
+            transform: translate(-50%, 0);
+            font-size: 1.5rem; color: #00e676; font-weight: bold;
+            text-shadow: 0 0 5px #000; pointer-events: none; opacity: 0;
+            z-index: 100;
+        }
+        @keyframes floatTimeUp {
+            0% { opacity: 0; transform: translate(-50%, 20px); }
+            20% { opacity: 1; transform: translate(-50%, 10px); }
+            80% { opacity: 1; transform: translate(-50%, -10px); }
+            100% { opacity: 0; transform: translate(-50%, -30px); }
+        }
+
+        #bonus-badge {
+            position: absolute; 
+            left: 20px; top: calc(100px + var(--safe-top));
+            background: #ff1744; color: white; font-size: 1rem;
+            padding: 4px 8px; border-radius: 8px;
+            box-shadow: 0 0 10px #ff1744; border: 2px solid #fff;
+            display: none; animation: pulse 1s infinite; pointer-events: none; z-index: 1;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* 게임 메인 영역 */
+        #game-container {
+            flex: 1; display: flex; flex-direction: column;
+            position: relative; background: radial-gradient(circle at center, #2b3248 0%, #161821 100%);
+            min-height: 0; 
+        }
+        #canvas-area { flex: 1; width: 100%; position: relative; cursor: grab; z-index: 1; }
+        #canvas-area:active { cursor: grabbing; }
+
+        /* --- 입력 영역 --- */
+        #input-display-area {
+            height: 8dvh; 
+            min-height: 50px; 
+            max-height: 70px;
+            background: rgba(30, 30, 46, 0.95);
+            display: flex; justify-content: center; align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            position: relative; z-index: 10;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+        }
+        #input-value {
+            font-size: clamp(2rem, 5vh, 2.8rem); 
+            color: var(--main-yellow); letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(255, 217, 61, 0.3);
+        }
+        .placeholder { opacity: 0.3; font-size: clamp(1.5rem, 4vh, 1.8rem) !important; letter-spacing: 0 !important; }
+
+        /* --- 키패드 영역 --- */
+        #keypad-area {
+            background: #23242a; 
+            height: 34dvh; 
+            min-height: 200px; 
+            max-height: 300px; 
+            padding: 5px 5px max(10px, env(safe-area-inset-bottom)) 5px;
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            grid-template-rows: repeat(4, 1fr); 
+            gap: 6px; 
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .key-btn {
+            background: #3b3e4f; color: #fff; 
+            font-size: clamp(1.2rem, 3.5vh, 1.6rem);
+            border: none; border-radius: 10px; 
+            box-shadow: 0 3px 0 #252733; 
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; position: relative; overflow: hidden;
+            font-weight: bold;
+        }
+        .key-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #252733; background: #4a4d61; }
+        .btn-clear { background: #ef5350; box-shadow: 0 3px 0 #c62828; font-size: clamp(1rem, 3vh, 1.3rem); }
+        .btn-clear:active { background: #e53935; box-shadow: none; }
+        .btn-enter { background: #66bb6a; box-shadow: 0 3px 0 #2e7d32; font-size: clamp(1rem, 3vh, 1.3rem); }
+        .btn-enter:active { background: #43a047; box-shadow: none; }
+
+        /* --- 오버레이 및 기타 스타일 --- */
+        .overlay-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; 
+            padding: 80px 20px 50px 20px; 
+            background: linear-gradient(135deg, #1e1e2e, #2d2b42); 
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y !important; 
+        }
+        
+        .start-card {
+            background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border); padding: 25px 20px; border-radius: 30px;
+            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            width: 100%; max-width: 400px; animation: floatUp 0.8s ease-out;
+            display: flex; flex-direction: column; align-items: center;
+            flex-shrink: 0; margin-bottom: 20px;
+        }
+        @keyframes floatUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .top-bar {
+            position: absolute; top: 0; left: 0; width: 100%;
+            height: calc(60px + var(--safe-top));
+            padding: var(--safe-top) 20px 0 20px; 
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 200; background: rgba(0,0,0,0.2);
+        }
+        .brand-link { color: #fff; text-decoration: none; font-size: 1rem; opacity: 0.8; font-weight: bold; }
+
+        .game-logo {
+            font-size: clamp(1.8rem, 5vw, 2.8rem); margin-bottom: 5px;
+            background: linear-gradient(45deg, #FFD93D, #FF6B6B);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 4px 0 rgba(0,0,0,0.2));
+            word-break: keep-all; line-height: 1.2;
+        }
+        .desc-text { color: #d1d5db; font-size: 0.95rem; line-height: 1.4; margin-bottom: 15px; }
+        
+        .qr-area { margin-bottom: 15px; background: white; padding: 5px; border-radius: 0px; cursor: zoom-in; transition: transform 0.1s; }
+        .qr-area:active { transform: scale(0.95); }
+        .qr-area img { display: block; width: 80px; height: 80px; }
+
+        #qr-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 3000;
+            display: none; justify-content: center; align-items: center; flex-direction: column; cursor: zoom-out;
+        }
+        #qr-modal img { width: 80%; max-width: 300px; border-radius: 0px; box-shadow: 0 0 30px rgba(255,255,255,0.2); }
+        #qr-modal span { color: white; margin-top: 20px; font-size: 1.2rem; }
+
+        .nickname-input {
+            width: 80%; padding: 10px; border-radius: 12px; border: 2px solid #555;
+            background: rgba(0,0,0,0.3); color: white; font-size: 1.1rem; text-align: center;
+            margin-bottom: 15px;
+        }
+        .nickname-input:focus { border-color: #FFD93D; outline: none; }
+
+        .start-btn {
+            background: linear-gradient(90deg, #FFD93D, #FF9F1C); color: #1a1a1a; border: none;
+            padding: 12px 20px; font-size: clamp(1rem, 4vw, 1.5rem); border-radius: 50px; cursor: pointer;
+            box-shadow: 0 8px 15px rgba(255, 159, 28, 0.3); transition: transform 0.2s;
+            width: 80%; font-weight: bold; word-break: keep-all;
+        }
+        .start-btn:active { transform: scale(0.95); }
+
+        .more-games { margin: 15px 0; color: #aaa; text-decoration: none; font-size: 0.9rem; }
+        .more-games:hover { color: #FFD93D; }
+
+        .start-rank-container {
+            width: 100%; max-width: 400px;
+            background: rgba(0,0,0,0.4); border-radius: 15px;
+            padding: 10px; margin-bottom: 20px;
+            flex-grow: 1; display: flex; flex-direction: column;
+        }
+        .rank-title { color: #FFD93D; font-size: 1.1rem; margin-bottom: 8px; text-align: center; }
+        .rank-scroll-area { overflow-y: visible; flex: none; }       
+        
+        .feedback-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            pointer-events: none; font-size: 5rem; z-index: 50; opacity: 0;
+            text-shadow: 0 0 20px rgba(0,0,0,0.5); font-weight: bold;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .ranking-box {
+            background: rgba(0,0,0,0.3); width: 100%; padding: 15px; border-radius: 15px;
+            margin: 15px 0; text-align: left;
+        }
+        .rank-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.95rem; }
+        .rank-item:last-child { border: none; }
+        .rank-my { color: #FFD93D; text-align: center; margin-bottom: 10px; font-size: 1.2rem; }
+        
+        .result-nav { display: flex; gap: 20px; justify-content: center; margin-top: 20px; }
+        .result-btn { font-size: 2.5rem; cursor: pointer; transition: transform 0.2s; }
+        .result-btn:active { transform: scale(0.8); }
+
+        #countdown-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 200;
+            display: none; justify-content: center; align-items: center;
+        }
+        #countdown-text {
+            font-size: 10rem; color: #FFD93D; text-shadow: 0 0 30px #FFD93D; font-weight: bold;
+        }
+
+        /* [필수 수정] 오버레이 화면과 그 안의 모든 자식 요소들은 상하 스크롤 터치를 강제로 허용 */
+        .overlay-screen, .overlay-screen * { touch-action: pan-y !important; }
+
+        /* 랭킹 리스트 영역이 내부 스크롤이 아니라 전체 화면 스크롤을 따르도록 설정 */
+        .start-rank-container {
+            height: auto !important;
+            max-height: none !important;
+            flex-grow: 0 !important;
+        }
+        .rank-scroll-area { overflow: visible !important; }
+
+        /* 언어별 폰트 사이즈 보정 로직 (텍스트 길이에 대응) */
+        body.lang-fr .start-btn, body.lang-es .start-btn, body.lang-ru .start-btn, body.lang-de .start-btn, body.lang-it .start-btn { font-size: 1.1rem; }
+        body.lang-ru .key-btn, body.lang-fr .key-btn, body.lang-es .key-btn { font-size: clamp(0.9rem, 2.5vh, 1.3rem); }
+
+</style>
+</head>
+<body class="lang-ko">
+
+<div id="mobile-wrapper">
+    <div id="qr-modal" onclick="closeQrModal()">
+        <img id="qr-img-large" src="" alt="Large QR">
+        <span id="txt-modal-close">화면을 터치하면 닫힙니다</span>
+    </div>
+
+    <div id="langModal" class="modal-overlay fixed inset-0 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm pt-16 sm:pt-0 px-4">
+        <div class="modal-content bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
+            
+            <div class="flex items-center justify-between p-5 border-b border-gray-800 bg-gray-900/95 sticky top-0 z-10">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2 m-0">
+                        <i class="fa-solid fa-language text-yellow-500"></i>
+                        <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">Language / 언어</span>
+                    </h2>
+                </div>
+                <button id="closeModalBtn" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-colors border-none cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-5 pb-2 bg-gray-900">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="Search / 검색 ..." 
+                        class="w-full bg-gray-800 border border-gray-700 text-white text-sm rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 block pl-11 p-3.5 outline-none transition-all placeholder-gray-500 m-0" style="font-family: 'Helvetica Neue', Arial, sans-serif;">
+                </div>
+            </div>
+
+            <div class="p-5 overflow-y-auto custom-scrollbar flex-1">
+                <div id="languageGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    </div>
+                <div id="noResult" class="hidden flex-col items-center justify-center py-12 text-gray-500">
+                    <i class="fa-regular fa-face-frown-open text-4xl mb-3"></i>
+                    <p style="font-family: 'Helvetica Neue', Arial, sans-serif;">No results / 검색 결과 없음</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastNotification" class="toast fixed bottom-6 right-6 bg-gray-800 border border-gray-700 shadow-lg rounded-xl p-4 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+            <p id="ui-toast" class="text-sm font-medium text-white m-0" style="font-family: 'Helvetica Neue', Arial, sans-serif;">언어가 변경되었습니다.</p>
+            <p id="toastLangName" class="text-xs text-gray-400 m-0 mt-1" style="font-family: 'Helvetica Neue', Arial, sans-serif;">Korean</p>
+        </div>
+    </div>
+
+    <div id="start-screen" class="overlay-screen">
+        <div class="top-bar">
+            <a href="/" class="brand-link" id="brand-link" target="_self">킹수학.com</a>
+            
+            <button id="langTriggerBtn" onclick="openModal()">
+                <i class="fa-solid fa-globe" style="color:#aaa;"></i>
+                <img id="currentFlag" src="https://flagcdn.com/w40/kr.png" alt="KR" style="width: 20px; border-radius: 2px;">
+                <span id="currentLangName" style="font-size: 0.9rem;">한국어</span>
+            </button>
+        </div>
+
+        <div class="start-card">
+            <div class="game-logo" id="txt-title">🧊 쌓기나무킹</div>
+            <div id="txt-mobile" style="font-size: 1.2rem; color: #aaa; margin-bottom: 10px;">Mobile</div>
+            
+            <p class="desc-text" id="txt-desc">
+                1분 타임어택!<br>
+                회전하며 블록 개수를 세어보세요.
+            </p>
+
+            <div class="qr-area" onclick="openQrModal()">
+                <img id="qr-img-small" src="" alt="QR">
+            </div>
+
+            <input type="text" id="nickname" class="nickname-input" placeholder="닉네임 입력 (최대 8자)" maxlength="8">
+
+            <button class="start-btn" onclick="readyGame()" id="btn-start">게임 시작! 🚀</button>
+
+            <a href="/" class="more-games" id="link-more" target="_self">🎮 다른 게임 고르기</a>
+        </div>
+
+        <div class="start-rank-container">
+            <div class="rank-title" id="txt-rank-title">🏆 명예의 전당 (Top 100)</div>
+            <div class="rank-scroll-area" id="start-rank-list">
+                <div style="text-align:center; color:#888; padding:20px;" id="txt-loading">로딩 중...</div>
+            </div>
+        </div>
+    </div>
+
+    <header id="header-info">
+        <div class="nav-icon" id="btn-home-game">🏠</div>
+        
+        <div class="game-info-bar">
+            <div class="timer-wrapper">
+                <div class="timer-badge" id="ui-timer">60</div>
+                 <div class="time-bonus-effect" id="time-bonus-effect">+5s</div>
+            </div>
+            
+            <div class="score-row">
+                <div class="info-brick">🧱</div>
+                <div class="info-score" id="ui-score">0</div>
+            </div>
+        </div>
+
+        <div class="nav-icon" id="btn-restart-game" onclick="restartGame()">🔄</div>
+    </header>
+    
+    <div id="bonus-badge">🔥 BONUS x2</div>
+
+    <div id="game-container">
+        <div id="canvas-area">
+            <div class="feedback-overlay" id="feedback"></div>
+        </div>
+        
+        <div id="input-display-area">
+            <span id="input-value" class="placeholder">?</span>
+        </div>
+
+        <div id="keypad-area">
+            <button class="key-btn" onpointerdown="inputNum(1)">1</button>
+            <button class="key-btn" onpointerdown="inputNum(2)">2</button>
+            <button class="key-btn" onpointerdown="inputNum(3)">3</button>
+            <button class="key-btn" onpointerdown="inputNum(4)">4</button>
+            <button class="key-btn" onpointerdown="inputNum(5)">5</button>
+            <button class="key-btn" onpointerdown="inputNum(6)">6</button>
+            <button class="key-btn" onpointerdown="inputNum(7)">7</button>
+            <button class="key-btn" onpointerdown="inputNum(8)">8</button>
+            <button class="key-btn" onpointerdown="inputNum(9)">9</button>
+            <button class="key-btn btn-clear" onpointerdown="inputClear()" id="btn-clear">지움</button>
+            <button class="key-btn" onpointerdown="inputNum(0)">0</button>
+            <button class="key-btn btn-enter" onpointerdown="inputEnter()" id="btn-enter">입력</button>
+        </div>
+    </div>
+
+    <div id="countdown-overlay">
+        <div id="countdown-text">3</div>
+    </div>
+
+    <div id="result-screen" class="overlay-screen" style="display:none; justify-content:center;">
+        <div class="start-card">
+            <div style="font-size: 2rem; margin-bottom: 5px; font-weight:bold;">GAME OVER</div>
+            
+            <div style="font-size: 3.5rem; color:var(--main-yellow); font-weight:bold; margin: 10px 0;" id="result-score-display">
+                🧱 0
+            </div>
+
+            <div class="ranking-box" id="ranking-area">
+                <div class="rank-my" id="my-rank-txt">점수 등록 중...</div>
+                <div id="top-rank-list"></div>
+            </div>
+
+            <div class="result-nav">
+                <div class="result-btn" id="btn-result-home">🏠</div>
+                <div class="result-btn" onclick="restartGame()">🔄</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* --- 다국어 데이터 (16개국, 초등 교육 어조, SEO, 작명 완벽 적용) --- */
+    const gameTranslations = {
+        ko: {
+            title: "🧊 쌓기나무킹", mobile: "모바일",
+            seoTitle: "쌓기나무킹 모바일: 1분 타임어택 - 공간지각력 게임",
+            seoDesc: "1분 동안 3D 쌓기나무의 개수를 맞히는 모바일 두뇌 게임! 자유롭게 돌려보며 공간지각능력을 키워보세요.",
+            keywords: "쌓기나무킹, 수학게임, 공간지각력, 3D게임, 두뇌게임",
+            desc: "1분 타임어택!<br>회전하며 블록 개수를 세어보세요.",
+            start: "게임 시작! 🚀", clear: "지움", enter: "입력", placeholder: "?",
+            more: "🎮 다른 게임 고르기", rankTitle: "🏆 명예의 전당 (Top 100)",
+            myRank: "나의 등수: ", calculating: "집계 중...", registering: "등록 중...",
+            nickPlace: "닉네임 입력 (최대 8자)", alertNick: "닉네임을 입력해주세요!",
+            modalClose: "화면을 터치하면 닫힙니다", noRecord: "기록이 없습니다.",
+            brandName: "킹수학.com",
+            toast: "언어가 변경되었습니다."
+        },
+        en: {
+            title: "🧊 Cube King", mobile: "Mobile",
+            seoTitle: "Cube King: 3D Spatial Math Game",
+            seoDesc: "60-second Time Attack! Rotate the 3D blocks and count them. A fun brain training game.",
+            keywords: "Cube King, Math Game, Spatial IQ, 3D Puzzle, Brain Game",
+            desc: "60s Time Attack!<br>Rotate & count the blocks.",
+            start: "Start! 🚀", clear: "Del", enter: "OK", placeholder: "?",
+            more: "🎮 More Games", rankTitle: "🏆 Hall of Fame",
+            myRank: "My Rank: ", calculating: "Loading...", registering: "Saving...",
+            nickPlace: "Nickname (Max 8)", alertNick: "Please enter your nickname!",
+            modalClose: "Touch screen to close", noRecord: "No records yet.",
+            brandName: "KingsMath.com",
+            toast: "Language changed."
+        },
+        zh: {
+            title: "🧊 积木之王", mobile: "手游", 
+            seoTitle: "积木之王: 3D空间思维游戏",
+            seoDesc: "1分钟挑战！旋转3D积木并数一数。培养空间思维能力的益智游戏。",
+            keywords: "积木之王, 数学游戏, 空间思维, 3D益智, 头脑训练",
+            desc: "1分钟挑战！<br>旋转方块数一数。",
+            start: "开始游戏! 🚀", clear: "清除", enter: "输入", placeholder: "?",
+            more: "🎮 更多游戏", rankTitle: "🏆 荣誉殿堂",
+            myRank: "我的排名: ", calculating: "加载中...", registering: "保存中...",
+            nickPlace: "昵称 (最多8个字)", alertNick: "请输入昵称！",
+            modalClose: "触摸屏幕关闭", noRecord: "暂无记录。",
+            brandName: "KingsMath.com",
+            toast: "语言已更改。"
+        },
+        ja: {
+            title: "🧊 つみきキング", mobile: "スマホ", 
+            seoTitle: "つみきキング: 3D空間認識ゲーム",
+            seoDesc: "60秒タイムアタック！3D積み木を回転させて数を数えよう。子供向け脳トレゲーム。",
+            keywords: "つみきキング, 算数ゲーム, 空間認識, 3Dパズル, 脳トレ",
+            desc: "60秒チャレンジ！<br>回してブロックを数えてね。",
+            start: "スタート! 🚀", clear: "消す", enter: "決定", placeholder: "?",
+            more: "🎮 他のゲーム", rankTitle: "🏆 名誉の殿堂",
+            myRank: "順位: ", calculating: "集計中...", registering: "登録中...",
+            nickPlace: "ニックネーム (8文字)", alertNick: "ニックネームを入力してね！",
+            modalClose: "画面タッチで閉じる", noRecord: "記録なし",
+            brandName: "KingsMath.com",
+            toast: "言語が変更されました。"
+        },
+        es: {
+            title: "🧊 Rey de los Cubos", mobile: "Móvil",
+            seoTitle: "Rey de los Cubos: Juego 3D de Matemáticas",
+            seoDesc: "¡Contrarreloj de 60s! Gira los bloques 3D y cuéntalos. Divertido juego de ingenio.",
+            keywords: "Rey de los Cubos, Juego de Matemáticas, Inteligencia Espacial, Puzzle 3D",
+            desc: "¡60s Contrarreloj!<br>Gira y cuenta los cubos.",
+            start: "¡Jugar! 🚀", clear: "Borrar", enter: "OK", placeholder: "?",
+            more: "🎮 Más Juegos", rankTitle: "🏆 Salón de la Fama",
+            myRank: "Mi Rango: ", calculating: "Cargando...", registering: "Guardando...",
+            nickPlace: "Apodo (Max 8)", alertNick: "¡Ingresa tu apodo!",
+            modalClose: "Toca para cerrar", noRecord: "Sin registros.",
+            brandName: "KingsMath.com",
+            toast: "Idioma cambiado."
+        },
+        fr: {
+            title: "🧊 Roi des Cubes", mobile: "Mobile",
+            seoTitle: "Roi des Cubes: Jeu de Logique 3D",
+            seoDesc: "Chrono de 60s ! Tourne les blocs 3D et compte-les. Un jeu éducatif amusant.",
+            keywords: "Roi des Cubes, Jeu de Maths, Logique Spatiale, Puzzle 3D",
+            desc: "60s Chrono !<br>Tourne et compte les cubes.",
+            start: "Jouer ! 🚀", clear: "Effacer", enter: "Valider", placeholder: "?",
+            more: "🎮 Autres Jeux", rankTitle: "🏆 Tableau d'honneur",
+            myRank: "Mon rang: ", calculating: "Chargement...", registering: "Sauvegarde...",
+            nickPlace: "Pseudo (Max 8)", alertNick: "Entre ton pseudo !",
+            modalClose: "Touche pour fermer", noRecord: "Aucun record.",
+            brandName: "KingsMath.com",
+            toast: "Langue modifiée."
+        },
+        ru: {
+            title: "🧊 Король Кубиков", mobile: "Мобильный",
+            seoTitle: "Король Кубиков: 3D Логика",
+            seoDesc: "60 секунд! Вращай 3D блоки и считай их. Развивай пространственное мышление.",
+            keywords: "Король Кубиков, Математика, Логика, 3D Головоломка",
+            desc: "60 секунд!<br>Вращай и считай кубики.",
+            start: "Играть! 🚀", clear: "Стер.", enter: "Ввод", placeholder: "?",
+            more: "🎮 Еще игры", rankTitle: "🏆 Зал Славы",
+            myRank: "Мой ранг: ", calculating: "Загрузка...", registering: "Сохр...",
+            nickPlace: "Никнейм (Макс 8)", alertNick: "Введите никнейм!",
+            modalClose: "Касание для закрытия", noRecord: "Нет записей.",
+            brandName: "KingsMath.com",
+            toast: "Язык изменен."
+        },
+        id: {
+            title: "🧊 Raja Kubus", mobile: "Seluler",
+            seoTitle: "Raja Kubus: Permainan Logika 3D",
+            seoDesc: "Serangan Waktu 60 detik! Putar balok 3D dan hitung jumlahnya.",
+            keywords: "Raja Kubus, Game Matematika, Logika, Puzzle 3D",
+            desc: "Serangan Waktu 60d!<br>Putar & hitung balok.",
+            start: "Mulai! 🚀", clear: "Hapus", enter: "Oke", placeholder: "?",
+            more: "🎮 Game Lain", rankTitle: "🏆 Hall of Fame",
+            myRank: "Peringkat: ", calculating: "Memuat...", registering: "Menyimpan...",
+            nickPlace: "Nama (Maks 8)", alertNick: "Masukkan nama Anda!",
+            modalClose: "Sentuh untuk menutup", noRecord: "Belum ada rekor.",
+            brandName: "KingsMath.com",
+            toast: "Bahasa telah diubah."
+        },
+        vi: {
+            title: "🧊 Vua Khối Lập Phương", mobile: "Di động",
+            seoTitle: "Vua Khối Lập Phương: Trò chơi Toán 3D",
+            seoDesc: "Thử thách 60 giây! Xoay khối 3D và đếm chúng. Rèn luyện trí não.",
+            keywords: "Vua Khối Lập Phương, Trò chơi Toán, Trí tuệ 3D",
+            desc: "Thử thách 60s!<br>Xoay & đếm số lượng.",
+            start: "Bắt đầu! 🚀", clear: "Xóa", enter: "Chọn", placeholder: "?",
+            more: "🎮 Trò chơi khác", rankTitle: "🏆 Bảng Xếp Hạng",
+            myRank: "Hạng của tôi: ", calculating: "Đang tải...", registering: "Đang lưu...",
+            nickPlace: "Tên (Tối đa 8)", alertNick: "Vui lòng nhập tên!",
+            modalClose: "Chạm để đóng", noRecord: "Chưa có kỷ lục.",
+            brandName: "KingsMath.com",
+            toast: "Ngôn ngữ đã được thay đổi."
+        },
+        th: {
+            title: "🧊 ราชาลูกบาศก์", mobile: "มือถือ",
+            seoTitle: "ราชาลูกบาศก์: เกมฝึกสมอง 3D",
+            seoDesc: "ชาเลนจ์ 60 วินาที! หมุนบล็อก 3D แล้วนับจำนวน เกมฝึกสมองสุดสนุก",
+            keywords: "ราชาลูกบาศก์, เกมคณิตศาสตร์, เกม 3D, ฝึกสมอง",
+            desc: "จับเวลา 60 วินาที!<br>หมุนแล้วนับลูกบาศก์",
+            start: "เริ่มเกม! 🚀", clear: "ลบ", enter: "ตกลง", placeholder: "?",
+            more: "🎮 เกมอื่นๆ", rankTitle: "🏆 หอเกียรติยศ",
+            myRank: "อันดับของฉัน: ", calculating: "กำลังโหลด...", registering: "กำลังบันทึก...",
+            nickPlace: "ชื่อ (สูงสุด 8)", alertNick: "กรุณาใส่ชื่อของคุณ!",
+            modalClose: "แตะเพื่อปิด", noRecord: "ยังไม่มีสถิติ",
+            brandName: "KingsMath.com",
+            toast: "เปลี่ยนภาษาเรียบร้อยแล้ว"
+        },
+        "pt-br": {
+            title: "🧊 Rei dos Cubos", mobile: "Celular",
+            seoTitle: "Rei dos Cubos: Jogo 3D de Lógica",
+            seoDesc: "Desafio de 60s! Gire os blocos 3D e conte. Divertido jogo para o cérebro.",
+            keywords: "Rei dos Cubos, Jogo de Matemática, Puzzle 3D, Lógica",
+            desc: "Desafio de 60s!<br>Gire e conte os cubos.",
+            start: "Começar! 🚀", clear: "Apagar", enter: "OK", placeholder: "?",
+            more: "🎮 Mais Jogos", rankTitle: "🏆 Hall da Fama",
+            myRank: "Meu Rank: ", calculating: "Carregando...", registering: "Salvando...",
+            nickPlace: "Apelido (Máx 8)", alertNick: "Digite seu apelido!",
+            modalClose: "Toque para fechar", noRecord: "Sem registros.",
+            brandName: "KingsMath.com",
+            toast: "Idioma alterado."
+        },
+        hi: {
+            title: "🧊 क्यूब किंग", mobile: "मोबाइल",
+            seoTitle: "क्यूब किंग: 3D गणित गेम",
+            seoDesc: "60 सेकंड चुनौती! 3D ब्लॉक घुमाएं और गिनें। मस्तिष्क के लिए मजेदार गेम।",
+            keywords: "क्यूब किंग, गणित गेम, 3D पहेली",
+            desc: "60 सेकंड चुनौती!<br>क्यूब्स घुमाएं और गिनें।",
+            start: "शुरू करें! 🚀", clear: "हटाएं", enter: "ठीक है", placeholder: "?",
+            more: "🎮 और गेम्स", rankTitle: "🏆 हॉल ऑफ फेम",
+            myRank: "मेरी रैंक: ", calculating: "लोड हो रहा है...", registering: "सेव हो रहा है...",
+            nickPlace: "उपनाम (अधिकतम 8)", alertNick: "कृपया अपना उपनाम दर्ज करें!",
+            modalClose: "बंद करने के लिए छुएं", noRecord: "कोई रिकॉर्ड नहीं।",
+            brandName: "KingsMath.com",
+            toast: "भाषा बदल दी गई है।"
+        },
+        bn: {
+            title: "🧊 কিউব রাজা", mobile: "মোবাইল",
+            seoTitle: "কিউব রাজা: 3D ম্যাথ গেম",
+            seoDesc: "৬০ সেকেন্ডের চ্যালেঞ্জ! 3D ব্লকগুলি ঘোরান এবং গণনা করুন।",
+            keywords: "কিউব রাজা, গণিত গেম, 3D পাজল",
+            desc: "৬০ সেকেন্ডের চ্যালেঞ্জ!<br>ব্লকগুলি ঘোরান এবং গুনুন।",
+            start: "শুরু করুন! 🚀", clear: "মুছুন", enter: "ঠিক আছে", placeholder: "?",
+            more: "🎮 আরও গেম", rankTitle: "🏆 হল অফ ফেম",
+            myRank: "আমার র‍্যাঙ্ক: ", calculating: "লোড হচ্ছে...", registering: "সংরক্ষণ করা হচ্ছে...",
+            nickPlace: "ডাকনাম (সর্বোচ্চ ৮)", alertNick: "আপনার ডাকনাম লিখুন!",
+            modalClose: "বন্ধ করতে স্পর্শ করুন", noRecord: "কোন রেকর্ড নেই।",
+            brandName: "KingsMath.com",
+            toast: "ভাষা পরিবর্তিত হয়েছে।"
+        },
+        tr: {
+            title: "🧊 Küp Kralı", mobile: "Mobil",
+            seoTitle: "Küp Kralı: 3D Matematik Oyunu",
+            seoDesc: "60 Saniye Süre! 3D blokları çevirin ve sayın. Eğlenceli bir zeka oyunu.",
+            keywords: "Küp Kralı, Matematik Oyunu, 3D Bulmaca",
+            desc: "60s Süre!<br>Küpleri çevir ve say.",
+            start: "Başla! 🚀", clear: "Sil", enter: "Tamam", placeholder: "?",
+            more: "🎮 Daha Fazla", rankTitle: "🏆 Şöhretler Salonu",
+            myRank: "Sıralamam: ", calculating: "Yükleniyor...", registering: "Kaydediliyor...",
+            nickPlace: "Takma ad (Maks 8)", alertNick: "Lütfen takma ad girin!",
+            modalClose: "Kapatmak için dokun", noRecord: "Kayıt yok.",
+            brandName: "KingsMath.com",
+            toast: "Dil değiştirildi."
+        },
+        de: {
+            title: "🧊 Würfelkönig", mobile: "Mobil",
+            seoTitle: "Würfelkönig: 3D Mathe-Spiel",
+            seoDesc: "60 Sekunden Zeitangriff! Drehe die 3D-Blöcke und zähle sie.",
+            keywords: "Würfelkönig, Mathe-Spiel, 3D-Puzzle",
+            desc: "60s Zeitlimit!<br>Drehe & zähle die Würfel.",
+            start: "Start! 🚀", clear: "Löschen", enter: "OK", placeholder: "?",
+            more: "🎮 Mehr Spiele", rankTitle: "🏆 Ruhmeshalle",
+            myRank: "Mein Rang: ", calculating: "Lädt...", registering: "Speichern...",
+            nickPlace: "Spitzname (Max 8)", alertNick: "Bitte Spitzname eingeben!",
+            modalClose: "Tippen zum Schließen", noRecord: "Keine Rekorde.",
+            brandName: "KingsMath.com",
+            toast: "Sprache geändert."
+        },
+        it: {
+            title: "🧊 Re dei Cubi", mobile: "Mobile",
+            seoTitle: "Re dei Cubi: Gioco 3D di Matematica",
+            seoDesc: "Sfida di 60s! Ruota i blocchi 3D e contali. Un divertente gioco mentale.",
+            keywords: "Re dei Cubi, Matematica, Puzzle 3D",
+            desc: "Sfida di 60s!<br>Ruota e conta i cubi.",
+            start: "Gioca! 🚀", clear: "Cancella", enter: "OK", placeholder: "?",
+            more: "🎮 Altri Giochi", rankTitle: "🏆 Albo d'Oro",
+            myRank: "Il mio Rank: ", calculating: "Caricamento...", registering: "Salvataggio...",
+            nickPlace: "Nickname (Max 8)", alertNick: "Inserisci il nickname!",
+            modalClose: "Tocca per chiudere", noRecord: "Nessun record.",
+            brandName: "KingsMath.com",
+            toast: "Lingua modificata."
+        }
+    };
+
+    // 16개국 데이터베이스
+    const languages = [
+        { code: 'ko', country: 'kr', name: '한국어', enName: 'Korean' },
+        { code: 'en', country: 'us', name: 'English', enName: 'English' },
+        { code: 'zh', country: 'cn', name: '中文 (简体)', enName: 'Chinese (Simplified)' },
+        { code: 'ja', country: 'jp', name: '日本語', enName: 'Japanese' },
+        { code: 'es', country: 'es', name: 'Español', enName: 'Spanish' },
+        { code: 'fr', country: 'fr', name: 'Français', enName: 'French' },
+        { code: 'ru', country: 'ru', name: 'Русский', enName: 'Russian' },
+        { code: 'id', country: 'id', name: 'Bahasa Indonesia', enName: 'Indonesian' },
+        { code: 'vi', country: 'vn', name: 'Tiếng Việt', enName: 'Vietnamese' },
+        { code: 'th', country: 'th', name: 'ไทย', enName: 'Thai' },
+        { code: 'pt-br', country: 'br', name: 'Português (Brasil)', enName: 'Portuguese' },
+        { code: 'hi', country: 'in', name: 'हिन्दी', enName: 'Hindi' },
+        { code: 'bn', country: 'bd', name: 'বাংলা', enName: 'Bengali' },
+        { code: 'tr', country: 'tr', name: 'Türkçe', enName: 'Turkish' },
+        { code: 'de', country: 'de', name: 'Deutsch', enName: 'German' },
+        { code: 'it', country: 'it', name: 'Italiano', enName: 'Italian' }
+    ];
+
+    let currentLang = 'en';
+
+    // 모달 DOM 참조
+    const modal = document.getElementById('langModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const searchInput = document.getElementById('searchInput');
+    const grid = document.getElementById('languageGrid');
+    const noResult = document.getElementById('noResult');
+    const toast = document.getElementById('toastNotification');
+    let toastTimeout;
+
+    // 초기 언어 감지 로직 (우선순위: URL > LocalStorage > Browser > Default)
+    function detectLanguage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlLang = urlParams.get('lang');
+        const storageLang = localStorage.getItem('kingsmath_lang');
+        const browserLang = navigator.language.slice(0, 2);
+
+        if (urlLang && gameTranslations[urlLang]) return urlLang;
+        if (storageLang && gameTranslations[storageLang]) return storageLang;
+        if (gameTranslations[browserLang]) return browserLang;
+        return 'en';
+    }
+
+    // 텍스트 변경 안전 도우미 함수 (요소가 삭제되었더라도 에러를 발생시키지 않음)
+    const setSafeText = (id, text, isHTML = false) => {
+        const el = document.getElementById(id);
+        if (el) {
+            if (isHTML) el.innerHTML = text;
+            else el.innerText = text;
+        }
+    };
+
+    // 언어 적용 및 화면 갱신
+    function applyLanguage(langCode) {
+        if(!gameTranslations[langCode]) langCode = 'en';
+        currentLang = langCode;
+        
+        // Storage 및 URL 상태 유지
+        localStorage.setItem('kingsmath_lang', langCode);
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.set('lang', langCode);
+        window.history.pushState({}, '', newUrl);
+
+        // 상단 버튼 업데이트
+        const langInfo = languages.find(l => l.code === langCode);
+        const flagEl = document.getElementById('currentFlag');
+        const langNameEl = document.getElementById('currentLangName');
+        if (flagEl) flagEl.src = `https://flagcdn.com/w40/${langInfo.country}.png`;
+        if (langNameEl) langNameEl.textContent = langInfo.name;
+
+        // UI 업데이트 (안전장치 적용)
+        const t = gameTranslations[langCode];
+        
+        setSafeText('meta-title', t.seoTitle);
+        setSafeText('txt-title', t.title);
+        setSafeText('txt-mobile', t.mobile);
+        setSafeText('txt-desc', t.desc, true); // desc에는 <br> 태그가 포함됨
+        setSafeText('btn-start', t.start);
+        setSafeText('btn-clear', t.clear);
+        setSafeText('btn-enter', t.enter);
+        setSafeText('link-more', t.more);
+        setSafeText('txt-rank-title', t.rankTitle);
+        setSafeText('txt-modal-close', t.modalClose);
+        
+        // 랭킹 리스트 로딩이 끝난 후에는 #txt-loading 요소가 삭제되므로 Null 체크가 필수!
+        setSafeText('txt-loading', t.calculating);
+
+        // Meta 태그 업데이트
+        const metaDesc = document.getElementById('meta-desc');
+        if(metaDesc) metaDesc.setAttribute('content', t.seoDesc);
+        
+        const metaKeywords = document.getElementById('meta-keywords');
+        if(metaKeywords) metaKeywords.setAttribute('content', t.keywords);
+        
+        const ogTitle = document.getElementById('og-title');
+        if(ogTitle) ogTitle.setAttribute('content', t.seoTitle);
+
+        document.body.className = `lang-${langCode}`;
+
+        // 브랜드 링크
+        const brandLink = document.getElementById('brand-link');
+        if (brandLink) {
+            brandLink.innerText = t.brandName;
+            brandLink.href = "/";
+        }
+
+        // 닉네임 인풋
+        const nickEl = document.getElementById('nickname');
+        if(nickEl) nickEl.placeholder = t.nickPlace;
+
+        // 플레이스홀더
+        const inputVal = document.getElementById('input-value');
+        if(inputVal && inputVal.classList.contains('placeholder')) {
+            inputVal.innerText = t.placeholder;
+        }
+        
+        // QR 코드 동적 업데이트
+        const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(window.location.href);
+        const qrSmall = document.getElementById('qr-img-small');
+        const qrLarge = document.getElementById('qr-img-large');
+        if(qrSmall) qrSmall.src = qrUrl;
+        if(qrLarge) qrLarge.src = qrUrl;
+    }
+
+    function renderLanguages(filterText = '') {
+        grid.innerHTML = '';
+        const lowerFilter = filterText.toLowerCase();
+        
+        const filteredLangs = languages.filter(lang => 
+            lang.name.toLowerCase().includes(lowerFilter) || 
+            lang.enName.toLowerCase().includes(lowerFilter) ||
+            lang.code.toLowerCase().includes(lowerFilter)
+        );
+
+        if (filteredLangs.length === 0) {
+            grid.classList.add('hidden');
+            noResult.classList.remove('hidden');
+            noResult.classList.add('flex');
+        } else {
+            grid.classList.remove('hidden');
+            noResult.classList.add('hidden');
+            noResult.classList.remove('flex');
+
+            filteredLangs.forEach(lang => {
+                const isSelected = lang.code === currentLang;
+                
+                const baseClasses = "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 group relative overflow-hidden";
+                const stateClasses = isSelected 
+                    ? "bg-gray-800 border-yellow-500 ring-1 ring-yellow-500/50" 
+                    : "bg-gray-800/40 border-gray-700 hover:bg-gray-700 hover:border-gray-500";
+
+                const flagUrl = `https://flagcdn.com/w40/${lang.country}.png`;
+                const btn = document.createElement('div');
+                btn.className = `${baseClasses} ${stateClasses}`;
+
+                btn.innerHTML = `
+                    <div class="shrink-0 w-8 h-6 rounded overflow-hidden shadow-sm border border-gray-700/50">
+                        <img src="${flagUrl}" alt="${lang.country}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                    </div>
+                    <div class="flex-1 min-w-0 flex flex-col items-start font-sans">
+                        <span class="text-sm font-medium text-white truncate w-full ${isSelected ? 'text-yellow-400' : ''}" style="font-family: 'Helvetica Neue', Arial, sans-serif;">${lang.name}</span>
+                        <span class="text-xs text-gray-400 truncate w-full" style="font-family: 'Helvetica Neue', Arial, sans-serif;">${lang.enName}</span>
+                    </div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check text-yellow-500 text-lg ml-2"></i>' : ''}
+                `;
+
+                // 모달 닫기 명령을 1순위로 실행하여 무조건 닫히도록 보장
+                btn.addEventListener('click', () => {
+                    closeModal(); // 1순위: 가장 먼저 모달부터 닫습니다.
+                    applyLanguage(lang.code); // 2순위: 텍스트 번역 적용
+                    showToast(lang.name, lang.code); // 3순위: 알림 메시지 표시
+                    renderLanguages(searchInput.value); // 4순위: 리스트 갱신
+                });
+                grid.appendChild(btn);
+            });
+        }
+    }
+
+    function openModal() {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => searchInput.focus(), 100);
+    }
+
+    function closeModal() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function showToast(langName, langCode) {
+        document.getElementById('ui-toast').textContent = gameTranslations[langCode].toast;
+        document.getElementById('toastLangName').textContent = langName;
+        
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // 모달 이벤트 리스너 세팅
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    searchInput.addEventListener('input', (e) => renderLanguages(e.target.value));
+
+    /* --- 홈 버튼 & 전체 화면 대응 로직 --- */
+    function attachHomeButtonEvents() {
+        const homeBtns = [document.getElementById('btn-home-game'), document.getElementById('btn-result-home')];
+        homeBtns.forEach(btn => {
+            if(!btn) return;
+            btn.addEventListener('click', () => {
+                if (document.fullscreenElement) {
+                    isGameRunning = false;
+                    isProcessing = false;
+                    clearInterval(timerInterval);
+                    
+                    document.getElementById('start-screen').style.display = 'flex';
+                    document.getElementById('result-screen').style.display = 'none';
+                    if(window.playSound) window.playSound('click');
+                } else {
+                    location.reload();
+                }
+            });
+        });
+    }
+
+    /* --- 게임 메인 변수 및 엔진 코드 (원본 100% 보존) --- */
+    function openQrModal() { document.getElementById('qr-modal').style.display = 'flex'; }
+    function closeQrModal() { document.getElementById('qr-modal').style.display = 'none'; }
+
+    let scene, camera, renderer, group;
+    let isGameRunning = false;
+    let isProcessing = false;
+    let score = 0;
+    let timeLeft = 60;
+    let timerInterval;
+    let currentAnswer = 0;
+    let currentInput = "";
+    let isBonusRound = false; 
+    let audioCtx = null;
+    let nickname = "";
+
+    const geometry = new THREE.BoxGeometry(0.96, 0.96, 0.96);
+    const matNormal = new THREE.MeshLambertMaterial({ color: 0xffca28 }); 
+    const matBonus = new THREE.MeshLambertMaterial({ color: 0xff1744 }); 
+    const edgeGeo = new THREE.EdgesGeometry(geometry);
+    const edgeMat = new THREE.LineBasicMaterial({ color: 0x5d4037, linewidth: 2 });
+    const edgeMatBonus = new THREE.LineBasicMaterial({ color: 0x880e4f, linewidth: 2 });
+
+    window.onload = function() {
+        // 초기 렌더링 세팅
+        const initLang = detectLanguage();
+        applyLanguage(initLang);
+        renderLanguages(); 
+        attachHomeButtonEvents(); 
+        
+        init3D();
+        loadStartRanking();
+        animate();
+    };
+
+    function init3D() {
+        const container = document.getElementById('canvas-area');
+        scene = new THREE.Scene();
+        scene.background = null; 
+
+        camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+        camera.position.set(5, 6, 8); camera.lookAt(0, 0, 0);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 7); scene.add(dirLight);
+        const fillLight = new THREE.DirectionalLight(0xffaa00, 0.3);
+        fillLight.position.set(-5, 0, -5); scene.add(fillLight);
+
+        group = new THREE.Group(); scene.add(group);
+
+        let isDragging = false;
+        let prevPos = { x: 0, y: 0 };
+        const handleStart = (x, y) => {
+            if(isProcessing) return;
+            isDragging = true; prevPos = { x, y };
+        };
+        const handleMove = (x, y) => {
+            if(!isDragging) return;
+            const deltaX = x - prevPos.x;
+            const deltaY = y - prevPos.y;
+            group.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), deltaX * 0.015);
+            group.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), deltaY * 0.015);
+            prevPos = { x, y };
+        };
+        const handleEnd = () => { isDragging = false; };
+
+        container.addEventListener('pointerdown', e => { handleStart(e.clientX, e.clientY); container.setPointerCapture(e.pointerId); });
+        container.addEventListener('pointermove', e => { handleMove(e.clientX, e.clientY); });
+        container.addEventListener('pointerup', e => { handleEnd(); container.releasePointerCapture(e.pointerId); });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        generateProblem(false);
+        const autoRotate = () => {
+            if(!isGameRunning && document.getElementById('start-screen').style.display !== 'none') {
+                group.rotation.y += 0.005; group.rotation.x = Math.sin(Date.now()*0.001) * 0.1;
+            }
+            requestAnimationFrame(autoRotate);
+        };
+        autoRotate();
+    }
+
+    function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
+
+    function playSound(type) {
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const now = audioCtx.currentTime;
+        
+        if (type === 'tap') {
+            osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+            gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'correct') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(880, now); osc.frequency.setValueAtTime(1760, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'wrong') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+            gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'bonus') { 
+            osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.linearRampToValueAtTime(800, now + 0.2);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+            osc.start(now); osc.stop(now + 0.5);
+        } else if (type === 'tick') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(800, now);
+            gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc.start(now); osc.stop(now + 0.05);
+        } else if (type === 'countdown') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(440, now);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'go') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(880, now);
+            gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+            osc.start(now); osc.stop(now + 0.4);
+        }
+        osc.connect(gain); gain.connect(audioCtx.destination);
+    }
+
+    function restartGame() {
+        document.getElementById('result-screen').style.display = 'none';
+        isGameRunning = false; isProcessing = false;
+        clearInterval(timerInterval);
+        readyGame();
+    }
+
+    function readyGame() {
+        const nickInput = document.getElementById('nickname');
+        if(!nickInput.value.trim()) { alert(gameTranslations[currentLang].alertNick); nickInput.focus(); return; }
+        nickname = nickInput.value.trim();
+
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        document.getElementById('start-screen').style.display = 'none';
+        const overlay = document.getElementById('countdown-overlay');
+        overlay.style.display = 'flex';
+        
+        let count = 3;
+        const text = document.getElementById('countdown-text');
+        text.innerText = count;
+        playSound('countdown');
+
+        const interval = setInterval(() => {
+            count--;
+            if(count > 0) {
+                text.innerText = count;
+                text.style.animation = 'none'; text.offsetHeight; text.style.animation = 'zoomPop 0.8s infinite';
+                playSound('countdown');
+            } else {
+                clearInterval(interval);
+                text.innerText = "GO!";
+                playSound('go');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    startGame();
+                }, 600);
+            }
+        }, 1000);
+    }
+
+    function startGame() {
+        isGameRunning = true; isProcessing = false;
+        score = 0; timeLeft = 60;
+        document.getElementById('ui-timer').innerText = timeLeft;
+        document.getElementById('ui-score').innerText = score;
+        inputClear();
+        group.rotation.set(0, 0, 0); 
+        generateProblem(true);
+
+        timerInterval = setInterval(() => {
+            if(!isProcessing) {
+                timeLeft--;
+                document.getElementById('ui-timer').innerText = timeLeft;
+                if(timeLeft <= 5 && timeLeft > 0) {
+                    document.getElementById('ui-timer').style.transform = "scale(1.2)";
+                    setTimeout(()=>document.getElementById('ui-timer').style.transform = "scale(1)", 200);
+                    playSound('countdown');
+                }
+                if(timeLeft <= 0) endGame();
+            }
+        }, 1000);
+    }
+
+    function generateProblem(randomize = true) {
+        while(group.children.length > 0) group.remove(group.children[0]);
+        group.rotation.set(0,0,0);
+        inputClear(); 
+
+        isBonusRound = Math.random() < 0.2;
+        const bonusBadge = document.getElementById('bonus-badge');
+        if (isBonusRound) { bonusBadge.style.display = 'block'; playSound('bonus'); } 
+        else { bonusBadge.style.display = 'none'; }
+
+        let map = Array(3).fill().map(()=>Array(3).fill().map(()=>Array(3).fill(0)));
+        map[1][0][1] = 1; let count = 1;
+        
+        let minT = isBonusRound ? 15 : 5;
+        let maxT = isBonusRound ? 20 : 14; 
+        let target = Math.floor(Math.random() * (maxT - minT + 1)) + minT;
+        
+        let attempts = 0;
+        while(count < target && attempts < 2000) {
+            attempts++;
+            let x = Math.floor(Math.random()*3); let y = Math.floor(Math.random()*3); let z = Math.floor(Math.random()*3);
+            if(map[x][y][z] === 0) {
+                if(y === 0 || map[x][y-1][z] === 1) {
+                    map[x][y][z] = 1; count++;
+                }
+            }
+        }
+        currentAnswer = count;
+        const useMat = isBonusRound ? matBonus : matNormal;
+        const useEdge = isBonusRound ? edgeMatBonus : edgeMat;
+
+        for(let x=0; x<3; x++) {
+            for(let y=0; y<3; y++) {
+                for(let z=0; z<3; z++) {
+                    if(map[x][y][z] === 1) {
+                        const mesh = new THREE.Mesh(geometry, useMat);
+                        mesh.position.set(x - 1, y - 1, z - 1);
+                        mesh.add(new THREE.LineSegments(edgeGeo, useEdge));
+                        group.add(mesh);
+                    }
+                }
+            }
+        }
+        if(randomize) { group.rotation.y = Math.random() * 0.5 - 0.25; group.rotation.x = 0.2; }
+    }
+
+    function inputNum(n) {
+        if(!isGameRunning || isProcessing) return;
+        playSound('tap');
+        const display = document.getElementById('input-value');
+        if(currentInput.length >= 2) return;
+        if(display.classList.contains('placeholder')) { display.classList.remove('placeholder'); currentInput = ""; }
+        currentInput += n.toString();
+        display.innerText = currentInput;
+    }
+
+    function inputClear() {
+        if(!isGameRunning && !isProcessing && timeLeft <= 0) return;
+        currentInput = "";
+        const display = document.getElementById('input-value');
+        display.classList.add('placeholder');
+        display.innerText = gameTranslations[currentLang].placeholder;
+    }
+
+    function inputEnter() {
+        if(!isGameRunning || isProcessing || currentInput === "") return;
+        const val = parseInt(currentInput);
+        const fb = document.getElementById('feedback');
+        isProcessing = true;
+        fb.style.animation = 'none'; fb.offsetHeight; 
+
+        inputClear();
+
+        visualizeCount(() => {
+            if(val === currentAnswer) {
+                let earned = currentAnswer * 10;
+                if (isBonusRound) earned *= 2;
+                score += earned;
+                document.getElementById('ui-score').innerText = score;
+
+                fb.innerText = `+${earned}`;
+                fb.style.color = "#00e676"; fb.style.fontSize = "5rem";
+                fb.style.opacity = 1; fb.style.animation = "popFade 0.6s forwards";
+                playSound('correct');
+
+                animateTimerAdd(5);
+
+            } else {
+                fb.innerText = "❌";
+                fb.style.color = "#ff1744"; fb.style.fontSize = "8rem";
+                fb.style.opacity = 1; fb.style.animation = "popFade 0.6s forwards";
+                playSound('wrong');
+            }
+            
+            setTimeout(() => {
+                isProcessing = false;
+                generateProblem(true);
+            }, 800);
+        });
+    }
+
+    function animateTimerAdd(seconds) {
+        const timerEl = document.getElementById('ui-timer');
+        const effectEl = document.getElementById('time-bonus-effect');
+        
+        effectEl.style.animation = 'none';
+        effectEl.offsetHeight;
+        effectEl.style.animation = 'floatTimeUp 1s forwards';
+
+        const targetTime = timeLeft + seconds;
+        timeLeft = targetTime;
+
+        let currentDisplay = parseInt(timerEl.innerText);
+        const step = 1; 
+        const intervalTime = 50; 
+        
+        const timerAnim = setInterval(() => {
+            if(currentDisplay < targetTime) {
+                currentDisplay += step;
+                timerEl.innerText = currentDisplay;
+                playSound('tick');
+            } else {
+                timerEl.innerText = targetTime; 
+                clearInterval(timerAnim);
+            }
+        }, intervalTime);
+    }
+
+    function visualizeCount(onComplete) {
+        const fb = document.getElementById('feedback');
+        fb.innerText = "";
+        fb.style.animation = 'none'; fb.style.fontSize = "8rem"; fb.style.color = "#FFD93D"; fb.style.opacity = 1;
+        const meshes = group.children.filter(c => c.type === 'Mesh');
+        let count = 0; let total = meshes.length;
+        
+        const interval = setInterval(() => {
+            if (count < total) {
+                const mesh = meshes[meshes.length - 1 - count];
+                mesh.visible = false; 
+                count++;
+                fb.innerText = count;
+                playSound('tick');
+            } else {
+                clearInterval(interval);
+                setTimeout(() => { if(onComplete) onComplete(); }, 300);
+            }
+        }, 50); 
+    }
+
+    function endGame() {
+        isGameRunning = false; clearInterval(timerInterval);
+        document.getElementById('result-screen').style.display = 'flex';
+        document.getElementById('result-score-display').innerText = `🧱 ${score}`;
+        document.getElementById('bonus-badge').style.display = 'none';
+        if(score > 300) playSound('correct'); else playSound('wrong');
+        submitRanking(nickname, score);
+    }
+
+    /* --- 랭킹 시스템 --- */
+    function loadStartRanking() {
+        const listDiv = document.getElementById('start-rank-list');
+        fetch('ranking.php?action=list')
+        .then(res => res.json())
+        .then(data => {
+            listDiv.innerHTML = "";
+            const top100 = data.slice(0, 100);
+            if(top100.length === 0) {
+                listDiv.innerHTML = `<div style="text-align:center;color:#888;padding:10px;">${gameTranslations[currentLang].noRecord}</div>`;
+                return;
+            }
+            top100.forEach((item, idx) => {
+                const row = document.createElement('div');
+                row.className = 'rank-item';
+                
+                let rankDisplay = "";
+                let nickStyle = ""; 
+
+                if(idx === 0) {
+                    rankDisplay = "🥇";
+                } else if(idx === 1) {
+                    rankDisplay = "🥈";
+                } else if(idx === 2) {
+                    rankDisplay = "🥉";
+                } else {
+                    rankDisplay = `${idx + 1}`;
+                    nickStyle = "color:#aaa; font-size:0.9rem;";
+                }
+                
+                const rankHtml = `<span style="display:inline-block; width:30px; text-align:center; margin-right:5px; font-size:1rem;">${rankDisplay}</span>`;
+
+                row.innerHTML = `
+                    <span style="flex:1; display:flex; align-items:center; ${nickStyle}">
+                        ${rankHtml} ${item.nickname}
+                    </span>
+                    <span style="font-weight:bold; color:#FFD93D;">${item.score}</span>
+                `;
+                listDiv.appendChild(row);
+            });
+        })
+        .catch(err => {
+            listDiv.innerHTML = '<div style="text-align:center;color:#red;">Error</div>';
+        });
+    }
+
+    function submitRanking(nick, sc) {
+        const myRankTxt = document.getElementById('my-rank-txt');
+        myRankTxt.innerText = gameTranslations[currentLang].registering;
+        
+        const fd = new FormData();
+        fd.append('nickname', nick);
+        fd.append('score', sc);
+
+        fetch('ranking.php?action=submit', { method: 'POST', body: fd })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                myRankTxt.innerText = `${gameTranslations[currentLang].myRank} ${data.rank}`;
+                loadResultRanking(); 
+            } else { myRankTxt.innerText = "Failed"; }
+        })
+        .catch(err => { console.error(err); myRankTxt.innerText = "Error"; });
+    }
+
+    function loadResultRanking() {
+        fetch('ranking.php?action=list')
+        .then(res => res.json())
+        .then(data => {
+            const listDiv = document.getElementById('top-rank-list');
+            listDiv.innerHTML = "";
+            const top3 = data.slice(0, 3);
+            const medals = ["🥇", "🥈", "🥉"];
+            top3.forEach((item, idx) => {
+                const row = document.createElement('div');
+                row.className = 'rank-item';
+                const rankHtml = `<span style="display:inline-block; width:30px; text-align:center;">${medals[idx]}</span>`;
+                row.innerHTML = `<span>${rankHtml} ${item.nickname}</span><span>${item.score}</span>`;
+                listDiv.appendChild(row);
+            });
+        });
+    }
+
+    // CSS Animation
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes popFade {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        }
+        @keyframes zoomPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+</body>
+</html>
